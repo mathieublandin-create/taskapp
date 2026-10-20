@@ -38,6 +38,7 @@
 |---|---|---|---|
 
 ## Points bloquants
+- Socle UX v0.1 rendu (Steeve) : questions ergonomiques Q-ERG-02 à 11 (`02-ux/guide-ergonomie.md` §12.1), non bloquantes pour LOT-001 ; demandes à Starck DAT-UX-09 et 13. E4 de LOT-001 et maquettes ECR-007, 008, 010, 011 à réaliser après validation E2.
 - Points F1 à F14 de Starck (DAT §8) à transmettre à Pepper avec les réponses P1 (impacts : RG-008, CA-7 de US-017, règles de réparation après fusion).
 - Socle technique : DAT v0.1 rendu, DS-01 à DS-20 tranchées au §11 (statut « Proposé », à valider). Anthony attendait de Starck les décisions DS-01 à DS-20 (`04-specification-technique/conventions.md` §15). Celles qui bloquent la conception de LOT-001 : DS-01, 02, 03, 05, 07, 10, 11, 14, 15, 16 et 19.
 - Points de testabilité PT-01 à PT-15 (`conventions.md` §14) : questions complémentaires pour Pepper et Starck, à traiter au refinement du lot concerné.
