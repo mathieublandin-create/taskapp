@@ -4,6 +4,7 @@
 | Demande | Date | Résumé | US associée(s) |
 |---|---|---|---|
 | [DEM-001](demandes/DEM-001.md) | 2026-10-20 | Besoin initial : objectifs déclinés en tâches, planification, suivi du temps et de la vélocité, rappels quotidiens via Google Calendar, usage smartphone et PC | 21 US provisoires (US-001 à US-021), voir `01-specification-fonctionnelle/backlog-initial.md` — en attente des réponses aux questions Q-DEM001-1 à 20 |
+| [DEM-002](demandes/DEM-002.md) | 2026-10-20 | Rappel du soir : 2 questions de bilan (ce qui s'est bien passé, ce que j'aurais fait autrement) ; rappel du matin : fun fact scientifique tiré équitablement parmi 100 | En cours d'analyse (E1) |
 
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
