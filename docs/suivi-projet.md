@@ -27,6 +27,7 @@
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-20 | Hors étape (socle UX) | Réponses Q-ERG-02 à 11 (guide d'ergonomie §12.1) | Reçues | Verbatim : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Transmis à Pepper (règles métier) ; à transmettre à Steeve en E4. |
 | 2026-10-20 | E1 | Réponses Q-DEM001-1 à 20 | Reçues | Consignées dans questions-ouvertes.md |
 | 2026-10-20 | E2 | LOT-001 : composition complète + US-018, typologie majeure ; arbitrages A1–A7 | Validé | Verbatim « D1, A1: Android, reco » ; en attente : fuseau de référence (ADR-011/RG-008), reformulation, exclusions, ENF-05/06 |
 | 2026-10-20 | E1 | Réponses P1 Q-DEM001-21 à 29 | Reçues | Recommandations retenues sauf 22.3 (données conservées sur l'appareil) |
