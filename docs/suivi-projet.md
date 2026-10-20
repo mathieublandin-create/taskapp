@@ -27,6 +27,7 @@
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
 | 2026-10-20 | E1 | Réponses Q-DEM001-1 à 20 | Reçues | Consignées dans questions-ouvertes.md |
+| 2026-10-20 | E1 | Réponses P1 Q-DEM001-21 à 29 | Reçues | Recommandations retenues sauf 22.3 (données conservées sur l'appareil) |
 
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |

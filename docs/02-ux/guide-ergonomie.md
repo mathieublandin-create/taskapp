@@ -2,9 +2,9 @@
 
 > **Version 0.1, 2026-10-20 (Steeve).** Socle UX initial, hors cycle de lot, demandé par le commanditaire.
 >
-> **Entrées** : DEM-001, DEM-002, cahier des charges v0.2, backlog initial v0.2, questions ouvertes (réponses du commanditaire et questions résiduelles Q-DEM001-21 à 40), compléments du commanditaire transmis par Jarvis le 2026-10-20.
+> **Entrées** : DEM-001, DEM-002, cahier des charges v0.3, backlog initial v0.3 (US-001 à US-036), questions ouvertes (réponses du commanditaire, questions résiduelles Q-DEM001-21 à 40 et Q-DEM002-1 à 7), compléments du commanditaire transmis par Jarvis le 2026-10-20, DAT v0.1 (brouillon de Starck, décisions au statut « Proposé »).
 >
-> **Statut** : document de travail. Les choix qui dépendent d'une question ouverte sont signalés par la mention **(sous réserve de Q-…)**. Les choix qui dépendent de la plateforme (PWA, application multiplateforme ou native) sont regroupés au §11, « En attente du DAT ».
+> **Statut** : document de travail. Les choix qui dépendent d'une question ouverte sont signalés par la mention **(sous réserve de Q-…)**. Les choix qui dépendent de la plateforme sont regroupés au §11, « En attente du DAT » : le DAT v0.1 propose une PWA pour le PC et une application Capacitor pour le smartphone, mais ces décisions ne sont pas encore acceptées.
 
 ## Sommaire
 1. [Principes de design](#1-principes-de-design)
@@ -315,7 +315,7 @@ Anneau 32 px (liste) ou barre (détail) + texte « 7 / 12 tâches · 18 h restan
 Dans une proposition : valeur actuelle barrée en `color.text.tertiary` → valeur proposée en `font.body.strong`, avec l'icône étincelle. Exemple : « Délai : ~~31 oct.~~ → **7 nov.** ». Lecteur d'écran : « Délai actuel 31 octobre, délai proposé 7 novembre ».
 
 ### 4.17 Champ texte libre (`TextArea`)
-Utilisé pour les deux questions du bilan du soir (DEM-002). Libellé toujours visible au-dessus (pas de placeholder tenant lieu de libellé), hauteur auto (3 lignes, extensible), compteur de caractères seulement si une limite est fixée.
+Utilisé pour les deux questions du bilan du soir (US-033, DEM-002). Libellé toujours visible au-dessus (pas de placeholder tenant lieu de libellé), hauteur auto (3 lignes, extensible), compteur de caractères seulement si une limite est fixée.
 
 ### 4.18 Section repliable (`Disclosure`)
 « Terminées (3) », « Sous-tâches (2/5) ». Chevron + libellé + nombre ; `aria-expanded`.
@@ -406,7 +406,7 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 | Objectif sans tâche | « À décliner en tâches. » (sous réserve de Q-DEM001-26.3) | « Ajouter une tâche » |
 | Semaine, aucune capacité définie | « Indiquez combien de temps vous consacrez à vos tâches chaque jour, pour que l'application puisse vous proposer un planning. » | « Définir ma capacité » |
 | Semaine, rien à planifier | « Toutes vos tâches sont planifiées. » | — |
-| Bilan du soir, aucune tâche du jour | « Aucune tâche prévue ni travaillée aujourd'hui. » | Questions de bilan toujours proposées (DEM-002) |
+| Bilan du soir, aucune tâche du jour | « Aucune tâche prévue ni travaillée aujourd'hui. » | Questions de bilan toujours proposées (US-033) |
 
 ### 6.2 Chargement
 - **Premier lancement** sur un appareil : écran de chargement avec message (« Récupération de vos données depuis votre espace… ») et progression si elle est mesurable.
@@ -423,6 +423,11 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 | Échec persistant (> 3 tentatives) | Indicateur en état « Action requise » + détail dans la feuille de synchronisation | « Votre espace de stockage est plein. Libérez de la place pour reprendre l'enregistrement. » |
 | Accès Google perdu ou expiré (RG-035) | Bandeau non fermable | « Reconnectez votre compte Google pour reprendre la synchronisation et les rappels. Vos données sont conservées. » + bouton « Se reconnecter » |
 | Créneau Google non créé | Sur la ligne de tâche, icône créneau en état barré ; détail dans la feuille de synchronisation | « Le créneau n'a pas pu être créé dans votre agenda. Nouvelle tentative automatique. » |
+
+| Session Google expirée sur PC (renouvellement du jeton nécessitant un geste, DAT R3 / F14) | Indicateur « Reprendre la synchronisation » (un clic), **pas** de bandeau : ce n'est pas une perte d'accès | « Cliquez pour reprendre la synchronisation avec Google. » |
+| Rappels modifiés ou supprimés directement dans Google Agenda (DAT R7) | Carte « À traiter » de niveau attention, avec proposition de recréer les rappels | « Vos rappels de 8 h et 21 h ont été modifiés dans votre agenda. Les rétablir ? » |
+| Horloge de l'appareil déréglée (DAT R4) | Carte d'information | « L'heure de cet appareil semble incorrecte. Corrigez-la pour éviter des conflits entre vos appareils. » |
+| Version de l'application trop ancienne pour lire les données (DAT R5) | Bandeau non fermable, données en lecture seule | « Une version plus récente de l'application a enregistré vos données. Mettez à jour l'application pour continuer à les modifier. » |
 
 Règle : un message d'erreur dit **ce qui s'est passé**, **ce qui est préservé** (« vos données sont conservées ») et **quoi faire**. Jamais de code technique à l'écran.
 
@@ -444,6 +449,7 @@ Le comportement de l'application pendant la perte d'accès Google (consultation 
 | Modifications en attente (en ligne) | nuage + petit nombre | « 3 modifications à envoyer » | Non |
 | Hors ligne | nuage barré, `color.text.secondary` | « Hors ligne · 3 en attente » | Libellé visible, pas de bandeau |
 | Nouvelle tentative | nuage avec flèches, `color.warning` | « Nouvelle tentative… » | Non |
+| Session à renouveler (PC) | nuage avec flèches, `color.accent` | « Reprendre la synchronisation » (bouton) | Non : un clic, pas de bandeau |
 | Action requise | nuage avec point d'exclamation, `color.danger` | « Action requise » | Oui : bandeau si Google, sinon indicateur + carte |
 
 L'indicateur couvre deux échanges distincts — l'espace de stockage (données) et Google Calendar (créneaux, événements, rappels) — mais n'affiche qu'**un** état, le plus grave des deux. La feuille de synchronisation détaille chacun.
@@ -485,6 +491,7 @@ Pourquoi : une phrase chiffrée.
 | Replanification après créneau déplacé | « Créneau déplacé dans votre agenda » | « Vous avez déplacé "Rédiger l'introduction" de mardi à jeudi dans Google Agenda. » | Jour mar. 21 → jeu. 23 | US-032, RG-037 |
 | Ré-estimation de capacité | « Ajuster votre capacité du lundi ? » | « Vous avez travaillé en moyenne 3 h les 4 derniers lundis. » | 4 h → 3 h | US-026, RG-011 |
 | Ré-estimation d'une tâche | « Estimation dépassée » | « 4 h passées pour 3 h estimées. » | Reste à faire : 0 → saisir | US-009, RG-009 |
+| Rappels modifiés dans Google | « Rappels modifiés dans votre agenda » | « Le rappel de 21 h a été supprimé dans Google Agenda. » | Rétablir les rappels à 8 h et 21 h | US-014, US-029 (DAT R7) |
 | Planning de la semaine | « Planning proposé » | « 11 tâches placées selon vos priorités et votre capacité. » | Vue Semaine, éléments marqués « Proposé » | US-027, RG-031 |
 
 ### 7.5 Créneau déplacé : deux temps (RG-037)
@@ -570,24 +577,31 @@ Autres règles :
 
 ## 11. En attente du DAT
 
-Points qui dépendent du choix de plateforme (PWA, multiplateforme ou native) ou de l'architecture, à revoir quand Starck aura publié le DAT. Les maquettes adoptent une solution compatible avec toutes les options.
+Points qui dépendent du choix de plateforme ou de l'architecture. Le **DAT v0.1** (brouillon de Starck, 2026-10-20) **propose** :
+- une base de code TypeScript et React unique, avec des composants **Ionic React** ;
+- une **PWA** sur le PC et une application **Capacitor** sur le smartphone (ADR-001) ;
+- une architecture *local-first* sans serveur (ADR-002) ;
+- des notifications locales sur smartphone uniquement.
 
-| # | Sujet | Impact ergonomique | Hypothèse retenue en attendant |
-|---|---|---|---|
-| DAT-UX-01 | Notifications de l'application (créneau déplacé, rappels de secours Q-DEM001-38) | Une PWA sur iOS n'émet de notifications qu'une fois installée sur l'écran d'accueil ; le natif les permet toujours. | Notification visible **dans** l'application (carte « À traiter ») ; notification système en complément si la plateforme la permet. |
-| DAT-UX-02 | Gestes système | Le balayage depuis le bord gauche est réservé au retour sur iOS et Android : conflit possible avec le balayage de ligne. | Les balayages de ligne démarrent à 24 px du bord. |
-| DAT-UX-03 | Raccourcis clavier sur PC | Dans un navigateur, `Ctrl`/`Cmd` + lettre est souvent capturé (ex. `Ctrl+N`). | Raccourcis à une touche et `Alt` seulement (§5.3). |
-| DAT-UX-04 | Hors ligne sur PC (Q-DEM001-39) | Comportement de l'écran sans réseau sur PC. | Même comportement que le smartphone (§6.4). |
-| DAT-UX-05 | Sélecteurs de date et d'heure | Natifs (aspect propre à chaque système) ou composants maison (aspect homogène, plus de travail d'accessibilité). | Puces de dates rapides maison + sélecteur « Autre date… » natif. |
-| DAT-UX-06 | Lien depuis les rappels Google vers l'application | Le rappel du soir doit pouvoir ouvrir directement le bilan (Q-DEM001-40) : lien web, lien profond natif ou les deux. | Lien unique qui ouvre ECR-004. |
-| DAT-UX-07 | Retour haptique | Vibration au seuil des balayages et à la fin d'une tâche : variable selon la plateforme. | Facultatif, jamais seul porteur d'information. |
-| DAT-UX-08 | Accès rapide hors de l'application (widget, raccourci d'icône « Nouvelle tâche », partage vers l'application) | Accélère la saisie rapide sur smartphone, mais dépend fortement de la plateforme. | Non conçu en v0.1. |
-| DAT-UX-09 | Bibliothèque d'icônes et de composants | Choix du framework d'interface et du jeu d'icônes. | Style Lucide, tokens en CSS custom properties dans les maquettes. |
-| DAT-UX-10 | Rythme de synchronisation (Q-DEM001-21) | Signification de « À jour · il y a x min » ; fréquence à laquelle un créneau déplacé est détecté. | L'indicateur affiche l'heure du dernier échange réussi. |
-| DAT-UX-11 | Parcours de connexion Google | Fenêtre surgissante, redirection ou écran natif ; écrans de consentement (agenda, stockage). | Écran de connexion ECR-010 avec un seul bouton « Continuer avec Google » et l'explication des accès demandés (ENF-05). |
-| DAT-UX-12 | Effacement des données locales à la déconnexion (Q-DEM001-22.3) | Contenu de la confirmation de déconnexion. | Confirmation qui indique le nombre de modifications non envoyées. |
+Ces décisions sont au statut « Proposé », et le système du smartphone (Android ou iPhone, arbitrage A1) n'est pas tranché. Les maquettes restent donc compatibles avec toutes les options ; la colonne « Si le DAT est accepté » indique ce qui changera.
 
----
+| # | Sujet | Impact ergonomique | Hypothèse retenue en attendant | Si le DAT v0.1 est accepté |
+|---|---|---|---|---|
+| DAT-UX-01 | Notifications de l'application (créneau déplacé, rappels de secours Q-DEM001-38) | Une PWA n'émet pas de notification programmée sans serveur ; une application native le peut. | Notification visible **dans** l'application (carte « À traiter ») sur les deux appareils ; notification système en complément si la plateforme la permet. | Notification système sur smartphone seulement (DAT F2, F6), et sur Android si l'arrière-plan est actif. Sur PC : carte « À traiter » uniquement. |
+| DAT-UX-02 | Gestes système | Le balayage depuis le bord est réservé au retour sur iOS et Android : conflit possible avec le balayage de ligne. | Les balayages de ligne démarrent à 24 px du bord. | Inchangé ; à vérifier sur appareil réel (WebView Capacitor). |
+| DAT-UX-03 | Raccourcis clavier sur PC | Dans un navigateur, `Ctrl`/`Cmd` + lettre est souvent capturé (ex. `Ctrl+N`). | Raccourcis à une touche et `Alt` seulement (§5.3). | Confirmé (PWA). Une application de bureau (option F du DAT) permettrait plus tard des raccourcis globaux. |
+| DAT-UX-04 | Hors ligne sur PC (Q-DEM001-39) | Comportement de l'écran sans réseau sur PC. | Même comportement que le smartphone (§6.4). | L'architecture *local-first* rend le hors ligne natif sur les deux appareils (DAT F13) ; la PWA doit avoir été ouverte une fois en ligne. |
+| DAT-UX-05 | Sélecteurs de date et d'heure | Natifs (aspect propre à chaque système) ou composants maison (aspect homogène, plus de travail d'accessibilité). | Puces de dates rapides maison + sélecteur « Autre date… » natif. | Composant de date Ionic, habillé avec nos tokens ; accessibilité à vérifier en E14. |
+| DAT-UX-06 | Lien depuis les rappels Google vers l'application | Le rappel du soir doit ouvrir directement le bilan (Q-DEM001-40, Q-DEM002-1, DAT F8). | Lien unique qui ouvre ECR-004. | Lien web de la PWA ; sur smartphone, ouverture de l'application si elle est installée (lien d'application), sinon de la PWA. À préciser par Starck. |
+| DAT-UX-07 | Retour haptique | Vibration au seuil des balayages et à la fin d'une tâche : variable selon la plateforme. | Facultatif, jamais seul porteur d'information. | Disponible via Capacitor sur smartphone ; absent sur PC. |
+| DAT-UX-08 | Accès rapide hors de l'application (widget, raccourci « Nouvelle tâche », partage) | Accélère la saisie rapide sur smartphone, mais dépend fortement de la plateforme. | Non conçu en v0.1. | Envisageable avec Capacitor dans un lot ultérieur. |
+| DAT-UX-09 | Bibliothèque de composants et icônes | Ionic propose deux apparences (iOS et Material) qui changent selon l'appareil, alors que P9 demande le même modèle mental partout. | Tokens en CSS custom properties, style d'icônes Lucide. | **Une seule apparence** imposée sur tous les appareils, habillée par nos tokens (variables CSS Ionic). Les composants Ionic dont l'accessibilité est insuffisante seront signalés en E14. |
+| DAT-UX-10 | Rythme de synchronisation (Q-DEM001-21) | Signification de « À jour · il y a x min » ; délai de détection d'un créneau déplacé. | L'indicateur affiche l'heure du dernier échange réussi. | Synchronisation immédiate à l'ouverture, 5 s après une modification, puis toutes les 2 min au premier plan (DAT §4.3). Un créneau déplacé est détecté à l'ouverture ou à la synchronisation suivante, jamais en temps réel (DAT F2). |
+| DAT-UX-11 | Parcours de connexion Google | Fenêtre surgissante, redirection ou écran natif ; écrans de consentement (agenda, stockage) ; écran d'avertissement « application non vérifiée » (arbitrage A5). | Écran de connexion ECR-010 avec un seul bouton « Continuer avec Google » et l'explication des accès demandés (ENF-05). | Accès demandés au fil des fonctions (autorisation incrémentale) : chaque demande sera précédée d'un écran d'explication. Si l'option A5 a) est retenue, ECR-010 devra préparer l'utilisateur à l'écran d'avertissement de Google. |
+| DAT-UX-12 | Effacement des données locales à la déconnexion (Q-DEM001-22.3) | Contenu de la confirmation de déconnexion. | Confirmation qui indique le nombre de modifications non envoyées. | Confirmé (DAT §4.1.5). |
+| DAT-UX-13 | Session Google expirée sur PC (DAT R3, F14) | Sur la PWA, le jeton expire au bout d'une heure ; la reprise de la synchronisation peut demander un clic. | — | État « Session à renouveler » de l'indicateur (§6.5), un clic, sans bandeau. À valider avec le commanditaire si la fréquence s'avère gênante. |
+| DAT-UX-14 | Report automatique (RG-032, DAT F5) | Sans appareil actif à minuit, le report est appliqué à la première ouverture du jour. | Mention « Reportée d'hier » sur la tâche (ECR-001). | Inchangé ; la mention couvre ce cas sans message supplémentaire. |
+| DAT-UX-15 | Vérification des notifications Google (DAT R10) | Les rappels ne servent à rien si les notifications de Google Agenda sont désactivées sur le smartphone. | — | Étape guidée à la connexion de l'agenda (lot « Rappels ») : « Vérifiez que les notifications de Google Agenda sont activées », avec un rappel de test. |
 
 ## 12. Questions ergonomiques
 
@@ -597,8 +611,8 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 
 | Id | Écran | Question | Proposition de Steeve |
 |---|---|---|---|
-| Q-ERG-01 | ECR-004 Bilan du soir | Les réponses aux deux questions du soir (DEM-002) se saisissent dans l'application, car un événement Google ne permet pas de répondre. Sont-elles **facultatives** ? Doivent-elles être **conservées et consultables** ensuite (journal des bilans), ou servent-elles seulement de moment de réflexion ? | Facultatives ; conservées et consultables depuis l'historique des bilans (écran à concevoir plus tard). |
-| Q-ERG-02 | ECR-001 Aujourd'hui | Le fun fact du matin (DEM-002) est destiné au rappel de 8 h. Doit-il **aussi** apparaître dans l'application, sur Aujourd'hui, le matin ? Peut-on le masquer ? | Oui, une ligne discrète en bas d'Aujourd'hui jusqu'à midi, masquable d'un geste. |
+| ~~Q-ERG-01~~ | ECR-004 | *Retirée* : couverte par Q-DEM002-1, 2 et 3 de Pepper (lieu de réponse, caractère facultatif, conservation). Voir §12.2. | — |
+| Q-ERG-02 | ECR-001 Aujourd'hui | Le fun fact du matin (DEM-002, US-035) est destiné au rappel de 8 h. Doit-il **aussi** apparaître dans l'application, sur Aujourd'hui, le matin ? Peut-on le masquer ? | Oui, une ligne discrète en bas d'Aujourd'hui jusqu'à midi, masquable d'un geste. |
 | Q-ERG-03 | Saisie rapide | Le délai est obligatoire (RG-003). Pour gagner un geste, l'application peut-elle **pré-sélectionner un délai par défaut** (par exemple « dans 1 semaine »), que vous changez si besoin ? Ou préférez-vous le choisir explicitement à chaque fois, pour éviter des délais « par défaut » qui fausseraient les alertes ? Même question pour l'estimation (par exemple 1 h). | Aucun défaut pour le délai (il pilote les alertes) ; aucun défaut pour l'estimation (elle pilote la vélocité). Les puces rapides gardent la saisie à 2 gestes. |
 | Q-ERG-04 | ECR-004 Bilan du soir | Le bilan est-il accessible **avant** l'heure du rappel du soir (par exemple si vous terminez à 18 h) ? Et peut-on le faire **le lendemain** pour la veille ? | Oui aux deux : la carte « Bilan du soir » apparaît dès 17 h ; le bilan de la veille reste proposé le lendemain matin s'il n'a pas été fait. |
 | Q-ERG-05 | ECR-001 / ECR-004 | Quand un créneau est déplacé dans Google, la replanification est proposée le soir (RG-037). Souhaitez-vous pouvoir la **traiter tout de suite**, depuis la notification, sans attendre le soir ? | Oui : bouton tertiaire « Traiter maintenant » sur la carte ; sinon, elle attend le bilan. |
@@ -606,6 +620,7 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | Q-ERG-07 | Alertes | Si vous **refusez** une proposition de nouveau délai, l'alerte « délai non tenable » doit-elle réapparaître : dès le lendemain, seulement si la situation s'aggrave, ou plus jamais pour ce délai ? | Elle reste visible sur la tâche (icône), mais la carte de proposition ne réapparaît que si l'écart s'aggrave d'au moins une journée. |
 | Q-ERG-08 | ECR-005 Semaine | Peut-on planifier une tâche sur un jour **postérieur à son délai** ? Si oui, faut-il une alerte ? | Oui, avec une alerte « Après le délai » sur la tâche, sans blocage (même logique que RG-011 et RG-024). |
 | Q-ERG-09 | ECR-004 / Réglages | Quand l'application propose une **ré-estimation de votre capacité** (US-026) : dans le bilan du soir, dans un bilan hebdomadaire, ou seulement dans les réglages ? À quelle fréquence au maximum ? | Dans le bilan du soir du dernier jour travaillé de la semaine, au plus une fois par semaine. |
+| Q-ERG-11 | ECR-004 / P-06 | Après un créneau déplacé dans Google, si vous **refusez** la replanification proposée le soir, la tâche reste au jour prévu dans l'application. Que doit devenir le créneau dans votre agenda : être **remis** au jour prévu, ou être **laissé** où vous l'avez mis (l'agenda et l'application divergent alors) ? | Remettre le créneau au jour prévu, en le disant dans le toast : « Créneau remis à mardi dans votre agenda · Annuler ». Le DAT prévoit que l'application n'écrase jamais un déplacement sans décision (§4.4.3) : refuser est cette décision. |
 | Q-ERG-10 | ECR-005 Semaine | Le planning proposé (US-027) doit-il être **validé en bloc** (« Valider le planning »), ou chaque tâche proposée est-elle considérée comme acceptée tant que vous ne la déplacez pas ? | Validation en bloc, après ajustements, conformément à l'exclusion « ajustement sans validation » (CdC §4.3). |
 
 ### 12.2 Questions résiduelles de Pepper qui conditionnent les écrans
@@ -625,20 +640,23 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | Q-DEM001-35.3 / 35.5 | ECR-002, ECR-003 | Échelle d'importance (la maquette suppose haute / moyenne / basse) ; bouton « Recalculer l'ordre ». |
 | Q-DEM001-36 | ECR-005, indicateurs | Horizon du planning proposé (la maquette suppose 7 jours) ; libellé « Travail restant » ou « À planifier ». |
 | Q-DEM001-40 | Rappel du soir | Lien vers le bilan dans le rappel. |
+| Q-DEM002-1 | ECR-004 | Lieu de réponse aux deux questions (la maquette suppose la réponse a) : dans l'application, via le lien du rappel). |
+| Q-DEM002-2 | ECR-004 | Réponses facultatives (la maquette le suppose) ; possibilité de répondre plus tard. |
+| Q-DEM002-3 | ECR-004, futur journal des bilans (US-034) | Conservation, consultation et modification des réponses. |
+| Q-DEM002-7 | Rappel du matin, ECR-001 | Fun fact présent même sans tâche planifiée. |
 
-### 12.3 Point de vigilance pour Pepper
-DEM-002 (questions du bilan du soir, fun fact du matin) n'a pas encore d'US dans le backlog v0.2. Les maquettes ECR-001 et ECR-004 y font référence sous la forme « DEM-002 (US à créer) ».
-
----
+### 12.3 Points de vigilance
+- **Pour Pepper** : US-033 (questions du soir) et US-035 (fun fact) ont été ajoutées au backlog v0.3 pendant la rédaction de ce guide ; les maquettes ECR-001 et ECR-004 y font référence. La question Q-ERG-11 complète Q-DEM001-33 et pourrait y être rattachée.
+- **Pour Starck** : DAT-UX-09 (une seule apparence Ionic sur tous les appareils) et DAT-UX-13 (état « Session à renouveler » sur PC) sont des demandes ergonomiques à prendre en compte dans le DAT.
 
 ## 13. Inventaire des écrans
 
 | Id | Écran | Maquette | US principales |
 |---|---|---|---|
-| ECR-001 | Aujourd'hui | [`maquettes/ECR-001-aujourdhui.html`](maquettes/ECR-001-aujourdhui.html) | US-006, US-020, US-028, US-003, US-002, US-007, US-011, US-032, US-019, US-017, US-018 |
+| ECR-001 | Aujourd'hui | [`maquettes/ECR-001-aujourdhui.html`](maquettes/ECR-001-aujourdhui.html) | US-006, US-020, US-028, US-003, US-002, US-007, US-011, US-032, US-019, US-017, US-018, US-035 |
 | ECR-002 | Tâches (liste priorisée) | [`maquettes/ECR-002-taches-priorisees.html`](maquettes/ECR-002-taches-priorisees.html) | US-004, US-030, US-002, US-003, US-024, US-025, US-009, US-007 |
 | ECR-003 | Détail d'un objectif | [`maquettes/ECR-003-detail-objectif.html`](maquettes/ECR-003-detail-objectif.html) | US-001, US-023, US-002, US-024, US-003, US-025, US-030 |
-| ECR-004 | Bilan du soir | [`maquettes/ECR-004-bilan-du-soir.html`](maquettes/ECR-004-bilan-du-soir.html) | US-008, US-009, US-003, US-016, US-032, US-011, DEM-002 |
+| ECR-004 | Bilan du soir | [`maquettes/ECR-004-bilan-du-soir.html`](maquettes/ECR-004-bilan-du-soir.html) | US-008, US-009, US-003, US-016, US-032, US-011, US-033 |
 | ECR-005 | Semaine (planification) | [`maquettes/ECR-005-planification-semaine.html`](maquettes/ECR-005-planification-semaine.html) | US-006, US-027, US-005, US-019, US-020, US-028, US-011 |
 | ECR-006 | Saisie rapide (feuille) | Décrite au §4.3 ; état visible dans ECR-001 | US-002 |
 | ECR-007 | Détail d'une tâche | À maquetter (LOT-001) | US-002, US-024, US-003, US-025, US-008, US-009 |
@@ -647,10 +665,11 @@ DEM-002 (questions du bilan du soir, fun fact du matin) n'a pas encore d'US dans
 | ECR-010 | Connexion | À maquetter (LOT-001) | US-022, US-014 |
 | ECR-011 | Feuille de synchronisation | À maquetter (LOT-001) | US-017, US-018 |
 | ECR-012 | Indicateurs (backlog, vélocité) | Lot « Vélocité et pilotage » | US-012, US-013, US-010 |
+| ECR-013 | Journal des bilans | Lot « Rappels », selon Q-DEM002-3 | US-034 |
 
 ---
 
 ## 14. Historique
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
-| 0.1 | 2026-10-20 | Steeve | Création : principes, tokens, composants, interactions, états, alertes, accessibilité, responsive, points en attente du DAT, questions ergonomiques, inventaire des écrans. |
+| 0.1 | 2026-10-20 | Steeve | Création : principes, tokens, composants, interactions, états, alertes, accessibilité, responsive, points en attente du DAT (confrontés au DAT v0.1 brouillon), questions ergonomiques, inventaire des écrans. |

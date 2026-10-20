@@ -1,6 +1,6 @@
 # Parcours utilisateurs
 
-> **Version 0.1, 2026-10-20 (Steeve).** Socle UX initial, hors cycle de lot. Les écrans cités (`ECR-xxx`) sont inventoriés dans le [guide d'ergonomie, §13](guide-ergonomie.md#13-inventaire-des-écrans). Les choix qui dépendent d'une question ouverte portent la mention **(sous réserve de Q-…)**.
+> **Version 0.1, 2026-10-20 (Steeve).** Socle UX initial, hors cycle de lot. Entrées : cahier des charges v0.3, backlog v0.3 (US-001 à US-036), DAT v0.1 (brouillon). Les écrans cités (`ECR-xxx`) sont inventoriés dans le [guide d'ergonomie, §13](guide-ergonomie.md#13-inventaire-des-écrans). Les choix qui dépendent d'une question ouverte portent la mention **(sous réserve de Q-…)**.
 
 ## 1. Persona
 
@@ -29,7 +29,7 @@ Les étapes indiquent l'écran, l'action et le nombre de gestes visé. « Geste 
 
 | # | Moment | Ce que fait Camille | Écran | Ce que fait l'application | Gestes |
 |---|---|---|---|---|---|
-| 1 | 8 h 00 | Reçoit le rappel du matin dans Google Agenda : 4 tâches du jour, une alerte de délai, un fun fact. | Rappel Google | Rappel préparé la veille (RG-012), alerte incluse (RG-007), fun fact (DEM-002). | 0 |
+| 1 | 8 h 00 | Reçoit le rappel du matin dans Google Agenda : 4 tâches du jour, une alerte de délai, un fun fact. | Rappel Google | Rappel préparé à l'avance (RG-012), alerte incluse (RG-007), fun fact (US-035). | 0 |
 | 2 | 8 h 05 | Ouvre l'application sur son smartphone. | ECR-001 Aujourd'hui | Affiche immédiatement les données de l'appareil, puis synchronise (indicateur discret). Une tâche porte « Reportée d'hier » (RG-032). | 1 |
 | 3 | 8 h 06 | Voit la carte « Délai difficile à tenir » : accepte le nouveau délai proposé. | ECR-001, carte « À traiter » | Applique, toast « Annuler ». | 1 |
 | 4 | 8 h 07 | Constate que la jauge affiche « +30 min au-delà de votre capacité ». Balaye une tâche vers la gauche et choisit « Demain ». | ECR-001 → feuille « Planifier le… » | Jauge à jour ; créneau Google déplacé (RG-034). | 2 |
@@ -76,7 +76,7 @@ Variante smartphone : les 7 jours sont empilés verticalement ; le déplacement 
 | 3 | Coche « Terminée » pour une tâche finie. | ECR-004 | La tâche est terminée (RG-026). | 1 |
 | 4 | Corrige le reste à faire d'une tâche (appui sur la valeur, stepper). | ECR-004 | Le reste corrigé est conservé (sous réserve de Q-DEM001-31.1). Si l'estimation est dépassée : alerte « Estimation dépassée » (RG-009). | 2 |
 | 5 | **Étape 2 : Propositions** (s'il y en a). Voit « Créneau déplacé : Rédiger l'introduction, mardi → jeudi ». Accepte. | ECR-004 | Replanification appliquée après validation uniquement (RG-037). | 1 |
-| 6 | **Étape 3 : Deux questions.** « Ce qui s'est bien passé aujourd'hui », « Ce que j'aurais aimé faire autrement ». Saisit deux phrases (ou passe, sous réserve de Q-ERG-01). | ECR-004 | — | frappe |
+| 6 | **Étape 3 : Deux questions.** « Ce qui s'est bien passé aujourd'hui », « Ce que j'aurais aimé faire autrement ». Saisit deux phrases (ou passe : réponses facultatives sous réserve de Q-DEM002-2). | ECR-004 | Réponses enregistrées (US-033 ; conservation et relecture : Q-DEM002-3, US-034). | frappe |
 | 7 | « Valider mon bilan ». | ECR-004 | Enregistre ; écran de confirmation sobre : temps total du jour, tâches terminées, « À demain ». Les tâches non terminées planifiées aujourd'hui seront reportées (RG-032). | 1 |
 
 Le bilan est une seule page défilante, découpée en 3 sections numérotées, et non un assistant à plusieurs écrans : Camille voit d'emblée la longueur du bilan et peut sauter une section.
@@ -97,12 +97,12 @@ Le bilan est une seule page défilante, découpée en 3 sections numérotées, e
 | # | Ce que fait Camille | Écran | Ce que fait l'application | Gestes |
 |---|---|---|---|---|
 | 1 | Dans Google Agenda, déplace le créneau « Rédiger l'introduction » de mardi 10 h à jeudi 14 h. | Google Agenda | — | — |
-| 2 | Ouvre l'application plus tard. | ECR-001 | Carte d'attention « Créneau déplacé dans votre agenda » : « Vous avez déplacé "Rédiger l'introduction" de mardi à jeudi. Une replanification vous sera proposée ce soir. » (RG-037). Point sur l'onglet Aujourd'hui. | 1 |
+| 2 | Ouvre l'application plus tard. | ECR-001 | Le déplacement est détecté à l'ouverture ou à la synchronisation suivante, pas en temps réel (DAT v0.1, F2). Carte d'attention « Créneau déplacé dans votre agenda » : « Vous avez déplacé "Rédiger l'introduction" de mardi à jeudi. Une replanification vous sera proposée ce soir. » (RG-037). Point sur l'onglet Aujourd'hui. | 1 |
 | 3 | (Option, sous réserve de Q-ERG-05) « Traiter maintenant ». | Feuille de proposition | Même proposition qu'au soir. | 1 |
 | 4 | Le soir, dans le bilan, étape « Propositions » : « Planifier "Rédiger l'introduction" jeudi 23 » (jour proposé : sous réserve de Q-DEM001-33.2). | ECR-004 | Accepter / Modifier / Refuser. | 1 |
 | 5a | **Accepter** : la tâche passe au jeudi. | ECR-004 | Jauge de jeudi recalculée ; dépassement signalé le cas échéant. | 1 |
 | 5b | **Modifier** : choisit vendredi. | Feuille « Planifier le… » | Le créneau Google est déplacé au vendredi, à l'horaire suggéré. | 2 |
-| 5c | **Refuser** : la tâche reste au mardi. | ECR-004 | Comportement du créneau Google en cas de refus : **à préciser** (voir §4, point ouvert PO-01). | 1 |
+| 5c | **Refuser** : la tâche reste au mardi. | ECR-004 | Comportement du créneau Google en cas de refus : **à préciser** (Q-ERG-11). | 1 |
 
 Cas particuliers dépendant de Q-DEM001-33 : créneau déplacé dans la même journée (33.3), créneau supprimé (33.4).
 
@@ -210,7 +210,7 @@ stateDiagram-v2
 
 | Id | Parcours | Point | Renvoi |
 |---|---|---|---|
-| PO-01 | P-06 | Si Camille refuse la replanification après un déplacement de créneau, que devient le créneau dans Google : remis au jour planifié dans l'application, ou laissé tel quel (incohérence entre l'agenda et l'application) ? | À ajouter à Q-DEM001-33 (transmis via Jarvis à Pepper) |
+| PO-01 | P-06 | Si Camille refuse la replanification après un déplacement de créneau, que devient le créneau dans Google : remis au jour planifié dans l'application, ou laissé tel quel (incohérence entre l'agenda et l'application) ? | Q-ERG-11 du guide d'ergonomie (à rattacher à Q-DEM001-33) |
 | PO-02 | P-04 | Bilan non fait le soir : proposé le lendemain ? | Q-ERG-04 |
 | PO-03 | P-01 | Ordre des tâches dans Aujourd'hui. | Q-ERG-06 |
 | PO-04 | P-03 | Validation du planning proposé en bloc ou tâche par tâche. | Q-ERG-10 |
