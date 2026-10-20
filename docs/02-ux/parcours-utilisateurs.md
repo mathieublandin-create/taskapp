@@ -175,22 +175,31 @@ flowchart LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Affichée : alerte détectée
-    Affichée --> Acceptée : Accepter
-    Affichée --> EnModification : Modifier
-    EnModification --> Acceptée : Valider la valeur ajustée
-    EnModification --> Affichée : Annuler
-    Affichée --> Refusée : Refuser
-    Acceptée --> Affichée : Annuler (toast, 6 s)
-    Refusée --> Affichée : Annuler (toast, 6 s)
-    Acceptée --> [*]
-    Refusée --> [*]
+    state "Affichée" as Affichee
+    state "En modification" as EnModification
+    state "Acceptée" as Acceptee
+    state "Refusée" as Refusee
+    [*] --> Affichee : alerte détectée
+    Affichee --> Acceptee : Accepter
+    Affichee --> EnModification : Modifier
+    EnModification --> Acceptee : Valider la valeur ajustée
+    EnModification --> Affichee : Annuler
+    Affichee --> Refusee : Refuser
+    Acceptee --> Affichee : Annuler (toast, 6 s)
+    Refusee --> Affichee : Annuler (toast, 6 s)
+    Acceptee --> [*]
+    Refusee --> [*]
 ```
 
 ### 3.4 Synchronisation (indicateur)
 
 ```mermaid
 stateDiagram-v2
+    state "À jour" as AJour
+    state "Synchronisation en cours" as EnCours
+    state "Nouvelle tentative" as NouvelleTentative
+    state "Hors ligne" as HorsLigne
+    state "Action requise" as ActionRequise
     [*] --> AJour
     AJour --> EnCours : modification locale ou ouverture
     EnCours --> AJour : succès
