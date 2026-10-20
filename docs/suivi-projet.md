@@ -40,6 +40,7 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-011 | 2026-10-20 | Fuseau de référence de la journée (ADR-011 / RG-008) | Fuseau de l'appareil (RG-008 maintenue, proposition ADR-011 rejetée) ; horodatages enregistrés en UTC. Verbatim : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » |
 | DEC-001 | 2026-10-20 | A1 Système du smartphone | Android (pas d'iPhone en v1) |
 | DEC-002 | 2026-10-20 | D1 Hors ligne | US-018 (hors ligne smartphone) intégrée au LOT-001 |
 | DEC-003 | 2026-10-20 | D2 Composition LOT-001 | Composition complète (8 US + US-018) |
