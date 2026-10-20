@@ -1,6 +1,6 @@
 # Avis de l'architecte sur les dépendances techniques du lot 1 (E2)
 
-> Version 1.1 du 2026-10-20. Auteur : Starck. Mise à jour : prise en compte de DEC-011 (journée dans le fuseau de l'appareil, instants en UTC).
+> Version 1.2 du 2026-10-20. Auteur : Starck. Mise à jour : prise en compte de DEC-012, qui remplace DEC-011 (fuseau de référence fixe Europe/Paris, instants en UTC).
 > Objet : avis demandé dans [`LOT-001.md`](../lots/LOT-001.md), §7 (points S1 à S10) et §9 (D1, D2), sur la base du [DAT v0.1](DAT.md) et des ADR-001 à ADR-011 (statut « Proposé »).
 > Ce document ne modifie pas les livrables de Pepper. Les propositions de modification sont adressées à Pepper par l'intermédiaire de Jarvis.
 
@@ -123,7 +123,7 @@ Correspondance avec les décisions DS attendues par Anthony (`conventions.md` §
 Les historiques sur 12 semaines sont recalculés à partir d'un **journal métier en ajout seul** (DAT §6.1, `EvenementJournal`). Ils ne sont pas tirés d'instantanés. Chaque entrée contient :
 - un identifiant UUID v7 ;
 - l'HLC et l'**instant en UTC** ;
-- le **fuseau IANA de l'appareil** et la **date calendaire locale** de l'événement, calculée sur l'appareil qui agit (décision DEC-011 du commanditaire) ;
+- la **date calendaire** de l'événement, calculée dans le fuseau de référence **Europe/Paris** à partir de l'instant UTC (décision DEC-012 du commanditaire) ;
 - l'appareil ;
 - le type ;
 - les valeurs **avant et après**.

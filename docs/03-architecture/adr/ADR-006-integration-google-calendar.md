@@ -27,7 +27,7 @@ Elle lit cet agenda pour calculer la capacité disponible et détecter les crén
 **Agenda cible** : agenda principal (décision du commanditaire) ou agenda dédié. Hors débat.
 
 ## Décision
-- **Rappels** : deux séries récurrentes quotidiennes, transparentes, avec une notification « fenêtre » à 0 min, dans le fuseau unique `Parametres.fuseauAgenda` (ADR-011 révisé après DEC-011 ; valeur selon Q-DEM001-37).
+- **Rappels** : deux séries récurrentes quotidiennes, transparentes, avec une notification « fenêtre » à 0 min, avec `timeZone: "Europe/Paris"` (fuseau de référence fixe, ADR-011, DEC-012). Les heures de 8 h et 21 h sont des heures de Paris, maintenues au changement d'heure par la `RRULE`. Les créneaux sont eux aussi écrits dans ce fuseau.
   - Le contenu (tâches du jour, fun fact, questions de bilan) est écrit par modification d'occurrence, sur l'horizon J à J+7.
   - Une occurrence dont l'heure est passée n'est jamais modifiée.
   - Pour changer d'heure, on clôt la série en cours (`UNTIL`) et on en crée une nouvelle.
