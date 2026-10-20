@@ -1,0 +1,613 @@
+# Dossier d'architecture technique (DAT)
+
+> **Version 0.1 (brouillon), 2026-10-20.** Auteur : Starck, architecte logiciel.
+> Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
+> Toutes les décisions sont au statut **Proposé**. Elles passeront au statut « Accepté » à la clôture (E17) du lot qui les met en œuvre.
+
+## Historique
+
+| Version | Date | Auteur | Origine | Nature de la modification |
+|---|---|---|---|---|
+| 0.1 | 2026-10-20 | Starck | DEM-001, DEM-002, cahier des charges v0.2 et v0.3, LOT-001 (proposé), réponses Q-DEM001-1 à 20 et compléments du commanditaire | Création. Architecture *local-first* sans serveur applicatif. Base de code TypeScript unique (PWA pour le PC, Capacitor pour le smartphone). Synchronisation par Google Drive (état fusionnable par appareil). Intégration Google Calendar par réconciliation déclarative. ADR-001 à ADR-011 proposés. Avis sur LOT-001 dans `avis-dependances-lot1.md`. |
+
+## Sommaire
+1. Contexte et exigences structurantes
+2. Vue d'ensemble (C4 niveaux 1 et 2)
+3. Choix technologiques
+4. Intégration Google (OAuth, Drive, Calendar)
+5. Traitements planifiés sans serveur
+6. Modèle de données de haut niveau
+7. Sécurité, données personnelles, observabilité, déploiement, environnements
+8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper)
+9. Arbitrages commanditaire
+10. Risques et points ouverts
+11. Index des ADR
+
+---
+
+## 1. Contexte et exigences structurantes
+
+### 1.1 Contexte
+Application personnelle de gestion d'objectifs et de tâches, avec un **utilisateur unique** (RG-018). Elle fonctionne sur un **smartphone**, usage prioritaire, et sur un **PC** dès la première version (RG-017, ENF-01). Elle est **inutilisable sans compte Google** (RG-019). Les données sont conservées dans l'**espace de stockage personnel** de l'utilisateur, a priori son Google Drive (RG-020, Q-DEM001-3 b). Conserver les données ailleurs est **exclu** (CdC §4.3). L'agenda Google **principal** reçoit :
+- les rappels de 8 h et de 21 h (RG-012 à RG-014) ;
+- les créneaux des tâches planifiées (RG-034).
+
+L'application lit aussi cet agenda, pour deux usages :
+- calculer la capacité disponible (RG-033) ;
+- détecter les créneaux déplacés (RG-037).
+
+### 1.2 Exigences structurantes
+
+| Id | Exigence | Source | Conséquence d'architecture |
+|---|---|---|---|
+| EX-01 | Smartphone et PC dès la v1 ; smartphone prioritaire | RG-017, ENF-01 | Base de code unique, interface mobile d'abord et adaptative (ADR-001) |
+| EX-02 | Données dans l'espace personnel de l'utilisateur, aucune donnée chez l'éditeur | RG-020, CdC §4.3 | Pas de base de données côté serveur. Google Drive sert de support de synchronisation (ADR-002, ADR-003). |
+| EX-03 | Modification visible sur l'autre appareil en moins d'une heure | RG-017, ENF-02 (interprétation : Q-DEM001-21) | Envoi immédiat après chaque modification. Interrogation périodique au premier plan, synchronisation à l'ouverture (§4.3). |
+| EX-04 | Hors ligne d'abord sur smartphone, en consultation et en saisie | RG-021, ENF-04 | Base locale faisant foi pour l'interface ; synchronisation asynchrone (ADR-003, ADR-010) |
+| EX-05 | En cas de conflit, la modification la plus récente l'emporte, sans perte silencieuse | RG-036, ENF-06, Q-DEM001-23 | Fusion par champ, horodatée par horloge hybride (HLC) ; journal des valeurs écartées (ADR-003, ADR-011) |
+| EX-06 | Rappels quotidiens à 8 h et 21 h, même si aucun appareil n'est allumé | RG-012, RG-013 | Rappels portés par Google Calendar (séries récurrentes), contenu précalculé (ADR-006, ADR-007) |
+| EX-07 | Créneaux dans l'agenda principal ; déplacement détecté, puis notification et proposition le soir | RG-034, RG-037 | Synchronisation incrémentale de l'agenda (*sync token*), identifiants d'événements déterministes (ADR-006) |
+| EX-08 | Perte de l'accès Google : événements conservés, aucune perte de données | RG-035, ENF-06 | Aucune suppression d'événement à la déconnexion. La perte d'accès est traitée comme une coupure de réseau (§4.1.5). |
+| EX-09 | Accès minimal au compte Google | ENF-05 | Scopes non sensibles quand c'est possible, autorisation incrémentale par fonctionnalité (ADR-004, ADR-005) |
+| EX-10 | Fun fact du matin : chacun affiché aussi souvent que les autres | DEM-002 | Permutation déterministe par cycle de 100 jours (ADR-008) |
+| EX-11 | Historique pour la vélocité et l'évolution du backlog (12 semaines) | RG-010, RG-015, RG-016 | Journal métier en ajout seul, dès le lot 1 (§6) |
+
+### 1.3 Exigences non fonctionnelles techniques (proposées)
+
+| Id | Exigence | Cible |
+|---|---|---|
+| ENF-T-01 | Démarrage à froid hors ligne sur un smartphone milieu de gamme | < 2 s jusqu'à l'affichage de la liste des tâches |
+| ENF-T-02 | Temps de réponse d'une action locale (création, saisie) | < 100 ms, réseau indifférent |
+| ENF-T-03 | Délai de propagation entre appareils actifs et connectés | ≤ 5 min (cible), ≤ 60 min (exigence EX-03) |
+| ENF-T-04 | Synchronisation à l'ouverture ou au retour du réseau | Lancée immédiatement ; aboutie en < 10 s pour 5 Mo de données |
+| ENF-T-05 | Volumétrie de dimensionnement | 5 000 tâches, 20 000 saisies de temps, 50 000 entrées de journal (≈ 5 ans), soit un état < 5 Mo non compressé |
+| ENF-T-06 | Disponibilité | Application pleinement utilisable sans réseau. Les fonctions Google dépendent de la disponibilité de Google. |
+| ENF-T-07 | Perte de données | Zéro perte silencieuse. Une modification locale n'est supprimée de l'appareil qu'après son dépôt confirmé dans Drive. |
+
+---
+
+## 2. Vue d'ensemble
+
+### 2.1 Principe directeur : *local-first*, sans serveur applicatif
+Chaque appareil porte **l'application complète** : interface, règles métier, base locale, moteur de synchronisation et client Google. Il n'existe **aucun serveur** développé ou exploité par le projet. Le seul hébergement est celui de fichiers statiques : la PWA pour le PC. Le choix est justifié dans ADR-002.
+- **Google Drive** est le support d'échange entre les appareils et la copie de référence durable.
+- **Google Calendar** est le canal de notification qui fonctionne même quand aucun appareil n'est allumé.
+
+### 2.2 C4 niveau 1 : contexte
+
+```mermaid
+flowchart TB
+    U(["Utilisateur unique<br/>(le commanditaire)"])
+    subgraph SYS["Système : application Objectifs et Tâches"]
+        APP["Application<br/>(smartphone et PC)"]
+    end
+    GID["Google Identity<br/>(OAuth 2.0)"]
+    GDR["Google Drive<br/>(espace personnel de l'utilisateur)"]
+    GCA["Google Calendar<br/>(agenda principal)"]
+    GCAPP["Application Google Agenda<br/>(notifications)"]
+    HOST["Hébergement statique<br/>(fichiers de la PWA)"]
+    STORE["Google Play (piste de test interne)<br/>ou App Store / TestFlight"]
+
+    U -- "gère objectifs, tâches, temps, bilans" --> APP
+    APP -- "authentification, autorisations" --> GID
+    APP -- "lit / écrit l'état synchronisé" --> GDR
+    APP -- "crée rappels et créneaux, lit les événements" --> GCA
+    GCA -- "notifications 8 h / 21 h et créneaux" --> GCAPP
+    GCAPP -- "notifie" --> U
+    HOST -- "distribue la PWA (PC)" --> APP
+    STORE -- "distribue l'application mobile" --> APP
+```
+
+### 2.3 C4 niveau 2 : conteneurs
+
+```mermaid
+flowchart TB
+    subgraph PHONE["Smartphone : application Capacitor (Android ; iOS selon arbitrage A1)"]
+        UI1["Interface<br/>React + Ionic"]
+        CORE1["Noyau applicatif TS<br/>domaine, cas d'usage,<br/>moteur de synchro,<br/>réconciliateur Calendar"]
+        DB1[("Base locale<br/>SQLite")]
+        NAT1["Modules natifs<br/>auth Google, notifications locales,<br/>tâche d'arrière-plan"]
+        UI1 --> CORE1 --> DB1
+        CORE1 --> NAT1
+    end
+    subgraph PC["PC : PWA installable (Chrome / Edge)"]
+        UI2["Interface<br/>React + Ionic"]
+        CORE2["Noyau applicatif TS<br/>(même code)"]
+        DB2[("Base locale<br/>IndexedDB")]
+        SW["Service worker<br/>(cache de l'application)"]
+        UI2 --> CORE2 --> DB2
+        SW -.-> UI2
+    end
+    subgraph GOOGLE["Services Google (compte de l'utilisateur)"]
+        GID["Google Identity<br/>OAuth 2.0"]
+        DRIVE[("Drive : dossier « Objectifs et Tâches »<br/>un fichier d'état par appareil")]
+        CAL[("Calendar : agenda principal<br/>séries de rappels, créneaux")]
+    end
+    HOST["Hébergement statique<br/>(HTTPS, aucune donnée)"]
+
+    CORE1 -- "REST Drive v3" --> DRIVE
+    CORE2 -- "REST Drive v3" --> DRIVE
+    CORE1 -- "REST Calendar v3" --> CAL
+    CORE2 -- "REST Calendar v3" --> CAL
+    NAT1 -- "jeton d'accès" --> GID
+    CORE2 -- "Google Identity Services (web)" --> GID
+    HOST -- "HTTPS" --> SW
+```
+
+### 2.4 Découpage logique du noyau (architecture hexagonale, ADR-010)
+
+| Couche | Contenu | Dépendances autorisées |
+|---|---|---|
+| `domaine` | Entités, valeurs (durée par pas de 30 min, date de journée), règles RG : priorisation, planification, reste à faire, vélocité, backlog, rotation des fun facts | Aucune (TypeScript pur, sans entrée-sortie) |
+| `application` | Cas d'usage (créer une tâche, saisir du temps, proposer un planning…), **ports** : `DepotLocal`, `TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Horloge`, `Notifieur`, `Planificateur` | `domaine` |
+| `synchro` | Moteur CRDT (fusion par champ, horloge HLC), cycle de synchronisation, journal des valeurs écartées | `domaine`, ports |
+| `infrastructure` | Adaptateurs : IndexedDB (Dexie), SQLite, Drive REST, Calendar REST, GIS web, authentification native, notifications locales | `application` (implémente les ports) |
+| `ui` | Écrans React et Ionic, état d'affichage | `application` |
+
+---
+
+## 3. Choix technologiques
+
+Section de référence pour Anthony (`conventions.md`). Les versions sont celles des branches stables en cours au démarrage du lot 1 ; Anthony les fige dans `package.json`.
+
+### 3.1 Plateforme : options étudiées (détail dans ADR-001)
+
+| Option | Avantages | Inconvénients | Verdict |
+|---|---|---|---|
+| A. PWA seule (smartphone et PC) | Un seul livrable, aucun store, coût nul | Sur iOS : pas de notification locale programmée, stockage pouvant être purgé, connexion Google par fenêtre surgissante fragile en mode installé. Pas de tâche d'arrière-plan fiable. Jeton d'accès d'une heure sans renouvellement silencieux. | Rejetée pour le smartphone, retenue pour le PC |
+| **B. Code web unique : PWA (PC) et Capacitor (smartphone)** | Un seul code TypeScript et React. Sur smartphone : modules natifs (connexion Google native, notifications locales, arrière-plan, SQLite). Écosystème éprouvé. | Une application mobile à construire et à distribuer (store ou installation directe) | **Recommandée** |
+| C. Flutter (mobile, bureau, web) | Une base de code, bonnes performances, bon hors ligne | Dart moins répandu. Outillage Cucumber en Gherkin français peu mature. Cible web moins solide. | Rejetée |
+| D. React Native et Expo (avec react-native-web pour le PC) | Natif, une base de code | Rendu web secondaire pour le PC, double paradigme. Gain faible par rapport à B pour une application de formulaires et de listes. | Écartée (alternative crédible) |
+| E. Natif pur (Kotlin ou Swift) et web séparé | Intégration système maximale | Deux ou trois bases de code : disproportionné pour un utilisateur unique | Rejetée |
+| F. Application de bureau (Tauri ou Electron) pour le PC | Jeton de longue durée dans le trousseau du système | Un livrable et une chaîne de signature supplémentaires | Option d'évolution si la PWA est jugée insuffisante sur PC (§4.1) |
+
+### 3.2 Pile retenue
+
+| Domaine | Choix | Justification | Alternatives |
+|---|---|---|---|
+| Langage | **TypeScript** en mode `strict` | Un langage pour tout le code, typage fort, écosystème Cucumber et tests | — |
+| Exécution et paquets | Node.js LTS, **pnpm** | Standard, reproductible (fichier de verrouillage) | npm |
+| Interface | **React** et **Ionic React** | Ionic fournit des composants mobiles accessibles, adaptatifs sur PC et intégrés à Capacitor | MUI, shadcn/ui |
+| Construction | **Vite** et **vite-plugin-pwa** (Workbox) | Rapide, PWA et service worker inclus | — |
+| Coque mobile | **Capacitor** (Android ; iOS selon l'arbitrage A1) | Réutilise le code web, accès aux modules natifs | Expo (ADR-001) |
+| Base locale (web) | **IndexedDB via Dexie** | Standard, transactionnel, testable avec `fake-indexeddb` | — |
+| Base locale (mobile) | **SQLite** (`@capacitor-community/sqlite`) | Le stockage web d'une WebView iOS peut être purgé par le système ; SQLite est durable | IndexedDB de la WebView (acceptable sur Android seulement) |
+| Gestion d'état de l'interface | **Zustand** | Léger, sans code répétitif | Redux Toolkit |
+| Dates et fuseaux | **date-fns** et **@date-fns/tz** | Fuseaux explicites, fonctions pures | Luxon, Temporal (prothèse) |
+| Validation des fichiers Drive et migrations | **Zod** | Schémas versionnés, validation à la lecture | — |
+| Appels Google | **REST direct** (`fetch`) derrière les ports, sans la bibliothèque `gapi` | Léger, maîtrisé, simulable dans les tests | `googleapis` (Node uniquement) |
+| Authentification (web) | **Google Identity Services**, modèle « jeton » | Pas de secret ni de serveur ; autorisation incrémentale | Flux avec code et serveur (rejeté, ADR-002) |
+| Authentification (Android) | Module Capacitor sur **Credential Manager** et **AuthorizationClient** (Google Play services) | Jetons gérés par le système, renouvellement silencieux | — |
+| Notifications locales (mobile) | `@capacitor/local-notifications` | Programmées à l'avance, sans réseau | — |
+| Arrière-plan (mobile, lot ultérieur) | `@capacitor/background-runner` (WorkManager sur Android) | Synchronisation périodique sans ouvrir l'application | — |
+| Graphiques (lot ultérieur) | Chart.js | Léger, accessible | Recharts |
+| Tests unitaires | **Vitest**, **@testing-library/react**, `fake-indexeddb` | Rapide, natif Vite, compatible TypeScript | Jest |
+| Tests métiers | **@cucumber/cucumber** (cucumber-js), `# language: fr` | Gherkin français natif, *step definitions* en TypeScript | — |
+| Tests de bout en bout | **Playwright** (et `@axe-core/playwright` pour l'accessibilité) | Parcours UI sur la PWA, mode hors ligne simulable | Cypress |
+| Simulation HTTP | **MSW** | Rejoue les réponses Google dans les tests d'adaptateurs | nock |
+| Qualité | ESLint (typescript-eslint, configuration *strict*), Prettier, `tsc --noEmit`, Semgrep (sécurité), audit des dépendances | Lint et analyse statique « au vert » (E12) | — |
+| Intégration continue | **GitHub Actions** (si le dépôt est sur GitHub ; à confirmer) | Gratuit pour un petit projet, construction Android incluse | GitLab CI |
+
+### 3.3 Outillage de tests : organisation (ADR-009)
+- **Unitaires (Vitest)** : `domaine`, `synchro` et cas d'usage, avec des adaptateurs en mémoire. Couverture minimale proposée : 90 % des lignes pour `domaine` et `synchro`, 80 % pour l'ensemble. Anthony fixe les seuils définitifs.
+- **Cucumber (Gherkin français)** :
+  - les fichiers `.feature` sont dans `tests/features/` (Pepper) ;
+  - les *step definitions* sont en TypeScript (emplacement fixé par Anthony, par exemple `tests/steps/`).
+
+  Les scénarios s'exécutent sur la couche `application`, avec des **simulateurs en mémoire** de Drive, de Calendar, de l'horloge et du réseau. Un scénario peut ainsi instancier **deux appareils** qui partagent le même faux Drive, ce qui permet de tester en Gherkin la synchronisation, les conflits, le hors ligne et la perte d'accès Google. Ces scénarios sont déterministes et sans réseau, donc exécutables en intégration continue. Les tags `@US-xxx`, `@RG-xxx` et `@LOT-xxx` servent au filtrage.
+- **Adaptateurs Google** : tests de contrat avec MSW, sur des réponses enregistrées conformes à la documentation, y compris les erreurs 401, 403, 404, 409, 410, 429 et 5xx.
+- **Bout en bout (Playwright)** : quelques parcours sur la PWA, avec un faux Google injecté. Ils couvrent le démarrage, le hors ligne et l'accessibilité.
+- **Recette sur appareil réel** : un compte Google de recette dédié (§7.4).
+
+---
+
+## 4. Intégration Google
+
+### 4.1 OAuth 2.0, scopes et jetons (ADR-004, ADR-005)
+
+#### 4.1.1 Scopes minimaux, demandés au fil des fonctionnalités (autorisation incrémentale)
+
+| Scope | Classification Google | Usage | Demandé à partir de |
+|---|---|---|---|
+| `openid`, `email` | Non sensible | Identifier le compte (claim `sub`), vérifier que les deux appareils utilisent le même compte | Lot 1 |
+| `https://www.googleapis.com/auth/drive.file` | **Non sensible** | Créer et lire uniquement les fichiers créés par l'application, dans un dossier visible de l'utilisateur | Lot 1 |
+| `https://www.googleapis.com/auth/calendar.events` (ou `calendar.events.owned`, plus étroit, si sa classification est identique ; à vérifier lors de la mise au point technique) | **Sensible** | Créer et modifier les rappels et les créneaux dans l'agenda principal ; lire les événements (capacité, créneaux déplacés) | Premier lot comportant une fonction d'agenda |
+
+Scopes **exclus** :
+- `drive` et `drive.readonly`, **restreints** : ils imposent un audit de sécurité payant ;
+- `calendar`, accès complet aux agendas, non nécessaire.
+
+**Option `drive.appdata`** : dossier caché, propre à l'application, également non sensible. L'utilisateur ne voit pas ses données et ne peut que les supprimer en bloc. Pour respecter « mes données dans mon espace », nous recommandons le dossier **visible** (`drive.file`) : l'utilisateur voit et télécharge ses fichiers. C'est l'arbitrage A6.
+
+#### 4.1.2 Obtention et stockage des jetons
+
+| Appareil | Mécanisme | Stockage | Renouvellement |
+|---|---|---|---|
+| Android (Capacitor) | Credential Manager pour l'identité, AuthorizationClient (Google Play services) pour les scopes | Jetons gérés par Google Play services. L'application ne conserve que le jeton d'accès **en mémoire**. | Silencieux tant que l'autorisation est valide (y compris en arrière-plan, à confirmer lors de la mise au point technique) |
+| iOS (si A1) | SDK GoogleSignIn | Jeton de rafraîchissement conservé par le SDK dans le **trousseau** iOS | Silencieux |
+| PC (PWA) | Google Identity Services, modèle « jeton » | Jeton d'accès (1 h) **en mémoire uniquement**, jamais dans `localStorage` ni dans IndexedDB | Nouvelle demande au premier usage suivant l'expiration. Elle est silencieuse si la session Google du navigateur est active ; sinon, une fenêtre de reconnexion s'ouvre au clic de l'utilisateur. |
+
+Principes :
+- l'application n'utilise **aucun secret client** : tous ses clients OAuth sont publics ;
+- notre code ne manipule **aucun jeton de rafraîchissement** ;
+- les clients OAuth sont restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines JavaScript autorisées sur le web.
+
+**Limite connue sur PC** : sans serveur, une PWA ne peut pas renouveler son jeton en arrière-plan. Les données restent consultables et modifiables localement ; la synchronisation reprend au premier geste de l'utilisateur. Si ce comportement gêne à l'usage, deux évolutions sont possibles :
+- (a) une application de bureau Tauri, avec un client OAuth « bureau » (PKCE) et un jeton conservé dans le trousseau du système ;
+- (b) une petite fonction sans état qui échange et renouvelle le jeton (voir A4).
+
+#### 4.1.3 Statut de publication et vérification par Google
+Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
+- **Lot 1** (`openid`, `email`, `drive.file`) : tous les scopes sont non sensibles. L'application est publiée « en production » sans vérification et sans écran d'avertissement, à condition de ne pas afficher de logo, ce qui imposerait une vérification de la marque.
+- **À partir de l'agenda** (`calendar.events`, scope sensible), trois options :
+
+| Option | Effet | Coût et délai |
+|---|---|---|
+| **Production, non vérifiée (recommandée)** | Écran « Google n'a pas validé cette application » à chaque consentement, contourné par « Paramètres avancés ». Plafond de 100 nouveaux utilisateurs sur la durée de vie du projet, sans effet pour un utilisateur unique. Les jetons n'expirent pas au bout de 7 jours. | Gratuit, immédiat |
+| Mode « Test » | Pas de vérification, mais les autorisations **expirent au bout de 7 jours** : reconnexion chaque semaine, synchronisation d'arrière-plan cassée | Gratuit, mais inutilisable au quotidien |
+| Vérification Google des scopes sensibles | Plus d'écran d'avertissement | Gratuit, mais il faut un domaine vérifié, une page d'accueil, une politique de confidentialité et une vidéo de démonstration. Délai de quelques jours à plusieurs semaines. Domaine : environ 10 à 15 € par an. |
+| Compte Google Workspace : application « interne » | Ni vérification ni avertissement | Seulement si le compte du commanditaire est un compte Workspace |
+
+#### 4.1.4 Identité et appareils
+- Le compte est identifié par la claim `sub`. Si un autre compte se connecte sur un appareil, la base locale du compte précédent est d'abord synchronisée, puis effacée. Il n'y a jamais de mélange entre comptes.
+- Chaque installation reçoit un `appareilId` (UUID) au premier lancement.
+
+#### 4.1.5 Perte d'accès (RG-035, Q-DEM001-22)
+- Une erreur `401` persistante, `invalid_grant` ou une révocation fait passer l'application à l'état « accès Google perdu ».
+- L'application reste utilisable comme hors ligne (recommandation Q-22.2 c). Les modifications s'accumulent localement, puis sont déposées dans Drive après la reconnexion.
+- L'application **ne supprime jamais** d'événement Google à la suite d'une déconnexion ou d'une révocation.
+- **Déconnexion volontaire** (Q-22.3 a) : l'application dépose d'abord ce qui est en attente, puis efface la base locale. Si le dépôt échoue, elle demande une confirmation explicite qui précise le nombre de modifications perdues.
+- L'action « Retirer l'accès » appelle le point de révocation de Google, puis applique la déconnexion.
+
+### 4.2 Google Drive : stockage et format (ADR-003)
+
+**Arborescence** dans le dossier visible `Objectifs et Tâches/` (le nom est à valider par Steeve) :
+```
+Objectifs et Tâches/
+  manifeste.json                 # version de schéma, date de création
+  appareils/
+    <appareilId>.etat.json.gz    # état complet fusionnable, écrit par CET appareil uniquement
+  LISEZ-MOI.txt                  # explique à l'utilisateur de ne pas modifier ces fichiers
+```
+
+- **Un seul écrivain par fichier** : chaque appareil n'écrit que son propre fichier. Il n'y a donc **aucun conflit d'écriture dans Drive**, et l'absence de verrou optimiste fiable dans Drive v3 devient sans conséquence.
+- **Contenu** : l'état complet connu de l'appareil. Il s'agit d'un **CRDT à base d'état**, une table « (type, id, champ) → (valeur, horodatage HLC, appareil) », complétée par un journal métier en ajout seul et par les pierres tombales des suppressions.
+- **Fusion** : chaque appareil lit les fichiers des autres et en fait la **jointure**. Pour chaque champ, la valeur ayant l'horodatage HLC le plus grand l'emporte ; les égalités sont départagées par l'`appareilId`. Le journal est fusionné par union. La fusion est commutative, associative et idempotente : l'ordre et la répétition des synchronisations ne changent pas le résultat.
+- **Granularité** : le champ, conformément à la recommandation Q-23 a. Si le commanditaire choisit l'option b, élément par élément, on ajuste le regroupement des champs sans changer de mécanisme.
+- **Valeurs écartées (ENF-06, Q-23.2)** : quand une valeur distante l'emporte sur une valeur locale **pas encore déposée**, la valeur perdue est consignée dans un journal « valeurs écartées ». Ce journal est synchronisé et affiché à l'utilisateur.
+- **Suppression concurrente d'une modification** : un élément supprimé reste supprimé, même si l'un de ses champs a été modifié plus tard sur l'autre appareil. La modification écartée est consignée comme valeur écartée. L'utilisateur est ainsi informé, mais l'élément n'est jamais ressuscité implicitement.
+- **Invariants inter-champs après fusion** : une fusion champ par champ peut produire un état que chaque appareil, isolément, aurait refusé. Exemples :
+  - une tâche déclarée terminée sur un appareil, alors qu'une de ses sous-tâches est rouverte sur l'autre (Q-25.6) ;
+  - deux déplacements croisés qui créent un cycle, ou un deuxième niveau de sous-objectifs (Q-24).
+
+  Après chaque fusion, une **passe de réparation déterministe** du domaine s'exécute :
+  - les cycles et les profondeurs illégales sont corrigés en annulant le déplacement le plus ancien, qui est consigné comme valeur écartée ;
+  - les incohérences d'état ne sont pas corrigées automatiquement : elles sont **signalées** à l'utilisateur, par exemple « tâche terminée avec une sous-tâche à faire ».
+
+  Les règles exactes de réparation sont à fixer par Pepper dans les US concernées (voir F12).
+- **Taille** : moins de 5 Mo non compressé à 5 ans d'usage (ENF-T-05), soit environ 0,5 à 1 Mo compressé. Le fichier est réécrit en entier à chaque dépôt, ce qui est acceptable. Le journal pourra être partitionné par année si nécessaire.
+- **Versions de schéma** : chaque fichier porte un `schemaVersion`.
+  - Un appareil lit les schémas antérieurs et les migre (Zod).
+  - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **lecture seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile.
+- **Sauvegarde** : Drive conserve l'historique des révisions de chaque fichier. Chaque appareil possède en outre une copie complète. Si les fichiers sont supprimés ou modifiés hors de l'application (Q-22.4), l'appareil le détecte (fichier absent ou invalide), avertit l'utilisateur et propose de **réécrire son état local**. C'est faisable sans coût particulier.
+- **Appareils obsolètes** : le fichier d'un appareil inactif depuis plus de 90 jours, par exemple une ancienne installation, est fusionné puis archivé. Les pierres tombales sont conservées en v1, car leur volume est négligeable.
+
+### 4.3 Cycle de synchronisation des données
+
+```mermaid
+sequenceDiagram
+    participant UI as Interface
+    participant L as Base locale
+    participant S as Moteur de synchro
+    participant D as Google Drive
+    UI->>L: modification (horodatage HLC)
+    L-->>UI: affichage immédiat
+    L->>S: signal « état modifié » (temporisation 5 s)
+    S->>D: changes.list depuis le dernier pageToken
+    D-->>S: fichiers des autres appareils modifiés
+    S->>D: téléchargement des fichiers modifiés
+    S->>L: fusion (jointure CRDT), journal des valeurs écartées
+    S->>D: dépôt de appareils/<moi>.etat.json.gz
+    S->>L: marque « déposé jusqu'à HLC x »
+```
+
+Déclencheurs :
+- démarrage et retour au premier plan : synchronisation **immédiate** (recommandation Q-21.2) ;
+- modification locale : après une temporisation de 5 s ;
+- retour du réseau ou du jeton ;
+- au premier plan : toutes les **2 minutes** ;
+- en arrière-plan sur Android (lot ultérieur) : toutes les 30 à 60 minutes, via WorkManager ;
+- sur demande (« Synchroniser maintenant »).
+
+**Respect du délai d'une heure** : il est garanti dès que l'appareil destinataire est au premier plan ou qu'il s'ouvre. Il ne peut pas l'être quand cet appareil est éteint, ce qui serait vrai de toute architecture (voir §8, F1).
+
+### 4.4 Google Calendar (ADR-006)
+
+#### 4.4.1 Événements gérés par l'application
+
+| Type | Forme | Identifiant | Marquage |
+|---|---|---|---|
+| Rappel du matin | **Série récurrente quotidienne** à 8 h dans le fuseau de l'agenda, courte (15 min). Transparente : elle n'occupe pas l'agenda. Notification « fenêtre » à 0 min. Le contenu du jour est porté par une **modification d'occurrence**. | Déterministe : `hash(type, version de série)`, en base32hex | `extendedProperties.private` : `{app: "objectifs-taches", type: "rappel-matin"}` |
+| Rappel du soir | Idem, à 21 h | Idem | `type: "rappel-soir"` |
+| Créneau de tâche | Événement simple, opaque (occupé), à l'horaire suggéré | Déterministe : `hash(tacheId, n° de génération du créneau)` | `{type: "creneau", tacheId}` |
+
+Justifications :
+- **Série récurrente** : les rappels se déclenchent **même si aucun appareil n'a été ouvert depuis des jours** (EX-06). Les occurrences sans contenu calculé affichent un texte générique qui invite à ouvrir l'application. Pour changer d'heure (RG-012, « modifiable »), on clôt la série en cours (`UNTIL`) et on en crée une nouvelle ; les occurrences passées sont préservées.
+- **Identifiants déterministes** : la création est **idempotente** même si deux appareils l'exécutent en même temps. Un code `409` signifie que l'événement existe déjà : l'application le relit et le met à jour. Les nouvelles tentatives sont donc sans risque.
+- **Marquage privé** : les événements de l'application sont distingués des événements de l'utilisateur. Ils sont exclus du calcul de capacité (recommandation Q-34.3).
+
+#### 4.4.2 Réconciliation déclarative (et non file d'ordres)
+Chaque appareil calcule, à partir de l'état fusionné, l'**état souhaité** des événements de l'application sur un horizon glissant (J à J+7). Il le compare à l'**état observé** dans l'agenda, puis applique les écarts : création, mise à jour ou clôture de série.
+- Deux appareils qui réconcilient convergent vers le même résultat, car le calcul est déterministe.
+- Un appareil resté longtemps hors ligne rattrape tout en une passe.
+- Une occurrence de rappel dont l'heure est **passée** n'est jamais modifiée (RG-012 ; recommandation Q-40.2).
+
+#### 4.4.3 Détection d'un créneau déplacé ou supprimé (RG-037, Q-DEM001-33)
+- Chaque appareil fait une **synchronisation incrémentale** de l'agenda principal : `events.list` avec `syncToken`.
+  - Le `syncToken` est conservé localement, par appareil.
+  - Une réponse `410 Gone` déclenche une resynchronisation complète sur l'horizon.
+  - Le paramètre `syncToken` est incompatible avec le filtre `privateExtendedProperty` : le filtrage se fait donc côté client.
+- Pour chaque créneau, l'état synchronisé conserve la **dernière position écrite par l'application** (date, début, fin).
+  - Si la position observée diffère de la position écrite, c'est **l'utilisateur** qui a déplacé le créneau. L'application crée alors un enregistrement `AlerteCreneau` (synchronisé, donc visible sur les deux appareils) et **n'écrase pas** le déplacement.
+  - Un statut `cancelled` signifie que l'utilisateur a supprimé le créneau. L'application crée la même alerte et ne recrée pas le créneau.
+- **Proposition de replanification** : elle est calculée à l'heure du rappel du soir et présentée à l'ouverture suivante (Q-33.1 a). Elle n'est appliquée qu'après validation (RG-037).
+- **Notifications push de Calendar** (`events.watch`) : **non retenues**. Elles exigent un point de terminaison HTTPS public, donc un serveur (ADR-002).
+
+#### 4.4.4 Lecture des événements pour la capacité (RG-033)
+- L'application interroge `events.list` sur la fenêtre de planification, avec `singleEvents=true`.
+- Elle ne retient que les **intervalles occupés** : événements avec horaire, opaques, non refusés, à l'exclusion des événements de l'application (recommandation Q-34.2 a).
+- **Minimisation** : les titres, descriptions et participants des événements de l'utilisateur ne sont **jamais** écrits dans Drive ni dans les journaux. Seuls les intervalles sont conservés, en cache local.
+
+#### 4.4.5 Quotas et reprise sur erreur
+- **Volumétrie attendue** : quelques dizaines à quelques centaines d'appels par jour, très loin des quotas de Calendar et de Drive (par projet et par utilisateur et par minute).
+- **Reprise** :
+  - erreurs `429`, `403 rateLimitExceeded` / `userRateLimitExceeded` et `5xx` : nouvelle tentative avec attente exponentielle et gigue (1 s, 2 s, 4 s… jusqu'à 5 min) ;
+  - `401` : un renouvellement de jeton, puis passage à l'état « accès perdu » ;
+  - `404` sur un événement : considéré comme supprimé ;
+  - `409` : relecture puis mise à jour ;
+  - `412` : relecture puis nouvelle réconciliation.
+- **Idempotence** : grâce aux identifiants déterministes et à la réconciliation, toute opération peut être rejouée sans doublon.
+- **Coupure en cours de passe** : la passe reprend à la synchronisation suivante, sans état intermédiaire à restaurer.
+
+---
+
+## 5. Traitements planifiés sans serveur (ADR-007)
+
+Principe : **aucun traitement ne dépend d'un horaire d'exécution côté application**. Chaque traitement « planifié » est :
+- soit **délégué à Google Calendar**, qui se déclenche seul ;
+- soit **une fonction déterministe et idempotente de l'état et de la date**, recalculée par le premier appareil actif, que l'on appelle « rattrapage ».
+
+| Traitement | Qui ? | Quand ? | Si aucun appareil n'est ouvert |
+|---|---|---|---|
+| Notification 8 h et 21 h | **Google Calendar** (série récurrente) | À l'heure exacte | Elle se déclenche quand même. Le contenu est celui calculé lors de la dernière réconciliation, sinon un texte générique. |
+| Contenu du rappel du matin de J (tâches du jour et fun fact) | Tout appareil, lors de la réconciliation | À chaque synchronisation avant 8 h le jour J ; précalculé jusqu'à J+7 | Le contenu précalculé inclut la **projection** du report automatique : une tâche non terminée la veille figure le lendemain. Il reste juste si rien n'a changé. |
+| Contenu du rappel du soir de J (temps passé, reste à faire, 2 questions de bilan) | Tout appareil | À chaque saisie de temps avant 21 h | L'occurrence affiche les questions et invite à saisir le temps (recommandation Q-40.1 a) |
+| Report automatique des tâches non terminées (RG-032) | Premier appareil actif du jour | Au démarrage ou à la première synchronisation après minuit | Le report est **appliqué à la première ouverture** : la tâche est replanifiée et le créneau déplacé dans l'agenda. Entre-temps, le rappel du matin le reflète déjà par projection. |
+| Détection des créneaux déplacés (RG-037) | Tout appareil actif ; arrière-plan Android dans un lot ultérieur | À chaque synchronisation | Détection différée à la prochaine ouverture, ou au prochain réveil d'arrière-plan sur Android |
+| Proposition de replanification du soir (RG-037) | Tout appareil | Calculée à l'heure du rappel du soir, présentée à l'ouverture suivante | Présentée à l'ouverture suivante |
+| Instantanés hebdomadaires (backlog, vélocité) | **Aucun** : ils sont recalculés à partir du journal métier | — | Sans objet |
+| Notification de secours de l'application en cas de perte de l'accès à l'agenda (Q-38 b) | Smartphone uniquement : notifications locales **programmées à l'avance** (J à J+7), annulées tant que l'agenda est accessible | À l'heure du rappel | Elle fonctionne hors ligne. Elle n'est pas possible sur la PWA du PC. |
+
+**Idempotence entre appareils** : si deux appareils exécutent le même rattrapage, ils écrivent les mêmes valeurs. La fusion par champ les rend équivalentes, et les identifiants d'événements déterministes empêchent les doublons.
+
+**Alternative écartée** : un serveur planifié, sous forme de fonction cron sans serveur, qui détiendrait un jeton de rafraîchissement. Il apporterait la détection en temps réel, l'application du report à minuit sans appareil actif et l'envoi de notifications push. En contrepartie, il faudrait conserver les jetons et traiter des données chez l'éditeur, ce qui va contre l'exclusion du CdC §4.3, sans compter le coût, l'exploitation et la sécurité. Le gain fonctionnel est faible : RG-012 interdit déjà de mettre à jour le rappel après son heure, et RG-037 prévoit une proposition le soir. Voir l'arbitrage A4.
+
+---
+
+## 6. Modèle de données de haut niveau
+
+### 6.1 Entités
+
+```mermaid
+erDiagram
+    OBJECTIF ||--o{ OBJECTIF : "sous-objectifs (parentId)"
+    OBJECTIF ||--o{ LIEN_TACHE_OBJECTIF : regroupe
+    TACHE ||--o{ LIEN_TACHE_OBJECTIF : contribue
+    TACHE ||--o{ TACHE : "sous-tâches (parentId)"
+    TACHE ||--o| PLANIFICATION : "planifiée sur (0..1 jour)"
+    PLANIFICATION ||--o| CRENEAU_AGENDA : "matérialisée par"
+    TACHE ||--o{ SAISIE_TEMPS : "temps passé par jour"
+    TACHE ||--o{ EVENEMENT_JOURNAL : historise
+    CRENEAU_AGENDA ||--o{ ALERTE_CRENEAU : "déplacement détecté"
+    PARAMETRES ||--|| CAPACITE_HEBDO : definit
+    PARAMETRES ||--o{ EXCEPTION_CAPACITE : definit
+    PARAMETRES ||--|| ROTATION_FUN_FACTS : "graine et origine"
+    FUN_FACT }o--|| ROTATION_FUN_FACTS : "référentiel embarqué"
+    BILAN_SOIR }o--|| PARAMETRES : "un par jour"
+```
+
+| Entité | Attributs principaux | Clé de fusion et règle | RG |
+|---|---|---|---|
+| `Objectif` | id, titre, description, délai?, importance, parentId?, ordreManuel?, créé le, supprimé (pierre tombale) | Par champ, la plus récente l'emporte | RG-001, 002, 022, 030 |
+| `Tache` | id, titre, description, délai, **estimationInitiale** (minutes, multiple de 30), resteAFaireCorrigé? et date de correction, état (`A_FAIRE`, `TERMINEE`, `ABANDONNEE`), date de fin?, parentId?, ordreManuel? | Par champ | RG-003, 009, 023, 026 à 029 |
+| `LienTacheObjectif` | id = (tacheId, objectifId), actif | Par lien : ensemble « dernier écrit gagnant », ce qui couvre la relation **n-n** | RG-001 |
+| `Planification` | tacheId, jour, horaire suggéré (début, durée), origine (`PROPOSITION`, `MANUEL`, `REPORT`, `REPLANIF`) | Par champ (une seule journée à la fois, RG-006) | RG-006, 031, 032, 034 |
+| `CreneauAgenda` | tacheId, eventId, génération, dernière position écrite (jour, début, fin), état observé | Par champ | RG-034, 037 |
+| `AlerteCreneau` | id, eventId, tacheId, ancienne et nouvelle position, type (`DEPLACE`, `SUPPRIME`), statut (`A_TRAITER`, `PROPOSEE`, `VALIDEE`, `IGNOREE`) | Par champ | RG-037 |
+| `SaisieTemps` | id = (tacheId, jour), durée | Par clé : le total du jour remplace la saisie précédente (recommandation Q-31.4 a) | RG-008 |
+| `CapaciteHebdo` | durée par jour de la semaine ; plages de travail (si Q-32 a) | Par champ | RG-011 |
+| `ExceptionCapacite` | id = date, durée | Par clé | RG-011 |
+| `Parametres` | heure du rappel du matin (08:00), heure du rappel du soir (21:00), fuseau de référence, version des séries de rappels | Par champ | RG-012, 013 |
+| `EvenementJournal` | id (UUID), horodatage HLC, date de journée, type (`TACHE_CREEE`, `TERMINEE`, `ROUVERTE`, `ABANDONNEE`, `REPRISE`, `RAF_CORRIGE`, `ESTIMATION_MODIFIEE`, `PLANIFIEE`, `DEPLANIFIEE`, `RATTACHEE`, `DETACHEE`…), tacheId, valeurs utiles | **Ajout seul, fusion par union** | RG-010, 015, 016 |
+| `BilanSoir` | id = date, ce qui s'est bien passé, ce que j'aurais fait autrement | Par champ | DEM-002 |
+| `RotationFunFacts` | graine (générée une fois), date d'origine, version du référentiel | Par champ (en pratique, écrit une seule fois) | DEM-002 |
+| `FunFact` | id (1 à 100), texte, domaine, source | **Référentiel embarqué** dans l'application (fichier JSON versionné), non synchronisé | DEM-002 |
+| `ValeurEcartee` | entité, champ, valeur écartée, valeur retenue, appareils, date | Ajout seul | ENF-06, RG-036 |
+| `Appareil` | appareilId, libellé, plateforme, dernier dépôt | Par champ | — |
+
+**Données locales non synchronisées** :
+- `syncToken` de l'agenda et `pageToken` de Drive ;
+- cache des intervalles occupés ;
+- file des appels Google en reprise ;
+- journaux techniques ;
+- marqueur « déposé jusqu'à ».
+
+### 6.2 Données dérivées (calculées, jamais stockées)
+- **Atteinte d'un objectif** (RG-025, Q-26) : calculée à partir des tâches, des sous-objectifs et des liens.
+- **Reste à faire** (RG-009) : estimation initiale moins temps passé, ou valeur corrigée moins le temps passé depuis la correction (recommandation Q-31.1 a).
+- **Estimation d'une tâche parente** : somme des estimations de ses sous-tâches (recommandation Q-25.3 a).
+- **Ordre de priorité proposé** (RG-005) et **planning proposé** (RG-031).
+- **Vélocité hebdomadaire** (RG-010) : calculée à partir des événements `TERMINEE` et `ROUVERTE` du journal et des estimations initiales.
+- **Évolution du backlog sur 12 semaines** (RG-015) : rejouée à partir du journal (planifications, restes à faire, états) à la fin de chaque semaine.
+- **Fun fact du jour** (ADR-008).
+
+**Conséquence pour le lot 1** : le journal doit être alimenté **dès la première tâche créée**. Sinon, l'historique de vélocité et de backlog des premières semaines est perdu de façon irréversible.
+
+### 6.3 Rotation équitable des fun facts (DEM-002, ADR-008)
+- Soit `n` le nombre de jours entre la date d'origine et J, `k = n div 100` le numéro de cycle et `i = n mod 100` le rang dans le cycle. Le fun fact de J est `permutation(graine, k)[i]`, où la permutation est un mélange de Fisher-Yates initialisé par `(graine, k)`.
+- Ce mode de calcul :
+  - est **aléatoire** pour l'utilisateur ;
+  - est **strictement équitable** : chaque fun fact est affiché une fois par cycle de 100 jours, et l'écart entre deux fun facts ne dépasse jamais un affichage ;
+  - est **sans état partagé à mettre à jour** : les deux appareils, et le rappel précalculé, trouvent le même fun fact pour le même jour sans se coordonner.
+- Pour éviter qu'un même fun fact apparaisse deux jours de suite à la jonction de deux cycles, le premier élément du nouveau cycle est échangé avec un autre s'il est identique au dernier élément du cycle précédent.
+- Un changement du référentiel, par ajout ou remplacement de faits, ouvre un nouveau cycle.
+
+### 6.4 Temps et horloges (ADR-011)
+- **Horloge hybride logique (HLC)** pour départager les modifications : `max(heure physique corrigée, dernier HLC + 1)`, augmentée d'un compteur et de l'`appareilId`. La « plus récente » au sens de RG-036 est celle dont l'HLC est le plus grand. Il approxime l'heure murale tout en respectant la causalité.
+- **Correction de la dérive d'horloge** : à chaque échange avec Google, l'appareil mesure l'écart entre son horloge et l'en-tête HTTP `Date` des réponses de Google. Il applique cet écart, lissé, à son « heure physique corrigée ». Hors ligne, il utilise le dernier écart connu. Deux appareils dont les horloges diffèrent de plusieurs minutes horodatent ainsi sur une base commune, à environ une seconde près. Une valeur reçue datée de plus de 24 h dans le futur déclenche un avertissement.
+- **Journée de référence** : nous recommandons le **fuseau de l'agenda Google** pour la journée, les rappels et les créneaux. Ce point est en tension avec RG-008, « heure locale de l'appareil » (voir §8, F3).
+
+---
+
+## 7. Sécurité, données personnelles, observabilité, déploiement, environnements
+
+### 7.1 Sécurité
+- **Surface d'attaque** : il n'y a aucun serveur. Les seuls flux sortants vont vers les API Google, en HTTPS.
+- **Jetons** :
+  - aucun secret ni jeton de rafraîchissement dans notre code ;
+  - jetons d'accès conservés en mémoire ;
+  - aucun jeton dans les journaux ;
+  - clients OAuth restreints (paquet et SHA-1 sur Android, origines autorisées sur le web).
+- **Web (OWASP)** :
+  - CSP stricte, sans `unsafe-inline` ni `unsafe-eval`, avec pour seules origines autorisées `accounts.google.com` et `*.googleapis.com` ;
+  - aucune bibliothèque tierce chargée depuis un CDN ;
+  - aucun `dangerouslySetInnerHTML` ; échappement des contenus écrits dans les descriptions d'événements ;
+  - `Trusted Types` si le navigateur le permet.
+- **Données au repos** :
+  - Android : stockage privé de l'application (bac à sable) ; un chiffrement SQLCipher est possible plus tard ;
+  - PC : IndexedDB du profil de navigateur, effacée à la déconnexion. Ne pas utiliser l'application sur un PC partagé sans session personnelle ;
+  - Drive : protégé par le compte Google. Un chiffrement côté client est possible en option (A7), non recommandé en v1.
+- **Intégrité des fichiers Drive** : validation par Zod à la lecture. Un fichier invalide est ignoré, l'utilisateur est averti, et ce fichier n'écrase jamais l'état local.
+- **Chaîne d'approvisionnement** : dépendances verrouillées, audit en intégration continue (`pnpm audit` ou OSV-Scanner), mises à jour automatisées (Dependabot ou Renovate), Semgrep.
+- **Signature** : la clé de signature Android est conservée dans les secrets de l'intégration continue, avec une copie hors ligne chez le commanditaire.
+
+### 7.2 Données personnelles (RGPD)
+- **Usage strictement personnel**, par un utilisateur unique. L'éditeur ne traite **aucune** donnée : il n'a ni serveur, ni télémétrie, ni analytique.
+- **Données métier** : stockées uniquement sur les appareils et dans le Drive de l'utilisateur, conformément à RG-020.
+- **Données d'agenda de tiers**, comme les participants aux réunions : jamais persistées dans Drive. Seuls les intervalles occupés sont conservés en cache local.
+- **Règles Google** : l'application respecte la politique « Google API Services User Data Policy », y compris les exigences d'usage limité (*Limited Use*).
+- **Politique de confidentialité** : une page courte reste à rédiger. Elle est obligatoire si une vérification Google est engagée (A5) et recommandée dans tous les cas.
+
+### 7.3 Observabilité (sans serveur)
+- **Journal technique local** : tampon circulaire de 7 jours, sans contenu métier, sans titre et sans jeton. Il enregistre les cycles de synchronisation, les erreurs Google avec leur code et les durées.
+- **Écran « État de la synchronisation »** :
+  - dernier dépôt et dernière lecture, par appareil ;
+  - modifications en attente ;
+  - état de l'accès Google ;
+  - dernières erreurs ;
+  - valeurs écartées.
+- **Export du diagnostic** sur demande de l'utilisateur, sous forme de fichier, pour la recette et l'analyse des anomalies.
+- **Aucun outil tiers de suivi d'erreurs** (Sentry par exemple) en v1, car il ferait sortir des données. Son ajout est possible avec l'accord du commanditaire.
+
+### 7.4 Environnements et déploiement
+
+| Environnement | Projet Google Cloud | Clients OAuth | Données | Distribution |
+|---|---|---|---|---|
+| Développement | `objectifs-taches-dev` | Web (localhost) et Android en mode debug | Compte Google de test ; dossier Drive `… (dev)` | Local ; simulateurs pour les tests automatisés |
+| Recette | `objectifs-taches-dev` (partagé) | Web (URL de prévisualisation) et Android `…recette` | Compte Google de recette dédié | PWA sur une URL de recette ; APK de recette par la piste de test interne |
+| Production | `objectifs-taches` (distinct) | Web (domaine de production) et Android | Compte du commanditaire | PWA sur l'hébergement statique ; Google Play, piste de test interne (A2) ; iOS selon A1 |
+
+**Intégration continue (GitHub Actions)** :
+- à chaque *pull request* : lint, typage, tests unitaires, Cucumber, construction de la PWA et de l'APK ;
+- sur une étiquette de version : déploiement de la PWA et publication de l'AAB signé sur la piste interne.
+
+Les versions suivent la numérotation sémantique. La version de l'application est distincte de la version du schéma de données.
+
+**Mises à jour** : la PWA se met à jour par son service worker, avec une invite « nouvelle version », sans rechargement forcé pendant une saisie. Sur mobile, la mise à jour passe par le store. La règle de compatibilité des schémas est décrite au §4.2.
+
+---
+
+## 8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper, via Jarvis)
+
+Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour être intégrés aux questions résiduelles ou aux critères d'acceptation.
+
+| Id | Exigence | Difficulté | Alternatives et recommandation |
+|---|---|---|---|
+| F1 | RG-017 / ENF-02 : visible « dans l'heure » | Si l'appareil destinataire est éteint ou fermé, aucune architecture ne peut afficher la modification. Sur PC, sans geste de l'utilisateur après l'expiration du jeton, la synchronisation attend. | Reformuler ainsi : « une modification faite sur un appareil connecté est visible sur l'autre appareil au plus tard 1 h après, s'il est au premier plan et connecté, et dès son ouverture sinon ». C'est cohérent avec la recommandation Q-21.2. |
+| F2 | RG-037 : notification d'un créneau déplacé | Une détection en temps réel sans appareil actif exige les notifications push de Calendar, donc un serveur (A4). | Détection à l'ouverture et à chaque synchronisation au premier plan, plus en arrière-plan sur Android dans un lot ultérieur (environ toutes les heures). Notification dans l'application : bandeau et liste des alertes ; notification système sur Android si l'arrière-plan est actif. |
+| F3 | RG-008 : « journée = heure locale de l'appareil », et Q-37 | Deux appareils dans des fuseaux différents ne s'accordent pas sur « aujourd'hui ». Cela affecte le report automatique, le rappel, le fun fact, le bilan et la vélocité hebdomadaire. Un calcul déterministe partagé exige un fuseau unique. | Étendre la recommandation Q-37 a à la **journée elle-même** : le fuseau de référence est celui de l'agenda Google. Sinon, accepter des incohérences ponctuelles en voyage. |
+| F4 | RG-012 : contenu du rappel du matin | Le contenu est précalculé par le dernier appareil synchronisé. Une modification faite hors ligne et non synchronisée avant 8 h n'y figure pas. | Accepter ce comportement, cohérent avec « pas de mise à jour après l'heure ». Le préciser dans les critères d'acceptation. |
+| F5 | RG-032 : report automatique | Sans appareil actif, le créneau n'est pas déplacé dans l'agenda à minuit. Il l'est à la première ouverture du jour. Le rappel du matin le reflète déjà par projection. | Préciser dans les critères d'acceptation : « appliqué au plus tard à la première ouverture de l'application du jour ». |
+| F6 | Q-38 b : notification de secours de l'application | Elle n'est possible que sur l'application mobile native (notifications locales programmées). Elle est impossible sur la PWA du PC sans serveur de notifications push. | Retenir Q-38 b pour le **smartphone seulement**. |
+| F7 | DEM-002, RG-042 : « affiché aussi souvent que les autres » | Faut-il compter ce qui est attribué à un jour, ou ce que l'utilisateur a réellement vu ? Compter les vues exigerait un suivi des lectures, non garanti dans Google Calendar. | Définir l'équité sur les **attributions quotidiennes** : exacte sur chaque cycle de 100 jours (ADR-008). Reste à préciser l'origine et la licence des 100 fun facts, à fournir par le commanditaire ou à rédiger. |
+| F8 | DEM-002, RG-039 : réponses aux 2 questions du soir | Un événement Google Calendar ne permet pas de saisir des réponses. | Les questions figurent dans le rappel, avec un lien vers l'écran de bilan de l'application ; la saisie se fait dans l'application. |
+| F9 | Q-22.4 : restauration après suppression dans Drive | Faisable : chaque appareil possède une copie complète. | Retenir l'option a recommandée par Pepper. |
+| F10 | RG-010, RG-015 : historiques | Les graphiques des lots ultérieurs exigent un journal alimenté **dès le lot 1**. | À porter dans les US du lot 1 comme exigence technique, sans écran associé. |
+| F11 | Q-36.2 : horizon de la proposition de planning | Un horizon illimité multiplierait les créneaux dans l'agenda et les écritures. | Nous soutenons la recommandation N = 7 jours, cohérente avec l'horizon de réconciliation. |
+| F12 | Q-23.1 a : fusion information par information | Elle est faisable et recommandée, mais elle peut violer des règles qui portent sur plusieurs informations : sous-tâche rouverte sous une tâche terminée, cycle ou profondeur de hiérarchie, suppression d'un côté et modification de l'autre. | Ajouter aux US-017, 023, 024 et 003 les règles de réparation après fusion (§4.2) : la suppression l'emporte, avec signalement ; le déplacement le plus récent l'emporte, avec signalement ; une incohérence d'état est signalée sans être corrigée. |
+| F13 | US-017 CA-7 : « sans réseau, l'application indique qu'une connexion est nécessaire » | Dans une architecture *local-first*, la saisie est d'abord enregistrée sur l'appareil. Bloquer l'usage sans réseau demande un développement **supplémentaire**, qu'il faudra retirer au lot suivant. Une coupure en cours de saisie doit de toute façon être gérée sans perte. | Remplacer CA-7 par : « sans réseau, les saisies sont conservées sur l'appareil, signalées comme non synchronisées, puis déposées au retour du réseau ». Voir l'avis S3 dans `avis-dependances-lot1.md`. |
+| F14 | Q-21.2 : affichage immédiat à l'ouverture | Il est faisable : l'état local s'affiche immédiatement, puis l'application se synchronise en quelques secondes. Sur la PWA du PC, si la session Google du navigateur a expiré, un clic de reconnexion est nécessaire avant cette synchronisation. | Retenir la recommandation de Pepper, en précisant l'exception du PC. |
+
+---
+
+## 9. Arbitrages commanditaire
+
+| Id | Sujet | Options | Recommandation de Starck |
+|---|---|---|---|
+| **A1** | Système du smartphone | Android ; iPhone | **À préciser par le commanditaire.** Android : aucun coût récurrent. iPhone : Apple Developer Program (99 USD par an), un Mac ou un service de construction macOS dans le cloud, et un arrière-plan beaucoup plus limité. L'architecture couvre les deux ; seul le coût diffère. |
+| **A2** | Distribution de l'application Android | (a) Google Play, piste de test interne (25 USD, une seule fois ; mises à jour automatiques ; pas d'examen public) ; (b) installation directe de l'APK (gratuite, mais soumise à la vérification des développeurs Android, en déploiement depuis 2026, avec un compte « distribution limitée ») | **(a) Piste de test interne** : la plus simple et la plus durable |
+| **A3** | Hébergement de la PWA (PC) | GitHub Pages, Cloudflare Pages ou Firebase Hosting (offres gratuites) ; domaine personnalisé facultatif (environ 10 à 15 € par an) | Hébergement statique gratuit, sans domaine en v1. Aucune donnée utilisateur n'y transite. |
+| **A4** | Serveur applicatif | (a) Aucun serveur (*local-first*) ; (b) une petite fonction sans serveur (environ 0 à 5 € par mois) qui détient un jeton de rafraîchissement, pour la détection en temps réel des créneaux déplacés, le report à minuit et le renouvellement silencieux sur PC | **(a) Aucun serveur.** L'option b conserverait des jetons, donc des données personnelles, chez l'éditeur, ce qui contredit l'exclusion du CdC §4.3. Elle crée aussi un coût et une charge d'exploitation pour un gain faible (§5). |
+| **A5** | Statut OAuth et vérification Google (à partir des fonctions d'agenda) | (a) Production non vérifiée : écran d'avertissement au consentement ; (b) vérification Google : domaine, politique de confidentialité, vidéo, quelques jours à quelques semaines ; (c) mode « Test » : reconnexion tous les 7 jours | **(a)**. Option b seulement si l'écran d'avertissement est inacceptable. Si le compte du commanditaire est un compte Google Workspace : application « interne », sans vérification. |
+| **A6** | Emplacement des données dans Drive | (a) Dossier **visible** (`drive.file`) ; (b) dossier **caché** de l'application (`drive.appdata`) | **(a)** : l'utilisateur voit et possède ses fichiers, conformément à Q-3 b. Le risque de modification accidentelle est couvert par la détection et la restauration (§4.2). |
+| **A7** | Chiffrement des données dans Drive | (a) Aucun chiffrement supplémentaire ; (b) chiffrement côté client par phrase secrète | **(a)** en v1. L'option b protège contre une lecture par Google, mais une phrase secrète perdue signifie des données perdues, et la complexité est réelle. |
+
+---
+
+## 10. Risques et points ouverts
+
+### 10.1 Risques
+
+| Id | Risque | Probabilité | Impact | Parade |
+|---|---|---|---|---|
+| R1 | `drive.file` : les fichiers créés par le client Android ne seraient pas visibles du client web, ou inversement, alors que les deux clients appartiennent au même projet Cloud | Faible | Bloquant pour la synchronisation | **Mise au point technique au lot 1, avant E9.** Repli : `drive.appdata` (A6 b). |
+| R2 | Renouvellement silencieux du jeton sur Android en arrière-plan | Moyenne | Pas de synchronisation d'arrière-plan | Mise au point technique ; repli : synchronisation au premier plan seulement |
+| R3 | Friction du renouvellement du jeton sur la PWA du PC (après 1 h) | Moyenne | Gêne d'usage sur PC | Synchronisation au geste ; évolution vers Tauri ou une fonction d'échange de jeton (§4.1.2) |
+| R4 | Horloge d'un appareil déréglée, qui fausse la règle « la plus récente » | Faible | Valeur écartée à tort | HLC, avertissement en cas de décalage supérieur à 24 h, journal des valeurs écartées |
+| R5 | Versions d'application différentes entre la PWA et le mobile (schéma) | Moyenne | Lecture impossible | `schemaVersion`, lecture seule et invitation à mettre à jour (§4.2) ; migrations testées |
+| R6 | L'utilisateur modifie ou supprime manuellement les fichiers Drive | Faible | Données incohérentes | Validation Zod, fichier ignoré, restauration depuis l'appareil |
+| R7 | L'utilisateur modifie une série de rappels directement dans Google Calendar (heure, suppression) | Moyenne | Rappels décalés ou absents | Détection par la synchronisation incrémentale ; alerte et proposition de recréer la série ; l'heure de l'application fait foi |
+| R8 | Évolution des règles Google : classification des scopes, vérification des développeurs Android | Moyenne | Délais ou coûts imprévus | Veille ; scopes minimaux ; arbitrages A2 et A5 |
+| R9 | Taille du lot 1, alourdi par le socle transverse | Élevée | Retard du premier incrément | Voir `avis-dependances-lot1.md` : mise au point technique préalable et découpage |
+| R10 | Notifications Google Calendar désactivées ou non installées sur le smartphone | Moyenne | Rappels non perçus | Vérification guidée à la connexion de l'agenda ; notification de secours sur smartphone (Q-38 b) |
+
+### 10.2 Points ouverts
+
+| Id | Point | Dépend de | Bloque |
+|---|---|---|---|
+| PO-1 | Système du smartphone | A1 | Choix des modules natifs iOS, coûts |
+| PO-2 | Sens du délai d'une heure | Q-DEM001-21, F1 | Critères d'acceptation de US-017 |
+| PO-3 | Granularité de la règle « la plus récente l'emporte » | Q-DEM001-23 | Regroupement des champs dans le CRDT |
+| PO-4 | Comportement en cas de perte d'accès et de déconnexion | Q-DEM001-22 | US-022 |
+| PO-5 | Fuseau de référence de la journée | Q-DEM001-37, F3 | ADR-011, toutes les règles datées |
+| PO-6 | Scope `calendar.events.owned` ou `calendar.events` | Vérification dans la console Google | ADR-005 (lot avec agenda) |
+| PO-7 | Hébergeur du dépôt et de l'intégration continue (GitHub ?) | Commanditaire ou Jarvis | Conventions d'Anthony |
+| PO-8 | Contenu des 100 fun facts : rédaction, sources, licence | Pepper et commanditaire | Lot DEM-002 |
+
+---
+
+## 11. Index des ADR
+
+| ADR | Titre | Statut |
+|---|---|---|
+| [ADR-001](adr/ADR-001-plateforme-base-de-code-unique.md) | Plateforme : base de code TypeScript unique, PWA (PC) et Capacitor (smartphone) | Proposé |
+| [ADR-002](adr/ADR-002-architecture-local-first-sans-serveur.md) | Architecture *local-first* sans serveur applicatif | Proposé |
+| [ADR-003](adr/ADR-003-synchronisation-drive-crdt.md) | Synchronisation par Google Drive : état fusionnable par appareil (CRDT par champ) | Proposé |
+| [ADR-004](adr/ADR-004-authentification-google-jetons.md) | Authentification Google et gestion des jetons | Proposé |
+| [ADR-005](adr/ADR-005-scopes-et-publication-oauth.md) | Scopes Google minimaux et statut de publication OAuth | Proposé |
+| [ADR-006](adr/ADR-006-integration-google-calendar.md) | Intégration Google Calendar : séries de rappels, identifiants déterministes, réconciliation | Proposé |
+| [ADR-007](adr/ADR-007-traitements-planifies-sans-serveur.md) | Traitements planifiés sans serveur : délégation à Calendar et rattrapage idempotent | Proposé |
+| [ADR-008](adr/ADR-008-rotation-equitable-fun-facts.md) | Rotation équitable des fun facts par permutation déterministe | Proposé |
+| [ADR-009](adr/ADR-009-outillage-de-tests.md) | Outillage de tests : Vitest, cucumber-js en français, Playwright, simulateurs Google | Proposé |
+| [ADR-010](adr/ADR-010-architecture-hexagonale-stockage-local.md) | Architecture hexagonale et stockage local (IndexedDB et SQLite) | Proposé |
+| [ADR-011](adr/ADR-011-horloges-et-fuseau-de-reference.md) | Horloges hybrides (HLC) et fuseau de référence de la journée | Proposé |
