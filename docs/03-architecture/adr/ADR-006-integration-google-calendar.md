@@ -27,7 +27,7 @@ Elle lit cet agenda pour calculer la capacité disponible et détecter les crén
 **Agenda cible** : agenda principal (décision du commanditaire) ou agenda dédié. Hors débat.
 
 ## Décision
-- **Rappels** : deux séries récurrentes quotidiennes, transparentes, avec une notification « fenêtre » à 0 min, dans le fuseau de l'agenda.
+- **Rappels** : deux séries récurrentes quotidiennes, transparentes, avec une notification « fenêtre » à 0 min, dans le fuseau unique `Parametres.fuseauAgenda` (ADR-011 révisé après DEC-011 ; valeur selon Q-DEM001-37).
   - Le contenu (tâches du jour, fun fact, questions de bilan) est écrit par modification d'occurrence, sur l'horizon J à J+7.
   - Une occurrence dont l'heure est passée n'est jamais modifiée.
   - Pour changer d'heure, on clôt la série en cours (`UNTIL`) et on en crée une nouvelle.

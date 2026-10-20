@@ -23,6 +23,7 @@ Option 3.
 - À la jonction de deux cycles, si le premier élément du nouveau cycle est identique au dernier élément du cycle précédent, il est échangé avec un autre, pour éviter une répétition deux jours de suite.
 - La liste des 100 fun facts est un **référentiel embarqué** dans l'application : un fichier JSON versionné. Ce n'est pas une donnée personnelle, et elle n'est pas soumise à RG-020.
 - Si la liste devient modifiable par l'utilisateur (Q-DEM002-5), elle devient une donnée personnelle et passe dans l'état synchronisé (ADR-003). Une modification de la liste ouvre un nouveau cycle.
+- Le jour J servant au calcul est le jour du fuseau `Parametres.fuseauAgenda` pour le rappel. Le fun fact affiché dans l'application suit l'arbitrage A-F5 (DAT §8.1, après DEC-011).
 - L'équité porte sur les **attributions quotidiennes** (DAT §8, F7), et non sur les consultations effectives.
 
 ## Conséquences
