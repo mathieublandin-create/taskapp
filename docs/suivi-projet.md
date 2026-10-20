@@ -3,7 +3,7 @@
 ## Demandes
 | Demande | Date | Résumé | US associée(s) |
 |---|---|---|---|
-| [DEM-001](demandes/DEM-001.md) | 2026-10-20 | Besoin initial : objectifs déclinés en tâches, planification, suivi du temps et de la vélocité, rappels quotidiens via Google Calendar, usage smartphone et PC | En cours d'analyse (E1) |
+| [DEM-001](demandes/DEM-001.md) | 2026-10-20 | Besoin initial : objectifs déclinés en tâches, planification, suivi du temps et de la vélocité, rappels quotidiens via Google Calendar, usage smartphone et PC | 21 US provisoires (US-001 à US-021), voir `01-specification-fonctionnelle/backlog-initial.md` — en attente des réponses aux questions Q-DEM001-1 à 20 |
 
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
@@ -26,3 +26,4 @@
 |---|---|---|---|
 
 ## Points bloquants
+- DEM-001 : 20 questions ouvertes transmises au commanditaire le 2026-10-20 (`01-specification-fonctionnelle/questions-ouvertes.md`). Validation attendue aussi pour la reformulation du besoin (§2 du cahier des charges) et les exclusions (§4.2).
