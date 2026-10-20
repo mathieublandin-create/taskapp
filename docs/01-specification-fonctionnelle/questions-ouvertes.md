@@ -1,4 +1,4 @@
-# Questions ouvertes au commanditaire — DEM-001
+# Questions ouvertes au commanditaire — DEM-001 et DEM-002
 
 > Version 0.1 du 2026-10-20 (Pepper, E1). Questions à transmettre au commanditaire via Jarvis.
 >
@@ -767,3 +767,107 @@ En cas d'égalité, quel critère départage deux tâches ?
    - **Recommandé : non**, par cohérence avec votre réponse pour le rappel du matin (Q18.4).
 
 *Bloque* : US-016.
+
+---
+
+## DEM-002 — Questions ouvertes (v0.3)
+
+> Rédigées par Pepper le 2026-10-20 (E1 de DEM-002 : questions de bilan du soir, fun fact du matin). Reformulation et analyse d'écart : [cahier des charges v0.3](cahier-des-charges.md), §2.
+>
+> Aucune question n'est P1 : DEM-002 enrichit les rappels, qui ne font pas partie de LOT-001. Toutes sont **P2** : elles bloquent le lot « Rappels ».
+>
+> Points examinés et non posés, car déjà réglés par les règles existantes :
+> - une réponse saisie sans réseau, ou modifiée sur les deux appareils, suit RG-021 et RG-036 ;
+> - les réponses sont conservées dans votre espace personnel (RG-020) ;
+> - les questions de bilan sont posées tous les jours, comme le rappel du soir (Q-DEM001-18.2 a).
+
+### Synthèse
+
+| Question | Objet | Priorité | US bloquées | État |
+|---|---|---|---|---|
+| Q-DEM002-1 | Lieu et moment de la réponse aux questions du soir | P2 | US-033 | Ouverte |
+| Q-DEM002-2 | Réponses facultatives et délai pour répondre | P2 | US-033 | Ouverte |
+| Q-DEM002-3 | Conservation et consultation des réponses | P2 | US-033, US-034 | Ouverte |
+| Q-DEM002-4 | Origine, langue et domaine des fun facts | P2 | US-035 | Ouverte |
+| Q-DEM002-5 | Liste des fun facts modifiable | P2 | US-036 | Ouverte |
+| Q-DEM002-6 | Sens de « aussi souvent que les autres » | P2 | US-035 | Ouverte |
+| Q-DEM002-7 | Fun fact un jour sans tâche planifiée | P2 | US-035 | Ouverte |
+
+### Q-DEM002-1 — Où et quand répondre aux questions du soir (P2)
+*Origine* : tension entre DEM-002 et Q-DEM001-18.3 a). Le rappel du soir est un événement de votre agenda Google : il peut **afficher** les deux questions, mais vous ne pouvez pas y **répondre**.
+
+- a) Les questions figurent dans l'événement du soir, avec un lien qui ouvre directement l'écran de réponse dans l'application ; vous pouvez aussi y répondre en ouvrant l'application vous-même. **(recommandé : le rappel reste dans votre agenda, comme vous l'avez choisi, et la réponse se fait là où elle peut être enregistrée)**
+- b) Les questions figurent seulement dans l'événement du soir, comme une invitation à réfléchir : aucune réponse n'est saisie ni enregistrée.
+- c) Les questions sont posées par une notification de l'application, qui permet de répondre directement (voir aussi Q-DEM001-38).
+
+*Bloque* : US-033.
+
+### Q-DEM002-2 — Réponses facultatives et délai pour répondre (P2)
+*Origine* : DEM-002 ne dit pas si les réponses sont attendues chaque jour. Sans objet si vous répondez b) à Q-DEM002-1.
+
+1. Les réponses sont-elles facultatives ?
+   - a) oui : vous pouvez répondre à une seule question, aux deux ou à aucune, sans relance **(recommandé : un bilan imposé devient vite une contrainte)** ;
+   - b) oui, mais une absence de réponse est rappelée dans le rappel du soir suivant ;
+   - c) non, une réponse est attendue chaque jour.
+2. Jusqu'à quand pouvez-vous répondre pour une journée donnée ?
+   - a) sans limite, comme pour le temps passé (Q-DEM001-10.2 b) **(recommandé : par cohérence)** ;
+   - b) jusqu'à la fin de la journée ;
+   - c) jusqu'au lendemain soir.
+
+*Bloque* : US-033.
+
+### Q-DEM002-3 — Conservation et consultation des réponses (P2)
+Sans objet si vous répondez b) à Q-DEM002-1.
+
+1. Vos réponses sont-elles conservées et consultables ensuite ?
+   - a) oui, sous forme d'un journal classé par date, qui affiche pour chaque journée les deux réponses **(recommandé : relire ses bilans donne tout son sens à l'exercice)** ;
+   - b) oui, mais seulement celles de la journée en cours ;
+   - c) non, elles ne sont pas conservées.
+2. Une réponse déjà enregistrée peut-elle être modifiée ou supprimée ? (oui / non)
+   - **Recommandé : oui.**
+
+*Bloque* : US-033, US-034.
+
+### Q-DEM002-4 — Origine, langue et domaine des fun facts (P2)
+*Origine* : DEM-002 parle d'une liste de 100 fun facts « téléchargés en base », sans dire qui les fournit.
+
+1. Qui fournit la liste des 100 fun facts ?
+   - a) Vous, sous la forme d'une liste que vous remettez à l'équipe.
+   - b) L'équipe projet les rédige, et vous les validez avant leur mise en service. **(recommandé : vous gardez la maîtrise du contenu, sans avoir à le rédiger ; votre validation garantit l'exactitude des faits)**
+   - c) Ils proviennent d'une source externe que vous désignez : précisez laquelle.
+2. Dans quelle langue sont-ils présentés ?
+   - a) en français **(recommandé : c'est la langue de l'application et de vos rappels)** ;
+   - b) en anglais ;
+   - c) autre : précisez.
+3. « Si possible dans le domaine scientifique » :
+   - a) les 100 fun facts sont tous scientifiques **(recommandé : un critère simple à contrôler)** ;
+   - b) une majorité est scientifique, et d'autres domaines sont admis (précisez lesquels).
+
+*Bloque* : US-035.
+
+### Q-DEM002-5 — Liste des fun facts modifiable (P2)
+- a) La liste est fixe : la modifier passe par une nouvelle demande. **(recommandé dans un premier temps : c'est ce que décrit votre demande, et cela suffit à garantir l'égalité d'affichage de Q-DEM002-6)**
+- b) Vous pouvez, dans l'application, ajouter, modifier ou retirer des fun facts. Dans ce cas, comment l'égalité d'affichage traite-t-elle un fun fact ajouté en cours de route ? Précisez.
+
+*Bloque* : US-036 (conditionnelle).
+
+### Q-DEM002-6 — Sens de « aussi souvent que les autres » (P2)
+Un tirage au hasard chaque jour n'assure l'égalité qu'en moyenne, sur une très longue durée : certains fun facts reviendraient plusieurs fois avant que d'autres n'apparaissent.
+
+- a) Tirage sans remise : les 100 fun facts sont présentés chacun une fois, dans un ordre aléatoire, sur 100 jours. Un nouveau cycle commence ensuite, dans un nouvel ordre aléatoire, et le dernier fun fact d'un cycle n'est jamais le premier du cycle suivant. **(recommandé : l'égalité est exacte à la fin de chaque cycle, et aucun fun fact ne se répète au cours d'un cycle)**
+- b) Tirage au hasard indépendant chaque jour : l'égalité n'est que statistique, et des répétitions sont possibles.
+- c) Autre : précisez.
+
+*Bloque* : US-035.
+
+### Q-DEM002-7 — Fun fact un jour sans tâche planifiée (P2)
+Vous avez demandé qu'un rappel du matin soit envoyé même sans tâche planifiée (Q-DEM001-18.6). Ce rappel contient-il aussi le fun fact du jour ? (oui / non)
+- **Recommandé : oui.** Le fun fact est présenté chaque matin, et le cycle d'égalité de Q-DEM002-6 se déroule sans interruption.
+
+*Bloque* : US-035.
+
+### Réponses du commanditaire (DEM-002)
+*(à compléter par Jarvis à réception)*
+
+| Question | Date | Réponse | Impact (RG / US) |
+|---|---|---|---|

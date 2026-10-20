@@ -1,12 +1,14 @@
 # Cahier des charges — Application de gestion d'objectifs et de tâches synchronisée avec Google Calendar
 
+> **Version 0.3 — 2026-10-20.** Intègre la demande DEM-002 (questions de bilan du soir, fun fact du matin) : RG-012 et RG-013 modifiées, nouvelles RG-038 à RG-042, questions Q-DEM002-1 à 7.
+>
 > **Version 0.2 — 2026-10-20.** Ce document intègre les réponses du commanditaire aux questions Q-DEM001-1 à Q-DEM001-20, ainsi que ses trois compléments du 2026-10-20. Les réponses figurent dans le fichier [`questions-ouvertes.md`](questions-ouvertes.md).
 >
 > Statuts des règles :
 > - **Établie** : la règle découle sans ambiguïté de la demande ou d'une réponse du commanditaire ;
 > - **À préciser** : le principe est établi, mais certaines modalités dépendent d'une question résiduelle (Q-DEM001-21 et suivantes).
 >
-> **Validations encore attendues du commanditaire** (voir §11) : la reformulation du besoin (§2), les exclusions proposées (§4.3) et les exigences ENF-05 et ENF-06, au statut « proposée ».
+> **Validations encore attendues du commanditaire** (voir §11) : la reformulation du besoin (§2), les exclusions proposées (§4.3), les exigences ENF-05 et ENF-06, au statut « proposée », et les réponses aux questions Q-DEM002.
 
 ## 1. Historique des versions
 
@@ -14,6 +16,7 @@
 |---|---|---|---|---|
 | 0.1 | 2026-10-20 | Pepper (BA) | DEM-001 | Création du brouillon à partir de la demande initiale. Règles de gestion RG-001 à RG-017, exigences ENF-01 à ENF-05, questions Q-DEM001-1 à Q-DEM001-20. |
 | 0.2 | 2026-10-20 | Pepper (BA) | DEM-001 | Intégration des réponses Q-DEM001-1 à 20 et des trois compléments du commanditaire du 2026-10-20. Changements : RG-001 à RG-017 précisées, dont 10 passent au statut « Établie » ; nouvelles RG-018 à RG-037 ; périmètre mis à jour (hors ligne, créneaux dans Google Calendar et prise en compte des événements désormais inclus ; tâches récurrentes reportées) ; nouvelles exclusions décidées ; ENF-04 devient exigée ; ajout d'ENF-06 ; glossaire complété ; reformulation du besoin mise à jour ; questions résiduelles Q-DEM001-21 à Q-DEM001-40. |
+| 0.3 | 2026-10-20 | Pepper (BA) | DEM-002 | Ajout de deux questions de bilan dans le rappel du soir et d'un fun fact scientifique dans le rappel du matin. Changements : RG-012 et RG-013 modifiées ; nouvelles RG-038 à RG-042 ; OBJ-11 ; périmètre et glossaire complétés ; analyse d'écart DEM-002 (§2) ; questions Q-DEM002-1 à Q-DEM002-7. |
 
 ## 2. Contexte
 
@@ -34,6 +37,17 @@ Il utilise l'application sur son smartphone, usage prioritaire, et sur un PC, d�
 ### Reformulation du besoin, version 0.2 (à valider par le commanditaire)
 > « Je fixe des objectifs, datés ou non, que je décompose en sous-objectifs et en tâches, elles-mêmes décomposables en sous-tâches. Chaque tâche a un délai et une estimation en heures. L'application me propose un ordre de priorité et un planning à la journée, que je peux modifier, en fonction du temps que je peux consacrer chaque jour à mes tâches et des événements de mon agenda. Elle suggère un horaire pour chaque tâche planifiée et la place en créneau dans mon agenda Google principal. Chaque jour, je note le temps passé sur chaque tâche ; le reste à faire est calculé et je peux le corriger. L'application en déduit ma vélocité hebdomadaire, me dit si mes délais sont tenables, me propose de nouveaux délais ou un nouveau planning, et me montre l'évolution de mon backlog et de ma vélocité. Google Calendar me rappelle à 8 h ce que j'ai prévu et à 21 h ce que j'ai fait. Je me connecte avec mon compte Google ; mes données restent dans mon propre espace de stockage, je les retrouve sur mon smartphone et sur mon PC, et je peux travailler sans réseau sur mon smartphone. »
 
+### Analyse d'écart de la demande DEM-002 (v0.3)
+DEM-002, reformulée : « Chaque soir, en plus du bilan de mes tâches, l'application me pose deux questions : ce qui s'est bien passé aujourd'hui, et ce que j'aurais aimé faire autrement. Chaque matin, en plus de la liste de mes tâches, elle me présente une anecdote surprenante (fun fact), de préférence scientifique, tirée d'une liste de 100 anecdotes enregistrées dans l'application. Le tirage est aléatoire, mais chaque anecdote doit apparaître aussi souvent que les autres. »
+
+| Nature | Élément |
+|---|---|
+| **Nouveau** | Questions de bilan du soir et réponses de l'utilisateur (RG-038, RG-039) ; fun fact du matin (RG-040), liste de 100 fun facts (RG-041), équité d'affichage (RG-042). Il s'agit d'un nouvel objet métier : les réponses aux questions de bilan, qui ne portent ni sur une tâche, ni sur un objectif. |
+| **Modifié** | RG-012 (le rappel du matin contient aussi un fun fact) ; RG-013 (le rappel du soir contient aussi les deux questions de bilan). |
+| **Contradiction ou tension** | Le rappel du soir est un événement Google Calendar (RG-014, Q-DEM001-18.3 a). Un tel événement permet d'afficher des questions, pas d'y répondre. Le lieu de la réponse est donc à définir (Q-DEM002-1), en lien avec le rôle de la notification de l'application (Q-DEM001-38). La demande parle de « notification du soir » : nous l'entendons comme le rappel du soir (RG-013). |
+| **Sans impact** | Les règles existantes s'appliquent aux réponses : stockage dans l'espace personnel (RG-020), usage hors ligne (RG-021) et règle de conflit (RG-036). |
+| **Lot** | Les rappels ne font pas partie des capacités indispensables à la première version (Q-DEM001-1 : seul a) l'est). DEM-002 enrichit les rappels : elle relève donc du lot « Rappels », et non de LOT-001. |
+
 ### Existant
 Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 0.1 de ce cahier des charges et au backlog initial. L'écart entre la v0.1 et la v0.2 est détaillé ci-dessous.
 
@@ -42,7 +56,7 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | **Nouveau** | Connexion obligatoire avec un compte Google (RG-019) ; stockage dans l'espace personnel de l'utilisateur (RG-020) ; sous-objectifs et sous-tâches (RG-022, RG-023) ; tâche rattachée à zéro, un ou plusieurs objectifs (RG-001) ; abandon d'une tâche (RG-027) ; importance d'un objectif (RG-030) ; proposition de planning (RG-031) ; report automatique (RG-032) ; prise en compte des événements de l'agenda (RG-033) ; créneaux dans l'agenda principal, avec horaire suggéré (RG-034) ; prise en compte d'un créneau déplacé dans Google Calendar, avec notification et replanification proposée le soir (RG-037) ; règle de conflit entre appareils (RG-036). |
 | **Modifié** | Délai d'un objectif facultatif (RG-002) ; contrôle des délais fondé sur la vélocité réelle (RG-007) ; vélocité définie comme la somme des estimations initiales des tâches terminées, par semaine (RG-010) ; backlog limité aux tâches non terminées et non planifiées (RG-015) ; utilisation hors ligne exigée (ENF-04). |
 | **Contradiction levée** | Planification « sur une journée, sans horaire » (Q-DEM001-13) et tâches visibles « comme des créneaux » (Q-DEM001-15) : tranché par le complément du commanditaire. La tâche est planifiée sur une journée et l'application lui suggère un horaire, qui produit le créneau (RG-006, RG-034). |
-| **Tensions restant à arbitrer** | Voir les questions résiduelles Q-DEM001-21 à Q-DEM001-40. Les principales portent sur la vélocité et le reste à faire (Q-DEM001-30), sur la définition du backlog (Q-DEM001-36) et sur l'atteinte d'un objectif hiérarchisé (Q-DEM001-26). |
+| **Tensions restant à arbitrer (DEM-001)** | Voir les questions résiduelles Q-DEM001-21 à Q-DEM001-40. Les principales portent sur la vélocité et le reste à faire (Q-DEM001-30), sur la définition du backlog (Q-DEM001-36) et sur l'atteinte d'un objectif hiérarchisé (Q-DEM001-26). |
 
 ## 3. Objectifs du produit
 
@@ -58,6 +72,7 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | OBJ-8 | Visualiser l'évolution du backlog et de la vélocité | DEM-001 ; Q-DEM001-20 |
 | OBJ-9 | Utiliser l'application sur smartphone et sur PC avec les mêmes données, conservées dans l'espace personnel de l'utilisateur, y compris sans réseau | DEM-001 ; Q-DEM001-1 j), Q-DEM001-3, Q-DEM001-4 (compléments) |
 | OBJ-10 | Articuler le planning avec l'agenda Google : créneaux de tâches, prise en compte des événements | Q-DEM001-15 (et compléments) |
+| OBJ-11 | Favoriser la prise de recul quotidienne (bilan du soir) et rendre le rappel du matin plus engageant (fun fact) | DEM-002 |
 
 ## 4. Périmètre
 
@@ -78,6 +93,8 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 - Le calcul de la vélocité hebdomadaire, le contrôle de tenue des délais et la proposition d'ajustements.
 - Les rappels quotidiens du matin et du soir, via l'agenda Google principal.
 - La visualisation de l'évolution du backlog et de la vélocité, en vue globale et par objectif.
+- Les deux questions de bilan du rappel du soir et la saisie des réponses (DEM-002).
+- Le fun fact du rappel du matin, tiré équitablement d'une liste de 100 (DEM-002).
 
 ### 4.2 Reporté à un lot ultérieur (dans le périmètre à terme)
 | Élément | Source | Remarque |
@@ -137,8 +154,11 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | **Objectif atteint** | Objectif dont toutes les tâches sont terminées. Les modalités pour les sous-objectifs et les tâches abandonnées sont à préciser. | RG-025, Q-DEM001-26 |
 | **Vélocité** | Somme des estimations initiales des tâches terminées dans une semaine. | RG-010 |
 | **Backlog** | Ensemble des tâches non terminées et non planifiées, mesuré par la somme de leurs restes à faire. | RG-015, Q-DEM001-36 |
-| **Rappel du matin** | Événement quotidien de l'agenda Google principal, à 8 h par défaut, qui liste les tâches planifiées dans la journée. | RG-012, RG-014 |
-| **Rappel du soir** | Événement quotidien de l'agenda Google principal, à 21 h par défaut, qui liste le temps passé dans la journée et le reste à faire. | RG-013, RG-014 |
+| **Rappel du matin** | Événement quotidien de l'agenda Google principal, à 8 h par défaut, qui liste les tâches planifiées dans la journée et présente un fun fact. | RG-012, RG-014, RG-040 |
+| **Rappel du soir** | Événement quotidien de l'agenda Google principal, à 21 h par défaut, qui liste le temps passé dans la journée et le reste à faire, et pose les deux questions de bilan. | RG-013, RG-014, RG-038 |
+| **Questions de bilan** | Les deux questions posées chaque soir : ce qui s'est bien passé aujourd'hui ; ce que l'utilisateur aurait aimé faire autrement. | RG-038, RG-039 |
+| **Fun fact** | Anecdote surprenante et vérifiable, de préférence scientifique, présentée dans le rappel du matin. | RG-040, RG-041 |
+| **Liste des fun facts** | Ensemble des 100 fun facts enregistrés dans l'application, parmi lesquels le fun fact du jour est tiré. | RG-041, RG-042 |
 | **Compte Google** | Compte avec lequel l'utilisateur se connecte. Il donne accès à son agenda et, probablement, à son espace de stockage. L'utilisateur peut retirer l'accès qu'il a accordé (révocation), et cet accès peut expirer. | RG-019, RG-035 |
 | **Espace de stockage personnel** | Espace de stockage en ligne appartenant à l'utilisateur, dans lequel ses données sont conservées. | RG-020 |
 | **Appareil** | Smartphone ou PC depuis lequel l'utilisateur utilise l'application. | RG-017 |
@@ -152,15 +172,15 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | RG-002 | Le délai d'un objectif est facultatif. S'il est renseigné, c'est une date. | Q-DEM001-5.1 | Établie (délai passé à la saisie : Q-DEM001-28) | Q-DEM001-28 | US-001, US-007 |
 | RG-003 | Le délai d'une tâche est obligatoire. | Q-DEM001-5.2 | Établie (forme et délai passé : Q-DEM001-28) | Q-DEM001-28 | US-002, US-024, US-007 |
 | RG-004 | L'utilisateur peut modifier à tout moment ses objectifs et les délais de ses tâches. | DEM-001 | Établie | — | US-001, US-002, US-011 |
-| RG-005 | L'application propose un ordre de priorité des tâches à réaliser. L'utilisateur peut le modifier manuellement. | Q-DEM001-16 c) | À préciser (critères, départage, sort des modifications manuelles) | Q-DEM001-35 | US-004 |
+| RG-005 | L'application propose un ordre de priorité des tâches à réaliser. L'utilisateur peut le modifier manuellement. | Q-DEM001-16 c) | À préciser (critères, départage, sort des modifications manuelles) | Q-DEM001-35 | US-004, US-027 |
 | RG-006 | Planifier une tâche, c'est la placer sur une journée, sans horaire. Une tâche n'est planifiée que sur une seule journée à la fois. | Q-DEM001-13.1 a) | Établie | Q-DEM001-32 (tâche plus longue qu'une journée) | US-006, US-027 |
 | RG-007 | L'application juge qu'un délai ne tient pas en comparant le travail restant à ce que la vélocité réelle permet de réaliser avant ce délai. Dans ce cas, elle propose un nouveau délai ou un nouveau planning, que l'utilisateur accepte ou refuse. Les alertes apparaissent dans l'application et dans les rappels. | Q-DEM001-17.1 b), 17.2 b), 17.3 | À préciser (mesure du travail restant, valeur de vélocité retenue, démarrage sans historique) | Q-DEM001-30 | US-007, US-011, US-015, US-016 |
 | RG-008 | Le temps passé est saisi comme une durée, par tâche et par journée. Une saisie ou une correction est possible sur n'importe quel jour antérieur, sans limite. La journée est déterminée par l'heure locale de l'appareil. | Q-DEM001-10.1 b), 10.2 b), 10.4 a) | Établie (précision et nature de la saisie : Q-DEM001-31) | Q-DEM001-31 | US-008 |
 | RG-009 | Le reste à faire d'une tâche est calculé automatiquement : estimation initiale moins temps passé cumulé. L'utilisateur peut le corriger à tout moment. Si le temps passé dépasse l'estimation sans que la tâche soit terminée, l'application affiche une alerte qui demande de ré-estimer. | Q-DEM001-11.1 c), 11.2 b) | À préciser (calcul après correction, seuil de l'alerte) | Q-DEM001-31 | US-009, US-016 |
 | RG-010 | La vélocité d'une semaine est la somme des estimations initiales des tâches terminées dans cette semaine. Une semaine sans tâche terminée a une vélocité nulle et entre dans le calcul. | Q-DEM001-12.1, 12.2 b), 12.3 | À préciser (semaine de rattachement, tâches rouvertes, sous-tâches) | Q-DEM001-30, Q-DEM001-25 | US-010, US-011, US-013 |
-| RG-011 | La capacité quotidienne est définie par jour de la semaine, avec des exceptions à une date précise. L'application propose une ré-estimation à partir du temps réellement passé, que l'utilisateur valide ou non. Si la planification d'une journée dépasse sa capacité, l'application alerte sans bloquer. | Q-DEM001-14.1 c), 14.2 b), 14.3 b) | Établie | — | US-005, US-006, US-026 |
-| RG-012 | Chaque jour, y compris le week-end, l'utilisateur reçoit à 8 h (heure par défaut, modifiable) un rappel qui liste les tâches planifiées dans la journée. Une journée sans tâche planifiée donne lieu à un rappel indiquant qu'aucune tâche n'est planifiée. Le contenu du rappel n'est pas mis à jour si le planning change après son heure. | Q-DEM001-18.1, 18.2 a), 18.4, 18.6 | Établie (fuseau horaire : Q-DEM001-37) | Q-DEM001-37 | US-015, US-029 |
-| RG-013 | Chaque jour, l'utilisateur reçoit à 21 h (heure par défaut, modifiable) un rappel qui liste le temps passé dans la journée et le reste à faire. Il porte sur les tâches planifiées dans la journée et sur les tâches qui ont reçu du temps passé dans la journée. | Q-DEM001-18.1, 18.2 a), 18.5 c) | À préciser (invitation à saisir, fuseau horaire) | Q-DEM001-37, Q-DEM001-40 | US-016, US-029 |
+| RG-011 | La capacité quotidienne est définie par jour de la semaine, avec des exceptions à une date précise. L'application propose une ré-estimation à partir du temps réellement passé, que l'utilisateur valide ou non. Si la planification d'une journée dépasse sa capacité, l'application alerte sans bloquer. | Q-DEM001-14.1 c), 14.2 b), 14.3 b) | Établie | — | US-005, US-006, US-026, US-027, US-019 |
+| RG-012 | Chaque jour, y compris le week-end, l'utilisateur reçoit à 8 h (heure par défaut, modifiable) un rappel qui liste les tâches planifiées dans la journée. Une journée sans tâche planifiée donne lieu à un rappel indiquant qu'aucune tâche n'est planifiée. Le contenu du rappel n'est pas mis à jour si le planning change après son heure. Le rappel contient aussi un fun fact (RG-040). | Q-DEM001-18.1, 18.2 a), 18.4, 18.6 ; DEM-002 | À préciser (fuseau horaire ; fun fact un jour sans tâche) | Q-DEM001-37, Q-DEM002-7 | US-015, US-029, US-035 |
+| RG-013 | Chaque jour, l'utilisateur reçoit à 21 h (heure par défaut, modifiable) un rappel qui liste le temps passé dans la journée et le reste à faire. Il porte sur les tâches planifiées dans la journée et sur les tâches qui ont reçu du temps passé dans la journée. Il pose aussi les deux questions de bilan (RG-038). | Q-DEM001-18.1, 18.2 a), 18.5 c) ; DEM-002 | À préciser (invitation à saisir, fuseau horaire) | Q-DEM001-37, Q-DEM001-40 | US-016, US-029, US-033 |
 | RG-014 | Un rappel est un événement court dans l'agenda Google principal. Sa description contient la liste, et une notification Google se déclenche à l'heure du rappel. Google Calendar est le canal souhaité ; une notification de l'application elle-même est acceptable. | Q-DEM001-18.3 a), 19.1 b) | À préciser (rôle de la notification de l'application) | Q-DEM001-38 | US-014, US-015, US-016 |
 | RG-015 | Le backlog est l'ensemble des tâches non terminées et non planifiées. Son évolution se mesure par la somme de leurs restes à faire, en vue globale et par objectif, sur les 12 dernières semaines, semaine par semaine. | Q-DEM001-20 | À préciser (cohérence avec la proposition de planning, tâches abandonnées) | Q-DEM001-36, Q-DEM001-27 | US-012 |
 | RG-016 | L'évolution de la vélocité s'affiche en vue globale et par objectif, sur les 12 dernières semaines, semaine par semaine. | Q-DEM001-20.3, 20.4 | Établie (dépend de RG-010) | — | US-013 |
@@ -172,19 +192,24 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | RG-022 | Un objectif peut comporter des sous-objectifs. | Q-DEM001-6.1 d) | À préciser (profondeur, parent unique, délai, déplacement) | Q-DEM001-24 | US-023 |
 | RG-023 | Une tâche peut comporter des sous-tâches. | Q-DEM001-6.1 d) | À préciser (profondeur, délai et estimation, fin de la tâche parente, objectifs) | Q-DEM001-25 | US-024 |
 | RG-024 | Le délai d'une tâche peut être postérieur au délai d'un de ses objectifs. L'application l'accepte et affiche une alerte qui nomme le ou les objectifs concernés. Aucune alerte n'est émise pour un objectif sans délai. | Q-DEM001-5.3 b), 5.1 | Établie | — | US-002, US-001 |
-| RG-025 | Un objectif est atteint quand toutes ses tâches sont terminées. Cet état est calculé : il change dès qu'une tâche de l'objectif est ajoutée, rouverte ou terminée. | Q-DEM001-5.4 a) | À préciser (sous-objectifs, tâches abandonnées, objectif sans tâche) | Q-DEM001-26 | US-003, US-023 |
+| RG-025 | Un objectif est atteint quand toutes ses tâches sont terminées. Cet état est calculé : il change dès qu'une tâche de l'objectif est ajoutée, rouverte ou terminée. | Q-DEM001-5.4 a) | À préciser (sous-objectifs, tâches abandonnées, objectif sans tâche) | Q-DEM001-26 | US-001, US-003, US-023, US-025 |
 | RG-026 | Une tâche est terminée quand l'utilisateur la déclare terminée, et jamais automatiquement. Une tâche terminée peut être rouverte. | Q-DEM001-7.1 a), 7.2 | Établie | Q-DEM001-25 (tâche avec sous-tâches) | US-003 |
 | RG-027 | Une tâche peut être abandonnée : elle n'est alors ni terminée, ni à faire. | Q-DEM001-7.3 | À préciser (reprise, sous-tâches, backlog) | Q-DEM001-27 | US-025 |
-| RG-028 | Les estimations, les restes à faire et la capacité s'expriment en heures et minutes, avec une précision de 30 min. | Q-DEM001-9 a) | Établie (temps passé : Q-DEM001-31) | Q-DEM001-31 | US-002, US-005, US-009 |
+| RG-028 | Les estimations, les restes à faire et la capacité s'expriment en heures et minutes, avec une précision de 30 min. | Q-DEM001-9 a) | Établie (temps passé : Q-DEM001-31) | Q-DEM001-31 | US-002, US-024, US-005, US-009 |
 | RG-029 | L'estimation initiale d'une tâche est conservée, car elle sert au calcul de la vélocité (RG-010). | Q-DEM001-12.1 | À préciser (caractère obligatoire, modification) | Q-DEM001-28 | US-002, US-010 |
 | RG-030 | Un objectif porte une importance, utilisée pour proposer l'ordre de priorité. | Q-DEM001-6.4 | À préciser (échelle, valeur par défaut, tâches à plusieurs objectifs) | Q-DEM001-35 | US-030, US-004 |
-| RG-031 | L'application propose un planning, selon la priorité, les délais et la capacité. L'utilisateur peut le modifier. | Q-DEM001-13.2 b) | À préciser (horizon de la proposition) | Q-DEM001-36 | US-027 |
+| RG-031 | L'application propose un planning, selon la priorité, les délais et la capacité. L'utilisateur peut le modifier. | Q-DEM001-13.2 b) | À préciser (horizon de la proposition) | Q-DEM001-36 | US-027, US-032 |
 | RG-032 | Une tâche planifiée un jour passé et non terminée est reportée automatiquement au jour suivant. | Q-DEM001-13.3 | À préciser (jour suivant sans capacité) | Q-DEM001-32 | US-028 |
 | RG-033 | Les événements de l'agenda Google réduisent automatiquement le temps disponible du jour pour les tâches. | Q-DEM001-15.1 | À préciser (mode de calcul, événements retenus) | Q-DEM001-34 | US-019 |
 | RG-034 | Chaque tâche planifiée reçoit un horaire suggéré par l'application et apparaît comme un créneau dans l'agenda Google principal. | Q-DEM001-15.2 (et compléments) | À préciser (choix de l'horaire, durée, modification par l'utilisateur) | Q-DEM001-32 | US-020 |
 | RG-035 | Si l'utilisateur retire l'accès à son compte Google, ou si cet accès expire, l'application l'avertit au prochain usage et lui propose de se reconnecter. Les événements déjà créés dans l'agenda sont conservés. Aucune donnée de l'utilisateur n'est perdue. | Q-DEM001-19.3 a) et c) | À préciser (usage de l'application en attendant la reconnexion) | Q-DEM001-22 | US-022, US-014 |
 | RG-036 | Quand une même donnée a été modifiée sur les deux appareils avant qu'ils n'aient échangé leurs modifications, la modification la plus récente l'emporte. | Q-DEM001-4.2 (complément) | À préciser (granularité de la règle) | Q-DEM001-23 | US-017, US-018 |
 | RG-037 | Quand un créneau de tâche est déplacé dans Google Calendar, l'application affiche une notification. Le soir, elle propose une replanification de la tâche, que l'utilisateur valide ou modifie. La replanification n'est jamais appliquée sans sa validation. | Q-DEM001-15.2 (compléments) | À préciser (moment de la proposition, jour proposé, créneau supprimé ou déplacé dans la même journée) | Q-DEM001-33 | US-032 |
+| RG-038 | Chaque soir, le rappel du soir pose deux questions de bilan : l'une sur ce qui s'est bien passé dans la journée, l'autre sur ce que l'utilisateur aurait aimé faire autrement. | DEM-002 | Établie (formulation exacte à valider en E6) | — | US-033, US-016 |
+| RG-039 | L'utilisateur peut répondre aux deux questions de bilan d'une journée. | DEM-002 | À préciser (lieu et moment de la réponse, caractère facultatif, conservation et consultation) | Q-DEM002-1, Q-DEM002-2, Q-DEM002-3 | US-033, US-034 |
+| RG-040 | Chaque matin, le rappel du matin présente un fun fact, de préférence dans le domaine scientifique. | DEM-002 | À préciser (jour sans tâche, domaine) | Q-DEM002-4, Q-DEM002-7 | US-035, US-015 |
+| RG-041 | Le fun fact du jour est tiré parmi une liste de 100 fun facts enregistrés dans l'application. | DEM-002 | À préciser (fournisseur du contenu, langue, liste modifiable) | Q-DEM002-4, Q-DEM002-5 | US-035, US-036 |
+| RG-042 | Le tirage du fun fact est aléatoire, et chaque fun fact de la liste est présenté aussi souvent que les autres. | DEM-002 | À préciser (mode de tirage garantissant l'égalité) | Q-DEM002-6 | US-035 |
 
 ## 8. Exigences non fonctionnelles (côté métier)
 
@@ -216,3 +241,4 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | Exclusions au statut « Proposé, à valider » | §4.3 | En attente |
 | ENF-05 (confidentialité, accès minimal au compte Google) et ENF-06 (aucune perte de donnée) | §8 | En attente |
 | Réponses aux questions résiduelles Q-DEM001-21 à 40 (les questions P1 en priorité) | `questions-ouvertes.md` | En attente |
+| Reformulation de DEM-002 et réponses aux questions Q-DEM002-1 à 7 | §2, `questions-ouvertes.md` | En attente |
