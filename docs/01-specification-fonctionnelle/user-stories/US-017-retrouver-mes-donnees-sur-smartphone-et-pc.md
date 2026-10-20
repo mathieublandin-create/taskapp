@@ -55,7 +55,7 @@ Statut : En analyse
 
 ## Cas limites et cas d'erreur
 - Drive plein : l'utilisateur est averti que ses modifications ne peuvent pas être enregistrées dans son Drive ; elles restent conservées sur l'appareil et rien n'est perdu sans avertissement **(P)**.
-- Les deux appareils dans des fuseaux horaires différents : au lot 1, la date de fin, la date d'abandon et l'indication « en retard » sont déterminées par la journée de l'appareil utilisé (RG-008) ; elles peuvent donc différer d'un appareil à l'autre pendant quelques heures. Ce comportement est assumé : le commanditaire a maintenu RG-008 (DEC-011).
+- Les deux appareils dans des fuseaux horaires différents, ou l'utilisateur en voyage : la date de fin, la date d'abandon et l'indication « en retard » sont déterminées dans le fuseau de Paris (RG-008, RG-053, DEC-012) ; elles sont donc identiques sur les deux appareils, mais peuvent ne pas correspondre à la date locale du lieu où se trouve l'utilisateur. Le fait d'indiquer à l'utilisateur que l'application suit l'heure de Paris quand son appareil est réglé sur un autre fuseau est proposé en E4 **(P)**.
 - Horloge de l'un des appareils déréglée de plusieurs minutes : la modification réellement la plus récente l'emporte quand même. Si l'écart dépasse 24 h, l'application avertit l'utilisateur **(P)**.
 - Les deux appareils n'ont pas la même version de l'application : l'appareil dont la version est la plus ancienne invite l'utilisateur à la mettre à jour avant de permettre la saisie **(P, comportement à confirmer par l'architecte en E3)**.
 - Modification faite directement dans les fichiers du Drive, qui les laisse lisibles : *point à préciser par l'architecte en E3* (cas non couvert par RG-044, qui ne vise que les données absentes ou illisibles).
@@ -83,4 +83,4 @@ Statut : En analyse
 |---|---|
 | 2026-10-20 | v0.1 : US provisoire au backlog initial. |
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-3 et 4 et les compléments du commanditaire. |
-| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-21, 22 et 23 intégrées (CA-2, CA-3, CA-6, CA-8, CA-9) ; limites F1 et F14 de l'architecte (CA-2, CA-3) ; règles de réparation proposées F12 (CA-10) ; CA-7 remplacé par la variante « hors ligne inclus » (F13, DEC-002) ; DEC-001 (Android), DEC-007 (aucun serveur), DEC-009 (dossier visible), DEC-011 (journée de l'appareil). |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-21, 22 et 23 intégrées (CA-2, CA-3, CA-6, CA-8, CA-9) ; limites F1 et F14 de l'architecte (CA-2, CA-3) ; règles de réparation proposées F12 (CA-10) ; CA-7 remplacé par la variante « hors ligne inclus » (F13, DEC-002) ; DEC-001 (Android), DEC-007 (aucun serveur), DEC-009 (dossier visible), DEC-012 (fuseau de référence Europe/Paris). |

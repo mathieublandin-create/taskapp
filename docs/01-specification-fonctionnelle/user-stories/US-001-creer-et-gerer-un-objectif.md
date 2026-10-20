@@ -23,6 +23,7 @@ Statut : En analyse
 - RG-024 : alerte quand le délai d'une tâche est postérieur à celui de l'objectif.
 - RG-025 : état calculé (en cours, atteint, à décliner en tâches).
 - RG-045 : objectif « en retard ».
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
 - RG-046 : suppression.
 - RG-047 (proposée) : suppression concurrente d'une modification.
 - RG-050 (proposée) : historique.
@@ -52,7 +53,7 @@ Statut : En analyse
 - Objectif dont toutes les tâches sont abandonnées et qui n'a pas de sous-objectif : « à décliner en tâches » (RG-025).
 - Suppression du seul objectif d'une tâche : la tâche devient une tâche sans objectif.
 - Modification du même objectif sur deux appareils : RG-036 (US-017).
-- Appareils dans des fuseaux horaires différents : l'indication « en retard » suit la journée de chaque appareil (RG-008, DEC-011) et peut différer quelques heures entre eux.
+- Utilisateur en voyage hors du fuseau de Paris : l'indication « en retard » suit la journée de Paris (RG-008, RG-053) ; par exemple, à New York, un objectif dont le délai était hier (heure de New York) peut être signalé en retard dès 18 h, heure locale. Les deux appareils affichent toujours la même indication.
 
 ## Hors périmètre
 - Importance d'un objectif (US-030).
@@ -77,4 +78,4 @@ Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10, CA
 |---|---|
 | 2026-10-20 | v0.1 : US provisoire au backlog initial. |
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5 et 6. |
-| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-26, 28 et 29 intégrées (CA-3, CA-7, CA-8, CA-9) ; règles proposées RG-047 et RG-050 (CA-10, CA-11) ; DEC-011 (journée de l'appareil). |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-26, 28 et 29 intégrées (CA-3, CA-7, CA-8, CA-9) ; règles proposées RG-047 et RG-050 (CA-10, CA-11) ; DEC-012 (fuseau de référence Europe/Paris). |

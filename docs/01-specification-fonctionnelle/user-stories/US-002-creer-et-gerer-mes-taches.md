@@ -29,6 +29,7 @@ Statut : En analyse
 - RG-028 : heures et minutes, pas de 30 min, minimum 30 min.
 - RG-029 : estimation obligatoire, sans valeur par défaut, modifiable tant qu'aucun temps passé n'est saisi.
 - RG-045 : tâche « en retard ».
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
 - RG-046 : suppression.
 - RG-047, RG-050 (proposées).
 
@@ -60,7 +61,7 @@ Statut : En analyse
 - Rattachement d'une tâche à faire à un objectif « à décliner en tâches » : l'objectif passe « en cours ».
 - Retrait du dernier objectif d'une tâche : elle devient une tâche sans objectif.
 - Modification de la même tâche sur deux appareils : RG-036 (US-017).
-- Appareils dans des fuseaux horaires différents : l'indication « en retard » suit la journée de chaque appareil (RG-008, DEC-011).
+- Utilisateur en voyage hors du fuseau de Paris : l'indication « en retard » suit la journée de Paris (RG-008, RG-053), et non celle du lieu où il se trouve ; les deux appareils affichent la même indication.
 
 ## Hors périmètre
 - Sous-tâches (US-024).
@@ -83,4 +84,4 @@ Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-13, CA
 |---|---|
 | 2026-10-20 | v0.1 : US provisoire au backlog initial. |
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5, 6, 9 et 12. |
-| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-28 et 29 intégrées (CA-1, CA-3, CA-4, CA-9, CA-10, CA-12) ; réponse Q-ERG-03 (CA-2) ; règles proposées RG-047 et RG-050 (CA-13, CA-14) ; DEC-011. |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-28 et 29 intégrées (CA-1, CA-3, CA-4, CA-9, CA-10, CA-12) ; réponse Q-ERG-03 (CA-2) ; règles proposées RG-047 et RG-050 (CA-13, CA-14) ; DEC-012 (fuseau de référence Europe/Paris). |

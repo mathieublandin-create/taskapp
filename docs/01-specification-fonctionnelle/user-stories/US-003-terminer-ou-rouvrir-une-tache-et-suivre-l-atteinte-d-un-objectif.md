@@ -13,7 +13,7 @@ Statut : En analyse
   - un objectif est atteint quand toutes ses tâches sont terminées (Q-DEM001-5.4 a).
 - **Précisé en v0.4** : atteinte d'un objectif qui a des sous-objectifs ou des tâches abandonnées, objectif « à décliner en tâches », tâche rattachée à plusieurs objectifs (Q-DEM001-26) ; fin d'une tâche parente (Q-DEM001-25.6 et 25.7).
 - **Proposé en v0.4** (à valider en E6) : incohérence d'état après fusion signalée sans correction (RG-049, F12) ; historique (RG-050).
-- **Journée** : la date de fin est celle de la journée de l'appareil utilisé (RG-008, maintenue par DEC-011).
+- **Journée** : la date de fin est celle de la journée dans le fuseau de référence, Europe/Paris (RG-008 modifiée et RG-053, DEC-012).
 - **Dépendance retirée** : en v0.1, US-003 dépendait du reste à faire (US-009). La fin d'une tâche étant déclarative, cette dépendance disparaît.
 - **Existant.** Aucune fonctionnalité livrée.
 
@@ -22,12 +22,13 @@ Statut : En analyse
 - RG-023 : fin d'une tâche parente.
 - RG-025 : atteinte d'un objectif, état calculé.
 - RG-001 : une tâche peut avoir plusieurs objectifs.
-- RG-008 : journée de l'appareil.
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
 - RG-045 : une tâche terminée n'est pas en retard.
 - RG-049, RG-050 (proposées).
 
 ## Critères d'acceptation
-1. **CA-1** — L'utilisateur déclare une tâche « à faire » terminée. Elle passe à l'état « terminée », et la date de la journée en cours, selon l'heure locale de l'appareil, est conservée comme date de fin (RG-026, RG-008).
+1. **CA-1** — L'utilisateur déclare une tâche « à faire » terminée. Elle passe à l'état « terminée », et la date de la journée en cours, dans le fuseau de référence Europe/Paris, est conservée comme date de fin (RG-026, RG-008, RG-053).
+   - Exemple : l'utilisateur, à New York, termine une tâche le 10 mars à 23 h, heure locale (le 11 mars à 4 h à Paris) : la date de fin est le 11 mars.
 2. **CA-2** — Aucune tâche ne passe à l'état « terminée » sans une action explicite de l'utilisateur, y compris une tâche parente dont toutes les sous-tâches sont terminées.
 3. **CA-3** — L'utilisateur rouvre une tâche terminée. Elle repasse à l'état « à faire » et n'a plus de date de fin affichée. La date de fin précédente est conservée dans l'historique (RG-050).
 4. **CA-4** — Un objectif est « atteint » quand toutes ses tâches non abandonnées sont terminées et que tous ses sous-objectifs sont atteints. Les tâches abandonnées sont ignorées. Un objectif qui n'a ni tâche non abandonnée ni sous-objectif est « à décliner en tâches ». Dans les autres cas, il est « en cours » (RG-025).
@@ -49,7 +50,7 @@ Statut : En analyse
 - Tâche terminée sur un appareil et modifiée sur l'autre : RG-036 (US-017).
 - Tâche terminée sur un appareil et abandonnée sur l'autre, avant échange : l'état le plus récent l'emporte (RG-036), et l'autre est signalé comme valeur écartée **(P, à confirmer avec RG-036)**.
 - Objectif sans délai : son atteinte se calcule de la même façon.
-- Appareils dans des fuseaux horaires différents : la date de fin est celle de la journée de l'appareil sur lequel la tâche a été terminée (RG-008, DEC-011).
+- Passage à l'heure d'été ou d'hiver : la journée reste celle de Paris, de minuit à minuit ; aucune date de fin n'est décalée.
 
 ## Hors périmètre
 - Fin automatique quand le reste à faire atteint zéro (exclue, Q-DEM001-7.1 a).
@@ -72,4 +73,4 @@ Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-12, CA
 |---|---|
 | 2026-10-20 | v0.1 : US provisoire au backlog initial. |
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5.4 et 7. |
-| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25 et 26 intégrées (CA-2, CA-4 à CA-8) ; règles proposées RG-049 et RG-050 (CA-12, CA-13) ; DEC-011 (journée de l'appareil). |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25 et 26 intégrées (CA-2, CA-4 à CA-8) ; règles proposées RG-049 et RG-050 (CA-12, CA-13) ; DEC-012 (fuseau de référence Europe/Paris). |

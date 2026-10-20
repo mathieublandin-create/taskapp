@@ -353,7 +353,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-7 | 2026-10-20 | 7.1 a) je la déclare terminée · 7.2 oui · 7.3 oui (sortie du backlog : non précisé). | RG-026, RG-027 ; nouvelle US-025 ; sortie du backlog : Q-DEM001-27. |
 | Q-DEM001-8 | 2026-10-20 | b) oui, mais plus tard (fréquences non précisées). | US-021 reportée (CdC §4.2) ; fréquences non reposées. |
 | Q-DEM001-9 | 2026-10-20 | a) heures et minutes, précision 30 min. | RG-028 ; précision du temps passé : Q-DEM001-31. |
-| Q-DEM001-10 | 2026-10-20 | 10.1 b) saisie d'une durée par tâche et par jour · 10.2 b) oui sans limite · 10.3 a) jour de démarrage · 10.4 a) heure locale de l'appareil. | RG-008 ; chronomètre exclu ; 10.3 sans objet. |
+| Q-DEM001-10 | 2026-10-20 | 10.1 b) saisie d'une durée par tâche et par jour · 10.2 b) oui sans limite · 10.3 a) jour de démarrage · 10.4 a) heure locale de l'appareil. | RG-008 ; chronomètre exclu ; 10.3 sans objet. **10.4 remplacée le 2026-10-20 par DEC-012 : fuseau fixe Europe/Paris (option b).** |
 | Q-DEM001-11 | 2026-10-20 | 11.1 c) calcul automatique corrigeable · 11.2 b) alerte demandant de ré-estimer. | RG-009 ; Q-DEM001-31. |
 | Q-DEM001-12 | 2026-10-20 | 12.1 réponse libre : « la somme des temps originaux estimés des tâches terminées » · 12.2 b) par semaine · 12.3 oui. | RG-010, RG-029 ; tension avec Q11 et Q17 : Q-DEM001-30. |
 | Q-DEM001-13 | 2026-10-20 | 13.1 a) sur une journée, sans horaire · 13.2 b) l'application propose, je modifie · 13.3 report automatique. | RG-006, RG-031, RG-032 ; nouvelles US-027, US-028 ; tension avec Q15.2 tranchée par le complément (horaire suggéré). |
@@ -372,7 +372,8 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-22 | 2026-10-20 | 22.1 a) Drive du même compte · 22.2 c) perte d'accès = coupure réseau · **22.3 b) non : les données restent sur l'appareil à la déconnexion** · 22.4 a) alerte et proposition de restauration. | RG-020 (22.1) ; RG-035 (22.2) ; nouvelle RG-043 (22.3) et Q-DEM001-42 (tension avec ENF-05) ; nouvelle RG-044 (22.4), complétée du choix « repartir de zéro » proposé par l'architecte (à valider en E6). US-022, US-017, US-018. |
 | Q-DEM001-23 | 2026-10-20 | 23.1 a) information par information · 23.2 oui, information de la valeur écartée. | RG-036 ; règles de réparation proposées RG-047 à RG-049 (F12) ; US-017, US-018. |
 | Q-ERG-02 à 11 (questions ergonomiques de Steeve) | 2026-10-20 | Verbatim (suivi-projet) : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Q-ERG-11 précisée ensuite : option a) (créneau supprimé de l'agenda, tâche déplanifiée). | RG-003, RG-029 (03) ; RG-040 (02) ; RG-039 (04) ; RG-037 (05, 11) ; RG-051 (06) ; RG-052 (07) ; RG-006 (08) ; RG-011 (09) ; RG-031 (10). US-002 (LOT-001) ; US-035, US-033, US-032, US-004, US-006, US-007, US-011, US-026, US-027 (backlog). |
-| DEC-011 (fuseau) | 2026-10-20 | « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | RG-008 maintenue ; proposition F3 rejetée ; Q-DEM001-37 maintenue (P2). |
+| DEC-011 (fuseau) | 2026-10-20 | « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | **Remplacée par DEC-012.** |
+| DEC-012 (fuseau) | 2026-10-20 | « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » | Fuseau fixe Europe/Paris : RG-008 modifiée (Q-10.4 a remplacée par b), nouvelle RG-053 ; Q-DEM001-37 répondue (c). |
 | Q-DEM001-24 à 29 | 2026-10-20 | Toutes les options recommandées sont retenues (24.1–24.4, 25.1–25.7, 26.1–26.4, 27.1–27.3, 28.1–28.5, 29.1–29.4). | Q-24 → RG-022 ; Q-25 → RG-023, RG-026 ; Q-26 → RG-025 ; Q-27 → RG-027, RG-015 ; Q-28 → RG-002, RG-003, RG-028, RG-029, nouvelle RG-045 ; Q-29 → nouvelle RG-046. US-001, 002, 003, 023, 024, 025. |
 
 ---
@@ -419,7 +420,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-34 | Événements de l'agenda et capacité | Tension Q15.1 / Q14.1 / RG-034 | P2 | US-019 | Ouverte |
 | Q-DEM001-35 | Critères de l'ordre de priorité | Q16 partielle, tension Q6.3 / Q6.4 | P2 | US-004, US-030, US-027 | Ouverte |
 | Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
-| Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Ouverte |
+| Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Répondue (DEC-012 : option c, fuseau fixe Europe/Paris) |
 | Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte |
 | Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | **P1** (depuis DEC-002) | US-031, US-017, US-018 | Ouverte |
 | Q-DEM001-40 | Rappel du soir : invitation à saisir | Q18.5 partielle | P3 | US-016 | Ouverte |
@@ -745,7 +746,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 ### Q-DEM001-37 — Fuseau horaire des rappels et des créneaux (P2)
 *Origine* : tension entre Q10.4 a) (la journée suit l'heure locale de l'appareil) et Q18.1 (rappels à 8 h et 21 h). Les rappels et les créneaux sont des événements de votre agenda Google, qui ne dépend d'aucun appareil, et vos deux appareils peuvent se trouver dans des fuseaux différents (smartphone en voyage, PC à domicile).
 
-> **Mise à jour v0.4** : vous avez confirmé que **la journée suit le fuseau horaire de l'appareil** (DEC-011 ; RG-008 maintenue). La question ne porte donc plus que sur l'heure des rappels et des créneaux, qui sont des événements de votre agenda Google : la tension entre le fuseau de l'appareil et celui de l'agenda Google demeure, et la question est maintenue telle quelle.
+> **Mise à jour v0.4 — question tranchée.** Après avoir d'abord retenu le fuseau de l'appareil pour la journée (DEC-011), vous avez décidé : « reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » (DEC-012, qui remplace DEC-011). La journée, les rappels et les créneaux s'entendent dans le fuseau **Europe/Paris**, quel que soit l'appareil ou le lieu : c'est l'option c), avec un fuseau fixe. La réponse Q-DEM001-10.4 a) est remplacée par l'option b). Voir RG-008 et RG-053 du cahier des charges.
 
 1. Les heures des rappels (8 h, 21 h) et les horaires suggérés des créneaux s'entendent :
    - a) dans le fuseau horaire de votre agenda Google **(recommandé : un seul fuseau, celui qu'affiche Google Calendar ; en voyage, vous le changez dans Google)** ;
