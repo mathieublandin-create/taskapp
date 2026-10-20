@@ -3,6 +3,7 @@
 ## Demandes
 | Demande | Date | Résumé | US associée(s) |
 |---|---|---|---|
+| [DEM-001](demandes/DEM-001.md) | 2026-10-20 | Besoin initial : objectifs déclinés en tâches, planification, suivi du temps et de la vélocité, rappels quotidiens via Google Calendar, usage smartphone et PC | En cours d'analyse (E1) |
 
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
