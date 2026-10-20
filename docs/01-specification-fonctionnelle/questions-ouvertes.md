@@ -4,6 +4,8 @@
 >
 > **Version 0.2 du 2026-10-20 (Pepper, fin de E1)** : les réponses aux questions 1 à 20 et les compléments du commanditaire sont reportés dans le [cahier des charges v0.2](cahier-des-charges.md). Les questions encore utiles sont regroupées en fin de document, dans la section « Questions résiduelles — v0.2 » (Q-DEM001-21 à Q-DEM001-40).
 >
+> **Version 0.4 du 2026-10-20 (Pepper, fin de E1 pour LOT-001)** : les réponses P1 aux questions Q-DEM001-21 à 29 sont reportées dans le [cahier des charges v0.4](cahier-des-charges.md) et dans les US de LOT-001. Nouvelles questions **Q-DEM001-41** et **Q-DEM001-42** (P1). **Q-DEM001-39 passe en P1**, car le hors ligne du smartphone entre dans LOT-001 (DEC-002).
+>
 > Les thèmes sont présentés par ordre d'importance. Au sein de chaque thème, les questions sont elles aussi classées par importance.
 >
 > Priorités :
@@ -365,11 +367,11 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-1 j), 3, 4, 13/15 — complément | 2026-10-20 | Complément, verbatim : « je veux que l'application soit utilisable sur mon smartphone et un PC, je veux que la notification apparaisse dans l'heure qui suit, l'usage prioritaire est celui du smartphone si il y a une modification sur les 2, prendre la modification la plus récente. On place les créneaux dans google calendar. On part dans un premier temps sur un horaire suggéré. ok pour demander son avis à starck ». | Q1 j) : smartphone et PC dès la première version (RG-017, ENF-01). Q3 : délai d'une heure (RG-017, ENF-02 ; interprétation à confirmer en Q-DEM001-21). Q4 : smartphone prioritaire pour le hors ligne (RG-021) ; conflit : la modification la plus récente l'emporte (RG-036). Q13.1/Q15.2 : tension tranchée, la tâche est planifiée sur une journée et l'application lui suggère un horaire, qui donne le créneau (RG-034). Avis de Starck accepté (LOT-001). |
 | Q-DEM001-15.2 (sous-questions) — complément | 2026-10-20 | Complément, verbatim : « les créneaux vont dans mon agenda principal oui si le créneau est déplacé dans calendar, il faut une notification dans l'application et une replanification le soir ». | Créneaux dans l'agenda principal (RG-034). Un créneau déplacé dans Google Calendar est pris en compte : notification dans l'application et replanification le soir (RG-037, US-032). |
 | Q-DEM001-15.2 (replanification du soir) — complément | 2026-10-20 | Complément, confirmation : la replanification du soir qui suit le déplacement d'un créneau dans Google Calendar est proposée par l'application, puis validée ou modifiée par le commanditaire. Elle n'est pas automatique. | RG-037 (cohérent avec RG-031 et Q-DEM001-13.2 b). |
-| Q-DEM001-21 à 29 (réponses brutes) | 2026-10-20 | Verbatim : « 21.1 : 1h, 21.2 : oui, 22.1 : oui, 22.2 : oui, 22.3 : non, 22.4 : oui, 23.1 : oui, 23.2 : oui, 24.1 à 24.4 : oui, 25.1 à 25.7 : oui, 26.1 à 26.4 : oui, 27.1 à 27.3 : oui, 28.1 à 28.5 : oui, 29.1 à 29.4 : oui ». Lecture de Jarvis : « oui » = option recommandée par Pepper ; « non » à 22.3 = option b). | À reporter par Pepper |
-| Q-DEM001-21 | 2026-10-20 | 21.1 « 1h » (lecture : délai d'une heure pour qu'une modification soit visible sur l'autre appareil, option a) · 21.2 oui (affichage immédiat à l'ouverture). | À reporter par Pepper |
-| Q-DEM001-22 | 2026-10-20 | 22.1 a) Drive du même compte · 22.2 c) perte d'accès = coupure réseau · **22.3 b) non : les données restent sur l'appareil à la déconnexion** · 22.4 a) alerte et proposition de restauration. | À reporter par Pepper |
-| Q-DEM001-23 | 2026-10-20 | 23.1 a) information par information · 23.2 oui, information de la valeur écartée. | À reporter par Pepper |
-| Q-DEM001-24 à 29 | 2026-10-20 | Toutes les options recommandées sont retenues (24.1–24.4, 25.1–25.7, 26.1–26.4, 27.1–27.3, 28.1–28.5, 29.1–29.4). | À reporter par Pepper |
+| Q-DEM001-21 à 29 (réponses brutes) | 2026-10-20 | Verbatim : « 21.1 : 1h, 21.2 : oui, 22.1 : oui, 22.2 : oui, 22.3 : non, 22.4 : oui, 23.1 : oui, 23.2 : oui, 24.1 à 24.4 : oui, 25.1 à 25.7 : oui, 26.1 à 26.4 : oui, 27.1 à 27.3 : oui, 28.1 à 28.5 : oui, 29.1 à 29.4 : oui ». Lecture de Jarvis : « oui » = option recommandée par Pepper ; « non » à 22.3 = option b). | Reporté par Pepper (CdC v0.4, US de LOT-001) ; détail ci-dessous. |
+| Q-DEM001-21 | 2026-10-20 | 21.1 « 1h » (lecture : délai d'une heure pour qu'une modification soit visible sur l'autre appareil, option a) · 21.2 oui (affichage immédiat à l'ouverture). | RG-017, ENF-02 reformulées avec les limites F1 et F14 ; US-017 CA-2 et CA-3. « 1h » ne désignant aucune option, la lecture a) est soumise à confirmation : Q-DEM001-41. |
+| Q-DEM001-22 | 2026-10-20 | 22.1 a) Drive du même compte · 22.2 c) perte d'accès = coupure réseau · **22.3 b) non : les données restent sur l'appareil à la déconnexion** · 22.4 a) alerte et proposition de restauration. | RG-020 (22.1) ; RG-035 (22.2) ; nouvelle RG-043 (22.3) et Q-DEM001-42 (tension avec ENF-05) ; nouvelle RG-044 (22.4), complétée du choix « repartir de zéro » proposé par l'architecte (à valider en E6). US-022, US-017, US-018. |
+| Q-DEM001-23 | 2026-10-20 | 23.1 a) information par information · 23.2 oui, information de la valeur écartée. | RG-036 ; règles de réparation proposées RG-047 à RG-049 (F12) ; US-017, US-018. |
+| Q-DEM001-24 à 29 | 2026-10-20 | Toutes les options recommandées sont retenues (24.1–24.4, 25.1–25.7, 26.1–26.4, 27.1–27.3, 28.1–28.5, 29.1–29.4). | Q-24 → RG-022 ; Q-25 → RG-023, RG-026 ; Q-26 → RG-025 ; Q-27 → RG-027, RG-015 ; Q-28 → RG-002, RG-003, RG-028, RG-029, nouvelle RG-045 ; Q-29 → nouvelle RG-046. US-001, 002, 003, 023, 024, 025. |
 
 ---
 
@@ -399,15 +401,15 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 | Question | Objet | Origine | Priorité | US bloquées | État |
 |---|---|---|---|---|---|
-| Q-DEM001-21 | Sens de « dans l'heure qui suit » | Complément (Q3), formulation ambiguë | P1 | US-017 | Ouverte |
-| Q-DEM001-22 | Compte Google, espace de stockage et perte d'accès | Tension Q3 b) / Q19.2 / Q19.3 / Q4 c) | P1 | US-022, US-017 | Ouverte |
-| Q-DEM001-23 | Granularité de la règle « la plus récente l'emporte » | Complément (Q4.2) | P1 | US-017, US-018 | Ouverte |
-| Q-DEM001-24 | Sous-objectifs | Conséquences de Q6.1 d) et Q5.3 | P1 | US-023, US-001 | Ouverte |
-| Q-DEM001-25 | Sous-tâches | Tension Q6.1 d) / Q7.1 a) / Q12.1 / Q5.2 | P1 | US-024, US-002, US-003 | Ouverte |
-| Q-DEM001-26 | Atteinte d'un objectif | Tension Q5.4 a) / Q6.1 d) / Q6.3 / Q7.3 | P1 | US-003, US-001, US-023, US-025 | Ouverte |
-| Q-DEM001-27 | Tâche abandonnée | Q7.3 partielle | P1 (points 1 et 2), P2 (point 3) | US-025, US-012 | Ouverte |
-| Q-DEM001-28 | Délai et estimation d'une tâche | Conséquences de Q5.1, Q5.2, Q9 et tension Q12.1 | P1 | US-002, US-001, US-024 | Ouverte |
-| Q-DEM001-29 | Suppression d'un objectif ou d'une tâche | Conséquences de Q6.1 d), Q6.2, Q6.3 | P1 | US-001, US-002, US-023, US-024 | Ouverte |
+| Q-DEM001-21 | Sens de « dans l'heure qui suit » | Complément (Q3), formulation ambiguë | P1 | US-017 | Répondue (point 1 : lecture à confirmer, Q-DEM001-41) |
+| Q-DEM001-22 | Compte Google, espace de stockage et perte d'accès | Tension Q3 b) / Q19.2 / Q19.3 / Q4 c) | P1 | US-022, US-017 | Répondue (conséquence de 22.3 : Q-DEM001-42) |
+| Q-DEM001-23 | Granularité de la règle « la plus récente l'emporte » | Complément (Q4.2) | P1 | US-017, US-018 | Répondue |
+| Q-DEM001-24 | Sous-objectifs | Conséquences de Q6.1 d) et Q5.3 | P1 | US-023, US-001 | Répondue |
+| Q-DEM001-25 | Sous-tâches | Tension Q6.1 d) / Q7.1 a) / Q12.1 / Q5.2 | P1 | US-024, US-002, US-003 | Répondue |
+| Q-DEM001-26 | Atteinte d'un objectif | Tension Q5.4 a) / Q6.1 d) / Q6.3 / Q7.3 | P1 | US-003, US-001, US-023, US-025 | Répondue |
+| Q-DEM001-27 | Tâche abandonnée | Q7.3 partielle | P1 (points 1 et 2), P2 (point 3) | US-025, US-012 | Répondue |
+| Q-DEM001-28 | Délai et estimation d'une tâche | Conséquences de Q5.1, Q5.2, Q9 et tension Q12.1 | P1 | US-002, US-001, US-024 | Répondue |
+| Q-DEM001-29 | Suppression d'un objectif ou d'une tâche | Conséquences de Q6.1 d), Q6.2, Q6.3 | P1 | US-001, US-002, US-023, US-024 | Répondue |
 | Q-DEM001-30 | Vélocité, reste à faire et contrôle des délais | Tension Q12.1 / Q11.1 c) / Q17.1 b) | P2 | US-007, US-010, US-011, US-013 | Ouverte |
 | Q-DEM001-31 | Reste à faire après correction, temps passé | Tension Q11.1 c) / Q11.2 b) / Q9 / RG-036 | P2 | US-008, US-009, US-016 | Ouverte |
 | Q-DEM001-32 | Horaire suggéré et planification à la journée | Compléments (Q13/Q15) et tension Q13.1 a) / Q13.3 / Q14 | P2 | US-020, US-006, US-027, US-028 | Ouverte |
@@ -417,8 +419,10 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
 | Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Ouverte |
 | Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte |
-| Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | P2 | US-031 | Ouverte |
+| Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | **P1** (depuis DEC-002) | US-031, US-017, US-018 | Ouverte |
 | Q-DEM001-40 | Rappel du soir : invitation à saisir | Q18.5 partielle | P3 | US-016 | Ouverte |
+| Q-DEM001-41 | Confirmation du sens du délai d'une heure | Réponse « 1h » à Q-21.1, qui ne désigne aucune option | P1 | US-017 ; plus tard US-032 | Ouverte |
+| Q-DEM001-42 | Données conservées sur un appareil après déconnexion | Tension entre la réponse 22.3 (« non ») et ENF-05 | P1 | US-022 | Ouverte |
 
 ### Q-DEM001-21 — Sens de « la notification apparaisse dans l'heure qui suit » (P1)
 *Origine* : votre complément du 2026-10-20 sur le délai de prise en compte entre appareils (Q-DEM001-3). Le mot « notification » laisse un doute, car un autre complément parle d'une notification de l'application quand un créneau est déplacé dans Google Calendar.
@@ -753,7 +757,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 *Bloque* : US-014, US-015, US-016.
 
-### Q-DEM001-39 — Usage hors ligne sur le PC (P2)
+### Q-DEM001-39 — Usage hors ligne sur le PC (P1 depuis la v0.4, auparavant P2)
 *Origine* : réponse partielle à Q4.1. Vous avez indiqué que l'usage prioritaire est celui du smartphone.
 
 - a) Le PC est utilisable hors ligne lui aussi, dans un lot ultérieur à celui du smartphone **(recommandé : vous gardez le même comportement sur vos deux appareils, sans retarder le smartphone)** ;
@@ -761,6 +765,13 @@ En cas d'égalité, quel critère départage deux tâches ?
 - c) le PC n'a pas besoin de fonctionner hors ligne : sans réseau, il indique qu'une connexion est nécessaire.
 
 *Bloque* : US-031 (conditionnelle). La question devient P1 si vous décidez d'intégrer l'usage hors ligne au lot 1.
+
+> **Mise à jour v0.4 — question passée en P1.** Vous avez décidé d'intégrer le hors ligne du smartphone à LOT-001 (DEC-002). Il faut donc savoir ce que fait le PC sans réseau dans ce même lot.
+> - Avis de l'architecte : le hors ligne du PC est « quasi gratuit » avec la même base d'application ; une seule différence, sur PC, le renouvellement de l'accès Google au bout d'une heure demande parfois un clic de reconnexion. Il recommande l'option **b)** ; l'option a) reste acceptable selon lui.
+> - Quelle que soit l'option, une saisie faite sur le PC pendant une coupure de réseau, application déjà ouverte, est conservée et enregistrée au retour du réseau (RG-035, ENF-06). La question porte sur l'**ouverture** de l'application sans réseau et sur l'affichage des indicateurs « hors ligne » sur le PC.
+> - Pepper maintient sa recommandation a) pour ne pas alourdir LOT-001, mais **b) est désormais une option sérieuse**, compte tenu du faible surcoût annoncé. Les deux sont compatibles avec le reste des US.
+>
+> *Bloque désormais* : US-018 (périmètre : smartphone seul, ou smartphone et PC), CA-7 de US-017.
 
 ### Q-DEM001-40 — Rappel du soir : invitation à saisir (P3)
 *Origine* : réponse partielle à Q18.5.
@@ -772,6 +783,38 @@ En cas d'égalité, quel critère départage deux tâches ?
    - **Recommandé : non**, par cohérence avec votre réponse pour le rappel du matin (Q18.4).
 
 *Bloque* : US-016.
+
+---
+
+## Questions résiduelles — v0.4
+
+> Rédigées par Pepper le 2026-10-20, après les réponses P1 du commanditaire, l'avis de l'architecte (DAT §8) et les décisions DEC-001 à DEC-010. Ce sont des questions **fermées**, P1 : elles bloquent la validation (E6) des US indiquées.
+
+### Q-DEM001-41 — Confirmation du sens du délai d'une heure (P1)
+*Origine* : à la question Q-DEM001-21.1 (« ce délai d'une heure porte sur : a) vos données entre vos deux appareils ; b) la notification d'un créneau déplacé dans Google Calendar ; c) les deux »), vous avez répondu « 1h », qui ne désigne aucune de ces options. Nous avons retenu l'option a). Par ailleurs, l'architecte signale que, sans serveur (votre décision DEC-007), un déplacement de créneau dans Google Calendar ne peut être détecté que lorsque l'application est ouverte sur l'un de vos appareils (DAT §8, F2).
+
+Confirmez-vous que :
+- le délai d'une heure porte **uniquement sur vos données** : une modification faite sur un appareil est visible sur l'autre au plus tard une heure après si celui-ci est ouvert et connecté, et sinon dès son ouverture ;
+- la notification d'un **créneau déplacé** dans Google Calendar (lot « Agenda ») n'est **pas** soumise à ce délai : elle apparaît dès que l'application, ouverte, détecte le déplacement, ou à sa prochaine ouverture ?
+
+(oui / non : précisez)
+- **Recommandé : oui.** C'est la lecture retenue dans le cahier des charges v0.4, et aucune autre n'est tenable sans serveur pour la notification d'un créneau déplacé.
+
+*Bloque* : US-017 (CA-2) ; plus tard US-032.
+
+### Q-DEM001-42 — Vos données restent sur l'appareil après une déconnexion : prêt, perte, vol, changement de compte (P1)
+*Origine* : votre réponse « non » à Q-DEM001-22.3. Quand vous vous déconnectez, vos données restent sur l'appareil. Elles ne sont plus affichées tant que personne ne se reconnecte avec votre compte Google (RG-019).
+- C'est cohérent avec l'exigence « aucune perte de donnée » (ENF-06) : même les modifications pas encore enregistrées dans votre Drive sont conservées.
+- En revanche, c'est en tension avec l'exigence de confidentialité (ENF-05, « vos données ne sont accessibles qu'à vous ») : sur un appareil prêté, perdu, volé ou cédé, vos objectifs et vos tâches restent présents, et la déconnexion ne permet plus de les retirer. Sur un smartphone où votre compte Google est enregistré, une personne qui dispose de l'appareil déverrouillé peut se reconnecter en un geste. Retirer l'accès de l'application depuis votre compte Google interrompt les échanges avec votre Drive, mais n'efface pas non plus ce qui est sur l'appareil.
+
+1. En plus de la déconnexion simple, qui conserve les données, voulez-vous une action distincte **« Se déconnecter et effacer les données de cet appareil »**, à utiliser avant de prêter, de céder ou de quitter un appareil ? Elle enregistrerait d'abord dans votre Drive les modifications en attente ; si c'est impossible (par exemple, sans réseau), elle vous indiquerait le nombre de modifications qui seraient perdues et vous demanderait de confirmer.
+   - a) oui **(recommandé : la déconnexion simple garde le comportement que vous avez choisi, et vous disposez d'un moyen de protéger vos données quand vous le jugez utile)** ;
+   - b) non : la seule façon d'effacer les données d'un appareil est de désinstaller l'application, ou d'effacer les données du navigateur sur le PC.
+2. Si un **autre compte Google** se connecte sur un appareil où vos données sont restées :
+   - a) vos données sont conservées à part, invisibles pour l'autre compte, et vous les retrouvez en vous reconnectant ;
+   - b) vos données sont effacées de l'appareil avant que l'autre compte n'y accède. Les modifications en attente sont d'abord enregistrées dans votre Drive ; si c'est impossible, l'application indique le nombre de modifications qui seraient perdues et demande confirmation. **(recommandé : l'autre compte ne peut jamais accéder à vos données, et vous ne perdez rien, puisqu'elles sont dans votre Drive)**
+
+*Bloque* : US-022 (CA-5, CA-8).
 
 ---
 
