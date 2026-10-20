@@ -365,3 +365,405 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-1 j), 3, 4, 13/15 — complément | 2026-10-20 | Complément, verbatim : « je veux que l'application soit utilisable sur mon smartphone et un PC, je veux que la notification apparaisse dans l'heure qui suit, l'usage prioritaire est celui du smartphone si il y a une modification sur les 2, prendre la modification la plus récente. On place les créneaux dans google calendar. On part dans un premier temps sur un horaire suggéré. ok pour demander son avis à starck ». | Q1 j) : smartphone et PC dès la première version (RG-017, ENF-01). Q3 : délai d'une heure (RG-017, ENF-02 ; interprétation à confirmer en Q-DEM001-21). Q4 : smartphone prioritaire pour le hors ligne (RG-021) ; conflit : la modification la plus récente l'emporte (RG-036). Q13.1/Q15.2 : tension tranchée, la tâche est planifiée sur une journée et l'application lui suggère un horaire, qui donne le créneau (RG-034). Avis de Starck accepté (LOT-001). |
 | Q-DEM001-15.2 (sous-questions) — complément | 2026-10-20 | Complément, verbatim : « les créneaux vont dans mon agenda principal oui si le créneau est déplacé dans calendar, il faut une notification dans l'application et une replanification le soir ». | Créneaux dans l'agenda principal (RG-034). Un créneau déplacé dans Google Calendar est pris en compte : notification dans l'application et replanification le soir (RG-037, US-032). |
 | Q-DEM001-15.2 (replanification du soir) — complément | 2026-10-20 | Complément, confirmation : la replanification du soir qui suit le déplacement d'un créneau dans Google Calendar est proposée par l'application, puis validée ou modifiée par le commanditaire. Elle n'est pas automatique. | RG-037 (cohérent avec RG-031 et Q-DEM001-13.2 b). |
+
+---
+
+## Questions résiduelles — v0.2
+
+> Rédigées par Pepper le 2026-10-20 (fin de E1), après intégration des réponses aux questions 1 à 20 et des trois compléments du commanditaire.
+>
+> Cette section contient uniquement :
+> - les sous-questions restées sans réponse et encore utiles ;
+> - les tensions ou contradictions détectées entre les réponses.
+>
+> **Questions non reposées** :
+> - celles qui ont été tranchées par les compléments : appareils de la première version, appareil prioritaire pour le hors ligne, règle de conflit, créneaux et horaire suggéré, agenda principal, replanification proposée après un déplacement de créneau ;
+> - Q-DEM001-8 (fréquences des récurrences) : les récurrences sont reportées ;
+> - Q-DEM001-10.3 : sans objet, le chronomètre n'étant pas retenu.
+>
+> Priorités :
+> - **P1** : bloque le lot 1 (LOT-001) ;
+> - **P2** : bloque des lots ultérieurs ;
+> - **P3** : peut attendre.
+>
+> Pour chaque question, indiquez la lettre retenue, « oui » ou « non », ou bien « autre » avec une précision. L'option recommandée est signalée par **(recommandé)**.
+>
+> Les validations attendues en dehors de ces questions sont rappelées au §11 du cahier des charges : reformulation du besoin, exclusions proposées, ENF-05 et ENF-06.
+
+### Synthèse des questions résiduelles
+
+| Question | Objet | Origine | Priorité | US bloquées | État |
+|---|---|---|---|---|---|
+| Q-DEM001-21 | Sens de « dans l'heure qui suit » | Complément (Q3), formulation ambiguë | P1 | US-017 | Ouverte |
+| Q-DEM001-22 | Compte Google, espace de stockage et perte d'accès | Tension Q3 b) / Q19.2 / Q19.3 / Q4 c) | P1 | US-022, US-017 | Ouverte |
+| Q-DEM001-23 | Granularité de la règle « la plus récente l'emporte » | Complément (Q4.2) | P1 | US-017, US-018 | Ouverte |
+| Q-DEM001-24 | Sous-objectifs | Conséquences de Q6.1 d) et Q5.3 | P1 | US-023, US-001 | Ouverte |
+| Q-DEM001-25 | Sous-tâches | Tension Q6.1 d) / Q7.1 a) / Q12.1 / Q5.2 | P1 | US-024, US-002, US-003 | Ouverte |
+| Q-DEM001-26 | Atteinte d'un objectif | Tension Q5.4 a) / Q6.1 d) / Q6.3 / Q7.3 | P1 | US-003, US-001, US-023, US-025 | Ouverte |
+| Q-DEM001-27 | Tâche abandonnée | Q7.3 partielle | P1 (points 1 et 2), P2 (point 3) | US-025, US-012 | Ouverte |
+| Q-DEM001-28 | Délai et estimation d'une tâche | Conséquences de Q5.1, Q5.2, Q9 et tension Q12.1 | P1 | US-002, US-001, US-024 | Ouverte |
+| Q-DEM001-29 | Suppression d'un objectif ou d'une tâche | Conséquences de Q6.1 d), Q6.2, Q6.3 | P1 | US-001, US-002, US-023, US-024 | Ouverte |
+| Q-DEM001-30 | Vélocité, reste à faire et contrôle des délais | Tension Q12.1 / Q11.1 c) / Q17.1 b) | P2 | US-007, US-010, US-011, US-013 | Ouverte |
+| Q-DEM001-31 | Reste à faire après correction, temps passé | Tension Q11.1 c) / Q11.2 b) / Q9 / RG-036 | P2 | US-008, US-009, US-016 | Ouverte |
+| Q-DEM001-32 | Horaire suggéré et planification à la journée | Compléments (Q13/Q15) et tension Q13.1 a) / Q13.3 / Q14 | P2 | US-020, US-006, US-027, US-028 | Ouverte |
+| Q-DEM001-33 | Créneau déplacé dans Google Calendar | Compléments (Q15.2) | P2 | US-032 | Ouverte |
+| Q-DEM001-34 | Événements de l'agenda et capacité | Tension Q15.1 / Q14.1 / RG-034 | P2 | US-019 | Ouverte |
+| Q-DEM001-35 | Critères de l'ordre de priorité | Q16 partielle, tension Q6.3 / Q6.4 | P2 | US-004, US-030, US-027 | Ouverte |
+| Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
+| Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Ouverte |
+| Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte |
+| Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | P2 | US-031 | Ouverte |
+| Q-DEM001-40 | Rappel du soir : invitation à saisir | Q18.5 partielle | P3 | US-016 | Ouverte |
+
+### Q-DEM001-21 — Sens de « la notification apparaisse dans l'heure qui suit » (P1)
+*Origine* : votre complément du 2026-10-20 sur le délai de prise en compte entre appareils (Q-DEM001-3). Le mot « notification » laisse un doute, car un autre complément parle d'une notification de l'application quand un créneau est déplacé dans Google Calendar.
+
+1. Ce délai d'une heure porte sur :
+   - a) le temps maximal pour qu'une modification faite sur un appareil connecté soit visible sur l'autre appareil connecté ;
+   - b) le temps maximal pour que la notification d'un créneau déplacé dans Google Calendar apparaisse dans l'application ;
+   - c) les deux.
+2. Quel que soit votre choix au point 1 : quand vous ouvrez l'application sur un appareil connecté, doit-elle afficher **immédiatement** les dernières modifications faites sur l'autre appareil, sans attendre ce délai ? (oui / non)
+   - **Recommandé : oui.** Le cas le plus courant est le passage du PC au smartphone. Un délai d'une heure à l'ouverture vous ferait travailler sur des données périmées et multiplierait les conflits.
+
+*Bloque* : US-017 (critères d'acceptation sur le délai).
+
+### Q-DEM001-22 — Compte Google, espace de stockage et perte d'accès (P1)
+*Origine* : tension entre Q3 b), Q19.2, Q19.3 et Q4 c). Vos réponses sont cohérentes : un compte Google est obligatoire, et vos données sont dans votre propre espace en ligne. Elles ont toutefois une conséquence : l'accès Google ne sert plus seulement aux rappels, il conditionne l'accès à vos données. Or votre réponse Q19.3 ne portait que sur les événements d'agenda.
+
+1. Votre espace de stockage est-il le **Google Drive du compte Google** avec lequel vous vous connectez à l'application ?
+   - a) oui **(recommandé : un seul compte et une seule autorisation à gérer, ce qui est cohérent avec la connexion Google obligatoire)** ;
+   - b) non, un autre service : précisez lequel. Une seconde connexion sera alors à gérer.
+2. Si l'accès à votre compte Google est retiré ou expire, que fait l'application en attendant que vous vous reconnectiez ?
+   - a) Elle bloque tout accès à vos données jusqu'à la reconnexion. Les modifications pas encore enregistrées dans votre espace sont conservées sur l'appareil et enregistrées après la reconnexion.
+   - b) Elle permet de consulter les données présentes sur l'appareil, mais pas d'en saisir, jusqu'à la reconnexion. Même garantie de conservation qu'en a).
+   - c) Elle permet de consulter et de saisir, comme sans réseau. L'enregistrement dans votre espace reprend après la reconnexion. **(recommandé : pour vous, la perte d'accès se comporte comme une coupure de réseau, sans blocage ni perte ; c'est cohérent avec l'usage hors ligne en saisie, Q4 c)**
+3. Quand vous vous déconnectez volontairement sur un appareil, les données présentes sur cet appareil sont-elles effacées ?
+   - a) Oui, après l'enregistrement dans votre espace des modifications en attente. Si certaines modifications ne peuvent pas être enregistrées (pas de réseau), l'application vous avertit et vous demande confirmation avant de les perdre. **(recommandé : protège vos données en cas de prêt, de perte ou de vol de l'appareil)**
+   - b) Non, elles restent sur l'appareil.
+4. Si les données de l'application sont supprimées ou modifiées directement dans votre espace de stockage, en dehors de l'application :
+   - a) l'application vous avertit et vous propose de les restaurer à partir de la copie présente sur l'appareil **(recommandé, sous réserve de l'avis de Starck sur la faisabilité)** ;
+   - b) l'application considère que la suppression est volontaire et repart d'un espace vide ;
+   - c) autre : précisez.
+
+*Bloque* : US-022, US-017.
+
+### Q-DEM001-23 — Granularité de la règle « la modification la plus récente l'emporte » (P1)
+*Origine* : votre complément sur Q4.2. La règle est acquise. Reste à préciser à quel niveau elle s'applique.
+
+*Exemple* : sur le PC, vous modifiez l'intitulé d'une tâche ; sur le smartphone, hors ligne, vous modifiez ensuite son délai.
+
+1. Que conserve l'application ?
+   - a) Information par information : le nouvel intitulé et le nouveau délai sont conservés tous les deux. La règle « la plus récente l'emporte » ne s'applique que lorsque la **même information** a été modifiée sur les deux appareils. **(recommandé : aucune modification n'est perdue sans nécessité)**
+   - b) Élément par élément : la version la plus récente de la tâche entière remplace l'autre, et le nouvel intitulé saisi sur le PC est perdu.
+2. Quand une de vos modifications est écartée par cette règle, l'application doit-elle vous en informer, en indiquant la valeur écartée ? (oui / non)
+   - **Recommandé : oui**, conformément à ENF-06 (aucune donnée ne disparaît sans que vous en soyez informé).
+
+*Bloque* : US-017 et US-018.
+
+### Q-DEM001-24 — Sous-objectifs (P1)
+*Origine* : conséquences de Q6.1 d) et de Q5.3 b).
+
+1. Combien de niveaux de sous-objectifs ?
+   - a) Un seul niveau : objectif, puis sous-objectifs **(recommandé : reste lisible sur smartphone, votre usage prioritaire, et peut être étendu plus tard)** ;
+   - b) plusieurs niveaux, N au maximum : précisez N ;
+   - c) sans limite.
+2. Un sous-objectif n'a-t-il qu'un seul objectif parent ? (oui / non)
+   - **Recommandé : oui.** Une tâche peut déjà contribuer à plusieurs objectifs (Q6.3), ce qui couvre les besoins de rattachement multiple.
+3. Le délai d'un sous-objectif peut-il être postérieur à celui de son objectif parent ?
+   - a) non, c'est interdit ;
+   - b) oui, avec une alerte **(recommandé : c'est la règle que vous avez choisie pour les tâches, en Q5.3 b)** ;
+   - c) oui, sans alerte.
+4. Un sous-objectif peut-il être déplacé sous un autre objectif, ou devenir un objectif principal ? (oui / non)
+   - **Recommandé : oui**, pour pouvoir réorganiser vos objectifs sans tout ressaisir.
+
+*Bloque* : US-023, US-001.
+
+### Q-DEM001-25 — Sous-tâches (P1)
+*Origine* : tension entre Q6.1 d), Q7.1 a), Q12.1 et Q5.2. La vélocité est la somme des estimations initiales des tâches terminées (Q12.1). Si une tâche et ses sous-tâches portent chacune une estimation, le même travail risque d'être compté deux fois.
+
+1. Combien de niveaux de sous-tâches ?
+   - a) Un seul niveau : tâche, puis sous-tâches **(recommandé, pour la même raison qu'en Q-DEM001-24)** ;
+   - b) plusieurs niveaux, N au maximum : précisez N ;
+   - c) sans limite.
+2. Une sous-tâche a-t-elle, comme toute tâche, un délai obligatoire et sa propre estimation ?
+   - a) oui **(recommandé : c'est la sous-tâche qui est réalisée, planifiée et suivie)** ;
+   - b) non : le délai et l'estimation ne sont portés que par la tâche parente.
+3. Quelle est l'estimation d'une tâche qui a des sous-tâches ?
+   - a) La somme des estimations de ses sous-tâches, calculée et non saisie. Dans la vélocité, seules comptent les tâches qui n'ont pas de sous-tâches. **(recommandé : le même travail ne peut pas être compté deux fois)**
+   - b) Une estimation saisie à part, qui s'ajoute à celles des sous-tâches.
+   - c) Autre : précisez.
+4. Le délai d'une sous-tâche peut-il être postérieur au délai de sa tâche parente ?
+   - a) non, c'est interdit ;
+   - b) oui, avec une alerte **(recommandé, par cohérence avec Q5.3 b)** ;
+   - c) oui, sans alerte.
+5. À quels objectifs une sous-tâche est-elle rattachée ?
+   - a) aux objectifs de sa tâche parente, sans pouvoir en changer **(recommandé : évite qu'une tâche soit à moitié rattachée à un objectif)** ;
+   - b) elle peut aussi être rattachée à d'autres objectifs.
+6. Peut-on déclarer terminée une tâche dont certaines sous-tâches ne le sont pas ?
+   - a) non, tant qu'il reste une sous-tâche ni terminée ni abandonnée **(recommandé : l'état de la tâche reste fidèle au travail réel)** ;
+   - b) oui, et ses sous-tâches sont alors terminées aussi ;
+   - c) oui, et ses sous-tâches restent à faire.
+7. Quand toutes les sous-tâches sont terminées, la tâche parente :
+   - a) reste à faire jusqu'à ce que vous la déclariez terminée **(recommandé : c'est cohérent avec Q7.1 a, une tâche n'est terminée que sur votre déclaration)** ;
+   - b) est terminée automatiquement.
+
+*Bloque* : US-024, US-002, US-003 ; plus tard US-010.
+
+### Q-DEM001-26 — Atteinte d'un objectif (P1)
+*Origine* : tension entre Q5.4 a) (objectif atteint quand toutes ses tâches sont terminées), Q6.1 d) (sous-objectifs), Q6.3 (une tâche pour plusieurs objectifs) et Q7.3 (abandon).
+
+1. Un objectif qui a des sous-objectifs est atteint quand :
+   - a) toutes ses tâches propres sont terminées **et** tous ses sous-objectifs sont atteints **(recommandé)** ;
+   - b) seules ses tâches propres sont terminées, quel que soit l'état de ses sous-objectifs.
+2. Comment comptent les tâches abandonnées ?
+   - a) Elles sont ignorées : l'objectif est atteint quand toutes ses tâches non abandonnées sont terminées **(recommandé : sinon, un objectif qui contient une tâche abandonnée ne pourrait jamais être atteint)** ;
+   - b) un objectif qui contient une tâche abandonnée ne peut pas être atteint.
+3. Un objectif sans aucune tâche ni sous-objectif, ou dont toutes les tâches sont abandonnées, est :
+   - a) non atteint, et affiché comme « à décliner en tâches » **(recommandé : un objectif vide n'a rien accompli)** ;
+   - b) atteint.
+4. Une tâche rattachée à plusieurs objectifs, une fois terminée, compte-t-elle comme terminée pour **chacun** de ces objectifs ? (oui / non)
+   - **Recommandé : oui.**
+
+*Bloque* : US-003, US-001, US-023, US-025.
+
+### Q-DEM001-27 — Tâche abandonnée (P1 pour les points 1 et 2, P2 pour le point 3)
+*Origine* : réponse partielle à Q7.3.
+
+1. Une tâche abandonnée peut-elle être reprise, c'est-à-dire redevenir « à faire » ? (oui / non)
+   - **Recommandé : oui**, pour corriger un abandon par erreur ou un changement d'avis.
+2. Abandonner une tâche qui a des sous-tâches :
+   - a) abandonne aussi ses sous-tâches qui ne sont pas terminées **(recommandé)** ;
+   - b) n'est possible que lorsque toutes ses sous-tâches sont terminées ou abandonnées.
+3. Une tâche abandonnée sort-elle du backlog ? (question Q7.3 restée sans réponse)
+   - a) oui **(recommandé : elle ne représente plus de travail à faire ; sinon, le backlog ne diminuerait jamais)** ;
+   - b) non.
+
+*Bloque* : US-025 (points 1 et 2) ; US-012 (point 3).
+
+### Q-DEM001-28 — Délai et estimation d'une tâche (P1)
+*Origine* : conséquences de Q5.1, Q5.2 et Q9, et tension avec Q12.1. La vélocité repose sur les « temps originaux estimés », c'est-à-dire sur les estimations saisies à la création des tâches.
+
+1. L'estimation est-elle obligatoire à la création d'une tâche ?
+   - a) oui **(recommandé : une tâche sans estimation ne compterait pas dans la vélocité et ne pourrait être ni planifiée, ni contrôlée)** ;
+   - b) non, mais une tâche sans estimation est signalée et ne peut pas être planifiée.
+2. La plus petite estimation possible est-elle de 30 min ? (oui / non : précisez)
+   - **Recommandé : oui**, c'est la précision que vous avez choisie (Q9).
+3. L'estimation initiale peut-elle être modifiée ?
+   - a) Librement, tant qu'aucun temps passé n'a été saisi sur la tâche. Elle est ensuite figée, et les corrections passent par le reste à faire. **(recommandé : vous pouvez corriger une erreur de saisie sans fausser votre vélocité)**
+   - b) Jamais, après la création.
+   - c) Toujours, et la vélocité utilise alors la dernière valeur.
+4. Le délai est-il une date sans heure, une tâche étant dans les temps si elle est terminée au plus tard ce jour-là inclus ? (oui / non : précisez)
+   - **Recommandé : oui**, par cohérence avec la planification à la journée (Q13.1 a).
+5. Peut-on saisir un délai déjà dépassé, pour une tâche ou pour un objectif ?
+   - a) oui, et l'élément est aussitôt signalé en retard **(recommandé : vous pouvez enregistrer un travail déjà en retard)** ;
+   - b) oui, après confirmation ;
+   - c) non, c'est interdit.
+
+*Bloque* : US-002, US-001, US-024.
+
+### Q-DEM001-29 — Suppression d'un objectif ou d'une tâche (P1)
+*Origine* : conséquences de Q6.1 d), Q6.2 et Q6.3. La suppression est distincte de l'abandon : elle fait disparaître l'élément.
+
+1. Que deviennent les tâches d'un objectif que vous supprimez ?
+   - a) Elles sont conservées et détachées de cet objectif ; celles qui n'ont plus d'objectif deviennent des tâches sans objectif **(recommandé : aucune perte de travail, et Q6.2 autorise les tâches sans objectif)** ;
+   - b) les tâches rattachées uniquement à cet objectif sont supprimées avec lui ;
+   - c) la suppression est impossible tant que l'objectif a des tâches.
+2. Que deviennent les sous-objectifs d'un objectif que vous supprimez ?
+   - a) ils deviennent des objectifs principaux **(recommandé)** ;
+   - b) ils sont supprimés avec lui, et leurs tâches suivent la règle du point 1 ;
+   - c) la suppression est impossible tant que l'objectif a des sous-objectifs.
+3. Que deviennent les sous-tâches d'une tâche que vous supprimez ?
+   - a) elles sont supprimées avec elle, après une confirmation qui indique leur nombre **(recommandé : une sous-tâche n'a de sens que dans sa tâche parente ; l'abandon reste possible pour garder une trace)** ;
+   - b) elles deviennent des tâches indépendantes ;
+   - c) la suppression est impossible tant que la tâche a des sous-tâches.
+4. La suppression est-elle définitive ?
+   - a) oui, après confirmation **(recommandé dans un premier temps : l'abandon permet déjà de garder une trace)** ;
+   - b) non : une corbeille permet de restaurer l'élément pendant N jours (précisez N).
+
+*Bloque* : US-001, US-002, US-023, US-024.
+
+### Q-DEM001-30 — Vélocité, reste à faire et contrôle des délais (P2)
+*Origine* : tension entre Q12.1 (vélocité = somme des estimations initiales des tâches terminées, par semaine), Q11.1 c) (reste à faire corrigeable, qui exprime donc le temps réel restant) et Q17.1 b) (un délai ne tient pas si le reste à faire dépasse ce que la vélocité permet de réaliser avant ce délai). La vélocité est mesurée en « heures estimées », le reste à faire corrigé en « heures réelles » : les comparer directement fausse le résultat.
+
+*Exemple* : vos tâches prennent en réalité deux fois le temps estimé. Vous travaillez 20 h par semaine et terminez des tâches estimées au total à 10 h : votre vélocité est de 10 h par semaine. Il vous reste une tâche estimée à 10 h, que vous avez ré-estimée à 20 h. Elle vous prendra une semaine. Si l'on compare son reste à faire corrigé (20 h) à votre vélocité (10 h par semaine), l'application annonce deux semaines : votre retard sur les estimations est compté deux fois.
+
+1. Quelle quantité de travail restant l'application compare-t-elle à la vélocité ?
+   - a) La somme des **estimations initiales** des tâches non terminées. Vos corrections du reste à faire servent alors au planning quotidien et au backlog, mais pas à ce contrôle. **(recommandé : les deux grandeurs sont dans la même unité, et la vélocité absorbe d'elle-même vos écarts d'estimation)**
+   - b) La somme des **restes à faire corrigés**, en sachant que le résultat est pessimiste lorsque vos estimations sont trop optimistes.
+   - c) Autre : précisez.
+2. Quelle vélocité utiliser pour ce contrôle ?
+   - a) la moyenne des 4 dernières semaines **(recommandé : réagit aux changements de rythme sans dépendre d'une seule semaine atypique)** ;
+   - b) la dernière semaine complète ;
+   - c) la moyenne des N dernières semaines : précisez N.
+3. Tant que l'historique est insuffisant (par exemple pendant les premières semaines d'utilisation) :
+   - a) le contrôle s'appuie sur votre capacité quotidienne, en indiquant que la vélocité n'est pas encore disponible **(recommandé : vous êtes alerté dès le départ)** ;
+   - b) aucun contrôle n'est fait, et l'application indique que la vélocité n'est pas encore disponible.
+4. Une tâche terminée compte dans la vélocité de la semaine, **du lundi au dimanche**, où vous l'avez déclarée terminée. (oui / non : précisez)
+   - **Recommandé : oui.**
+5. Une tâche terminée, puis rouverte, puis de nouveau terminée :
+   - a) compte uniquement dans la semaine de sa dernière fin **(recommandé : elle n'est comptée qu'une fois)** ;
+   - b) compte dans chacune des semaines où elle a été terminée.
+
+*Bloque* : US-007, US-010, US-011, US-013.
+
+### Q-DEM001-31 — Reste à faire après correction et saisie du temps passé (P2)
+*Origine* : tension entre Q11.1 c) (reste à faire calculé, mais corrigeable), Q11.2 b) (alerte quand le temps passé dépasse l'estimation), Q9 (précision de 30 min) et la règle de conflit (la modification la plus récente l'emporte).
+
+1. Après une correction manuelle du reste à faire, comment est-il calculé ensuite ?
+   - a) reste à faire corrigé, moins le temps passé saisi depuis la correction **(recommandé : votre correction est conservée)** ;
+   - b) toujours estimation initiale moins temps passé cumulé : votre correction est remplacée à la saisie suivante.
+2. Quand l'alerte de ré-estimation se déclenche-t-elle ?
+   - a) quand le reste à faire calculé atteint zéro alors que la tâche n'est pas terminée, le reste à faire étant alors affiché à zéro **(recommandé : cela tient compte de vos corrections)** ;
+   - b) dès que le temps passé cumulé dépasse l'estimation initiale, même si vous avez corrigé le reste à faire.
+3. Le temps passé se saisit-il aussi par pas de 30 min ?
+   - a) oui **(recommandé : le reste à faire, égal à l'estimation moins le temps passé, reste alors un multiple de 30 min, comme en Q9)** ;
+   - b) non, à la minute près : précisez alors comment le reste à faire est arrondi.
+4. La durée saisie pour une tâche et un jour (Q10.1 b) est :
+   - a) le **total** du jour pour cette tâche : une nouvelle saisie remplace la précédente **(recommandé : c'est cohérent avec « une durée par tâche et par jour » et avec la règle « la plus récente l'emporte » entre vos deux appareils)** ;
+   - b) un **ajout** : chaque saisie s'additionne aux précédentes du jour. Dans ce cas, deux saisies faites sur vos deux appareils doivent-elles s'additionner, par exception à la règle « la plus récente l'emporte » ? (oui / non)
+
+*Bloque* : US-008, US-009, US-016.
+
+### Q-DEM001-32 — Horaire suggéré et planification à la journée (P2)
+*Origine* : vos compléments (la tâche est planifiée sur une journée et l'application lui suggère un horaire, qui forme le créneau de l'agenda principal), et la tension entre Q13.1 a) (une seule journée), Q13.3 (report automatique au jour suivant) et Q14 (capacité par jour).
+
+1. Comment l'application choisit-elle l'horaire suggéré ?
+   - a) Dans le premier temps libre de votre agenda ce jour-là, à l'intérieur de **plages de travail** que vous définissez par jour de la semaine (par exemple 9 h – 18 h) **(recommandé : le créneau ne chevauche pas vos rendez-vous ; nouveau réglage à prévoir)** ;
+   - b) à partir d'une heure de début fixe (par exemple 9 h), les tâches s'enchaînant dans l'ordre de priorité, sans tenir compte de vos rendez-vous ;
+   - c) autre : précisez.
+2. La durée du créneau est :
+   - a) le reste à faire de la tâche, limité au temps disponible ce jour-là **(recommandé)** ;
+   - b) le reste à faire de la tâche, même s'il dépasse le temps disponible.
+3. Pouvez-vous modifier dans l'application l'horaire suggéré d'une tâche ? (oui / non)
+   - **Recommandé : oui**, comme pour le planning proposé (Q13.2 b).
+4. Une tâche plus longue que la capacité d'une journée (par exemple 6 h pour une capacité de 4 h) ne peut être planifiée que sur une journée (Q13.1 a). L'application :
+   - a) la planifie sur une journée en signalant le dépassement (Q14.3 b), et le report automatique la reconduit les jours suivants tant qu'elle n'est pas terminée ;
+   - b) vous invite à la découper en sous-tâches ;
+   - c) fait les deux **(recommandé)**.
+5. Le report automatique (Q13.3) se fait vers :
+   - a) le lendemain, même si votre capacité ce jour-là est nulle (par exemple un dimanche) ;
+   - b) le prochain jour où votre capacité est supérieure à zéro **(recommandé : une tâche n'est pas reportée sur un jour où vous ne travaillez pas)**.
+
+*Bloque* : US-020, US-006, US-027, US-028.
+
+### Q-DEM001-33 — Créneau déplacé dans Google Calendar (P2)
+*Origine* : vos compléments. Un créneau déplacé dans Google Calendar déclenche une notification dans l'application, puis, le soir, une replanification proposée que vous validez ou modifiez. Restent les points suivants.
+
+1. À quel moment la replanification est-elle proposée ?
+   - a) à l'heure du rappel du soir (21 h par défaut), l'application la présentant à votre prochaine ouverture **(recommandé : un seul moment de bilan par jour)** ;
+   - b) à une heure distincte que vous réglez ;
+   - c) autre : précisez.
+2. Quel jour l'application propose-t-elle pour la tâche ?
+   - a) le jour où vous avez déplacé le créneau **(recommandé : votre déplacement exprime votre intention)** ;
+   - b) un jour recalculé selon la priorité, les délais et la capacité, sans tenir compte du jour choisi dans Google.
+3. Si le créneau est déplacé à une autre heure **du même jour** :
+   - a) l'application retient le nouvel horaire sans proposer de replanification **(recommandé : la journée planifiée ne change pas)** ;
+   - b) même traitement qu'un changement de jour.
+4. Si le créneau est **supprimé** dans Google Calendar :
+   - a) même traitement qu'un déplacement : notification, puis replanification proposée le soir **(recommandé)** ;
+   - b) la tâche est déplanifiée, sans proposition ;
+   - c) l'application recrée le créneau.
+
+*Bloque* : US-032.
+
+### Q-DEM001-34 — Événements de l'agenda et capacité (P2)
+*Origine* : tension entre Q15.1 (les événements réduisent le temps disponible), Q14.1 (capacité par jour de la semaine) et les créneaux que l'application crée elle-même (RG-034).
+
+*Exemple* : votre capacité du lundi est de 4 h et vous avez une réunion de 2 h ce jour-là.
+
+1. Comment la réunion réduit-elle le temps disponible pour vos tâches ?
+   - a) Il est réduit de la durée de la réunion : 4 h − 2 h = 2 h.
+   - b) Il n'est réduit que si la réunion empiète sur le temps libre de vos plages de travail. Par exemple, avec une plage de 9 h à 18 h, il reste 7 h libres, ce qui couvre vos 4 h : le temps disponible reste de 4 h. **(recommandé : une réunion n'ampute pas forcément le temps des tâches ; ce mode utilise les mêmes plages de travail qu'en Q-DEM001-32)**
+   - c) Autre : précisez.
+2. Quels événements de votre agenda principal sont pris en compte ?
+   - a) Les événements avec horaire que vous avez acceptés ou auxquels vous n'avez pas répondu. Sont exclus les événements marqués « disponible » et les événements « journée entière ». **(recommandé)**
+   - b) Tous les événements.
+   - c) Autre : précisez.
+3. Les événements créés par l'application (rappels, créneaux de tâches) ne réduisent jamais le temps disponible. (oui / non)
+   - **Recommandé : oui.** Sinon, une tâche planifiée réduirait la capacité qui sert à la planifier.
+
+*Bloque* : US-019.
+
+### Q-DEM001-35 — Critères de l'ordre de priorité (P2)
+*Origine* : réponse partielle à Q16 (ordre proposé, modifiable ; critères et départage non précisés), et tension entre Q6.3 (une tâche pour plusieurs objectifs) et Q6.4 (importance d'un objectif).
+
+1. Ordre d'application des critères. **Recommandé :**
+   1. tâches en retard (délai dépassé) ;
+   2. délai le plus proche ;
+   3. importance de l'objectif ;
+   4. plus petit reste à faire.
+
+   Acceptez-vous cet ordre ? (oui / non : donnez votre ordre)
+2. En cas d'égalité, quel critère départage deux tâches ?
+   - a) la date de création, la plus ancienne d'abord **(recommandé : stable et prévisible)** ;
+   - b) l'ordre alphabétique ;
+   - c) autre : précisez.
+3. Comment s'exprime l'importance d'un objectif ?
+   - a) haute, moyenne ou basse, « moyenne » par défaut **(recommandé : simple à saisir sur smartphone)** ;
+   - b) une note de 1 à 5, 3 par défaut ;
+   - c) autre : précisez.
+4. Quelle importance retenir pour une tâche rattachée à plusieurs objectifs ?
+   - a) la plus haute **(recommandé)** ;
+   - b) autre : précisez.
+
+   Et pour une tâche sans objectif :
+   - a) l'importance par défaut **(recommandé)** ;
+   - b) la plus basse.
+5. Après que vous avez modifié l'ordre à la main :
+   - a) votre ordre est conservé ; les nouvelles tâches sont insérées selon les critères, et vous pouvez demander à tout moment un nouveau calcul **(recommandé : votre choix n'est pas écrasé sans votre accord)** ;
+   - b) l'ordre est recalculé chaque jour, et vos modifications ne valent que pour la journée ;
+   - c) autre : précisez.
+
+*Bloque* : US-004, US-030, US-027.
+
+### Q-DEM001-36 — Définition du backlog et planification (P2)
+*Origine* : tension entre Q20.1 b) (backlog = tâches non terminées **et non planifiées**), Q13.2 b) (l'application vous propose un planning) et Q13.3 (report automatique). Avec le report automatique, une tâche planifiée ne revient jamais dans le backlog. Dès que vous acceptez un planning qui couvre toutes vos tâches, le backlog tombe à zéro alors que le travail restant n'a pas diminué. Il mesure alors le travail **non encore planifié**, et non le travail **restant**.
+
+1. Le backlog, dont vous suivez l'évolution, doit être :
+   - a) le travail non encore planifié, comme vous l'avez répondu : le graphique montre ce qui reste à placer dans votre planning ;
+   - b) toutes les tâches non terminées, planifiées ou non : le graphique montre le travail restant total **(recommandé : cela répond à « savoir si mon travail restant diminue », et c'est cohérent avec le contrôle des délais)** ;
+   - c) les deux, sous forme de deux courbes.
+2. Sur quelle période l'application propose-t-elle un planning ?
+   - a) toutes les tâches, jusqu'à leur délai ;
+   - b) seulement les N prochains jours, avec N = 7 **(recommandé : un planning court reste lisible dans votre agenda et se corrige facilement ; précisez N si vous en voulez un autre)**.
+
+*Bloque* : US-012, US-027.
+
+### Q-DEM001-37 — Fuseau horaire des rappels et des créneaux (P2)
+*Origine* : tension entre Q10.4 a) (la journée suit l'heure locale de l'appareil) et Q18.1 (rappels à 8 h et 21 h). Les rappels et les créneaux sont des événements de votre agenda Google, qui ne dépend d'aucun appareil, et vos deux appareils peuvent se trouver dans des fuseaux différents (smartphone en voyage, PC à domicile).
+
+1. Les heures des rappels (8 h, 21 h) et les horaires suggérés des créneaux s'entendent :
+   - a) dans le fuseau horaire de votre agenda Google **(recommandé : un seul fuseau, celui qu'affiche Google Calendar ; en voyage, vous le changez dans Google)** ;
+   - b) dans le fuseau du dernier appareil utilisé ;
+   - c) dans un fuseau de référence fixe, choisi dans l'application.
+
+*Bloque* : US-015, US-016, US-020, US-029.
+
+### Q-DEM001-38 — Rôle de la notification de l'application (P2)
+*Origine* : tension entre Q19.1 b) (une notification de l'application est acceptable) et Q18.3 a) (rappel sous forme d'événement dans l'agenda principal). Quand la notification de l'application doit-elle servir ?
+
+- a) Jamais pour les rappels : ils passent uniquement par Google Calendar. Si l'accès à l'agenda est perdu, l'application vous avertit (Q19.3).
+- b) En secours : si l'accès à l'agenda est perdu, l'application émet elle-même les rappels jusqu'à votre reconnexion. **(recommandé, sous réserve de l'avis de Starck : vous ne perdez pas vos rappels quotidiens sans vous en rendre compte)**
+- c) En complément : la notification de l'application s'ajoute toujours à l'événement Google.
+
+*Bloque* : US-014, US-015, US-016.
+
+### Q-DEM001-39 — Usage hors ligne sur le PC (P2)
+*Origine* : réponse partielle à Q4.1. Vous avez indiqué que l'usage prioritaire est celui du smartphone.
+
+- a) Le PC est utilisable hors ligne lui aussi, dans un lot ultérieur à celui du smartphone **(recommandé : vous gardez le même comportement sur vos deux appareils, sans retarder le smartphone)** ;
+- b) le PC est utilisable hors ligne dans le même lot que le smartphone ;
+- c) le PC n'a pas besoin de fonctionner hors ligne : sans réseau, il indique qu'une connexion est nécessaire.
+
+*Bloque* : US-031 (conditionnelle). La question devient P1 si vous décidez d'intégrer l'usage hors ligne au lot 1.
+
+### Q-DEM001-40 — Rappel du soir : invitation à saisir (P3)
+*Origine* : réponse partielle à Q18.5.
+
+1. Quand, à l'heure du rappel du soir, aucun temps n'a été saisi pour une tâche planifiée dans la journée, le rappel :
+   - a) contient une invitation à saisir votre temps, avec un lien vers l'application **(recommandé : le rappel du soir sert alors à déclencher la saisie)** ;
+   - b) liste simplement la tâche avec un temps passé de 0 h.
+2. Si vous saisissez du temps après l'heure du rappel du soir, son contenu doit-il être mis à jour ? (oui / non)
+   - **Recommandé : non**, par cohérence avec votre réponse pour le rappel du matin (Q18.4).
+
+*Bloque* : US-016.
