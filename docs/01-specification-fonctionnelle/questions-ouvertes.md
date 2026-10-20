@@ -2,6 +2,8 @@
 
 > Version 0.1 du 2026-10-20 (Pepper, E1). Questions à transmettre au commanditaire via Jarvis.
 >
+> **Version 0.2 du 2026-10-20 (Pepper, fin de E1)** : les réponses aux questions 1 à 20 et les compléments du commanditaire sont reportés dans le [cahier des charges v0.2](cahier-des-charges.md). Les questions encore utiles sont regroupées en fin de document, dans la section « Questions résiduelles — v0.2 » (Q-DEM001-21 à Q-DEM001-40).
+>
 > Les thèmes sont présentés par ordre d'importance. Au sein de chaque thème, les questions sont elles aussi classées par importance.
 >
 > Priorités :
@@ -340,23 +342,26 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 | Question | Date | Réponse | Impact (RG / US) |
 |---|---|---|---|
-| Q-DEM001-1 | 2026-10-20 | a) seul indispensable en 1re version (objectifs et tâches). j) non répondu. | À reporter par Pepper |
-| Q-DEM001-2 | 2026-10-20 | a) moi seul. | À reporter par Pepper |
-| Q-DEM001-3 | 2026-10-20 | b) dans mon propre espace de stockage en ligne (ex. Google Drive). Délai de propagation : non répondu. | À reporter par Pepper |
-| Q-DEM001-4 | 2026-10-20 | 1. c) consultation et saisie hors ligne (appareil : non précisé). 2. règle de conflit : non répondu. | À reporter par Pepper |
-| Q-DEM001-5 | 2026-10-20 | 5.1 non · 5.2 oui · 5.3 b) oui avec alerte · 5.4 a) quand toutes ses tâches sont terminées. | À reporter par Pepper |
-| Q-DEM001-6 | 2026-10-20 | 6.1 d) sous-objectifs et sous-tâches · 6.2 oui · 6.3 oui · 6.4 oui. | À reporter par Pepper |
-| Q-DEM001-7 | 2026-10-20 | 7.1 a) je la déclare terminée · 7.2 oui · 7.3 oui (sortie du backlog : non précisé). | À reporter par Pepper |
-| Q-DEM001-8 | 2026-10-20 | b) oui, mais plus tard (fréquences non précisées). | À reporter par Pepper |
-| Q-DEM001-9 | 2026-10-20 | a) heures et minutes, précision 30 min. | À reporter par Pepper |
-| Q-DEM001-10 | 2026-10-20 | 10.1 b) saisie d'une durée par tâche et par jour · 10.2 b) oui sans limite · 10.3 a) jour de démarrage · 10.4 a) heure locale de l'appareil. | À reporter par Pepper |
-| Q-DEM001-11 | 2026-10-20 | 11.1 c) calcul automatique corrigeable · 11.2 b) alerte demandant de ré-estimer. | À reporter par Pepper |
-| Q-DEM001-12 | 2026-10-20 | 12.1 réponse libre : « la somme des temps originaux estimés des tâches terminées » · 12.2 b) par semaine · 12.3 oui. | À reporter par Pepper |
-| Q-DEM001-13 | 2026-10-20 | 13.1 a) sur une journée, sans horaire · 13.2 b) l'application propose, je modifie · 13.3 report automatique. | À reporter par Pepper |
-| Q-DEM001-14 | 2026-10-20 | 14.1 c) valeur par jour de semaine + exceptions datées · 14.2 b) proposée par l'application, validée par moi · 14.3 b) alerte sans blocage. | À reporter par Pepper |
-| Q-DEM001-15 | 2026-10-20 | 15.1 oui · 15.2 oui (sous-questions : prise en compte d'un déplacement dans Google et agenda principal/dédié : non répondu). | À reporter par Pepper |
-| Q-DEM001-16 | 2026-10-20 | c) ordre proposé automatiquement, modifiable (critères et départage : non répondu). | À reporter par Pepper |
-| Q-DEM001-17 | 2026-10-20 | 17.1 b) selon la vélocité réelle · 17.2 b) proposition acceptée ou refusée · 17.3 dans l'application et dans les rappels. | À reporter par Pepper |
-| Q-DEM001-18 | 2026-10-20 | 18.1 8 h et 21 h, modifiables par moi · 18.2 a) tous les jours · 18.3 a) événement dans l'agenda principal · 18.4 non · 18.5 c) les deux (invitation à saisir : non répondu) · 18.6 oui. | À reporter par Pepper |
-| Q-DEM001-19 | 2026-10-20 | 19.1 b) souhaité, notification de l'application acceptable · 19.2 non · 19.3 c) événements conservés (a implicite). | À reporter par Pepper |
-| Q-DEM001-20 | 2026-10-20 | 20.1 b) tâches non terminées et non planifiées · 20.2 b) somme des restes à faire · 20.3 oui · 20.4 b) 12 dernières semaines, par semaine. | À reporter par Pepper |
+| Q-DEM001-1 | 2026-10-20 | a) seul indispensable en 1re version (objectifs et tâches). j) non répondu. | Q1 a) : LOT-001 limité aux objectifs et tâches, avec le socle transverse. j) : tranché par le complément (smartphone et PC) → RG-017, ENF-01. |
+| Q-DEM001-2 | 2026-10-20 | a) moi seul. | RG-018 ; exclusion de l'usage collaboratif décidée (CdC §4.3). |
+| Q-DEM001-3 | 2026-10-20 | b) dans mon propre espace de stockage en ligne (ex. Google Drive). Délai de propagation : non répondu. | RG-020, ENF-02 ; délai : voir le complément ; interprétation à confirmer en Q-DEM001-21 ; service de stockage : Q-DEM001-22. |
+| Q-DEM001-4 | 2026-10-20 | 1. c) consultation et saisie hors ligne (appareil : non précisé). 2. règle de conflit : non répondu. | RG-021, ENF-04 ; appareil et règle de conflit : voir le complément → RG-036 ; restent Q-DEM001-23 et Q-DEM001-39. |
+| Q-DEM001-5 | 2026-10-20 | 5.1 non · 5.2 oui · 5.3 b) oui avec alerte · 5.4 a) quand toutes ses tâches sont terminées. | RG-002, RG-003, RG-024, RG-025 ; Q-DEM001-26 et Q-DEM001-28. |
+| Q-DEM001-6 | 2026-10-20 | 6.1 d) sous-objectifs et sous-tâches · 6.2 oui · 6.3 oui · 6.4 oui. | RG-001, RG-022, RG-023, RG-030 ; nouvelles US-023, US-024, US-030 ; Q-DEM001-24, 25, 26 et 35. |
+| Q-DEM001-7 | 2026-10-20 | 7.1 a) je la déclare terminée · 7.2 oui · 7.3 oui (sortie du backlog : non précisé). | RG-026, RG-027 ; nouvelle US-025 ; sortie du backlog : Q-DEM001-27. |
+| Q-DEM001-8 | 2026-10-20 | b) oui, mais plus tard (fréquences non précisées). | US-021 reportée (CdC §4.2) ; fréquences non reposées. |
+| Q-DEM001-9 | 2026-10-20 | a) heures et minutes, précision 30 min. | RG-028 ; précision du temps passé : Q-DEM001-31. |
+| Q-DEM001-10 | 2026-10-20 | 10.1 b) saisie d'une durée par tâche et par jour · 10.2 b) oui sans limite · 10.3 a) jour de démarrage · 10.4 a) heure locale de l'appareil. | RG-008 ; chronomètre exclu ; 10.3 sans objet. |
+| Q-DEM001-11 | 2026-10-20 | 11.1 c) calcul automatique corrigeable · 11.2 b) alerte demandant de ré-estimer. | RG-009 ; Q-DEM001-31. |
+| Q-DEM001-12 | 2026-10-20 | 12.1 réponse libre : « la somme des temps originaux estimés des tâches terminées » · 12.2 b) par semaine · 12.3 oui. | RG-010, RG-029 ; tension avec Q11 et Q17 : Q-DEM001-30. |
+| Q-DEM001-13 | 2026-10-20 | 13.1 a) sur une journée, sans horaire · 13.2 b) l'application propose, je modifie · 13.3 report automatique. | RG-006, RG-031, RG-032 ; nouvelles US-027, US-028 ; tension avec Q15.2 tranchée par le complément (horaire suggéré). |
+| Q-DEM001-14 | 2026-10-20 | 14.1 c) valeur par jour de semaine + exceptions datées · 14.2 b) proposée par l'application, validée par moi · 14.3 b) alerte sans blocage. | RG-011 ; nouvelle US-026. |
+| Q-DEM001-15 | 2026-10-20 | 15.1 oui · 15.2 oui (sous-questions : prise en compte d'un déplacement dans Google et agenda principal/dédié : non répondu). | RG-033, RG-034, RG-037 ; US-019 et US-020 confirmées ; nouvelle US-032 ; sous-questions tranchées par les compléments ; restent Q-DEM001-32, 33 et 34. |
+| Q-DEM001-16 | 2026-10-20 | c) ordre proposé automatiquement, modifiable (critères et départage : non répondu). | RG-005 ; critères et départage : Q-DEM001-35. |
+| Q-DEM001-17 | 2026-10-20 | 17.1 b) selon la vélocité réelle · 17.2 b) proposition acceptée ou refusée · 17.3 dans l'application et dans les rappels. | RG-007 ; Q-DEM001-30. |
+| Q-DEM001-18 | 2026-10-20 | 18.1 8 h et 21 h, modifiables par moi · 18.2 a) tous les jours · 18.3 a) événement dans l'agenda principal · 18.4 non · 18.5 c) les deux (invitation à saisir : non répondu) · 18.6 oui. | RG-012, RG-013, RG-014 ; nouvelle US-029 ; Q-DEM001-37 et Q-DEM001-40. |
+| Q-DEM001-19 | 2026-10-20 | 19.1 b) souhaité, notification de l'application acceptable · 19.2 non · 19.3 c) événements conservés (a implicite). | RG-019, RG-035, nouvelle US-022 ; US-014 recentrée sur l'agenda ; Q-DEM001-22 et Q-DEM001-38. |
+| Q-DEM001-20 | 2026-10-20 | 20.1 b) tâches non terminées et non planifiées · 20.2 b) somme des restes à faire · 20.3 oui · 20.4 b) 12 dernières semaines, par semaine. | RG-015, RG-016 ; Q-DEM001-36. |
+| Q-DEM001-1 j), 3, 4, 13/15 — complément | 2026-10-20 | Complément, verbatim : « je veux que l'application soit utilisable sur mon smartphone et un PC, je veux que la notification apparaisse dans l'heure qui suit, l'usage prioritaire est celui du smartphone si il y a une modification sur les 2, prendre la modification la plus récente. On place les créneaux dans google calendar. On part dans un premier temps sur un horaire suggéré. ok pour demander son avis à starck ». | Q1 j) : smartphone et PC dès la première version (RG-017, ENF-01). Q3 : délai d'une heure (RG-017, ENF-02 ; interprétation à confirmer en Q-DEM001-21). Q4 : smartphone prioritaire pour le hors ligne (RG-021) ; conflit : la modification la plus récente l'emporte (RG-036). Q13.1/Q15.2 : tension tranchée, la tâche est planifiée sur une journée et l'application lui suggère un horaire, qui donne le créneau (RG-034). Avis de Starck accepté (LOT-001). |
+| Q-DEM001-15.2 (sous-questions) — complément | 2026-10-20 | Complément, verbatim : « les créneaux vont dans mon agenda principal oui si le créneau est déplacé dans calendar, il faut une notification dans l'application et une replanification le soir ». | Créneaux dans l'agenda principal (RG-034). Un créneau déplacé dans Google Calendar est pris en compte : notification dans l'application et replanification le soir (RG-037, US-032). |
+| Q-DEM001-15.2 (replanification du soir) — complément | 2026-10-20 | Complément, confirmation : la replanification du soir qui suit le déplacement d'un créneau dans Google Calendar est proposée par l'application, puis validée ou modifiée par le commanditaire. Elle n'est pas automatique. | RG-037 (cohérent avec RG-031 et Q-DEM001-13.2 b). |
