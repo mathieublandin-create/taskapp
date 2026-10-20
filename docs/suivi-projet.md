@@ -41,7 +41,8 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
-| DEC-011 | 2026-10-20 | Fuseau de référence de la journée (ADR-011 / RG-008) | Fuseau de l'appareil (RG-008 maintenue, proposition ADR-011 rejetée) ; horodatages enregistrés en UTC. Verbatim : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » |
+| DEC-012 | 2026-10-20 | Fuseau de référence (remplace DEC-011) | Fuseau fixe Europe/Paris (France métropolitaine) pour la journée, les rappels et les créneaux, quel que soit l'appareil ; instants toujours enregistrés en UTC. Verbatim : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain ». Rend sans objet A-F1, A-F2, A-F4 ; restent P-T1, A-F3, A-F5. |
+| DEC-011 | 2026-10-20 | Fuseau de référence de la journée (ADR-011 / RG-008) | **Remplacée par DEC-012.** Fuseau de l'appareil (RG-008 maintenue, proposition ADR-011 rejetée) ; horodatages enregistrés en UTC. Verbatim : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » |
 | DEC-001 | 2026-10-20 | A1 Système du smartphone | Android (pas d'iPhone en v1) |
 | DEC-002 | 2026-10-20 | D1 Hors ligne | US-018 (hors ligne smartphone) intégrée au LOT-001 |
 | DEC-003 | 2026-10-20 | D2 Composition LOT-001 | Composition complète (8 US + US-018) |
