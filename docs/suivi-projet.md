@@ -37,4 +37,6 @@
 |---|---|---|---|
 
 ## Points bloquants
+- Socle technique : Anthony attend de Starck les décisions DS-01 à DS-20 (`04-specification-technique/conventions.md` §15). Celles qui bloquent la conception de LOT-001 : DS-01, 02, 03, 05, 07, 10, 11, 14, 15, 16 et 19.
+- Points de testabilité PT-01 à PT-15 (`conventions.md` §14) : questions complémentaires pour Pepper et Starck, à traiter au refinement du lot concerné.
 - DEM-001 : réponses du commanditaire reçues le 2026-10-20 (reformulation et exclusions non explicitement validées) ; 20 questions ouvertes transmises le 2026-10-20 (`01-specification-fonctionnelle/questions-ouvertes.md`). Validation attendue aussi pour la reformulation du besoin (§2 du cahier des charges) et les exclusions (§4.2).

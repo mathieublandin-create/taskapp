@@ -4,7 +4,9 @@
 >
 > **Statut : brouillon.** Ce document est rédigé **avant le DAT v0.1** et ne choisit aucun langage ni framework. Les sections qui dépendent de la stack portent la mention **« En attente du DAT (choix de stack) »** et listent les décisions attendues de Starck. La version 1.0 sera publiée après la parution du DAT v0.1 et des ADR de stack. Les règles indépendantes de la stack s'appliquent dès maintenant.
 >
-> Entrées : `docs/workflow.md` v2, DEM-001, DEM-002, cahier des charges v0.2, backlog initial v0.1, questions ouvertes v0.2 (Q-DEM001-21 à 40 encore ouvertes). Ces entrées évoluent. Toute contradiction entre ce document et un livrable d'un autre agent est remontée à Jarvis ; elle n'est jamais tranchée unilatéralement.
+> **Note de synchronisation.** Un brouillon du DAT v0.1 (Starck, décisions au statut « Proposé ») est paru pendant la rédaction de ce document. Il n'est pas encore intégré ici : les marqueurs « En attente du DAT » restent valables jusqu'à ce que Jarvis confirme la stack. Une première lecture ne révèle aucune contradiction de principe (architecture hexagonale, Cucumber au niveau application, doublures Google en mémoire, banc à deux appareils, horloge logique hybride). Les écarts de nommage des ports seront résolus en faveur du DAT (§2.3).
+>
+> Entrées : `docs/workflow.md` v2, DEM-001, DEM-002, cahier des charges v0.3 (RG-001 à RG-042), backlog initial, questions ouvertes (Q-DEM001-21 à 40 et Q-DEM002-1 à 7 encore ouvertes), proposition `docs/lots/LOT-001.md` (points S1 à S10 soumis à Starck). Ces entrées évoluent. Toute contradiction entre ce document et un livrable d'un autre agent est remontée à Jarvis ; elle n'est jamais tranchée unilatéralement.
 
 ## Historique
 
@@ -73,7 +75,7 @@ Règles impératives :
 - Les types du SDK Google, du stockage ou du framework d'IHM **ne doivent pas** traverser la frontière d'un adaptateur. L'adaptateur traduit vers les types du domaine ou de l'application.
 
 ### 2.3 Isolement de l'intégration Google
-- Toute interaction avec Google passe par des **ports** définis dans la couche application. Ports prévus à ce stade (noms indicatifs, confirmés en E9) :
+- Toute interaction avec Google passe par des **ports** définis dans la couche application. Ports prévus à ce stade (noms indicatifs ; **les noms et le découpage fixés par le DAT prévalent**, par exemple `FournisseurAuth`, `TransportSynchro`, `PasserelleAgenda` dans le brouillon du DAT v0.1) :
 
 | Port | Responsabilité | RG / ENF |
 |---|---|---|
@@ -108,7 +110,7 @@ Le code est découpé d'abord **par contexte métier**, puis **par couche** à l
 | `planification` | Capacité, planning proposé, report, horaire suggéré, créneaux | EP-03, US-026 à US-028, US-032 | RG-006, RG-011, RG-031 à RG-034, RG-037 |
 | `suivi-temps` | Temps passé, reste à faire | EP-04 | RG-008, RG-009, RG-028 |
 | `pilotage` | Vélocité, contrôle des délais, backlog, historiques | EP-05 | RG-007, RG-010, RG-015, RG-016 |
-| `rappels` | Rappel du matin (dont fun fact, DEM-002), rappel du soir (dont questions de bilan, DEM-002), réglages | EP-06, US-029 | RG-012 à RG-014 |
+| `rappels` | Rappel du matin (dont fun fact, DEM-002), rappel du soir (dont questions de bilan, DEM-002), réponses de bilan, liste des fun facts, réglages | EP-06, US-029, US-033 à US-036 | RG-012 à RG-014, RG-038 à RG-042 |
 | `synchronisation` | Stockage local, synchronisation entre appareils, résolution des conflits, hors ligne | EP-07, US-031 | RG-017, RG-020, RG-021, RG-036, ENF-04, ENF-06 |
 | `compte` | Connexion Google, révocation, déconnexion | US-014, US-022 | RG-019, RG-035, ENF-05 |
 | `commun` | Objets-valeurs partagés (`Duree`, `DateCalendaire`, `Instant`, `Fuseau`, `Identifiant`), ports transverses (`Horloge`, `SourceAleatoire`, `GenerateurIdentifiants`, `Journal`), type résultat | Transverse | RG-028 |
@@ -164,8 +166,8 @@ tests/
 | Vélocité | `Velocite` (semaine ISO, `Duree`) | RG-010 |
 | Backlog | `Backlog` | RG-015 ; définition selon Q-DEM001-36 |
 | Rappel du matin, du soir | `RappelMatin`, `RappelSoir` | RG-012, RG-013 |
-| Fun fact | `FunFact` | DEM-002 ; terme du commanditaire conservé |
-| Questions et réponses de bilan du soir | `QuestionBilan`, `ReponseBilan` | DEM-002 |
+| Fun fact, liste des fun facts | `FunFact`, `ListeFunFacts`, `CycleFunFacts` | RG-040 à RG-042 ; terme du commanditaire conservé ; `CycleFunFacts` selon Q-DEM002-6 |
+| Questions et réponses de bilan du soir | `QuestionBilan`, `ReponseBilan` | RG-038, RG-039 |
 | Appareil | `Appareil` | RG-017 |
 | Conflit de modification | `ConflitModification` | RG-036 |
 
@@ -232,7 +234,7 @@ Règles impératives :
 - Aucune durée en nombre à virgule flottante. `Duree` est un entier de minutes ; la contrainte « multiple de 30 min » (RG-028) est un invariant vérifié à la construction des types concernés.
 - Aucune conversion implicite entre `Instant` et `DateCalendaire` : elle exige toujours un `Fuseau` explicite.
 - La journée d'une saisie (RG-008) est la `DateCalendaire` calculée **au moment de la saisie**, dans le fuseau de l'appareil, puis **persistée telle quelle**. Elle n'est jamais recalculée à partir d'un instant.
-- Le formatage pour l'affichage (« 2 h 30 », « mardi 21 octobre ») est de la responsabilité de la présentation.
+- Le formatage pour l'affichage (« 2 h 30 », « mercredi 21 octobre ») est de la responsabilité de la présentation.
 
 ### 6.2 Horloge injectable
 - Toute lecture de l'heure courante passe par le port `Horloge` : `maintenant() → Instant` et `fuseauCourant() → Fuseau`.
@@ -570,16 +572,23 @@ Une US est soumise à la revue (E13) seulement si **tous** les points suivants s
 
 Exigences fonctionnelles identifiées dès maintenant comme difficiles à tester, ou non testables en l'état. Chaque point indique l'approche de test retenue ou proposée et le destinataire de la question. Les questions destinées à Pepper ou à Starck leur sont transmises **par Jarvis** ; elles deviendront, une fois les US rédigées, des demandes `Q-US-xxx-n` en E8 si elles ne sont pas réglées entre-temps.
 
-### PT-01 — Fun facts « aléatoires » et « affichés aussi souvent que les autres » (DEM-002)
-- **Difficulté** : « aléatoire » et « aussi souvent que les autres » sont contradictoires si on les teste statistiquement (un tirage indépendant uniforme ne garantit l'égalité qu'en moyenne, et un test statistique est soit instable, soit trop permissif).
-- **Approche proposée** : tirage **sans remise par cycles** (sac mélangé) : la liste de 100 fun facts est mélangée, puis parcourue ; un nouveau mélange intervient quand elle est épuisée. Propriétés testables de façon **déterministe** avec la `SourceAleatoireDeterministe` : après k × 100 rappels, chaque fun fact a été affiché exactement k fois ; à tout instant, l'écart entre le plus affiché et le moins affiché est d'au plus 1.
-- **Questions pour Pepper** : (1) « affiché aussi souvent » signifie-t-il cette garantie d'écart d'au plus 1 à tout instant ? (2) Un même fun fact peut-il apparaître deux jours de suite, à la jonction de deux cycles ? (3) Que se passe-t-il quand la liste change (ajout, retrait, remplacement) : remise à zéro des compteurs ou conservation ? (4) La liste contient-elle toujours exactement 100 éléments ? (5) Qu'est-ce qui compte comme « affiché » : inclus dans le rappel du matin généré, ou vu par l'utilisateur ? (6) Un jour sans rappel (accès Google perdu) consomme-t-il un fun fact ? (7) Origine, langue et format de la liste « téléchargée en base ».
-- **Questions pour Starck** : l'état du cycle (ordre et position) doit être **partagé entre les deux appareils**, sinon chaque appareil tire indépendamment et l'équité est perdue ; un seul rappel par jour doit être produit (idempotence, PT-02).
+### PT-01 — Fun facts « aléatoires » et « présentés aussi souvent que les autres » (RG-040 à RG-042, DEM-002)
+- **Difficulté** : « aléatoire » et « aussi souvent que les autres » sont contradictoires si on les teste statistiquement : un tirage indépendant uniforme ne garantit l'égalité qu'en moyenne, et un test statistique est soit instable, soit trop permissif.
+- **Approche** : tirage **sans remise par cycles** (option a de Q-DEM002-6, recommandée par Pepper, en attente de la réponse du commanditaire). La liste est mélangée par la `SourceAleatoire`, puis parcourue ; un nouveau mélange intervient quand elle est épuisée. Propriétés testables de façon **déterministe** avec la `SourceAleatoireDeterministe` :
+  - après k × 100 rappels, chaque fun fact a été présenté exactement k fois ;
+  - à tout instant, l'écart entre le fun fact le plus présenté et le moins présenté est d'au plus 1 ;
+  - aucun fun fact n'est présenté deux fois au cours d'un même cycle ;
+  - le dernier fun fact d'un cycle n'est jamais le premier du cycle suivant ;
+  - à graine égale, la séquence est identique (rejouabilité).
+  Si l'option b (tirage indépendant) était retenue, RG-042 ne serait vérifiable que statistiquement : Anthony le signalerait alors en E8 comme non testable de façon fiable.
+- **Questions déjà posées par Pepper**, à suivre : Q-DEM002-4 (origine, langue), Q-DEM002-5 (liste modifiable), Q-DEM002-6 (sens de l'égalité), Q-DEM002-7 (jour sans tâche).
+- **Questions complémentaires pour Pepper**, à traiter lors de la rédaction de US-035 : (1) qu'est-ce qui compte comme « présenté » : l'inclusion dans l'événement du matin créé dans l'agenda, ou la consultation par l'utilisateur ? (2) un jour sans rappel (accès Google perdu, aucun appareil actif) consomme-t-il un fun fact du cycle ?
+- **Pour Starck** (point S10 de LOT-001) : l'égalité doit tenir quand l'utilisateur alterne entre ses deux appareils. Le brouillon du DAT v0.1 (§6.3, ADR-008) propose un calcul **sans état partagé** : le fun fact du jour J est une fonction pure de (graine, date d'origine, J, liste). Cette approche est la plus testable ; elle répond aussi à la question complémentaire (2) ci-dessus, puisqu'un jour sans rappel consomme son fun fact. Elle sera confirmée par Pepper et par le commanditaire, via Q-DEM002-6. La graine ne doit pas provenir de l'aléatoire système au moment du calcul : elle est fixée une fois, persistée, et injectée en test.
 
 ### PT-02 — Rappels à 8 h et à 21 h (RG-012 à RG-014, DEM-002)
 - **Difficulté** : un déclenchement à heure fixe ne se teste pas en attendant l'heure réelle ; le contenu doit être figé à l'heure du rappel (RG-012 : pas de mise à jour après son heure) ; plusieurs appareils peuvent produire le même rappel.
 - **Approche** : séparer la fonction pure « contenu du rappel du jour J à l'instant T » de son déclenchement (§2.4), et tester la fonction avec l'`Horloge` contrôlable ; tester l'idempotence (un seul événement par jour et par type de rappel, même si les deux appareils le produisent) avec le banc à deux appareils.
-- **Questions pour Starck** (décision structurante, DS-09) : **qui produit le rappel à 8 h si aucun appareil n'est ouvert** ? Sans serveur, une application mobile ou monopage ne peut pas garantir une exécution à heure fixe. Options : création anticipée des événements, avec mise à jour jusqu'à leur heure ; tâche de fond de la plateforme ; composant serveur. La réponse conditionne la testabilité de « contenu figé à 8 h » et du rattrapage.
+- **Questions pour Starck** (décision structurante, DS-09 ; le brouillon du DAT v0.1 §5 et ADR-007 y répondent par une série récurrente Google Calendar dont le contenu est précalculé jusqu'à J+7, à confirmer) : **qui produit le rappel à 8 h si aucun appareil n'est ouvert** ? Sans serveur, une application mobile ou monopage ne peut pas garantir une exécution à heure fixe. Options : création anticipée des événements, avec mise à jour jusqu'à leur heure ; tâche de fond de la plateforme ; composant serveur. La réponse conditionne la testabilité de « contenu figé à 8 h » et du rattrapage.
 - **Questions pour Pepper** : (1) gabarit **exact** du titre et de la description des événements de rappel (y compris fun fact, questions de bilan, alertes de délais selon RG-007) pour permettre une assertion exacte ; (2) comportement si l'heure de rappel n'existe pas ou existe deux fois (changement d'heure) ; (3) effet d'une modification de l'heure de rappel sur le rappel du jour même ; (4) rappel « manqué » (aucun appareil actif) : créé en retard, ou pas du tout ; (5) fuseau de référence (Q-DEM001-37).
 
 ### PT-03 — Conflits de synchronisation : « la modification la plus récente l'emporte » (RG-036, ENF-06)
@@ -611,7 +620,7 @@ Exigences fonctionnelles identifiées dès maintenant comme difficiles à tester
 ### PT-08 — Vélocité hebdomadaire et historiques sur 12 semaines (RG-010, RG-015, RG-016)
 - **Difficulté** : semaine de rattachement (Q-DEM001-30.4), tâches rouvertes (Q-DEM001-30.5), année ISO à 53 semaines, fuseau du « jour de fin ». L'évolution du backlog sur 12 semaines exige la **valeur passée** des restes à faire : elle n'est pas recalculable si seules les valeurs courantes sont conservées.
 - **Approche** : tests sur 2026-W53 et à cheval sur deux années ; données historiques construites par fabriques.
-- **Question pour Starck** : historisation (instantanés hebdomadaires, ou journal des événements permettant de reconstituer le passé) et date de départ des courbes pour un nouvel utilisateur.
+- **Question pour Starck** (point S7 de LOT-001) : historisation (instantanés hebdomadaires, ou journal des événements permettant de reconstituer le passé) et date de départ des courbes pour un nouvel utilisateur. La décision doit être prise **avant E9 de LOT-001** : les données nécessaires (dates de fin, d'abandon, de réouverture ; valeurs successives du reste à faire) doivent être enregistrées dès le premier lot.
 
 ### PT-09 — Arithmétique des durées au pas de 30 min (RG-028, RG-009, Q-DEM001-31)
 - **Difficulté** : précision du temps passé non tranchée (Q-DEM001-31.3) ; reste à faire négatif ; correction manuelle puis nouvelle saisie (Q-DEM001-31.1).
@@ -635,12 +644,12 @@ Exigences fonctionnelles identifiées dès maintenant comme difficiles à tester
 ### PT-13 — Hors ligne et « aucune perte de donnée » (RG-021, ENF-04, ENF-06)
 - **Difficulté** : la perte de donnée survient typiquement lors d'un arrêt brutal de l'application en cours d'écriture ou de synchronisation, difficile à reproduire.
 - **Approche** : écriture locale d'abord, puis file d'attente persistante ; tests d'intégration simulant une interruption à chaque étape de la synchronisation (injection de pannes dans les doublures), puis vérification de la reprise.
-- **Question pour Starck** : garanties transactionnelles du stockage local retenu (DS-07) et format de la file d'attente.
+- **Question pour Starck** (point S3 de LOT-001) : garanties transactionnelles du stockage local retenu (DS-07) et format de la file d'attente. Si le hors ligne est reporté après LOT-001, le comportement du lot 1 sans réseau (« une connexion est nécessaire, aucune saisie perdue sans prévenir ») doit lui aussi être testé : saisie en cours au moment de la coupure, écriture distante échouée.
 
-### PT-14 — Questions de bilan du soir (DEM-002)
-- **Difficulté** : un événement d'agenda ne permet pas de saisir une réponse ; le lieu et le moment de la saisie, la conservation et la consultation des réponses ne sont pas spécifiés.
-- **Approche** : à définir après la rédaction des US par Pepper.
-- **Questions pour Pepper** : (1) où l'utilisateur répond-il (dans l'application, depuis un lien du rappel) ? (2) Les réponses sont-elles obligatoires, modifiables, consultables plus tard, avec quelle longueur maximale ? (3) Peut-on répondre pour un jour passé ? (4) Les réponses apparaissent-elles quelque part dans l'agenda ? (Recommandation d'Anthony : non, §8.3.)
+### PT-14 — Questions de bilan du soir (RG-038, RG-039, DEM-002)
+- **Difficulté** : un événement d'agenda ne permet pas de saisir une réponse ; le lieu et le moment de la saisie, le caractère facultatif, la conservation et la consultation des réponses ne sont pas spécifiés.
+- **Approche** : à définir après les réponses à Q-DEM002-1 à 3 et la rédaction de US-033 et US-034. Les réponses seront traitées comme les données les plus sensibles (§8.3). Si l'option a) de Q-DEM002-1 est retenue (lien du rappel vers l'écran de réponse), le lien profond devra être spécifié (format, validation, comportement si l'application n'est pas installée sur l'appareil qui l'ouvre) et testé.
+- **Questions complémentaires pour Pepper**, à traiter lors de la rédaction de US-033 : (1) longueur maximale d'une réponse ; (2) les réponses apparaissent-elles dans l'agenda ? Recommandation d'Anthony : non (§8.3) ; (3) à quelle journée une réponse saisie après minuit se rattache-t-elle (cohérence avec RG-008) ?
 
 ### PT-15 — Alertes de délais « dans les rappels » (RG-007)
 - **Difficulté** : contenu non spécifié ; dépend de la vélocité (Q-DEM001-30) et du démarrage sans historique.
@@ -670,7 +679,10 @@ Ces décisions conditionnent la version 1.0 du présent document. Elles sont tra
 | DS-16 | Outillage qualité : formateur, linter, vérificateur de types, règles d'architecture, SAST, détection de secrets, SCA | §12 |
 | DS-17 | Plateforme de CI, environnements, distribution des applications | §12 |
 | DS-18 | Intégration Google Calendar : marquage des événements de l'application, identifiants déterministes (idempotence), lecture incrémentale ou notifications push, gestion des quotas et du fuseau de l'agenda | §2.3, §7.2, PT-02, PT-05 |
-| DS-19 | Historisation nécessaire aux courbes sur 12 semaines (instantanés ou journal d'événements) | PT-08 |
+| DS-19 | Historisation nécessaire aux courbes sur 12 semaines (instantanés ou journal d'événements) et données à conserver dès LOT-001 | PT-08 |
+| DS-20 | Emplacement de la liste des fun facts (donnée non personnelle) et partage de l'état du cycle de tirage entre appareils | PT-01 |
+
+Correspondance avec les points soumis à Starck par Pepper dans `docs/lots/LOT-001.md` §7 : S1 → DS-03, DS-10 ; S2 → DS-02 ; S3 → DS-07, DS-11 ; S4 → DS-11 ; S5 → DS-11 ; S6 → DS-04, DS-06 ; S7 → DS-19 ; S8 → DS-05 ; S9 → DS-09 ; S10 → DS-20. Les décisions DS-01, DS-02, DS-03, DS-05, DS-07, DS-10, DS-11, DS-14, DS-15 et DS-16 sont **nécessaires avant la conception détaillée de LOT-001 (E9)**.
 
 ## 16. Documents associés
 - `checklist-revue-code.md` : grille de revue de code (E13).
