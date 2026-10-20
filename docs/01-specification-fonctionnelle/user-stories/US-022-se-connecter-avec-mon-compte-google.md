@@ -21,7 +21,7 @@ Statut : En analyse
 - RG-020 : données conservées dans le Google Drive du compte de connexion, dans un dossier visible.
 - RG-035 : accès retiré ou expiré → avertissement, proposition de reconnexion, fonctionnement comme sans réseau en attendant, aucune perte de donnée.
 - RG-043 : à la déconnexion volontaire, les données restent sur l'appareil.
-- ENF-05 (proposée) : accès minimal au compte Google. ENF-06 (proposée) : aucune perte de donnée. ENF-08 : consentement Google.
+- ENF-05 (validée) : accès minimal au compte Google. ENF-06 (validée) : aucune perte de donnée. ENF-08 : consentement Google.
 
 ## Critères d'acceptation
 1. **CA-1** — Sur un appareil où aucune session n'est ouverte, l'application n'affiche que l'invitation à se connecter avec un compte Google. Aucune autre fonction n'est accessible, et aucune donnée n'est affichée, même si des données sont restées sur l'appareil après une déconnexion (RG-019, RG-043).
@@ -36,7 +36,7 @@ Statut : En analyse
    - avant la déconnexion, si des modifications ne sont pas encore enregistrées dans son Drive, l'application lui en indique le nombre et lui précise qu'elles le seront à sa prochaine connexion sur cet appareil **(P)**.
    - L'éventuelle action « Se déconnecter et effacer les données de cet appareil » dépend de Q-DEM001-42.1.
 7. **CA-7** — Si l'accès au compte Google a été retiré ou a expiré, l'application l'indique à l'utilisateur dès sa prochaine utilisation et lui propose de se reconnecter. En attendant, il continue de consulter et de saisir ses données, comme sans réseau (RG-035, US-018). Après reconnexion, ses modifications faites entre-temps sont enregistrées dans son Drive ; aucune n'est perdue (ENF-06).
-8. **CA-8** — Au lot 1, l'application ne demande que l'identification du compte et l'accès à ses propres fichiers dans le Drive. Elle ne demande pas l'accès à l'agenda (ENF-05, à valider). Aucun écran d'avertissement de Google du type « application non validée » ne s'affiche lors de la connexion (ENF-08).
+8. **CA-8** — Au lot 1, l'application ne demande que l'identification du compte et l'accès à ses propres fichiers dans le Drive. Elle ne demande pas l'accès à l'agenda (ENF-05). Aucun écran d'avertissement de Google du type « application non validée » ne s'affiche lors de la connexion (ENF-08).
 9. **CA-9** — Connecté avec un compte Google B, l'utilisateur ne voit jamais les données d'un compte Google A utilisé auparavant sur le même appareil (RG-018). Le sort des données du compte A sur l'appareil dépend de Q-DEM001-42.2.
 
 ## Cas limites et cas d'erreur

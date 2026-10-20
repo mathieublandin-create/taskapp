@@ -371,6 +371,8 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-21 | 2026-10-20 | 21.1 « 1h » (lecture : délai d'une heure pour qu'une modification soit visible sur l'autre appareil, option a) · 21.2 oui (affichage immédiat à l'ouverture). | RG-017, ENF-02 reformulées avec les limites F1 et F14 ; US-017 CA-2 et CA-3. « 1h » ne désignant aucune option, la lecture a) est soumise à confirmation : Q-DEM001-41. |
 | Q-DEM001-22 | 2026-10-20 | 22.1 a) Drive du même compte · 22.2 c) perte d'accès = coupure réseau · **22.3 b) non : les données restent sur l'appareil à la déconnexion** · 22.4 a) alerte et proposition de restauration. | RG-020 (22.1) ; RG-035 (22.2) ; nouvelle RG-043 (22.3) et Q-DEM001-42 (tension avec ENF-05) ; nouvelle RG-044 (22.4), complétée du choix « repartir de zéro » proposé par l'architecte (à valider en E6). US-022, US-017, US-018. |
 | Q-DEM001-23 | 2026-10-20 | 23.1 a) information par information · 23.2 oui, information de la valeur écartée. | RG-036 ; règles de réparation proposées RG-047 à RG-049 (F12) ; US-017, US-018. |
+| Q-ERG-02 à 11 (questions ergonomiques de Steeve) | 2026-10-20 | Verbatim (suivi-projet) : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Q-ERG-11 précisée ensuite : option a) (créneau supprimé de l'agenda, tâche déplanifiée). | RG-003, RG-029 (03) ; RG-040 (02) ; RG-039 (04) ; RG-037 (05, 11) ; RG-051 (06) ; RG-052 (07) ; RG-006 (08) ; RG-011 (09) ; RG-031 (10). US-002 (LOT-001) ; US-035, US-033, US-032, US-004, US-006, US-007, US-011, US-026, US-027 (backlog). |
+| DEC-011 (fuseau) | 2026-10-20 | « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | RG-008 maintenue ; proposition F3 rejetée ; Q-DEM001-37 maintenue (P2). |
 | Q-DEM001-24 à 29 | 2026-10-20 | Toutes les options recommandées sont retenues (24.1–24.4, 25.1–25.7, 26.1–26.4, 27.1–27.3, 28.1–28.5, 29.1–29.4). | Q-24 → RG-022 ; Q-25 → RG-023, RG-026 ; Q-26 → RG-025 ; Q-27 → RG-027, RG-015 ; Q-28 → RG-002, RG-003, RG-028, RG-029, nouvelle RG-045 ; Q-29 → nouvelle RG-046. US-001, 002, 003, 023, 024, 025. |
 
 ---
@@ -413,7 +415,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-30 | Vélocité, reste à faire et contrôle des délais | Tension Q12.1 / Q11.1 c) / Q17.1 b) | P2 | US-007, US-010, US-011, US-013 | Ouverte |
 | Q-DEM001-31 | Reste à faire après correction, temps passé | Tension Q11.1 c) / Q11.2 b) / Q9 / RG-036 | P2 | US-008, US-009, US-016 | Ouverte |
 | Q-DEM001-32 | Horaire suggéré et planification à la journée | Compléments (Q13/Q15) et tension Q13.1 a) / Q13.3 / Q14 | P2 | US-020, US-006, US-027, US-028 | Ouverte |
-| Q-DEM001-33 | Créneau déplacé dans Google Calendar | Compléments (Q15.2) | P2 | US-032 | Ouverte |
+| Q-DEM001-33 | Créneau déplacé dans Google Calendar | Compléments (Q15.2) | P2 | US-032 | Ouverte (point 1 en partie répondu par Q-ERG-05) |
 | Q-DEM001-34 | Événements de l'agenda et capacité | Tension Q15.1 / Q14.1 / RG-034 | P2 | US-019 | Ouverte |
 | Q-DEM001-35 | Critères de l'ordre de priorité | Q16 partielle, tension Q6.3 / Q6.4 | P2 | US-004, US-030, US-027 | Ouverte |
 | Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
@@ -675,6 +677,8 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 *Bloque* : US-032.
 
+> **Mise à jour v0.4** : vos réponses aux questions ergonomiques précisent une partie du sujet. Q-ERG-05 : la replanification peut être traitée dès la notification, sinon elle est proposée le soir (point 1 en partie répondu : reste à savoir si la proposition du soir est présentée à l'heure du rappel du soir). Q-ERG-07 : non traitée, elle est reproposée chaque jour. Q-ERG-11 a) : si vous **refusez** la replanification, le créneau est supprimé de votre agenda et la tâche est déplanifiée. Les points 2, 3 et 4 restent ouverts.
+
 ### Q-DEM001-34 — Événements de l'agenda et capacité (P2)
 *Origine* : tension entre Q15.1 (les événements réduisent le temps disponible), Q14.1 (capacité par jour de la semaine) et les créneaux que l'application crée elle-même (RG-034).
 
@@ -740,6 +744,8 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 ### Q-DEM001-37 — Fuseau horaire des rappels et des créneaux (P2)
 *Origine* : tension entre Q10.4 a) (la journée suit l'heure locale de l'appareil) et Q18.1 (rappels à 8 h et 21 h). Les rappels et les créneaux sont des événements de votre agenda Google, qui ne dépend d'aucun appareil, et vos deux appareils peuvent se trouver dans des fuseaux différents (smartphone en voyage, PC à domicile).
+
+> **Mise à jour v0.4** : vous avez confirmé que **la journée suit le fuseau horaire de l'appareil** (DEC-011 ; RG-008 maintenue). La question ne porte donc plus que sur l'heure des rappels et des créneaux, qui sont des événements de votre agenda Google : la tension entre le fuseau de l'appareil et celui de l'agenda Google demeure, et la question est maintenue telle quelle.
 
 1. Les heures des rappels (8 h, 21 h) et les horaires suggérés des créneaux s'entendent :
    - a) dans le fuseau horaire de votre agenda Google **(recommandé : un seul fuseau, celui qu'affiche Google Calendar ; en voyage, vous le changez dans Google)** ;

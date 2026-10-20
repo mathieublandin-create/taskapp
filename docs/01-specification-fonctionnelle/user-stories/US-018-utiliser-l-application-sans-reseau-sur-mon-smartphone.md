@@ -19,7 +19,7 @@ Statut : En analyse
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
 - RG-047 à RG-049 (proposées) : réparations après fusion.
 - RG-019 : la première connexion nécessite le compte Google, donc le réseau.
-- ENF-04, ENF-06 (proposée).
+- ENF-04, ENF-06 (validée).
 
 ## Critères d'acceptation
 1. **CA-1** — Sur le smartphone, l'utilisateur s'étant déjà connecté au moins une fois, l'application s'ouvre sans réseau et affiche les données présentes sur l'appareil.

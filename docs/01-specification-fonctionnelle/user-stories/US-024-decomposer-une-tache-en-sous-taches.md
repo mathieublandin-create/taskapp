@@ -4,38 +4,50 @@ Statut : En analyse
 
 **En tant qu'**utilisateur, **je veux** découper une tâche en sous-tâches, **afin de** suivre plus finement un travail important.
 
-> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6.
+> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6. Les critères qui appliquent une règle **proposée** (RG-047, RG-049, RG-050) sont soumis à la validation de cette règle.
 
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau** : issu de Q-DEM001-6.1 d).
-- **Tension** avec Q-DEM001-12.1 : la vélocité somme les estimations initiales des tâches terminées. Si une tâche et ses sous-tâches portent chacune une estimation, le même travail risque d'être compté deux fois (Q-DEM001-25.3).
+- **Tension levée** (Q-DEM001-25.3 a) : l'estimation d'une tâche parente est la somme de celles de ses sous-tâches, calculée ; dans la vélocité, seules comptent les tâches sans sous-tâche. Le même travail n'est donc jamais compté deux fois.
+- **Précisé en v0.4** (Q-DEM001-25, 29) : un seul niveau ; délai et estimation obligatoires pour chaque sous-tâche ; alerte si le délai d'une sous-tâche dépasse celui de la tâche parente ; objectifs hérités de la tâche parente ; fin de la tâche parente conditionnée ; sous-tâches supprimées avec leur tâche parente.
+- **Proposé en v0.4** (à valider en E6) : réparations après fusion (RG-047, RG-049, F12) ; historique (RG-050).
 - **Existant.** Aucune fonctionnalité livrée.
 
 ## Règles de gestion applicables (RG-xxx)
-- RG-023 : une tâche peut comporter des sous-tâches.
-- RG-003 : délai obligatoire, s'il s'applique aux sous-tâches (Q-DEM001-25.2).
-- RG-028 : heures et minutes, pas de 30 min.
-- RG-026 : fin sur déclaration (cas de la tâche parente : Q-DEM001-25.6 et 25.7).
+- RG-023 : sous-tâches sur un seul niveau ; estimation de la tâche parente calculée ; objectifs hérités ; fin de la tâche parente.
+- RG-003, RG-028, RG-029 : délai et estimation obligatoires, sans valeur par défaut, pas de 30 min, minimum 30 min.
+- RG-026 : fin sur déclaration.
+- RG-045 : « en retard ».
+- RG-046 : suppression d'une tâche qui a des sous-tâches.
+- RG-047, RG-049, RG-050 (proposées).
 
 ## Critères d'acceptation
-1. **CA-1** — Depuis le détail d'une tâche, l'utilisateur crée une sous-tâche, rattachée à cette tâche.
-2. **CA-2** — Les informations obligatoires d'une sous-tâche (délai, estimation) suivent Q-DEM001-25.2.
-3. **CA-3** — Le détail d'une tâche affiche ses sous-tâches, avec leur intitulé, leur délai, leur estimation et leur état, ainsi que le nombre de sous-tâches terminées sur le total **(P)**.
-4. **CA-4** — Le nombre de niveaux de sous-tâches est limité selon Q-DEM001-25.1. Au-delà, l'action de création n'est pas proposée.
-5. **CA-5** — L'estimation d'une tâche qui a des sous-tâches est déterminée selon Q-DEM001-25.3. Elle est mise à jour à chaque ajout, modification ou suppression d'une sous-tâche si elle est calculée.
-6. **CA-6** — Un délai de sous-tâche postérieur à celui de sa tâche parente est traité selon Q-DEM001-25.4.
-7. **CA-7** — Les objectifs d'une sous-tâche suivent Q-DEM001-25.5.
-8. **CA-8** — La fin de la tâche parente suit Q-DEM001-25.6 et 25.7 (voir US-003).
+1. **CA-1** — Depuis le détail d'une tâche qui n'est pas elle-même une sous-tâche, l'utilisateur crée une sous-tâche, rattachée à cette tâche. Sur une sous-tâche, l'action « créer une sous-tâche » n'est pas proposée (un seul niveau).
+2. **CA-2** — Une sous-tâche se saisit comme une tâche (US-002, CA-1 à CA-4) : intitulé, délai obligatoire et estimation obligatoire, sans valeur présélectionnée.
+3. **CA-3** — Le détail d'une tâche affiche ses sous-tâches, avec leur intitulé, leur délai, leur estimation, leur état et l'indication « en retard » le cas échéant, ainsi que le nombre de sous-tâches terminées sur le nombre de sous-tâches non abandonnées **(P)**.
+4. **CA-4** — L'estimation d'une tâche qui a des sous-tâches est la somme des estimations de ses sous-tâches non abandonnées **(P pour l'exclusion des sous-tâches abandonnées)**. Elle est calculée, ne peut pas être saisie, et se met à jour à chaque ajout, modification d'estimation, abandon, reprise ou suppression d'une sous-tâche (RG-023).
+   - Exemple : une tâche a deux sous-tâches de 1 h 00 et 1 h 30 ; son estimation est 2 h 30. La sous-tâche de 1 h 00 est abandonnée : l'estimation devient 1 h 30.
+5. **CA-5** — Quand l'utilisateur ajoute la première sous-tâche à une tâche, l'estimation saisie jusque-là pour cette tâche est remplacée par la somme calculée. L'application l'en informe avant l'enregistrement **(P)**.
+6. **CA-6** — Si le délai d'une sous-tâche est postérieur à celui de sa tâche parente, la sous-tâche est enregistrée et une alerte nomme la tâche parente. L'alerte est recalculée dès que l'un des deux délais change.
+7. **CA-7** — Une sous-tâche est rattachée aux objectifs de sa tâche parente, sans pouvoir en changer. Quand les objectifs de la tâche parente changent, ceux de ses sous-tâches changent aussi.
+8. **CA-8** — La tâche parente ne peut pas être déclarée terminée tant qu'il lui reste une sous-tâche ni terminée ni abandonnée : l'action est refusée, avec un message qui indique le nombre de sous-tâches restantes. Quand toutes ses sous-tâches sont terminées ou abandonnées, la tâche parente reste à faire jusqu'à ce que l'utilisateur la déclare terminée (RG-023 ; voir US-003).
+9. **CA-9** — La suppression d'une tâche qui a des sous-tâches les supprime avec elle, après une confirmation qui indique leur nombre (RG-046). La suppression d'une sous-tâche recalcule l'estimation de la tâche parente.
+10. **CA-10** — *(RG-049, proposée)* Si, après échange des modifications des deux appareils, une tâche parente terminée a une sous-tâche à faire (par exemple : tâche parente terminée sur le PC, pendant qu'une de ses sous-tâches est rouverte, ou créée, sur le smartphone sans réseau), l'application ne corrige rien automatiquement : elle signale l'incohérence sur la tâche jusqu'à ce que l'utilisateur termine ou abandonne la sous-tâche, ou rouvre la tâche parente.
+11. **CA-11** — *(RG-047, proposée)* Si une tâche est supprimée sur un appareil pendant qu'une sous-tâche lui est ajoutée sur l'autre, la sous-tâche ajoutée est elle aussi supprimée après échange, et l'utilisateur en est informé.
+12. **CA-12** — *(RG-050, proposée)* La création d'une sous-tâche (avec sa tâche parente) et sa suppression sont conservées dans l'historique, comme pour toute tâche (US-002, CA-14).
 
 ## Cas limites et cas d'erreur
-- Suppression d'une tâche qui a des sous-tâches : Q-DEM001-29.3.
-- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple. Si son estimation était calculée, la règle à appliquer découle de Q-DEM001-25.3 et sera précisée après la réponse.
-- Ajout d'une sous-tâche à une tâche terminée : la tâche est rouverte **(P)**, sous réserve de Q-DEM001-25.6.
-- Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise **(P)**, sous réserve de Q-DEM001-27.1.
+- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029 **(P)**.
+- Ajout d'une sous-tâche à une tâche terminée : l'application demande confirmation, puis rouvre la tâche parente, conformément à RG-023 **(P)**.
+- Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-025) **(P)**.
+- Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée **(P)**.
+- Délai de sous-tâche déjà dépassé : accepté, la sous-tâche est signalée en retard (RG-045).
 
 ## Hors périmètre
-- Transformation d'une tâche existante en sous-tâche d'une autre tâche **(P)**.
+- Plus d'un niveau de sous-tâches (exclu, Q-DEM001-25.1 a).
+- Transformation d'une tâche existante en sous-tâche d'une autre tâche, ou l'inverse **(P)**.
 - Planification et suivi du temps des sous-tâches (lots ultérieurs).
+- Calcul de la vélocité (US-010) : la règle « seules comptent les tâches sans sous-tâche » y sera vérifiée.
 
 ## Impacts architecture
 
@@ -45,11 +57,10 @@ Statut : En analyse
 À rédiger en E5 : `tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`.
 
 ## Questions ouvertes
-- **Q-DEM001-25 (P1)** : profondeur, délai et estimation des sous-tâches, estimation de la tâche parente, délai postérieur, objectifs, fin de la tâche parente.
-- **Q-DEM001-29 (P1)** : suppression d'une tâche qui a des sous-tâches.
-- **Q-DEM001-27 (P1)** : reprise d'une tâche abandonnée (cas limite).
+Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10 à CA-12) sont soumis à la validation du commanditaire en E6.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
 |---|---|
 | 2026-10-20 | Création (Pepper, E1), à partir de la réponse Q-DEM001-6.1 d). |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25, 27 et 29 intégrées (CA-1 à CA-9) ; règles proposées RG-047, RG-049 et RG-050 (CA-10 à CA-12). |
