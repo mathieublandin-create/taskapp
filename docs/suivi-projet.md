@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure (proposée) | US-022, 017, 001, 023, 002, 024, 003, 025 | Proposé | E2 — avis Starck rendu (`03-architecture/avis-dependances-lot1.md`) ; attente validation commanditaire (D1–D3, A1–A7, P1) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E2 validé ; E3 à lancer après intégration v0.4 par Pepper |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -21,12 +21,14 @@
 | US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
 | US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
 | US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E2 | pepper | Ajoutée par DEC-002 |
 | US-025 | Abandonner une tâche | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
 | 2026-10-20 | E1 | Réponses Q-DEM001-1 à 20 | Reçues | Consignées dans questions-ouvertes.md |
+| 2026-10-20 | E2 | LOT-001 : composition complète + US-018, typologie majeure ; arbitrages A1–A7 | Validé | Verbatim « D1, A1: Android, reco » ; en attente : fuseau de référence (ADR-011/RG-008), reformulation, exclusions, ENF-05/06 |
 | 2026-10-20 | E1 | Réponses P1 Q-DEM001-21 à 29 | Reçues | Recommandations retenues sauf 22.3 (données conservées sur l'appareil) |
 
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
@@ -36,6 +38,16 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-001 | 2026-10-20 | A1 Système du smartphone | Android (pas d'iPhone en v1) |
+| DEC-002 | 2026-10-20 | D1 Hors ligne | US-018 (hors ligne smartphone) intégrée au LOT-001 |
+| DEC-003 | 2026-10-20 | D2 Composition LOT-001 | Composition complète (8 US + US-018) |
+| DEC-004 | 2026-10-20 | D3 Typologie LOT-001 | Itération majeure (recette commanditaire E16) |
+| DEC-005 | 2026-10-20 | A2 Distribution Android | Google Play, piste de test interne |
+| DEC-006 | 2026-10-20 | A3 Hébergement PC | Hébergement statique gratuit, sans domaine en v1 |
+| DEC-007 | 2026-10-20 | A4 Serveur | Aucun serveur applicatif |
+| DEC-008 | 2026-10-20 | A5 Vérification Google | Publication en production sans vérification (écran « application non vérifiée » accepté) |
+| DEC-009 | 2026-10-20 | A6 Emplacement Drive | Dossier visible |
+| DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
 - Socle UX v0.1 rendu (Steeve) : questions ergonomiques Q-ERG-02 à 11 (`02-ux/guide-ergonomie.md` §12.1), non bloquantes pour LOT-001 ; demandes à Starck DAT-UX-09 et 13. E4 de LOT-001 et maquettes ECR-007, 008, 010, 011 à réaliser après validation E2.
