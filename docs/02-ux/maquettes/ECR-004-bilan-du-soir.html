@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECR-004 — Bilan du soir (maquette v0.1)</title>
+<!-- Maquette statique autonome : aucune dépendance externe. Steeve, v0.1, 2026-10-20.
+     Tokens et composants : docs/02-ux/guide-ergonomie.md -->
+<style>
+:root{
+  --bg:#FFFFFF;--surface:#F6F6F8;--raised:#FFFFFF;--border:#DCDCE2;--border-strong:#8A8A94;
+  --text:#1C1C21;--text2:#55555E;--text3:#6B6B74;
+  --accent:#2E5BDB;--on-accent:#FFFFFF;--accent-subtle:#EEF2FD;
+  --success:#1E7A4C;--success-subtle:#E9F6EF;
+  --warning:#9A5300;--warning-subtle:#FFF4E5;
+  --danger:#C42B2B;--danger-subtle:#FDECEC;
+  --focus:#2E5BDB;--scrim:rgba(0,0,0,.40);
+  --shadow1:0 1px 2px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.04);
+  --shadow2:0 4px 12px rgba(0,0,0,.10);
+  --shadow3:0 12px 32px rgba(0,0,0,.18);
+  --r-s:6px;--r-m:10px;--r-l:16px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+.dark,#theme:checked ~ main .frame{
+  --bg:#121215;--surface:#1C1C21;--raised:#24242A;--border:#33333B;--border-strong:#6E6E78;
+  --text:#F2F2F5;--text2:#B5B5BE;--text3:#9A9AA4;
+  --accent:#8AA6FF;--on-accent:#121215;--accent-subtle:#1B2240;
+  --success:#4CC38A;--success-subtle:#14291F;
+  --warning:#F2A54A;--warning-subtle:#2E2414;
+  --danger:#FF7A7A;--danger-subtle:#2E1A1A;
+  --focus:#8AA6FF;--scrim:rgba(0,0,0,.60);
+  --shadow1:none;--shadow2:0 4px 12px rgba(0,0,0,.5);--shadow3:0 12px 32px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:#E9E9EE;color:#1C1C21;font-size:16px;line-height:1.5}
+.doc{max-width:1400px;margin:0 auto;padding:32px 24px 64px}
+.doc h1{font-size:28px;line-height:34px;margin:0 0 4px}
+.doc h2{font-size:20px;margin:40px 0 12px}
+.doc p{margin:4px 0;max-width:72ch}
+.refs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.refs span{background:#fff;border:1px solid #C9C9D1;border-radius:6px;padding:2px 8px;font-size:13px}
+.toggle{display:inline-flex;align-items:center;gap:8px;margin:12px 0;font-size:14px;background:#fff;padding:6px 12px;border-radius:999px;border:1px solid #C9C9D1;cursor:pointer}
+#theme{position:absolute;opacity:0}
+#theme:focus-visible + .doc .toggle{outline:2px solid #2E5BDB;outline-offset:2px}
+.stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.cap{font-size:13px;color:#55555E;margin:8px 0 0;max-width:390px}
+.legend{background:#fff;border-radius:12px;padding:16px 20px;margin-top:24px;max-width:1000px}
+.legend ol{margin:0;padding-left:0;list-style:none;counter-reset:l}
+.legend li{counter-increment:l;margin:8px 0;padding-left:34px;position:relative;font-size:14px}
+.legend li::before{content:counter(l);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:#7A2EDB;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.legend h3{margin:0 0 8px;font-size:16px}
+.pin{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#7A2EDB;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;flex:none;vertical-align:middle;box-shadow:0 0 0 2px #fff}
+.pin.abs{position:absolute;z-index:5}
+.reserve{font-size:12px;color:#7A2EDB;font-weight:600}
+
+/* ===== Cadres ===== */
+.frame{background:var(--bg);color:var(--text);position:relative;overflow:hidden;font-family:var(--font)}
+.phone{width:390px;height:844px;border-radius:48px;border:10px solid #111;box-shadow:0 20px 40px rgba(0,0,0,.18)}
+.statusbar{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-size:14px;font-weight:600}
+.statusbar .notch{width:120px;height:28px;background:#111;border-radius:0 0 16px 16px;position:absolute;left:50%;transform:translateX(-50%);top:0}
+.scroll{position:absolute;top:44px;left:0;right:0;bottom:84px;overflow:hidden;padding:0 16px}
+.scroll.nobar{bottom:0}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:84px;border-top:1px solid var(--border);background:var(--bg);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 4px 26px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:500;color:var(--text2);position:relative}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--accent);font-weight:700}
+.tab .dot{position:absolute;top:2px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--bg)}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--text);opacity:.8;z-index:20}
+.desk{width:1280px;height:800px;border-radius:12px;border:1px solid #BDBDC6;box-shadow:0 20px 40px rgba(0,0,0,.15)}
+.wbar{height:36px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px}
+.wbar i{width:12px;height:12px;border-radius:50%;background:var(--border-strong);opacity:.5;display:block}
+.dgrid{display:grid;height:calc(100% - 36px)}
+.side{background:var(--surface);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.side .nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-m);color:var(--text);position:relative}
+.side .nav svg{width:20px;height:20px;color:var(--text2)}
+.side .nav.on{background:var(--accent-subtle);color:var(--accent);font-weight:600}
+.side .nav.on svg{color:var(--accent)}
+.side .nav kbd{margin-left:auto}
+.side .sect{font-size:12px;font-weight:600;color:var(--text3);padding:16px 10px 4px;text-transform:uppercase;letter-spacing:.04em}
+.side .foot{margin-top:auto;border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.main{padding:28px 40px;overflow:hidden}
+.panel{border-left:1px solid var(--border);background:var(--raised);padding:24px;overflow:hidden}
+kbd{font-family:var(--font);font-size:11px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--text2);background:var(--bg)}
+
+/* ===== Composants ===== */
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.s{width:14px;height:14px}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px}
+.hdr .right{display:flex;align-items:center;gap:12px;color:var(--text3)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text2)}
+.title-l{font-size:28px;line-height:34px;font-weight:700;margin:0}
+.title-m{font-size:22px;line-height:28px;font-weight:600;margin:0}
+.title-s{font-size:17px;line-height:24px;font-weight:600;margin:0}
+.sub{font-size:14px;color:var(--text2);margin:2px 0 0}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:14px;line-height:20px;color:var(--text2);font-variant-numeric:tabular-nums}
+.meta span{display:inline-flex;align-items:center;gap:4px}
+.late{color:var(--danger);font-weight:600}
+.warn{color:var(--warning);font-weight:600}
+.ok{color:var(--success);font-weight:600}
+.muted{color:var(--text3)}
+.num{font-variant-numeric:tabular-nums}
+.section-h{display:flex;align-items:center;justify-content:space-between;margin:20px 0 4px;font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.list{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border);position:relative}
+.row .t{font-size:16px;line-height:24px}
+.row .r{display:flex;align-items:center;gap:6px;color:var(--text3);padding-top:2px}
+.row.sel{background:var(--accent-subtle);margin:0 -12px;padding:12px;border-radius:var(--r-m);border-bottom-color:transparent}
+.row.prop{border-left:2px dashed var(--accent);padding-left:10px;margin-left:-12px}
+.row.done .t{color:var(--text3);text-decoration:line-through}
+.row.rank{grid-template-columns:22px 28px 1fr auto}
+.rk{font-size:13px;font-weight:600;color:var(--text3);padding-top:3px;text-align:right;font-variant-numeric:tabular-nums}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border-strong);margin-top:1px;display:flex;align-items:center;justify-content:center}
+.chk.on{background:var(--success);border-color:var(--success);color:var(--bg)}
+.chk.on svg{width:14px;height:14px;stroke-width:3}
+.chk.ab{border-style:dashed}
+.time{font-size:14px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:var(--r-s);background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap}
+.chip.lg{height:32px;padding:0 12px;font-size:14px;border-radius:var(--r-m)}
+.chip.on{background:var(--accent-subtle);border-color:var(--accent);color:var(--accent)}
+.chip.prop{background:var(--accent-subtle);border-color:transparent;color:var(--accent)}
+.chip.w{background:var(--warning-subtle);border-color:transparent;color:var(--warning)}
+.chip.d{background:var(--danger-subtle);border-color:transparent;color:var(--danger)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips.noscroll{flex-wrap:nowrap;overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:var(--r-m);font-size:15px;font-weight:600;border:1px solid transparent;font-family:var(--font);white-space:nowrap}
+.btn.p{background:var(--accent);color:var(--on-accent)}
+.btn.s{border-color:var(--border-strong);color:var(--text);background:transparent}
+.btn.t{color:var(--accent);background:transparent;padding:0 8px}
+.btn.lg{height:48px;width:100%;font-size:16px}
+.btn.sm{height:32px;font-size:14px;padding:0 12px}
+.fab{position:absolute;right:16px;bottom:100px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow2);z-index:4}
+.fab svg{width:26px;height:26px;stroke-width:2.2}
+.card{background:var(--raised);box-shadow:var(--shadow1);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r-m);padding:12px 14px;margin:8px 0}
+.card.w{border-left-color:var(--warning)}
+.card.d{border-left-color:var(--danger)}
+.card .ct{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+.card .why{font-size:14px;color:var(--text2);margin:4px 0 6px;line-height:20px}
+.card .acts{display:flex;align-items:center;gap:4px;margin-top:8px}
+.card .acts .btn.p{height:36px;font-size:14px}
+.card.d .ct svg{color:var(--danger)} .card.w .ct svg{color:var(--warning)} .card .ct svg{color:var(--accent)}
+.cmp{font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cmp s{color:var(--text3)} .cmp b{font-weight:700}
+.gauge{margin:8px 0 2px}
+.gauge .bar{height:6px;border-radius:999px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:flex}
+.gauge .fill{background:var(--accent);height:100%}
+.gauge .over{height:100%;background:repeating-linear-gradient(135deg,var(--warning) 0 4px,var(--warning-subtle) 4px 7px)}
+.gauge .full{background:var(--success);height:100%}
+.gauge .txt{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-top:4px;font-variant-numeric:tabular-nums}
+.disc{display:flex;align-items:center;gap:6px;padding:12px 0;font-size:15px;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border)}
+.syncic{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text3)}
+.syncic.off{color:var(--text2);font-weight:600}
+.syncic.req{color:var(--danger);font-weight:600}
+.toast{position:absolute;left:16px;right:16px;bottom:100px;background:#1C1C21;color:#F2F2F5;border-radius:var(--r-m);padding:12px 14px;font-size:14px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow2);z-index:6}
+.dark .toast,#theme:checked ~ main .toast{background:#F2F2F5;color:#1C1C21}
+.toast b{color:#8AA6FF}.dark .toast b,#theme:checked ~ main .toast b{color:#2E5BDB}
+.scrim{position:absolute;inset:0;background:var(--scrim);z-index:7}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--raised);border-radius:var(--r-l) var(--r-l) 0 0;box-shadow:var(--shadow3);z-index:8;padding:8px 16px 24px}
+.sheet .grab{width:36px;height:5px;border-radius:3px;background:var(--border-strong);opacity:.6;margin:0 auto 12px}
+.field{border:1px solid var(--border-strong);border-radius:var(--r-m);padding:10px 12px;font-size:16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.field.focus{outline:2px solid var(--focus);outline-offset:2px}
+.caret{display:inline-block;width:2px;height:20px;background:var(--accent);vertical-align:middle}
+.lbl{font-size:13px;font-weight:600;color:var(--text2);margin:14px 0 6px}
+.kb{position:absolute;left:0;right:0;bottom:0;height:290px;background:#D1D3D9;z-index:9;display:grid;grid-template-rows:repeat(4,1fr);gap:10px;padding:10px 4px 40px}
+.kb div{display:flex;gap:6px;justify-content:center}
+.kb span{background:#fff;border-radius:6px;flex:0 0 32px;box-shadow:0 1px 0 #898A8D}
+.kb .wide{flex:0 0 190px}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--border-strong);border-radius:var(--r-m);overflow:hidden;height:44px}
+.stepper .b{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.stepper .v{min-width:72px;text-align:center;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;border-left:1px solid var(--border);border-right:1px solid var(--border);height:44px;line-height:44px}
+.stepper .v.empty{color:var(--text3);font-weight:500}
+.stepper.mod .v{position:relative}
+.stepper.mod .v::after{content:"";position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.textarea{border:1px solid var(--border-strong);border-radius:var(--r-m);padding:10px 12px;min-height:72px;font-size:15px;color:var(--text);background:var(--bg)}
+.textarea.ph{color:var(--text3)}
+.bottombar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 30px;background:var(--bg);border-top:1px solid var(--border);z-index:4}
+.step{display:flex;align-items:center;gap:10px;margin:24px 0 8px}
+.step .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step .n.done{background:var(--success)}
+.banner{background:var(--danger-subtle);color:var(--text);border-radius:var(--r-m);padding:10px 12px;font-size:14px;display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+.banner svg{color:var(--danger)}
+.progress{height:8px;border-radius:999px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--success)}
+.ring{width:32px;height:32px;border-radius:50%;background:conic-gradient(var(--success) var(--p),var(--surface) 0);display:flex;align-items:center;justify-content:center;flex:none}
+.ring::after{content:"";width:22px;height:22px;border-radius:50%;background:var(--bg)}
+.funfact{font-size:14px;color:var(--text2);background:var(--surface);border-radius:var(--r-m);padding:10px 12px;margin:20px 0 8px;display:flex;gap:8px}
+.daycol{background:var(--surface);border-radius:var(--r-m);padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.daycol.today{outline:2px solid var(--accent);outline-offset:-2px}
+.daycol h4{margin:0;font-size:14px;display:flex;justify-content:space-between}
+.mini{background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px;line-height:18px}
+.mini.prop{border:1.5px dashed var(--accent)}
+.mini .mm{color:var(--text2);font-size:12px;display:flex;gap:6px;margin-top:2px;font-variant-numeric:tabular-nums}
+.mini.done{opacity:.6;text-decoration:line-through}
+.menu{position:absolute;background:var(--raised);border:1px solid var(--border);border-radius:var(--r-m);box-shadow:var(--shadow2);padding:4px;font-size:14px;z-index:6;width:220px}
+.menu div{padding:8px 10px;border-radius:6px;display:flex;gap:8px;align-items:center}
+.menu div.f{background:var(--accent-subtle)}
+.menu .sep{height:1px;background:var(--border);padding:0;margin:4px 0}
+.menu .dz{color:var(--danger)}
+.focusring{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-m)}
+.seg{display:flex;background:var(--surface);border-radius:var(--r-m);padding:3px;gap:2px;border:1px solid var(--border)}
+.seg span{flex:1;text-align:center;font-size:14px;padding:6px 0;border-radius:8px;color:var(--text2);font-weight:500}
+.seg span.on{background:var(--raised);color:var(--text);font-weight:600;box-shadow:var(--shadow1)}
+.grip{color:var(--text3)}
+.why-list{list-style:none;padding:0;margin:8px 0;font-size:15px}
+.why-list li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol><symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-caldot" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.6" fill="currentColor"/></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></symbol><symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4a2 2 0 0 0-.6 1.4V22M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4a2 2 0 0 0 .6-1.4V2"/></symbol><symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></symbol><symbol id="i-redo" viewBox="0 0 24 24"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></symbol><symbol id="i-tri" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></symbol><symbol id="i-cloudok" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/><path d="m9.5 14 2 2 3.5-3.5"/></symbol><symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M2 2l20 20M5.8 5.8A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.4-.2M21.5 15.5A4.5 4.5 0 0 0 17.5 10h-1.8A7 7 0 0 0 10 5.1"/></symbol><symbol id="i-cloudsync" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/><path d="M10 13a2.5 2.5 0 0 1 4.3-1.3M14 15.5a2.5 2.5 0 0 1-4.3 1.2"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol><symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevr" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-chevl" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></symbol><symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1" fill="currentColor"/><circle cx="15" cy="6" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="18" r="1" fill="currentColor"/><circle cx="15" cy="18" r="1" fill="currentColor"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol><symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol><symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></symbol><symbol id="i-sub" viewBox="0 0 24 24"><path d="M6 3v12a3 3 0 0 0 3 3h9M15 15l3 3-3 3"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol></svg>
+<input type="checkbox" id="theme" aria-label="Afficher toutes les maquettes en mode sombre">
+<main class="doc">
+<label class="toggle" for="theme"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon"/></svg> Basculer toutes les vues en mode sombre</label>
+<h1>ECR-004 — Bilan du soir</h1>
+<p class="sub" style="color:#55555E">Maquette v0.1 · 2026-10-20 · Steeve · Données fictives · Les pastilles violettes renvoient aux annotations en bas de page.</p>
+<p>Parcours quotidien du soir, ouvert par le lien du rappel de 21 h ou par la carte « Bilan du soir » d'Aujourd'hui. Une seule page défilante en trois étapes : <b>1. temps passé</b> (et reste à faire), <b>2. propositions</b> (s'il y en a), <b>3. deux questions</b>. <b>Action principale : « Valider mon bilan ».</b> Objectif : moins de 2 minutes.</p>
+<div class="refs" aria-label="US couvertes"><span>US-008 Saisir le temps passé</span><span>US-009 Reste à faire et alerte</span><span>US-003 Terminer</span><span>US-016 Rappel du soir (lien)</span><span>US-032 Replanification du soir</span><span>US-011 Ajustement proposé</span><span>US-028 Report (confirmation)</span><span>DEM-002 Deux questions du soir (US à créer)</span></div>
+<h2>Smartphone (prioritaire)</h2>
+<div class="stage"><div><div class="frame phone" aria-label="Smartphone, bilan du soir, temps passé">
+<div class="statusbar"><span>9:41</span><span class="notch"></span><span>5G ▮</span></div>
+<div class="scroll nobar" style="bottom:100px">
+ <div class="hdr"><span class="btn t sm" style="padding:0"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg>Fermer</span><span class="right"><span class="syncic"><svg class="i" viewBox="0 0 24 24" role="img" aria-label="À jour"><use href="#i-cloudok"/></svg></span></span></div>
+ <h1 class="title-l">Bilan du soir</h1>
+ <p class="sub">Mardi 20 octobre</p>
+ <div style="display:flex;gap:16px;margin:12px 0 4px;font-variant-numeric:tabular-nums">
+  <div><div class="muted" style="font-size:13px">Temps passé</div><div style="font-size:22px;font-weight:700">4 h</div></div>
+  <div><div class="muted" style="font-size:13px">Capacité</div><div style="font-size:22px;font-weight:700;color:var(--text2)">4 h</div></div>
+  <div><div class="muted" style="font-size:13px">Terminées</div><div style="font-size:22px;font-weight:700;color:var(--text2)">2</div></div><span class="pin" style="margin-left:6px">1</span>
+ </div>
+ <div class="step"><span class="n">1</span><b class="title-s">Temps passé</b><span class="pin" style="margin-left:6px">2</span></div>
+<ul class="list">
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Rédiger l'introduction</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper mod" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="1 h 30"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">1 h 30</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : <b>1 h</b></span><span class="btn t sm" style="height:24px;padding:0">Corriger</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Relire le chapitre 2<span class="pin" style="margin-left:6px">3</span></div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="1 h"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">1 h</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span class="warn" style="display:inline-flex;gap:4px;align-items:center"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tri"/></svg>Estimation dépassée : 2 h passées pour 1 h 30 estimée</span></div><div style="display:flex;gap:4px;margin-top:6px"><span class="btn s sm">Ré-estimer le reste</span><span class="btn t sm">C'est terminé</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Préparer le plan de la page d'accueil<span class="pin" style="margin-left:6px">4</span></div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="—"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v empty">—</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : 1 h</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;color:var(--text3);text-decoration:line-through">Planifier les séances de novembre</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="30 min"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">30 min</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk on" role="checkbox" aria-checked="true" aria-label="Terminée"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span class="ok">Terminée aujourd'hui</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Corriger les illustrations<span class="pin" style="margin-left:6px">5</span></div></div>
+ <div class="meta" style="margin-top:2px"><span class="chip">Non planifiée aujourd'hui</span></div>
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="30 min"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">30 min</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : 2 h 30</span></div>
+</li>
+</ul>
+<p class="sub" style="margin-top:8px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg> Ajouter du temps sur une autre tâche</p>
+</div>
+<div class="bottombar"><span class="btn p lg">Valider mon bilan</span><span class="pin abs" style="right:8px;top:-8px">8</span></div>
+<div class="homebar"></div>
+</div><p class="cap">A. Ouverture du bilan : synthèse du jour, puis étape 1 (temps passé) avec un stepper de 30 min par tâche. Le bouton de validation reste visible en bas.</p></div><div><div class="frame phone dark" aria-label="Smartphone, mode sombre, propositions et questions">
+<div class="statusbar"><span>9:41</span><span class="notch"></span><span>5G ▮</span></div>
+<div class="scroll nobar" style="bottom:100px">
+ <div style="height:4px"></div>
+ <div class="step"><span class="n">2</span><b class="title-s">Propositions</b></div>
+<div class="card w">
+ <div class="ct"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-caldot"/></svg>Créneau déplacé dans votre agenda</div>
+ <div class="why">Vous avez déplacé « Rédiger la conclusion » de mardi à jeudi dans Google Agenda.</div>
+ <div class="cmp"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark"/></svg>Planifiée <s>mar. 20</s> → <b>jeu. 22</b></div>
+ <div class="acts"><span class="btn p">Accepter</span><span class="btn t">Modifier</span><span class="btn t">Refuser</span></div>
+</div>
+ <div class="step"><span class="n">3</span><b class="title-s">Deux questions</b></div>
+<label class="lbl" style="display:block;font-size:15px;color:var(--text)">Qu'est-ce qui s'est bien passé aujourd'hui ? <span class="muted" style="font-weight:400">(facultatif)</span></label>
+<div class="textarea">J'ai terminé l'introduction plus vite que prévu en coupant les notifications.</div>
+<label class="lbl" style="display:block;font-size:15px;color:var(--text)">Qu'est-ce que vous auriez aimé faire autrement ? <span class="muted" style="font-weight:400">(facultatif)</span></label>
+<div class="textarea">Commencer la relecture plus tôt, quand je suis plus concentré.</div>
+ <div style="height:12px"></div>
+</div>
+<div class="bottombar"><span class="btn p lg">Valider mon bilan</span></div>
+<div class="homebar"></div>
+</div><p class="cap">B. Suite du défilement, mode sombre : étape 2 (proposition de replanification après un créneau déplacé, US-032) et étape 3 (deux questions, DEM-002).</p></div><div><div class="frame phone" aria-label="Smartphone, bilan validé">
+<div class="statusbar"><span>9:41</span><span class="notch"></span><span>5G ▮</span></div>
+<div class="scroll nobar" style="display:flex;flex-direction:column;justify-content:center;text-align:center">
+ <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--success-subtle);color:var(--success);display:flex;align-items:center;justify-content:center"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></div>
+ <h1 class="title-m">Bilan enregistré<span class="pin" style="margin-left:6px">9</span></h1>
+ <p class="sub" style="margin:8px auto 24px;max-width:280px">4 h passées · 2 tâches terminées<br>1 tâche non terminée sera reportée à demain.</p>
+ <div style="margin:0 auto;width:100%;max-width:300px;text-align:left" class="meta"><span style="justify-content:space-between;width:100%"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-redo"/></svg>Préparer le plan de la page d'accueil<b style="margin-left:auto">mer. 21</b></span></div>
+ <div style="margin-top:32px"><span class="btn s">Retour à Aujourd'hui</span></div>
+ <p class="sub" style="margin-top:24px">À demain. Rappel à 8 h.</p>
+</div>
+<div class="homebar"></div>
+</div><p class="cap">C. Confirmation sobre : chiffres du jour, ce qui sera reporté (RG-032), retour à Aujourd'hui.</p></div></div>
+<h2>PC (≥ 1024 px)</h2>
+<div style="overflow-x:auto;padding-bottom:16px"><div class="frame desk" aria-label="PC, bilan du soir">
+<div class="wbar"><i></i><i></i><i></i></div>
+<div class="dgrid" style="grid-template-columns:240px 1fr">
+<aside class="side" aria-label="Navigation"><div style="display:flex;align-items:center;justify-content:space-between;padding:4px 10px 14px"><b style="font-size:15px">Mes objectifs</b><span class="avatar" title="Réglages">C</span></div><div class="field" style="font-size:14px;padding:6px 10px;margin-bottom:10px;color:var(--text3)"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg> Rechercher <kbd style="margin-left:auto">/</kbd></div><a class="nav on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sun"/></svg>Aujourd'hui<kbd>1</kbd></a><a class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cal"/></svg>Semaine<kbd>2</kbd></a><a class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-list"/></svg>Tâches<kbd>3</kbd></a><a class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-target"/></svg>Objectifs<kbd>4</kbd></a><div class="sect">Objectifs</div><a class="nav"><span class="ring" style="--p:58%;width:18px;height:18px"></span>Publier le guide pratique</a><a class="nav"><span class="ring" style="--p:20%;width:18px;height:18px"></span>Refonte du site perso</a><a class="nav"><span class="ring" style="--p:35%;width:18px;height:18px"></span>Remise en forme</a><a class="nav muted" style="color:var(--text3)">Tous les objectifs</a><div class="foot"><span class="syncic"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cloudok"/></svg> À jour · il y a 2 min</span><a class="nav" style="padding:6px 10px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-gear"/></svg>Réglages</a></div></aside>
+<section class="main" style="overflow:hidden;position:relative;background:var(--surface)">
+ <div style="max-width:760px;margin:0 auto;background:var(--raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow3);padding:24px 32px;height:700px;overflow:hidden;position:relative">
+  <div class="hdr"><span class="btn t sm" style="padding:0"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg>Fermer</span><span class="right"><span class="syncic"><svg class="i" viewBox="0 0 24 24" role="img" aria-label="À jour"><use href="#i-cloudok"/></svg></span></span></div>
+ <h1 class="title-l">Bilan du soir</h1>
+ <p class="sub">Mardi 20 octobre</p>
+ <div style="display:flex;gap:16px;margin:12px 0 4px;font-variant-numeric:tabular-nums">
+  <div><div class="muted" style="font-size:13px">Temps passé</div><div style="font-size:22px;font-weight:700">4 h</div></div>
+  <div><div class="muted" style="font-size:13px">Capacité</div><div style="font-size:22px;font-weight:700;color:var(--text2)">4 h</div></div>
+  <div><div class="muted" style="font-size:13px">Terminées</div><div style="font-size:22px;font-weight:700;color:var(--text2)">2</div></div>
+ </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+   <div><div class="step"><span class="n">1</span><b class="title-s">Temps passé</b></div>
+<ul class="list">
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Rédiger l'introduction</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper mod" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="1 h 30"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">1 h 30</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : <b>1 h</b></span><span class="btn t sm" style="height:24px;padding:0">Corriger</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Relire le chapitre 2</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="1 h"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">1 h</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span class="warn" style="display:inline-flex;gap:4px;align-items:center"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tri"/></svg>Estimation dépassée : 2 h passées pour 1 h 30 estimée</span></div><div style="display:flex;gap:4px;margin-top:6px"><span class="btn s sm">Ré-estimer le reste</span><span class="btn t sm">C'est terminé</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Préparer le plan de la page d'accueil</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="—"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v empty">—</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : 1 h</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;color:var(--text3);text-decoration:line-through">Planifier les séances de novembre</div></div>
+ 
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="30 min"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">30 min</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk on" role="checkbox" aria-checked="true" aria-label="Terminée"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span class="ok">Terminée aujourd'hui</span></div>
+</li>
+ <li style="padding:12px 0;border-bottom:1px solid var(--border)">
+ <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;">Corriger les illustrations</div></div>
+ <div class="meta" style="margin-top:2px"><span class="chip">Non planifiée aujourd'hui</span></div>
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+  <span class="stepper" role="spinbutton" aria-label="Temps passé aujourd'hui" aria-valuetext="30 min"><span class="b" aria-label="Moins 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-minus"/></svg></span><span class="v">30 min</span><span class="b" aria-label="Plus 30 minutes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></span></span>
+  <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)">Terminée <span class="chk" role="checkbox" aria-checked="false" aria-label="Marquer terminée"></span></span>
+ </div>
+ <div class="meta" style="margin-top:6px"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"/></svg>Reste à faire : 2 h 30</span></div>
+</li>
+</ul>
+<p class="sub" style="margin-top:8px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg> Ajouter du temps sur une autre tâche</p></div>
+   <div><div class="step"><span class="n">2</span><b class="title-s">Propositions</b></div>
+<div class="card w">
+ <div class="ct"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-caldot"/></svg>Créneau déplacé dans votre agenda</div>
+ <div class="why">Vous avez déplacé « Rédiger la conclusion » de mardi à jeudi dans Google Agenda.</div>
+ <div class="cmp"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark"/></svg>Planifiée <s>mar. 20</s> → <b>jeu. 22</b></div>
+ <div class="acts"><span class="btn p">Accepter</span><span class="btn t">Modifier</span><span class="btn t">Refuser</span></div>
+</div><div class="step"><span class="n">3</span><b class="title-s">Deux questions</b></div>
+<label class="lbl" style="display:block;font-size:15px;color:var(--text)">Qu'est-ce qui s'est bien passé aujourd'hui ? <span class="muted" style="font-weight:400">(facultatif)</span></label>
+<div class="textarea ph">Quelques mots suffisent…</div>
+<label class="lbl" style="display:block;font-size:15px;color:var(--text)">Qu'est-ce que vous auriez aimé faire autrement ? <span class="muted" style="font-weight:400">(facultatif)</span></label>
+<div class="textarea ph">Quelques mots suffisent…</div></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 32px;border-top:1px solid var(--border);background:var(--raised);display:flex;justify-content:space-between;align-items:center"><span class="sub"><kbd>Tab</kbd> champ suivant · <kbd>↑</kbd><kbd>↓</kbd> ± 30 min · <kbd>Échap</kbd> fermer (le brouillon est conservé)</span><span class="btn p">Valider mon bilan</span></div>
+ </div>
+</section>
+</div></div></div>
+<section class="legend" aria-labelledby="leg">
+<h3 id="leg">Annotations</h3>
+<ol><li><b>Synthèse du jour</b> : temps passé total face à la capacité, et tâches terminées. Chiffres seulement, sans jugement (pas de rouge si la capacité n'est pas atteinte).</li><li><b>Temps passé</b> (US-008, RG-008) : stepper de 30 min. La valeur saisie est le <b>total du jour</b> pour la tâche (sous réserve de Q-DEM001-31.4) et le pas de 30 min s'applique sous réserve de Q-DEM001-31.3. Le point bleu signale une valeur modifiée, pas encore validée.</li><li><b>Estimation dépassée</b> (US-009, RG-009) : alerte en ligne, avec deux sorties directes, « Ré-estimer le reste » et « C'est terminé ». Seuil de déclenchement : sous réserve de Q-DEM001-31.2.</li><li><b>Non saisi</b> : un tiret (« — ») distingue « pas encore renseigné » de « 0 ». Tâches listées : celles planifiées aujourd'hui et celles qui ont reçu du temps aujourd'hui (RG-013).</li><li><b>Tâche travaillée sans être planifiée</b> : incluse avec la puce « Non planifiée aujourd'hui ». « Ajouter du temps sur une autre tâche » ouvre une recherche de tâche.</li><li><b>Propositions</b> (US-032, RG-037 ; US-011) : l'étape n'apparaît que s'il y a des propositions. Aucune replanification n'est appliquée sans « Accepter ». Jour proposé : sous réserve de Q-DEM001-33.2 ; sort du créneau en cas de refus : point ouvert PO-01 (parcours P-06).</li><li><b>Deux questions</b> (DEM-002) : libellés tirés de la demande, champs libres, marqués facultatifs <b>sous réserve de Q-ERG-01</b> (caractère obligatoire, conservation, consultation).</li><li><b>Action principale</b> fixée en bas, toujours atteignable au pouce. Le bilan reste un brouillon tant qu'il n'est pas validé : on peut fermer et revenir sans rien perdre.</li><li><b>Confirmation</b> : rappelle ce qui va se passer cette nuit (report automatique, RG-032), pour qu'aucune action automatique ne surprenne.</li></ol>
+</section>
+</main>
+</body>
+</html>
