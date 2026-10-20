@@ -15,26 +15,26 @@
 
 | Question | Thème | Priorité | US bloquées | État |
 |---|---|---|---|---|
-| Q-DEM001-1 | Cadrage | P1 | Constitution des lots (E2), toutes les US | Ouverte |
-| Q-DEM001-2 | Cadrage | P1 | US-017 | Ouverte |
-| Q-DEM001-3 | Accès multi-appareils | P1 | US-017, US-018 | Ouverte |
-| Q-DEM001-4 | Accès multi-appareils | P1 | US-018 | Ouverte |
-| Q-DEM001-5 | Objectifs et tâches | P1 | US-001, US-002, US-003, US-007 | Ouverte |
-| Q-DEM001-6 | Objectifs et tâches | P1 | US-001, US-002, US-004 | Ouverte |
-| Q-DEM001-7 | Objectifs et tâches | P2 | US-003, US-009 | Ouverte |
-| Q-DEM001-8 | Objectifs et tâches | P3 | US-021 | Ouverte |
-| Q-DEM001-9 | Estimation, temps, vélocité | P1 | US-002, US-005, US-006, US-008, US-009, US-010 | Ouverte |
-| Q-DEM001-10 | Estimation, temps, vélocité | P1 | US-008, US-016 | Ouverte |
-| Q-DEM001-11 | Estimation, temps, vélocité | P1 | US-003, US-009, US-012, US-016 | Ouverte |
-| Q-DEM001-12 | Estimation, temps, vélocité | P2 | US-010, US-011, US-013 | Ouverte |
-| Q-DEM001-13 | Planification, capacité, priorisation | P1 | US-006, US-007, US-015, US-020 | Ouverte |
-| Q-DEM001-14 | Planification, capacité, priorisation | P1 | US-005, US-006, US-019 | Ouverte |
-| Q-DEM001-15 | Planification, capacité, priorisation | P1 | US-019, US-020 | Ouverte |
-| Q-DEM001-16 | Planification, capacité, priorisation | P1 | US-004, US-006 | Ouverte |
-| Q-DEM001-17 | Planification, capacité, priorisation | P2 | US-007, US-011 | Ouverte |
-| Q-DEM001-18 | Rappels Google Calendar | P1 | US-014, US-015, US-016 | Ouverte |
-| Q-DEM001-19 | Rappels Google Calendar | P1 | US-014, US-015, US-016 | Ouverte |
-| Q-DEM001-20 | Visualisation | P2 | US-012, US-013 | Ouverte |
+| Q-DEM001-1 | Cadrage | P1 | Constitution des lots (E2), toutes les US | Répondue |
+| Q-DEM001-2 | Cadrage | P1 | US-017 | Répondue |
+| Q-DEM001-3 | Accès multi-appareils | P1 | US-017, US-018 | Répondue |
+| Q-DEM001-4 | Accès multi-appareils | P1 | US-018 | Répondue |
+| Q-DEM001-5 | Objectifs et tâches | P1 | US-001, US-002, US-003, US-007 | Répondue |
+| Q-DEM001-6 | Objectifs et tâches | P1 | US-001, US-002, US-004 | Répondue |
+| Q-DEM001-7 | Objectifs et tâches | P2 | US-003, US-009 | Répondue |
+| Q-DEM001-8 | Objectifs et tâches | P3 | US-021 | Répondue |
+| Q-DEM001-9 | Estimation, temps, vélocité | P1 | US-002, US-005, US-006, US-008, US-009, US-010 | Répondue |
+| Q-DEM001-10 | Estimation, temps, vélocité | P1 | US-008, US-016 | Répondue |
+| Q-DEM001-11 | Estimation, temps, vélocité | P1 | US-003, US-009, US-012, US-016 | Répondue |
+| Q-DEM001-12 | Estimation, temps, vélocité | P2 | US-010, US-011, US-013 | Répondue |
+| Q-DEM001-13 | Planification, capacité, priorisation | P1 | US-006, US-007, US-015, US-020 | Répondue |
+| Q-DEM001-14 | Planification, capacité, priorisation | P1 | US-005, US-006, US-019 | Répondue |
+| Q-DEM001-15 | Planification, capacité, priorisation | P1 | US-019, US-020 | Répondue |
+| Q-DEM001-16 | Planification, capacité, priorisation | P1 | US-004, US-006 | Répondue |
+| Q-DEM001-17 | Planification, capacité, priorisation | P2 | US-007, US-011 | Répondue |
+| Q-DEM001-18 | Rappels Google Calendar | P1 | US-014, US-015, US-016 | Répondue |
+| Q-DEM001-19 | Rappels Google Calendar | P1 | US-014, US-015, US-016 | Répondue |
+| Q-DEM001-20 | Visualisation | P2 | US-012, US-013 | Répondue |
 
 ---
 
@@ -340,3 +340,23 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 | Question | Date | Réponse | Impact (RG / US) |
 |---|---|---|---|
+| Q-DEM001-1 | 2026-10-20 | a) seul indispensable en 1re version (objectifs et tâches). j) non répondu. | À reporter par Pepper |
+| Q-DEM001-2 | 2026-10-20 | a) moi seul. | À reporter par Pepper |
+| Q-DEM001-3 | 2026-10-20 | b) dans mon propre espace de stockage en ligne (ex. Google Drive). Délai de propagation : non répondu. | À reporter par Pepper |
+| Q-DEM001-4 | 2026-10-20 | 1. c) consultation et saisie hors ligne (appareil : non précisé). 2. règle de conflit : non répondu. | À reporter par Pepper |
+| Q-DEM001-5 | 2026-10-20 | 5.1 non · 5.2 oui · 5.3 b) oui avec alerte · 5.4 a) quand toutes ses tâches sont terminées. | À reporter par Pepper |
+| Q-DEM001-6 | 2026-10-20 | 6.1 d) sous-objectifs et sous-tâches · 6.2 oui · 6.3 oui · 6.4 oui. | À reporter par Pepper |
+| Q-DEM001-7 | 2026-10-20 | 7.1 a) je la déclare terminée · 7.2 oui · 7.3 oui (sortie du backlog : non précisé). | À reporter par Pepper |
+| Q-DEM001-8 | 2026-10-20 | b) oui, mais plus tard (fréquences non précisées). | À reporter par Pepper |
+| Q-DEM001-9 | 2026-10-20 | a) heures et minutes, précision 30 min. | À reporter par Pepper |
+| Q-DEM001-10 | 2026-10-20 | 10.1 b) saisie d'une durée par tâche et par jour · 10.2 b) oui sans limite · 10.3 a) jour de démarrage · 10.4 a) heure locale de l'appareil. | À reporter par Pepper |
+| Q-DEM001-11 | 2026-10-20 | 11.1 c) calcul automatique corrigeable · 11.2 b) alerte demandant de ré-estimer. | À reporter par Pepper |
+| Q-DEM001-12 | 2026-10-20 | 12.1 réponse libre : « la somme des temps originaux estimés des tâches terminées » · 12.2 b) par semaine · 12.3 oui. | À reporter par Pepper |
+| Q-DEM001-13 | 2026-10-20 | 13.1 a) sur une journée, sans horaire · 13.2 b) l'application propose, je modifie · 13.3 report automatique. | À reporter par Pepper |
+| Q-DEM001-14 | 2026-10-20 | 14.1 c) valeur par jour de semaine + exceptions datées · 14.2 b) proposée par l'application, validée par moi · 14.3 b) alerte sans blocage. | À reporter par Pepper |
+| Q-DEM001-15 | 2026-10-20 | 15.1 oui · 15.2 oui (sous-questions : prise en compte d'un déplacement dans Google et agenda principal/dédié : non répondu). | À reporter par Pepper |
+| Q-DEM001-16 | 2026-10-20 | c) ordre proposé automatiquement, modifiable (critères et départage : non répondu). | À reporter par Pepper |
+| Q-DEM001-17 | 2026-10-20 | 17.1 b) selon la vélocité réelle · 17.2 b) proposition acceptée ou refusée · 17.3 dans l'application et dans les rappels. | À reporter par Pepper |
+| Q-DEM001-18 | 2026-10-20 | 18.1 8 h et 21 h, modifiables par moi · 18.2 a) tous les jours · 18.3 a) événement dans l'agenda principal · 18.4 non · 18.5 c) les deux (invitation à saisir : non répondu) · 18.6 oui. | À reporter par Pepper |
+| Q-DEM001-19 | 2026-10-20 | 19.1 b) souhaité, notification de l'application acceptable · 19.2 non · 19.3 c) événements conservés (a implicite). | À reporter par Pepper |
+| Q-DEM001-20 | 2026-10-20 | 20.1 b) tâches non terminées et non planifiées · 20.2 b) somme des restes à faire · 20.3 oui · 20.4 b) 12 dernières semaines, par semaine. | À reporter par Pepper |

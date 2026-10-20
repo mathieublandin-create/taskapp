@@ -16,6 +16,7 @@
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-20 | E1 | Réponses Q-DEM001-1 à 20 | Reçues | Consignées dans questions-ouvertes.md |
 
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
@@ -26,4 +27,4 @@
 |---|---|---|---|
 
 ## Points bloquants
-- DEM-001 : 20 questions ouvertes transmises au commanditaire le 2026-10-20 (`01-specification-fonctionnelle/questions-ouvertes.md`). Validation attendue aussi pour la reformulation du besoin (§2 du cahier des charges) et les exclusions (§4.2).
+- DEM-001 : réponses du commanditaire reçues le 2026-10-20 (reformulation et exclusions non explicitement validées) ; 20 questions ouvertes transmises le 2026-10-20 (`01-specification-fonctionnelle/questions-ouvertes.md`). Validation attendue aussi pour la reformulation du besoin (§2 du cahier des charges) et les exclusions (§4.2).
