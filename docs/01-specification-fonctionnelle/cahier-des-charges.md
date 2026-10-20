@@ -1,14 +1,17 @@
 # Cahier des charges — Application de gestion d'objectifs et de tâches synchronisée avec Google Calendar
 
+> **Version 0.4 — 2026-10-20.** Intègre les réponses du commanditaire aux questions P1 (Q-DEM001-21 à 29) et la partie fonctionnelle de l'avis de l'architecte (DAT §8, points F1 à F14 ; `avis-dependances-lot1.md`). Nouvelles RG-043 à RG-050, dont **quatre règles proposées à valider en E6** (RG-047 à RG-050). Nouvelles questions résiduelles Q-DEM001-41 et Q-DEM001-42. Une **proposition de modification de RG-008** (fuseau de référence, F3) est consignée **sans être appliquée** (§7.1).
+>
 > **Version 0.3 — 2026-10-20.** Intègre la demande DEM-002 (questions de bilan du soir, fun fact du matin) : RG-012 et RG-013 modifiées, nouvelles RG-038 à RG-042, questions Q-DEM002-1 à 7.
 >
 > **Version 0.2 — 2026-10-20.** Ce document intègre les réponses du commanditaire aux questions Q-DEM001-1 à Q-DEM001-20, ainsi que ses trois compléments du 2026-10-20. Les réponses figurent dans le fichier [`questions-ouvertes.md`](questions-ouvertes.md).
 >
 > Statuts des règles :
 > - **Établie** : la règle découle sans ambiguïté de la demande ou d'une réponse du commanditaire ;
-> - **À préciser** : le principe est établi, mais certaines modalités dépendent d'une question résiduelle (Q-DEM001-21 et suivantes).
+> - **À préciser** : le principe est établi, mais certaines modalités dépendent d'une question résiduelle (Q-DEM001-21 et suivantes) ;
+> - **Proposée, à valider en E6** : règle rédigée par Pepper à partir d'un signalement de l'architecte ou d'une conséquence logique des réponses, que le commanditaire n'a pas encore validée.
 >
-> **Validations encore attendues du commanditaire** (voir §11) : la reformulation du besoin (§2), les exclusions proposées (§4.3), les exigences ENF-05 et ENF-06, au statut « proposée », et les réponses aux questions Q-DEM002.
+> **Validations encore attendues du commanditaire** (voir §11) : la reformulation du besoin (§2), les exclusions proposées (§4.3), les exigences ENF-05 et ENF-06, au statut « proposée », les règles proposées RG-047 à RG-050 et la partie proposée de RG-044, la reformulation des délais (RG-017, ENF-02, RG-037), la proposition de modification de RG-008, les questions Q-DEM001-41 et 42, et les réponses aux questions Q-DEM002.
 
 ## 1. Historique des versions
 
@@ -17,6 +20,7 @@
 | 0.1 | 2026-10-20 | Pepper (BA) | DEM-001 | Création du brouillon à partir de la demande initiale. Règles de gestion RG-001 à RG-017, exigences ENF-01 à ENF-05, questions Q-DEM001-1 à Q-DEM001-20. |
 | 0.2 | 2026-10-20 | Pepper (BA) | DEM-001 | Intégration des réponses Q-DEM001-1 à 20 et des trois compléments du commanditaire du 2026-10-20. Changements : RG-001 à RG-017 précisées, dont 10 passent au statut « Établie » ; nouvelles RG-018 à RG-037 ; périmètre mis à jour (hors ligne, créneaux dans Google Calendar et prise en compte des événements désormais inclus ; tâches récurrentes reportées) ; nouvelles exclusions décidées ; ENF-04 devient exigée ; ajout d'ENF-06 ; glossaire complété ; reformulation du besoin mise à jour ; questions résiduelles Q-DEM001-21 à Q-DEM001-40. |
 | 0.3 | 2026-10-20 | Pepper (BA) | DEM-002 | Ajout de deux questions de bilan dans le rappel du soir et d'un fun fact scientifique dans le rappel du matin. Changements : RG-012 et RG-013 modifiées ; nouvelles RG-038 à RG-042 ; OBJ-11 ; périmètre et glossaire complétés ; analyse d'écart DEM-002 (§2) ; questions Q-DEM002-1 à Q-DEM002-7. |
+| 0.4 | 2026-10-20 | Pepper (BA) | DEM-001 | Intégration des réponses Q-DEM001-21 à 29 (recommandations retenues, sauf 22.3 : les données restent sur l'appareil à la déconnexion ; 21.1 « 1h » lu comme l'option a, à confirmer en Q-DEM001-41) et de l'avis de l'architecte (F1 à F14). Changements : RG-017, RG-020, RG-022, RG-023, RG-025, RG-027, RG-028, RG-029, RG-035, RG-036 précisées ; RG-002, RG-003 complétées ; RG-037, RG-017 et ENF-02 reformulées pour tenir compte des limites signalées (F1, F2, F14) ; nouvelles RG-043 à RG-046 (établies, sauf le choix « repartir de zéro » de RG-044) ; nouvelles RG-047 à RG-050 (proposées : réparations après fusion F12, historique F10) ; proposition de modification de RG-008 (F3) consignée sans être appliquée ; glossaire complété ; questions Q-DEM001-41 et 42 ; tension entre la réponse 22.3 et ENF-05 analysée (§2). |
 
 ## 2. Contexte
 
@@ -48,6 +52,19 @@ DEM-002, reformulée : « Chaque soir, en plus du bilan de mes tâches, l'applic
 | **Sans impact** | Les règles existantes s'appliquent aux réponses : stockage dans l'espace personnel (RG-020), usage hors ligne (RG-021) et règle de conflit (RG-036). |
 | **Lot** | Les rappels ne font pas partie des capacités indispensables à la première version (Q-DEM001-1 : seul a) l'est). DEM-002 enrichit les rappels : elle relève donc du lot « Rappels », et non de LOT-001. |
 
+### Analyse d'écart des réponses P1 et de l'avis de l'architecte (v0.4)
+Les réponses du commanditaire aux questions Q-DEM001-21 à 29 retiennent toutes les options recommandées, **sauf Q-DEM001-22.3** (« non » : les données restent sur l'appareil lors d'une déconnexion volontaire). Pour Q-DEM001-21.1, la réponse « 1h » ne désigne pas une des options proposées ; Jarvis l'a lue comme l'option a) (délai de visibilité d'une modification sur l'autre appareil). Cette lecture est appliquée dans la présente version et **soumise à confirmation** (Q-DEM001-41).
+
+| Nature | Élément |
+|---|---|
+| **Établi par les réponses** | Stockage dans le Google Drive du compte de connexion (RG-020) ; perte d'accès Google traitée comme une coupure de réseau (RG-035) ; données conservées sur l'appareil à la déconnexion (RG-043) ; restauration proposée si les données sont supprimées hors de l'application (RG-044) ; règle de conflit appliquée information par information, avec information sur la valeur écartée (RG-036) ; un seul niveau de sous-objectifs et de sous-tâches (RG-022, RG-023) ; estimation d'une tâche parente calculée (RG-023) ; règles d'atteinte d'un objectif (RG-025) ; reprise d'une tâche abandonnée (RG-027) ; estimation obligatoire et modifiable sous condition (RG-028, RG-029) ; délai sans heure et tâche en retard (RG-045) ; suppression (RG-046). |
+| **Reformulé (limites signalées par l'architecte)** | RG-017 et ENF-02 (F1, F14) : le délai d'une heure ne peut être tenu que si l'appareil destinataire est ouvert et connecté ; sinon, la modification apparaît dès son ouverture. RG-037 (F2) : un créneau déplacé n'est détecté que lorsqu'un appareil est ouvert. Ces reformulations restreignent la portée de la demande initiale : elles sont **à valider en E6**. |
+| **Proposé (à valider en E6)** | Choix « repartir de zéro » à côté de « restaurer » (RG-044, avis S6 : une suppression volontaire ne se distingue pas d'une erreur) ; règles de réparation après la fusion des modifications de deux appareils (RG-047 à RG-049, F12) ; historique des événements métier conservé dès le lot 1 (RG-050, F10). |
+| **Proposition de modification en attente (non appliquée)** | RG-008 : l'architecte propose de déterminer la journée selon le fuseau horaire de l'agenda Google, et non selon l'heure locale de l'appareil (F3, ADR-011). Cette proposition contredit la réponse Q-DEM001-10.4 a). **RG-008 reste inchangée** tant que le commanditaire ne l'a pas validée (§7.1). |
+| **Contradiction ou tension** | **Réponse 22.3 (« non ») et ENF-05.** ENF-06 n'est pas affectée : elle est même renforcée, puisque les modifications non encore enregistrées dans l'espace personnel ne sont plus exposées à un effacement. En revanche, les données restent présentes sur un appareil prêté, perdu, volé ou cédé, et la déconnexion ne permet plus de les retirer. Retirer l'accès depuis le compte Google interrompt les échanges, mais n'efface pas non plus les données présentes sur l'appareil. C'est en tension avec ENF-05 (« les données de l'utilisateur ne sont accessibles qu'à lui »). Le changement de compte sur un même appareil devient lui aussi une zone d'ombre. → Q-DEM001-42. |
+| **Tension avec la décision D1 en attente** | La réponse Q-DEM001-22.2 c) (perte d'accès traitée comme une coupure de réseau) suppose que l'application conserve et dépose plus tard les saisies faites sans pouvoir les enregistrer dans l'espace personnel, quelle que soit la décision D1 (hors ligne du smartphone dans le lot 1 ou non). Le CA-7 de US-017 est rédigé en deux variantes, en attente de D1 (F13). |
+| **Reporté (lots ultérieurs)** | Points F2, F4 à F8 et F11 de l'architecte : consignés dans le backlog, sans traitement à ce stade. |
+
 ### Existant
 Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 0.1 de ce cahier des charges et au backlog initial. L'écart entre la v0.1 et la v0.2 est détaillé ci-dessous.
 
@@ -56,7 +73,7 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | **Nouveau** | Connexion obligatoire avec un compte Google (RG-019) ; stockage dans l'espace personnel de l'utilisateur (RG-020) ; sous-objectifs et sous-tâches (RG-022, RG-023) ; tâche rattachée à zéro, un ou plusieurs objectifs (RG-001) ; abandon d'une tâche (RG-027) ; importance d'un objectif (RG-030) ; proposition de planning (RG-031) ; report automatique (RG-032) ; prise en compte des événements de l'agenda (RG-033) ; créneaux dans l'agenda principal, avec horaire suggéré (RG-034) ; prise en compte d'un créneau déplacé dans Google Calendar, avec notification et replanification proposée le soir (RG-037) ; règle de conflit entre appareils (RG-036). |
 | **Modifié** | Délai d'un objectif facultatif (RG-002) ; contrôle des délais fondé sur la vélocité réelle (RG-007) ; vélocité définie comme la somme des estimations initiales des tâches terminées, par semaine (RG-010) ; backlog limité aux tâches non terminées et non planifiées (RG-015) ; utilisation hors ligne exigée (ENF-04). |
 | **Contradiction levée** | Planification « sur une journée, sans horaire » (Q-DEM001-13) et tâches visibles « comme des créneaux » (Q-DEM001-15) : tranché par le complément du commanditaire. La tâche est planifiée sur une journée et l'application lui suggère un horaire, qui produit le créneau (RG-006, RG-034). |
-| **Tensions restant à arbitrer (DEM-001)** | Voir les questions résiduelles Q-DEM001-21 à Q-DEM001-40. Les principales portent sur la vélocité et le reste à faire (Q-DEM001-30), sur la définition du backlog (Q-DEM001-36) et sur l'atteinte d'un objectif hiérarchisé (Q-DEM001-26). |
+| **Tensions restant à arbitrer (DEM-001)** | Voir les questions résiduelles Q-DEM001-30 à Q-DEM001-42 (Q-DEM001-21 à 29 répondues en v0.4). Les principales portent sur la vélocité et le reste à faire (Q-DEM001-30), sur la définition du backlog (Q-DEM001-36) et sur les données conservées sur un appareil après déconnexion (Q-DEM001-42). |
 
 ## 3. Objectifs du produit
 
@@ -80,7 +97,9 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 - La connexion à l'application avec un compte Google, obligatoire.
 - La conservation des données dans l'espace de stockage en ligne personnel de l'utilisateur.
 - L'accès aux mêmes données depuis un smartphone et depuis un PC, dès la première version.
-- L'utilisation sans réseau, en consultation et en saisie : en priorité sur le smartphone ; pour le PC, voir Q-DEM001-39.
+- L'utilisation sans réseau, en consultation et en saisie : en priorité sur le smartphone ; pour le PC, voir Q-DEM001-39. Le lot de livraison du hors ligne sur smartphone dépend de la décision D1 (LOT-001).
+- La conservation des données sur l'appareil après une déconnexion volontaire (Q-DEM001-22.3 b ; modalités : Q-DEM001-42).
+- La restauration des données de l'application supprimées ou rendues illisibles dans l'espace de stockage en dehors de l'application (Q-DEM001-22.4 a).
 - La création et la gestion d'objectifs (délai facultatif, importance) et de sous-objectifs.
 - La création et la gestion de tâches (délai obligatoire, estimation) et de sous-tâches. Une tâche est rattachée à zéro, un ou plusieurs objectifs.
 - La fin d'une tâche sur déclaration, sa réouverture, son abandon ; le calcul de l'atteinte d'un objectif.
@@ -113,6 +132,10 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | Atteinte d'un objectif déclarée manuellement, ou mesurée par une valeur cible chiffrée | Décidé | Q-DEM001-5.4 a) |
 | Ajustement automatique des délais ou du planning sans validation de l'utilisateur | Décidé | Q-DEM001-17.2 b) |
 | Mise à jour du rappel du matin après son heure d'envoi | Décidé | Q-DEM001-18.4 « non » |
+| Plus d'un niveau de sous-objectifs ou de sous-tâches | Décidé | Q-DEM001-24.1 a), Q-DEM001-25.1 a) |
+| Sous-objectif rattaché à plusieurs objectifs parents | Décidé | Q-DEM001-24.2 « oui » (parent unique) |
+| Corbeille ou restauration d'un élément supprimé | Décidé | Q-DEM001-29.4 a) |
+| Effacement automatique des données de l'appareil lors d'une déconnexion volontaire | Décidé | Q-DEM001-22.3 b) |
 | Synchronisation avec d'autres agendas que Google Calendar (Outlook, iCloud…) | Proposé, à valider | Absent de la demande |
 | Import depuis d'autres outils de gestion de tâches | Proposé, à valider | Absent de la demande |
 | Facturation ou suivi financier du temps passé | Proposé, à valider | Absent de la demande |
@@ -122,8 +145,8 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | Acteur | Description | Statut |
 |---|---|---|
 | **Utilisateur** (persona « le commanditaire ») | Seul utilisateur de l'application. Il définit ses objectifs, ses tâches, son planning et sa capacité, saisit son temps passé, reçoit les rappels et consulte les indicateurs. Utilise un smartphone (usage prioritaire) et un PC. | Établi (Q-DEM001-2 a) |
-| **Compte Google de l'utilisateur** (système externe) | Sert à la connexion à l'application, obligatoire. Fournit l'agenda principal (rappels, créneaux de tâches, événements pris en compte dans la capacité) et, probablement, l'espace de stockage des données (à confirmer : Q-DEM001-22). | Établi |
-| **Espace de stockage en ligne personnel** (système externe) | Espace appartenant à l'utilisateur, dans lequel ses données sont conservées. | Établi (service exact : Q-DEM001-22) |
+| **Compte Google de l'utilisateur** (système externe) | Sert à la connexion à l'application, obligatoire. Fournit l'espace de stockage des données (son Google Drive, Q-DEM001-22.1 a) et, à partir du lot « Rappels », l'agenda principal (rappels, créneaux de tâches, événements pris en compte dans la capacité). | Établi |
+| **Espace de stockage en ligne personnel** (système externe) | Google Drive du compte Google de connexion, dans lequel les données de l'utilisateur sont conservées. | Établi (Q-DEM001-22.1 a) |
 
 **Persona principal.** Le commanditaire, travailleur autonome sur ses propres objectifs. Il organise lui-même ses journées et utilise surtout son smartphone, parfois sans réseau. Il travaille aussi sur PC et utilise déjà Google Calendar. Il veut un pilotage chiffré (temps passé, reste à faire, vélocité) et garder la maîtrise de ses données.
 
@@ -132,26 +155,29 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | Terme | Définition | Référence |
 |---|---|---|
 | **Objectif** | Résultat que l'utilisateur veut atteindre, avec ou sans délai. Il peut comporter des sous-objectifs et regrouper des tâches. Son état (en cours ou atteint) est calculé à partir de ses tâches. | RG-001, RG-002, RG-022, RG-025 |
-| **Sous-objectif** | Objectif rattaché à un objectif parent. | RG-022, Q-DEM001-24 |
+| **Sous-objectif** | Objectif rattaché à un seul objectif parent, lui-même objectif principal (un seul niveau). | RG-022, Q-DEM001-24 |
 | **Importance d'un objectif** | Niveau d'importance porté par un objectif, utilisé pour proposer l'ordre de priorité des tâches. | RG-030, Q-DEM001-35 |
 | **Tâche** | Unité de travail concrète, avec un délai obligatoire et une estimation. Elle est rattachée à zéro, un ou plusieurs objectifs. Ses états sont : à faire, terminée ou abandonnée. | RG-001, RG-003, RG-026, RG-027 |
 | **Tâche sans objectif** | Tâche rattachée à aucun objectif. | RG-001 |
-| **Sous-tâche** | Tâche rattachée à une tâche parente. | RG-023, Q-DEM001-25 |
-| **Délai (échéance)** | Date à laquelle un objectif ou une tâche doit être atteint ou terminé. Il est facultatif pour un objectif et obligatoire pour une tâche. | RG-002, RG-003 |
-| **Estimation initiale** (« temps original estimé ») | Quantité de travail prévue pour réaliser une tâche lors de sa création, exprimée en heures et minutes par pas de 30 min. Elle est conservée pour le calcul de la vélocité. | RG-028, RG-029 |
+| **Sous-tâche** | Tâche rattachée à une tâche parente, qui n'est elle-même pas une sous-tâche (un seul niveau). Elle a son propre délai et sa propre estimation, et les objectifs de sa tâche parente. | RG-023, Q-DEM001-25 |
+| **Tâche parente** | Tâche qui a au moins une sous-tâche. Son estimation est calculée : c'est la somme des estimations de ses sous-tâches non abandonnées. | RG-023 |
+| **Délai (échéance)** | Date, sans heure, à laquelle un objectif ou une tâche doit être atteint ou terminé, ce jour-là inclus. Il est facultatif pour un objectif et obligatoire pour une tâche. | RG-002, RG-003, RG-045 |
+| **En retard** | Se dit d'une tâche à faire, ou d'un objectif non atteint, dont le délai est antérieur à la journée en cours. | RG-045 |
+| **Estimation initiale** (« temps original estimé ») | Quantité de travail prévue pour réaliser une tâche, exprimée en heures et minutes par pas de 30 min, au minimum 30 min. Obligatoire, elle peut être modifiée tant qu'aucun temps passé n'a été saisi sur la tâche, puis elle est figée. Elle est conservée pour le calcul de la vélocité. | RG-028, RG-029 |
 | **Unité de temps** | Heures et minutes, avec une précision de 30 min. | RG-028 |
 | **Priorité** | Rang d'une tâche dans l'ordre de réalisation proposé par l'application. L'utilisateur peut modifier cet ordre. | RG-005 |
 | **Planification** | Affectation d'une tâche à une journée, sans horaire. L'application suggère ensuite un horaire, qui donne le créneau. | RG-006, RG-031, RG-034 |
 | **Horaire suggéré** | Heure de début et durée proposées par l'application pour une tâche planifiée sur une journée. Elles forment le créneau placé dans l'agenda Google. | RG-034, Q-DEM001-32 |
 | **Créneau de tâche** | Événement de l'agenda Google principal qui représente une tâche planifiée, à son horaire suggéré. | RG-034, RG-037 |
 | **Report automatique** | Déplacement automatique au jour suivant d'une tâche planifiée un jour passé et non terminée. | RG-032 |
-| **Journée** | Jour calendaire déterminé par l'heure locale de l'appareil utilisé. | RG-008 |
+| **Journée** | Jour calendaire déterminé par l'heure locale de l'appareil utilisé. *(Une proposition de modification, non validée, consiste à la déterminer selon le fuseau de l'agenda Google : voir §7.1.)* | RG-008 |
 | **Capacité quotidienne** | Temps que l'utilisateur prévoit de consacrer à ses tâches pour un jour de la semaine, éventuellement remplacé par une exception à une date donnée. Les événements de l'agenda la réduisent. | RG-011, RG-033 |
 | **Temps passé** | Durée consacrée à une tâche au cours d'une journée, saisie par l'utilisateur. | RG-008 |
 | **Reste à faire** | Travail restant pour terminer une tâche. Il est calculé (estimation initiale moins temps passé cumulé) et l'utilisateur peut le corriger. | RG-009 |
 | **Tâche terminée** | Tâche que l'utilisateur a déclarée terminée. Elle peut être rouverte. | RG-026 |
-| **Tâche abandonnée** | Tâche que l'utilisateur ne réalisera pas : ni terminée, ni à faire. | RG-027 |
-| **Objectif atteint** | Objectif dont toutes les tâches sont terminées. Les modalités pour les sous-objectifs et les tâches abandonnées sont à préciser. | RG-025, Q-DEM001-26 |
+| **Tâche abandonnée** | Tâche que l'utilisateur ne réalisera pas : ni terminée, ni à faire. Elle peut être reprise. Elle ne fait pas partie du backlog. | RG-027 |
+| **Suppression** | Disparition définitive d'un objectif ou d'une tâche, après confirmation. À distinguer de l'abandon, qui garde une trace. | RG-046 |
+| **Objectif atteint** | Objectif dont toutes les tâches non abandonnées sont terminées et dont tous les sous-objectifs sont atteints. Un objectif qui n'a ni tâche non abandonnée ni sous-objectif n'est pas atteint : il est « à décliner en tâches ». | RG-025, Q-DEM001-26 |
 | **Vélocité** | Somme des estimations initiales des tâches terminées dans une semaine. | RG-010 |
 | **Backlog** | Ensemble des tâches non terminées et non planifiées, mesuré par la somme de leurs restes à faire. | RG-015, Q-DEM001-36 |
 | **Rappel du matin** | Événement quotidien de l'agenda Google principal, à 8 h par défaut, qui liste les tâches planifiées dans la journée et présente un fun fact. | RG-012, RG-014, RG-040 |
@@ -159,10 +185,15 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | **Questions de bilan** | Les deux questions posées chaque soir : ce qui s'est bien passé aujourd'hui ; ce que l'utilisateur aurait aimé faire autrement. | RG-038, RG-039 |
 | **Fun fact** | Anecdote surprenante et vérifiable, de préférence scientifique, présentée dans le rappel du matin. | RG-040, RG-041 |
 | **Liste des fun facts** | Ensemble des 100 fun facts enregistrés dans l'application, parmi lesquels le fun fact du jour est tiré. | RG-041, RG-042 |
-| **Compte Google** | Compte avec lequel l'utilisateur se connecte. Il donne accès à son agenda et, probablement, à son espace de stockage. L'utilisateur peut retirer l'accès qu'il a accordé (révocation), et cet accès peut expirer. | RG-019, RG-035 |
-| **Espace de stockage personnel** | Espace de stockage en ligne appartenant à l'utilisateur, dans lequel ses données sont conservées. | RG-020 |
+| **Compte Google** | Compte avec lequel l'utilisateur se connecte. Il donne accès à son espace de stockage (Google Drive) et, à partir du lot « Rappels », à son agenda. L'utilisateur peut retirer l'accès qu'il a accordé (révocation), et cet accès peut expirer. | RG-019, RG-020, RG-035 |
+| **Déconnexion** | Action par laquelle l'utilisateur ferme sa session sur un appareil. Les données restent sur l'appareil, mais ne sont plus affichées jusqu'à la reconnexion. | RG-043 |
+| **Espace de stockage personnel** | Google Drive du compte de connexion de l'utilisateur, dans lequel ses données sont conservées. | RG-020 |
 | **Appareil** | Smartphone ou PC depuis lequel l'utilisateur utilise l'application. | RG-017 |
-| **Conflit de modification** | Situation où une même donnée a été modifiée différemment sur deux appareils avant que ceux-ci n'aient échangé leurs modifications. | RG-036 |
+| **Conflit de modification** | Situation où une même information a été modifiée différemment sur deux appareils avant que ceux-ci n'aient échangé leurs modifications (modifications concurrentes). | RG-036 |
+| **Valeur écartée** | Valeur saisie sur un appareil et non retenue à cause d'une modification concurrente faite sur l'autre appareil. Une valeur remplacée plus tard, en connaissance de cause, n'est pas une valeur écartée. | RG-036, RG-047, RG-048 |
+| **Fusion** | Rapprochement des modifications faites sur les deux appareils, information par information. | RG-036, RG-047 à RG-049 |
+| **Incohérence après fusion** | État que la fusion produit et qu'aucun des deux appareils n'aurait accepté seul, par exemple une tâche terminée qui a une sous-tâche à faire. | RG-049 |
+| **Historique** | Trace conservée, dès le lot 1, des événements de la vie des objectifs et des tâches, avec la journée et les valeurs avant et après. Non affiché au lot 1. | RG-050 |
 
 ## 7. Règles de gestion
 
