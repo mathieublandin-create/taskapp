@@ -27,6 +27,7 @@
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-20 | E1 | ENF-05 et ENF-06 | Validées | Verbatim « ok pour enf-05 et enf-06 ». Restent à valider : reformulation du besoin et exclusions proposées. |
 | 2026-10-20 | Hors étape (socle UX) | Q-ERG-11 précisée | Reçue | « a) » : en cas de refus de la replanification, le créneau est supprimé de Google Calendar et la tâche est déplanifiée. Transmis à Pepper. |
 | 2026-10-20 | Hors étape (socle UX) | Réponses Q-ERG-02 à 11 (guide d'ergonomie §12.1) | Reçues | Verbatim : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Transmis à Pepper (règles métier) ; à transmettre à Steeve en E4. |
 | 2026-10-20 | E1 | Réponses Q-DEM001-1 à 20 | Reçues | Consignées dans questions-ouvertes.md |
