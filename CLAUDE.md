@@ -11,6 +11,9 @@ Projet piloté par une ferme d'agents (définis dans `.claude/agents/`), coordon
 | responsable-technique | Tech lead | `docs/04-specification-technique/` |
 | developpeur | Développeur | `src/` |
 
-- Workflow : `docs/workflow.md`
+- Workflow (étapes E0 à E14, règle anti-boucle) : `docs/workflow.md`
+- Tests métiers Gherkin (Cucumber) : `tests/features/`
+- Cérémonies (refinement, lancement, arbitrages) : `docs/ceremonies/`
+- Registre des anomalies : `docs/anomalies.md`
 - Langue de travail : français.
 - Lancer la session avec Jarvis comme agent principal : `claude --agent jarvis`
