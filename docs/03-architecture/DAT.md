@@ -8,7 +8,7 @@
 
 | Version | Date | Auteur | Origine | Nature de la modification |
 |---|---|---|---|---|
-| 0.1 | 2026-10-20 | Starck | DEM-001, DEM-002, cahier des charges v0.2 et v0.3, LOT-001 (proposé), réponses Q-DEM001-1 à 20 et compléments du commanditaire | Création. Architecture *local-first* sans serveur applicatif. Base de code TypeScript unique (PWA pour le PC, Capacitor pour le smartphone). Synchronisation par Google Drive (état fusionnable par appareil). Intégration Google Calendar par réconciliation déclarative. ADR-001 à ADR-011 proposés. Avis sur LOT-001 dans `avis-dependances-lot1.md`. |
+| 0.1 | 2026-10-20 | Starck | DEM-001, DEM-002, cahier des charges v0.2 et v0.3, LOT-001 (proposé), réponses Q-DEM001-1 à 20 et compléments du commanditaire | Création. Architecture *local-first* sans serveur applicatif. Base de code TypeScript unique (PWA pour le PC, Capacitor pour le smartphone). Synchronisation par Google Drive (état fusionnable par appareil). Intégration Google Calendar par réconciliation déclarative. ADR-001 à ADR-011 proposés. Avis sur LOT-001 dans `avis-dependances-lot1.md`. Décisions DS-01 à DS-20 et réponses aux points de testabilité d'Anthony (§11). |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -21,7 +21,8 @@
 8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper)
 9. Arbitrages commanditaire
 10. Risques et points ouverts
-11. Index des ADR
+11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité
+12. Index des ADR
 
 ---
 
@@ -143,6 +144,13 @@ flowchart TB
 | `synchro` | Moteur CRDT (fusion par champ, horloge HLC), cycle de synchronisation, journal des valeurs écartées | `domaine`, ports |
 | `infrastructure` | Adaptateurs : IndexedDB (Dexie), SQLite, Drive REST, Calendar REST, GIS web, authentification native, notifications locales | `application` (implémente les ports) |
 | `ui` | Écrans React et Ionic, état d'affichage | `application` |
+
+**Alignement avec les conventions d'Anthony** (`conventions.md` §3) : le code est découpé d'abord par **contexte métier** (`objectifs-taches`, `planification`, `rappels`, `synchronisation`, `compte`, `commun`…), puis par couche à l'intérieur de chaque contexte (`domaine`, `application`, `infrastructure`, `presentation`). Les couches ci-dessus s'y projettent ainsi :
+- `synchro` correspond au contexte `synchronisation` ;
+- `ui` correspond aux dossiers `presentation` ;
+- les adaptateurs Google partagés vont dans `infrastructure-google`.
+
+Les noms de ports du DAT prévalent. Il existe un port supplémentaire, `CoffreJetons`, défini par Anthony et dont la mise en œuvre est décrite par DS-06.
 
 ---
 
@@ -347,8 +355,15 @@ Chaque appareil calcule, à partir de l'état fusionné, l'**état souhaité** d
   - Le `syncToken` est conservé localement, par appareil.
   - Une réponse `410 Gone` déclenche une resynchronisation complète sur l'horizon.
   - Le paramètre `syncToken` est incompatible avec le filtre `privateExtendedProperty` : le filtrage se fait donc côté client.
-- Pour chaque créneau, l'état synchronisé conserve la **dernière position écrite par l'application** (date, début, fin).
-  - Si la position observée diffère de la position écrite, c'est **l'utilisateur** qui a déplacé le créneau. L'application crée alors un enregistrement `AlerteCreneau` (synchronisé, donc visible sur les deux appareils) et **n'écrase pas** le déplacement.
+- **Distinguer les modifications de l'application de celles de l'utilisateur (anti-boucle, PT-05)** : à chaque écriture, l'application inscrit **dans l'événement lui-même** la position qu'elle a écrite :
+  - propriété `extendedProperties.private.posApp`, qui contient le début et la fin écrits ;
+  - propriété `generation`.
+
+  L'interface de Google Calendar ne modifie pas ces propriétés privées. Le diagnostic se fait alors événement par événement, sans dépendre de l'état synchronisé :
+  - si `start`/`end` sont égaux à `posApp`, la modification vient de l'application : aucune alerte, même si l'écriture vient de l'autre appareil et que l'état correspondant n'est pas encore reçu ;
+  - si `start`/`end` diffèrent de `posApp`, c'est **l'utilisateur** qui a déplacé le créneau. L'application crée une `AlerteCreneau` (synchronisée, donc visible sur les deux appareils), avec un identifiant déterministe `(eventId, posApp, position observée)`, ce qui évite les doublons entre appareils. Elle **n'écrase pas** le déplacement.
+
+  L'état synchronisé conserve aussi la dernière position écrite (`CreneauAgenda`), pour l'affichage et la proposition du soir.
   - Un statut `cancelled` signifie que l'utilisateur a supprimé le créneau. L'application crée la même alerte et ne recrée pas le créneau.
 - **Proposition de replanification** : elle est calculée à l'heure du rappel du soir et présentée à l'ouverture suivante (Q-33.1 a). Elle n'est appliquée qu'après validation (RG-037).
 - **Notifications push de Calendar** (`events.watch`) : **non retenues**. Elles exigent un point de terminaison HTTPS public, donc un serveur (ADR-002).
@@ -596,7 +611,51 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 
 ---
 
-## 11. Index des ADR
+## 11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité
+
+Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md` §14 et §15). Statut : **Proposé**, comme le reste du DAT. Les décisions marquées ★ sont nécessaires avant E9 de LOT-001. La correspondance avec les points S1 à S10 de LOT-001 est indiquée dans `avis-dependances-lot1.md`.
+
+| DS | Décision | Référence |
+|---|---|---|
+| ★ DS-01 Langage | **TypeScript** (dernière version 5.x stable au démarrage du lot, figée dans `package.json`), `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`. Cible ES2022, modules ESM. **Node.js 24 LTS** pour l'outillage. Navigateurs cibles : Chrome et Edge (deux dernières versions) sur PC ; WebView Android à jour (Android 10 et plus) ; iOS 16.4 et plus si l'arbitrage A1 retient l'iPhone. Conventions idiomatiques : `type` et unions discriminées plutôt que des classes pour les données ; classes admises pour les adaptateurs ; pas d'`enum` TypeScript (unions de littéraux) ; pas de `any`. | §3.2, ADR-001 |
+| ★ DS-02 Forme de l'application | **Base de code unique** : PWA installable sur PC, application **Capacitor** sur smartphone (Android ; iOS selon A1). 100 % du code métier et de l'interface est partagé. Seuls diffèrent les adaptateurs de plateforme (stockage, authentification, notifications), choisis à l'assemblage (`composition/web.ts`, `composition/capacitor.ts`). | §3.1, ADR-001 |
+| ★ DS-03 Serveur | **Aucun composant serveur.** OAuth : mécanismes Google côté client. Rappels : séries Google Calendar. Synchronisation : fichiers Drive par appareil. Seul hébergement : fichiers statiques de la PWA. | §2.1, §5, ADR-002 |
+| DS-04 Flux OAuth | **Clients publics uniquement**, sans aucun secret : Google Identity Services, modèle « jeton », sur le web ; Credential Manager et AuthorizationClient sur Android ; SDK GoogleSignIn (PKCE interne) sur iOS. Les identifiants clients ne sont pas secrets : ils sont injectés à la construction par environnement (variables `VITE_GOOGLE_CLIENT_ID_WEB`, configuration Android par variante de build). Il existe un projet Google Cloud pour le développement et la recette, et un autre pour la production. | §4.1, §7.4, ADR-004 |
+| ★ DS-05 Scopes | Lot 1 : `openid`, `email`, `drive.file` (non sensibles). Lot avec agenda : ajout par **autorisation incrémentale** de `calendar.events.owned`, ou à défaut de `calendar.events`. Un scope n'est demandé qu'au premier usage de la fonctionnalité concernée. Le refus d'un scope dégrade la fonctionnalité concernée sans bloquer les autres (erreur `PorteeInsuffisante`). | §4.1.1, ADR-005 |
+| DS-06 `CoffreJetons` | Port conservé. Il ne conserve **jamais de jeton de rafraîchissement** produit par notre code. Web : jeton d'accès **en mémoire uniquement**, perdu à la fermeture de l'onglet et obtenu à nouveau par Google Identity Services. Android : jeton d'accès en mémoire, renouvellement délégué à Google Play services. iOS : délégué au SDK GoogleSignIn (trousseau). La règle de `conventions.md` §8, « stockage sécurisé de la plateforme », est donc satisfaite par délégation. | §4.1.2, ADR-004 |
+| ★ DS-07 Stockage local | Port `DepotLocal`. Web : **IndexedDB via Dexie**. Natif : **SQLite** (`@capacitor-community/sqlite`). Chaque cas d'usage écrit en **une transaction** les champs modifiés avec leur HLC et les entrées du journal métier. Une modification validée localement survit à un arrêt brutal. Pas de chiffrement au repos en v1 : bac à sable Android, profil de navigateur ; SQLCipher est possible plus tard. Données effacées à la déconnexion. | §3.2, ADR-010 |
+| DS-08 Identifiants | **UUID v7** (RFC 9562), générés sur l'appareil par le port `GenerateurIdentifiants`. Ils sont globalement uniques et triables par date de création. Exceptions, à clé naturelle ou déterministe : `SaisieTemps` (tacheId, jour), `LienTacheObjectif` (tacheId, objectifId), `ExceptionCapacite` et `BilanSoir` (date), identifiants d'événements Google (`hash` en base32hex), `AlerteCreneau`. | §6.1 |
+| DS-09 Traitements planifiés | Délégation à Google Calendar (séries récurrentes) et **rattrapage idempotent** par le premier appareil actif. Aucune exécution à heure fixe côté application, hormis les notifications locales programmées à l'avance sur le smartphone, en secours. | §5, ADR-006, ADR-007 |
+| ★ DS-10 Format dans Drive | Un dossier visible ; **un fichier d'état par appareil** (`appareils/<appareilId>.etat.json.gz`, JSON compressé) et un `manifeste.json`. Le fichier porte `schemaVersion` (entier croissant) et `versionApplication`. Lecture des schémas antérieurs par **migrations** pures et testées (Zod). Un schéma plus récent que celui de l'appareil fait passer l'application en **lecture seule** et demande une mise à jour. Pas de fichier unique partagé. | §4.2, ADR-003 |
+| ★ DS-11 Synchronisation et conflits | **CRDT à base d'état, par champ.** Métadonnées par champ : (valeur, HLC, appareilId). L'HLC est fondé sur l'heure **corrigée de l'écart avec l'en-tête `Date` de Google** ; en cas d'égalité, l'`appareilId` le plus grand (ordre lexicographique) l'emporte. Suppression : **pierre tombale** conservée indéfiniment en v1 ; elle l'emporte sur une modification concurrente, avec signalement. Journal métier : union. Passe de réparation après fusion. Valeurs écartées : journal synchronisé. **File d'attente hors ligne** : il n'y a pas de file d'opérations. L'état local et le marqueur « déposé jusqu'à HLC x » suffisent : tout champ dont l'HLC est supérieur à x est en attente. Les écritures Calendar se font par réconciliation, sans file. Pas d'erreur `ConflitDeVersion` sur Drive, puisque chaque fichier n'a qu'un écrivain. Journaux techniques : locaux, dans un tampon circulaire, et exportables (§7.3). | §4.2, §4.3, §7.3, ADR-003, ADR-011 |
+| DS-12 Erreurs | **Type résultat** conformément à la recommandation d'Anthony : union discriminée maison `Succes<T> \| Echec<E>`, sans bibliothèque. Les exceptions sont réservées aux erreurs de programmation. Asynchronisme par `async`/`await` et `Promise<Resultat<…>>`, avec annulation par `AbortSignal` pour les appels réseau. | — |
+| DS-13 Injection de dépendances et état de l'interface | Injection **manuelle par constructeur**, assemblée dans `composition/`, sans conteneur. État de l'interface : **Zustand**, alimenté par les cas d'usage et par un abonnement aux changements du `DepotLocal`. | §3.2 |
+| ★ DS-14 Tests | **Vitest** (unitaires, couverture v8) ; **fast-check** (tests par propriétés : convergence de la fusion, durées, rotation) ; **@cucumber/cucumber** en mode `--strict`, avec `# language: fr`, *step definitions* en TypeScript chargées par `tsx`, et simulateurs en mémoire (banc multi-appareils) ; **MSW** (contrats des adaptateurs Google) ; **Playwright** avec axe (PWA, y compris le hors ligne). Sur smartphone, pas de bout en bout automatisé en v1 : recette manuelle guidée sur appareil réel. **Stryker** (mutation, indicateur). Seuils : ceux d'Anthony (§10). | §3.3, ADR-009 |
+| ★ DS-15 Arborescence | **Un seul paquet** (pas de monodépôt), géré par pnpm. `src/<contexte>/<couche>/`, `src/infrastructure-google/`, `src/composition/` ; `tests/` selon `conventions.md` §3.2 (tests unitaires **séparés**, en miroir de `src/`). `android/` (et `ios/`) générés par Capacitor à la racine ; `public/` contient les ressources statiques, dont `fun-facts.fr.json` (lot DEM-002). | §2.4 |
+| ★ DS-16 Qualité | Prettier ; ESLint (configuration *flat*, `typescript-eslint` `strict-type-checked`, `eslint-plugin-react-hooks`, `jsx-a11y`) ; `no-restricted-syntax` et `no-restricted-globals` pour interdire `Date.now`, `new Date()` sans argument, `Math.random` et `crypto.randomUUID` hors des adaptateurs ; `tsc --noEmit` ; **dependency-cruiser** pour les règles de couches et de contextes ; **Semgrep** (SAST) ; **gitleaks** (secrets) ; **osv-scanner** et `license-checker` (SCA et licences) ; Husky et lint-staged pour les hooks locaux. | §7.1 |
+| DS-17 Intégration continue, environnements, distribution | **GitHub Actions** (sous réserve de l'hébergement du dépôt, PO-7) ; environnements et distribution selon §7.4 et les arbitrages A2 et A3. | §7.4 |
+| DS-18 Calendar | Marquage par `extendedProperties.private` ; identifiants déterministes ; réconciliation déclarative ; `posApp` dans l'événement contre les boucles ; lecture incrémentale par `syncToken` (pas de notifications push) ; attente exponentielle avec gigue ; fuseau de l'agenda pour les rappels et les créneaux. | §4.4, ADR-006 |
+| ★ DS-19 Historisation | **Journal métier en ajout seul**, et non des instantanés. Il est alimenté **dès le lot 1** par chaque cas d'usage (liste dans `avis-dependances-lot1.md`, S7). Les courbes démarrent à la première entrée du journal, sans reconstitution antérieure. | §6.1, §6.2 |
+| DS-20 Fun facts | Liste **embarquée** (JSON versionné). Rotation par **fonction pure** (graine, date d'origine, J, version de la liste) : aucun état de cycle à partager entre appareils. La graine est tirée une fois par `SourceAleatoire`, puis synchronisée. La permutation utilise un générateur pseudo-aléatoire initialisé par la graine, implémenté dans le domaine. | §6.3, ADR-008 |
+
+### Réponses aux points de testabilité
+
+| PT | Réponse de Starck |
+|---|---|
+| PT-01 | ADR-008. Un jour sans rappel consomme son fun fact : l'équité porte sur les attributions quotidiennes (F7). Les propriétés listées par Anthony sont toutes vérifiables. |
+| PT-02 | Le rappel de 8 h est produit par **Google Calendar** (série récurrente), même si aucun appareil n'est ouvert. Le contenu de J est une fonction pure (état, J, instant T), écrite par modification d'occurrence tant que T est antérieur à l'heure du rappel. Après l'heure, aucune écriture. **Un rappel « manqué » n'existe pas** : l'occurrence existe toujours, avec un contenu générique si aucun appareil ne l'a calculé. L'idempotence est assurée par les identifiants déterministes (série et occurrence). Changement d'heure légal : les séries Google `RRULE` suivent le fuseau de l'agenda, et l'heure murale de 8 h est conservée. |
+| PT-03 | Horodatage de référence : HLC fondé sur l'heure de l'appareil **corrigée de l'écart avec l'heure des serveurs Google**. Départage : `appareilId`. Suppression contre modification : la suppression l'emporte, avec signalement ; pierres tombales conservées indéfiniment en v1. Granularité : le champ (recommandation Q-23 a), réglable. |
+| PT-04 | Critères vérifiables avec une horloge contrôlable : (1) synchronisation lancée **au démarrage et au retour au premier plan** ; (2) dépôt **5 s** après une modification locale ; (3) synchronisation **toutes les 2 min** au premier plan (P ≤ 60 min) ; (4) synchronisation **au retour du réseau** ou du jeton. Le délai de bout en bout est mesuré en recette technique (E14). |
+| PT-05 | Propriété `posApp` inscrite dans l'événement à chaque écriture de l'application : une écriture de l'application ne produit **jamais** d'alerte, qu'elle vienne de l'un ou l'autre appareil (§4.4.3). Test : `FauxAgendaGoogle.deplacerEvenementCommeUtilisateur()` doit modifier `start`/`end` sans toucher `posApp`. |
+| PT-06 | Au lot 1, la `DateCalendaire` est calculée sur l'appareil et persistée (conforme à `conventions.md` §6.1). Pour les lots datés, voir ADR-011 et F3 (fuseau de l'agenda recommandé). |
+| PT-07 | Le report est une fonction pure (état, date de référence). Il est appliqué à la première activité du jour, et son résultat est le même sur les deux appareils (valeurs identiques et créneau d'identifiant déterministe). Les tests d'ouverture après 1, 3 et 10 jours sont adaptés. |
+| PT-08 | DS-19 : journal métier, avec les valeurs successives du reste à faire. Les semaines sont des semaines ISO (du lundi au dimanche) dans le fuseau de référence. |
+| PT-12 | Une erreur `401` déclenche un seul renouvellement silencieux. S'il échoue, ou en cas d'`invalid_grant` ou de révocation, l'erreur devient `AccesGoogleRevoque` : l'application continue de fonctionner comme hors ligne. |
+| PT-13 | Garanties : transaction locale par cas d'usage ; dépôt Drive idempotent (réécriture du fichier complet de l'appareil) ; marqueur « déposé jusqu'à » mis à jour seulement **après** la confirmation de Drive. Une interruption à n'importe quelle étape ne fait que rejouer le dépôt. |
+
+---
+
+## 12. Index des ADR
 
 | ADR | Titre | Statut |
 |---|---|---|
