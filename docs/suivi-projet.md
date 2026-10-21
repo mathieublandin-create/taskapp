@@ -79,6 +79,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- Steeve (avant E12) : aligner ECR-011, et ECR-008 si nécessaire, sur les variantes `rattachement` et `placement` d'`ALR-010` (guide v0.2.8).
 - Starck : aligner DAT §4.1.5 bis (élément créé puis supprimé hors ligne : non compté comme modification en attente, guide §6.6.1 et US-018 S05c) ; ajouter 3 points au protocole du test technique (Q-US-031-1).
 - Distribution par APK (DEC-021, ADR-012) : ajouter un `.gitignore` avant de créer la clé de signature (Anthony, socle E9) ; questions QC-8 (clé dans les secrets GitHub) et QC-9 (compte gratuit « distribution limitée » ou ADB) posées au commanditaire.
 - ETU-001 (plus tard) : étude d'auto-hébergement sur le Raspberry Pi du commanditaire (option C de `03-architecture/etude-sans-cloud-ou-gratuit.md`).
