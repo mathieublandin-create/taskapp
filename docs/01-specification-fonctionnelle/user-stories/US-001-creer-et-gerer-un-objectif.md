@@ -23,7 +23,7 @@ Statut : En analyse
 - RG-024 : alerte quand le délai d'une tâche est postérieur à celui de l'objectif.
 - RG-025 : état calculé (en cours, atteint, à décliner en tâches).
 - RG-045 : objectif « en retard ».
-- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris ; RG-054 (proposée) : mention « heure de Paris » quand l'appareil est dans un autre fuseau (US-017, CA-11).
 - RG-046 : suppression.
 - RG-047 (proposée) : suppression concurrente d'une modification.
 - RG-050 (proposée) : historique.
@@ -53,7 +53,7 @@ Statut : En analyse
 - Objectif dont toutes les tâches sont abandonnées et qui n'a pas de sous-objectif : « à décliner en tâches » (RG-025).
 - Suppression du seul objectif d'une tâche : la tâche devient une tâche sans objectif.
 - Modification du même objectif sur deux appareils : RG-036 (US-017).
-- Utilisateur en voyage hors du fuseau de Paris : l'indication « en retard » suit la journée de Paris (RG-008, RG-053) ; par exemple, à New York, un objectif dont le délai était hier (heure de New York) peut être signalé en retard dès 18 h, heure locale. Les deux appareils affichent toujours la même indication.
+- Utilisateur en voyage hors du fuseau de Paris : l'indication « en retard » suit la journée de Paris (RG-008, RG-053) ; par exemple, à New York en hiver, un objectif dont le délai est la date du jour à New York est signalé en retard dès 18 h, heure locale, puisqu'il est alors minuit à Paris. Le délai lui-même, date sans heure, ne change jamais de jour (RG-053). Les deux appareils affichent toujours la même indication ; la mention « heure de Paris » est proposée (RG-054).
 
 ## Hors périmètre
 - Importance d'un objectif (US-030).

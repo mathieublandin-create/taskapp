@@ -22,7 +22,7 @@ Statut : En analyse
 - RG-023 : fin d'une tâche parente.
 - RG-025 : atteinte d'un objectif, état calculé.
 - RG-001 : une tâche peut avoir plusieurs objectifs.
-- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris ; RG-054 (proposée) : mention « heure de Paris » quand l'appareil est dans un autre fuseau (US-017, CA-11).
 - RG-045 : une tâche terminée n'est pas en retard.
 - RG-049, RG-050 (proposées).
 

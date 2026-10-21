@@ -16,7 +16,7 @@ Statut : En analyse
 - RG-027 : abandon, reprise, cascade sur les sous-tâches, sortie du backlog.
 - RG-025 : les tâches abandonnées sont ignorées dans l'atteinte d'un objectif.
 - RG-023 : estimation de la tâche parente ; fin de la tâche parente.
-- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris ; RG-054 (proposée) : mention « heure de Paris » quand l'appareil est dans un autre fuseau (US-017, CA-11).
 - RG-045 : une tâche abandonnée n'est pas en retard.
 - RG-049, RG-050 (proposées).
 

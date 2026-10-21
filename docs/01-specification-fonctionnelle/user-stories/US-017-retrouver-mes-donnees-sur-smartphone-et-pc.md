@@ -27,6 +27,7 @@ Statut : En analyse
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
 - RG-044 : données supprimées ou illisibles dans le Drive : restaurer ou repartir de zéro.
 - RG-047, RG-048, RG-049 (proposées) : réparations après fusion.
+- RG-008, RG-053 : journée et horaires dans le fuseau de référence, Europe/Paris ; RG-054 (proposée) : mention « heure de Paris ».
 - ENF-01, ENF-02, ENF-04, ENF-06 (validée), ENF-07.
 
 ## Critères d'acceptation
@@ -52,10 +53,11 @@ Statut : En analyse
     - suppression d'un côté, modification de l'autre : la suppression l'emporte, et les modifications écartées sont signalées (RG-047 ; détail dans US-001, US-002, US-024) ;
     - hiérarchie d'objectifs invalide : le déplacement le plus ancien est annulé et signalé (RG-048 ; détail dans US-023) ;
     - incohérence d'état entre une tâche et ses sous-tâches : elle est signalée, sans correction automatique (RG-049 ; détail dans US-003, US-024, US-025).
+11. **CA-11** — *(RG-054, proposée)* Quand l'appareil est réglé sur un autre fuseau horaire que celui de Paris, l'application signale que les horaires et la journée « aujourd'hui » qu'elle affiche sont à l'heure de Paris (mention « heure de Paris »). Quand l'appareil est à l'heure de Paris, cette mention n'apparaît pas.
 
 ## Cas limites et cas d'erreur
 - Drive plein : l'utilisateur est averti que ses modifications ne peuvent pas être enregistrées dans son Drive ; elles restent conservées sur l'appareil et rien n'est perdu sans avertissement **(P)**.
-- Les deux appareils dans des fuseaux horaires différents, ou l'utilisateur en voyage : la date de fin, la date d'abandon et l'indication « en retard » sont déterminées dans le fuseau de Paris (RG-008, RG-053, DEC-012) ; elles sont donc identiques sur les deux appareils, mais peuvent ne pas correspondre à la date locale du lieu où se trouve l'utilisateur. Le fait d'indiquer à l'utilisateur que l'application suit l'heure de Paris quand son appareil est réglé sur un autre fuseau est proposé en E4 **(P)**.
+- Les deux appareils dans des fuseaux horaires différents, ou l'utilisateur en voyage : la date de fin, la date d'abandon et l'indication « en retard » sont déterminées dans le fuseau de Paris (RG-008, RG-053, DEC-012) ; elles sont donc identiques sur les deux appareils, mais peuvent ne pas correspondre à la date locale du lieu où se trouve l'utilisateur. Les délais, dates sans heure, ne changent jamais de jour (RG-053).
 - Horloge de l'un des appareils déréglée de plusieurs minutes : la modification réellement la plus récente l'emporte quand même. Si l'écart dépasse 24 h, l'application avertit l'utilisateur **(P)**.
 - Les deux appareils n'ont pas la même version de l'application : l'appareil dont la version est la plus ancienne invite l'utilisateur à la mettre à jour avant de permettre la saisie **(P, comportement à confirmer par l'architecte en E3)**.
 - Modification faite directement dans les fichiers du Drive, qui les laisse lisibles : *point à préciser par l'architecte en E3* (cas non couvert par RG-044, qui ne vise que les données absentes ou illisibles).
@@ -83,4 +85,4 @@ Statut : En analyse
 |---|---|
 | 2026-10-20 | v0.1 : US provisoire au backlog initial. |
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-3 et 4 et les compléments du commanditaire. |
-| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-21, 22 et 23 intégrées (CA-2, CA-3, CA-6, CA-8, CA-9) ; limites F1 et F14 de l'architecte (CA-2, CA-3) ; règles de réparation proposées F12 (CA-10) ; CA-7 remplacé par la variante « hors ligne inclus » (F13, DEC-002) ; DEC-001 (Android), DEC-007 (aucun serveur), DEC-009 (dossier visible), DEC-012 (fuseau de référence Europe/Paris). |
+| 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-21, 22 et 23 intégrées (CA-2, CA-3, CA-6, CA-8, CA-9) ; limites F1 et F14 de l'architecte (CA-2, CA-3) ; règles de réparation proposées F12 (CA-10) ; CA-7 remplacé par la variante « hors ligne inclus » (F13, DEC-002) ; mention « heure de Paris » proposée (RG-054, CA-11) ; DEC-001 (Android), DEC-007 (aucun serveur), DEC-009 (dossier visible), DEC-012 (fuseau de référence Europe/Paris). |

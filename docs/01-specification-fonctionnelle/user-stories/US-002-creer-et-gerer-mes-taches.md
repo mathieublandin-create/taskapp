@@ -29,7 +29,7 @@ Statut : En analyse
 - RG-028 : heures et minutes, pas de 30 min, minimum 30 min.
 - RG-029 : estimation obligatoire, sans valeur par défaut, modifiable tant qu'aucun temps passé n'est saisi.
 - RG-045 : tâche « en retard ».
-- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris.
+- RG-008, RG-053 : journée dans le fuseau de référence, Europe/Paris ; RG-054 (proposée) : mention « heure de Paris » quand l'appareil est dans un autre fuseau (US-017, CA-11).
 - RG-046 : suppression.
 - RG-047, RG-050 (proposées).
 
