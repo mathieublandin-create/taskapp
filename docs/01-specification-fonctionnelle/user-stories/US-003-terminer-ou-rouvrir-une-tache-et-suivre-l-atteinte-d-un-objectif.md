@@ -77,8 +77,8 @@ Statut : Validée
 - **Exigences non fonctionnelles** : recalcul de l'atteinte en moins de 100 ms (5 000 tâches), avec mémoïsation par objectif.
 - **Risques** :
   - changements d'heure (PT-16 : 25/10/2026 et 28/03/2027) ;
-  - **RG-049 est proposée** (voir US-024) ;
-  - **CA-5 est proposé** : il modifie la récursion de l'atteinte, mais sans effet sur l'architecture.
+  - RG-049 (établie, V-05) : incohérence dérivée à la lecture, sans écriture (voir US-024) ;
+  - CA-5 (validé) : il modifie la récursion de l'atteinte, sans effet sur l'architecture.
 - **ADR applicables** : ADR-003, ADR-010, ADR-011.
 
 ## Impacts ergonomie
@@ -95,7 +95,7 @@ Statut : Validée
   - tâche parente non terminable : voir US-024 (CA-8) ;
   - rouvrir une sous-tâche d'une tâche terminée : dialogue « Rouvrir aussi X ? » (CA-9) ;
   - état d'un objectif toujours calculé, jamais saisi (CA-4 à CA-7) : l'anneau et le mot d'état se mettent à jour sur l'écran ;
-  - **date de fin à l'heure de Paris** (CA-1) : quand l'appareil est ailleurs, la puce « Heure de Paris » accompagne « Terminée le 11 mars » et l'explique (exemple de New York, cadre G) ;
+  - **date de fin à l'heure de Paris** (CA-1) : quand l'appareil est ailleurs, la puce « Heure de Paris » accompagne « Terminée le 11 novembre 2026 » et l'explique (exemple de CA-1 : terminée à New York le 10 novembre à 23 h, soit le 11 novembre à 5 h à Paris ; cadre G) ;
   - incohérence (CA-12, RG-049) : voir US-024 ; tant qu'elle existe, les objectifs de la tâche ne sont pas atteints et l'écran de l'objectif ne le montre pas comme atteint.
 - **États** :
   - *vide* : filtre « Terminées » vide, « Aucune tâche terminée. » ;

@@ -92,7 +92,7 @@ Statut : Validée
 - **Exigences non fonctionnelles** : liste de 5 000 tâches triée et filtrée en moins de 100 ms (index locaux, liste virtualisée à l'écran).
 - **Risques** :
   - RG-029 : l'estimation reste modifiable au lot 1, car aucun temps passé n'existe encore. Le champ doit garder son HLC et son journal, pour que la vélocité utilise plus tard la bonne valeur ;
-  - RG-047 (proposée) : comme US-001.
+  - RG-047 (établie) : comme US-001.
 - **ADR applicables** : ADR-003, ADR-010, ADR-011.
 
 ## Impacts ergonomie

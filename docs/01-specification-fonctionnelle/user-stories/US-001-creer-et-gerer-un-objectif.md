@@ -90,7 +90,7 @@ Statut : Validée
   - calcul en mémoire, à partir d'index locaux.
 - **Risques** :
   - « en retard » dépend de la journée à Paris : tests multi-fuseaux et changements d'heure (PT-16) ;
-  - si **RG-047 était rejetée**, le comportement par défaut de la fusion par champ ne « ressuscite » pas un élément supprimé ; une règle contraire demanderait une logique de restauration supplémentaire.
+  - RG-047 (établie, V-03) correspond au comportement naturel de la fusion par champ : un élément supprimé n'est jamais ressuscité par une modification concurrente ; aucune logique de restauration n'est nécessaire.
 - **ADR applicables** : ADR-003, ADR-010, ADR-011.
 
 ## Impacts ergonomie
@@ -114,7 +114,7 @@ Statut : Validée
   - *synchronisation* : point « en attente » sur les lignes modifiées hors ligne ;
   - *conflit* : voir US-017 (ECR-011 C).
 - **Accessibilité et responsive** : anneau de progression avec texte équivalent ; nom accessible complet de la ligne ; création en feuille sur smartphone, panneau de 400 px sur PC (`Maj`+`N`).
-- **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est une proposition de Steeve (E6).
+- **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est un choix de conception de Steeve (validé avec l'US en E6).
 
 ## Tests métiers
 *Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-001-creer-et-gerer-un-objectif.feature`](../../../tests/features/US-001-creer-et-gerer-un-objectif.feature) — **21 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-001`, `@RG-xxx` et `@LOT-001`.

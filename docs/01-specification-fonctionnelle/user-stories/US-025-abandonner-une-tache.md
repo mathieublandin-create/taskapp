@@ -61,8 +61,8 @@ Statut : Validée
 - **Sécurité** : sans objet particulier.
 - **Exigences non fonctionnelles** : comme US-003.
 - **Risques** :
-  - la cascade porte sur plusieurs éléments et peut être en concurrence avec une reprise ou une création de sous-tâche sur l'autre appareil. Ce cas est couvert par RG-049 (proposée), qui le signale sans le corriger ;
-  - CA-7 est proposé : si le marqueur `abandonParCascade` est jugé inutile, on le supprime.
+  - la cascade porte sur plusieurs éléments et peut être en concurrence avec une reprise ou une création de sous-tâche sur l'autre appareil. Ce cas est couvert par RG-049 (établie, V-05), qui le signale sans le corriger ;
+  - CA-7 (validé) : le marqueur `abandonParCascade` est conservé.
 - **ADR applicables** : ADR-003, ADR-010, ADR-011.
 
 ## Impacts ergonomie
@@ -88,7 +88,7 @@ Statut : Validée
   - *synchronisation* : point « en attente » ;
   - *conflit* : abandon d'un côté, modification de l'autre : valeur écartée (ECR-011 C) ; incohérence.
 - **Accessibilité et responsive** : dialogue `alertdialog`, « Annuler » focalisé ; abandon accessible au clavier par le menu ; l'état « Abandonnée » est dit en texte et pas seulement par l'icône.
-- **Questions et réserves** : Q-ERG-13 (confirmation toujours, ou seulement avec des sous-tâches).
+- **Questions et réserves** : Q-ERG-13 tranchée par le commanditaire : confirmation toujours (CA-1), appliquée dans ECR-007.
 
 ## Tests métiers
 *Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **17 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`.

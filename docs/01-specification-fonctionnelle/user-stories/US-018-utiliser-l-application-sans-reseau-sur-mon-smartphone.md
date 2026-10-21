@@ -74,6 +74,12 @@ Statut : Validée
   - R13 : maturité et performances du module SQLite pour Capacitor. Parade : adaptateur derrière un port, et repli possible sur l'IndexedDB de la WebView, acceptable sur Android ;
   - R2 : renouvellement silencieux du jeton.
 - **PC** : le hors ligne du PC relève de US-031, entrée dans le lot par DEC-013. Le noyau est le même ; les spécificités du PC sont décrites dans les impacts architecture de US-031.
+- **RG-057 (rappel après 24 h hors ligne, établie, V-12)** :
+  - calcul **purement local**, sans réseau ni donnée synchronisée : la condition est « modifications en attente (marqueur « déposé jusqu'à HLC x » en retard) ET dernier contact réussi avec Drive vieux de plus de 24 h » ;
+  - la référence est un instant local `dernierContactDrive`, persisté dans le dépôt local à chaque lecture ou dépôt réussi. Il est évalué à l'ouverture, au retour au premier plan et par une temporisation d'une minute pendant que l'application est ouverte ; il est comparé à l'horloge de l'appareil (écart d'horloge sans conséquence grave : bandeau non bloquant) ;
+  - le bandeau disparaît dès que le marqueur rejoint la dernière modification, c'est-à-dire après un dépôt confirmé par Drive ;
+  - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007) ;
+  - impact : un champ local de plus, un sélecteur dans `synchronisation`, aucune migration du format Drive.
 - **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
 
 ## Impacts ergonomie
@@ -91,6 +97,10 @@ Statut : Validée
   4. un toast unique au passage hors ligne ;
   5. aucun bandeau, aucun bouton désactivé (sauf « Synchroniser maintenant », avec son explication).
 - **Au retour du réseau (CA-4, CA-7)** : « Synchronisation… » puis « À jour », **sans toast** si tout s'est bien passé ; si des valeurs ont été écartées, point accent sur l'indicateur et toast « Voir » (voir US-017).
+- **Rappel après 24 h (CA-9, RG-057, V-12)** : bandeau d'attention (`Banner`, guide §4.9), non bloquant, fermable, sans action ; « Hors ligne depuis plus de 24 h · n modifications ne sont encore que sur ce smartphone. » Absent si aucune modification n'est en attente ; disparaît à l'enregistrement dans le Drive. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J.
+  - **Proposition 1 (point de départ des 24 h)** : *plus ancienne modification en attente*. Recommandée : le risque porte sur l'âge des données non enregistrées, et le bandeau ne sonne pas pour une modification de la veille au soir. Variante : début du hors ligne, plus simple à expliquer mais qui alerte aussitôt après une première modification faite tard dans une longue coupure.
+  - **Proposition 2 (accès Google perdu depuis plus de 24 h, bandeau « Se reconnecter » déjà affiché)** : *un seul bandeau*, celui de « Se reconnecter » (non fermable), complété de la phrase « n modifications ne sont encore que sur ce smartphone » ; pas de second bandeau empilé (ECR-011 L). Le rappel RG-057 est ainsi tenu sans doubler l'alerte.
+  - Ces deux points relèvent de RG-057 (règle métier non tranchée sur ces détails) : **questions pour le commanditaire**, via Pepper.
 - **États** :
   - *vide* : l'état vide d'un objectif ou des tâches fonctionne hors ligne ;
   - *chargement* : aucun écran d'attente à l'ouverture sans réseau (CA-1), données de l'appareil aussitôt ;

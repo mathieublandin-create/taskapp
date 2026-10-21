@@ -66,13 +66,13 @@ Statut : Validée
   - le signalement de la valeur écartée a un identifiant déterministe, qui évite les doublons.
 - **Données** :
   - journal : `OBJECTIF_CREE` (avec le parent) et `PARENT_MODIFIE` (avant et après). La **valeur précédente du journal est nécessaire à RG-048** ;
-  - si RG-050 était rejetée, le journal resterait techniquement nécessaire à la réparation, sans être présenté comme un « historique » fonctionnel.
+  - RG-050 (établie, V-14) : le journal sert à l'historique et à la réparation (valeur précédente).
 - **Accès Google** : aucun.
 - **Sécurité** : sans objet particulier.
 - **Exigences non fonctionnelles** : la passe de réparation est en O(n) sur les objectifs, négligeable.
 - **Risques** :
   - R14 : exactitude de la réparation ; parade : tests de propriétés (aucun cycle, au plus un niveau, convergence) ;
-  - **RG-048 est proposée** : si elle est rejetée, il faut une autre règle déterministe, car une hiérarchie invalide ne peut pas être laissée telle quelle.
+  - RG-048 (établie, V-04) : règle déterministe (annulation du déplacement le plus ancien, une création n'étant jamais annulée), implémentée dans la passe de réparation.
 - **ADR applicables** : ADR-003, ADR-010.
 
 ## Impacts ergonomie

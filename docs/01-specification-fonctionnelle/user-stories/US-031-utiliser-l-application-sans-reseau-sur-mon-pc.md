@@ -92,6 +92,13 @@ Statut : Validée
   - R3 : friction de la reconnexion ;
   - comportement réel de `storage.persist()` pour une PWA installée, à observer pendant le test technique (§3.4) ;
   - deux onglets : traités par le verrou.
+- **RG-057 (rappel après 24 h hors ligne, établie, V-12)** :
+  - calcul **purement local**, sans réseau ni donnée synchronisée : la condition est « modifications en attente (marqueur « déposé jusqu'à HLC x » en retard) ET dernier contact réussi avec Drive vieux de plus de 24 h » ;
+  - la référence est un instant local `dernierContactDrive`, persisté dans le dépôt local à chaque lecture ou dépôt réussi. Il est évalué à l'ouverture, au retour au premier plan et par une temporisation d'une minute pendant que l'application est ouverte ; il est comparé à l'horloge de l'appareil (écart d'horloge sans conséquence grave : bandeau non bloquant) ;
+  - le bandeau disparaît dès que le marqueur rejoint la dernière modification, c'est-à-dire après un dépôt confirmé par Drive ;
+  - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007) ;
+  - impact : un champ local de plus, un sélecteur dans `synchronisation`, aucune migration du format Drive.
+- **RG-058 (versions de l'application)** : la PWA est publiée avant l'application Android. Le PC ne passe en consultation seule que si le `schemaVersion` du Drive dépasse le sien (cas rare : PC resté sur un service worker ancien). L'invitation à mettre à jour ne recharge jamais pendant une saisie.
 - **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
 
 ## Impacts ergonomie
@@ -104,9 +111,11 @@ Statut : Validée
 - **Nouveaux composants** : `SyncStatus` état « Session à renouveler » (accent, un clic, sans bandeau) ; mention du verrou entre onglets dans `SyncSheet` (guide §6.4, §6.5, DAT-UX-13, DAT-UX-16).
 - **Décisions d'ergonomie** :
   - hors ligne sur PC **identique au smartphone** (CA-3, DEC-013) : libellé « Hors ligne · n en attente » dans le pied de la barre latérale, point « en attente » sur les lignes, liste dans la feuille ;
-  - session Google expirée (CA-5, F14) : état routinier (jeton d'une heure), donc **pas de bandeau** ; l'indicateur propose « Reprendre la synchronisation », **un clic**, et le travail continue ; à valider avec le commanditaire si la fréquence s'avère gênante ;
+  - session Google expirée (CA-5, F14) : état routinier (jeton d'une heure), donc **pas de bandeau** ; l'indicateur propose « Reprendre la synchronisation », **un clic**, et le travail continue ; fréquence à observer en recette E16 ;
   - **deux onglets** (cas limite) : les deux restent utilisables et identiques ; seul un onglet synchronise et l'autre le dit dans la feuille, sans message d'interruption ; reprise sans message si l'onglet qui synchronise est fermé ;
   - **première ouverture sans réseau** : le navigateur ne peut rien afficher, aucun écran n'est concevable ; l'information va dans le guide utilisateur (E17), ainsi que les avertissements « navigation privée » et « effacement des données du navigateur ».
+- **Rappel après 24 h (CA-10, RG-057, V-12)** : même bandeau que sur smartphone (US-018), placé en tête de la colonne de contenu, avec « ce PC » ; fermable, non bloquant. Mêmes propositions 1 et 2 que US-018 (point de départ : plus ancienne modification en attente ; accès Google perdu : un seul bandeau, celui de « Se reconnecter »), soumises au commanditaire. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J et L (déclinaison PC identique, non redessinée).
+  - **Distinction à tenir** : la session Google expirée sur PC (CA-5) reste sans bandeau, seul le rappel de 24 h et la perte d'accès en ont un.
 - **États** :
   - *vide* : voir US-022 ;
   - *chargement* : ouverture immédiate sur les données du PC ;

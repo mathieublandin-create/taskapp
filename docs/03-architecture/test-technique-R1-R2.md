@@ -39,7 +39,7 @@ Chaque étape est consignée dans le tableau de résultats (§5) avec la date, l
 4. Refaire l'étape 2 sur Android.
 
 ### 3.2 R1 : visibilité croisée (`drive.file`)
-1. **Android** : se connecter. Bouton « Créer » : l'application crée le dossier `Objectifs et Tâches (POC)` (`appProperties.app = objectifs-taches-poc`) et le fichier `appareils/android-poc.etat.json.gz`, d'environ 10 Ko, dont l'empreinte SHA-256 s'affiche à l'écran.
+1. **Android** : se connecter. Bouton « Créer » : l'application crée le dossier `Done Juan (POC)` (`appProperties.app = objectifs-taches-poc`) et le fichier `appareils/android-poc.etat.json.gz`, d'environ 10 Ko, dont l'empreinte SHA-256 s'affiche à l'écran.
 2. **PC** : se connecter avec le même compte. Bouton « Lister » : `files.list` avec `q = appProperties has { key='app' and value='objectifs-taches-poc' }`, puis `files.get?alt=media` sur le fichier Android. L'empreinte s'affiche.
 3. **Sens inverse** : le PC crée `appareils/pc-poc.etat.json.gz`, puis Android le liste et le lit.
 4. **Détection de changement** : le PC modifie son fichier (`files.update`). Android appelle `changes.list` depuis le `pageToken` obtenu à l'étape 1. Le fichier modifié doit apparaître, et la nouvelle empreinte doit correspondre.

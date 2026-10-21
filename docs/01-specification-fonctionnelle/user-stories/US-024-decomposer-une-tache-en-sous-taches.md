@@ -70,7 +70,7 @@ Statut : Validée
 - **Sécurité** : sans objet particulier.
 - **Exigences non fonctionnelles** : agrégations en O(nombre de sous-tâches), négligeables.
 - **Risques** :
-  - **RG-049 et RG-047 sont proposées**. L'architecture retenue, fondée sur la dérivation à la lecture, convient à ces règles. Une correction automatique, à la place de RG-049, demanderait des écritures de réparation, avec le même mécanisme que RG-048 ;
+  - RG-049 et RG-047 sont établies (V-05, V-03). L'architecture retenue, fondée sur la dérivation à la lecture, convient à ces règles. Une correction automatique, à la place de RG-049, demanderait des écritures de réparation, avec le même mécanisme que RG-048 ;
   - la règle de vélocité « seules les tâches sans sous-tâche comptent » sera appliquée par US-010, à partir du journal (`PARENT_MODIFIE`).
 - **ADR applicables** : ADR-003, ADR-010.
 
@@ -98,7 +98,7 @@ Statut : Validée
   - *synchronisation* : point « en attente » ;
   - *conflit* : incohérence (RG-049), sous-tâche supprimée avec sa tâche (RG-047).
 - **Accessibilité et responsive** : le bouton « Terminer la tâche » reste focalisable (`aria-disabled`) et la phrase qui l'explique est annoncée ; sous-tâches en liste sémantique ; sur PC, panneau de 440 px.
-- **Questions et réserves** : aucune nouvelle. Les confirmations (P) d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
+- **Questions et réserves** : aucune nouvelle. Les confirmations d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
 
 ## Tests métiers
 *Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **23 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`.

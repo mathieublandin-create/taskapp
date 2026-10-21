@@ -1,6 +1,6 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.4 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
+> **Version 0.5 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
 > Toutes les décisions sont au statut **Proposé**. Elles passeront au statut « Accepté » à la clôture (E17) du lot qui les met en œuvre.
 
@@ -12,6 +12,7 @@
 | 0.2 | 2026-10-20 | Starck | **DEC-011** (commanditaire) : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | ADR-011 révisé : la journée est celle du fuseau de l'appareil (RG-008 maintenue), les instants sont stockés en UTC ; l'option « fuseau de l'agenda » est écartée. Introduction d'un fuseau technique unique pour l'agenda (`Parametres.fuseauAgenda`, valeur selon Q-DEM001-37). Mise à jour de §4.4.1, §6.1, §6.4, §8 (F3 réécrit, ajout de P-T1), §10 (PO-5), §11 (DS-08, DS-11, DS-18, DS-19, PT-02, PT-06, PT-07, PT-08) et ADR-006. |
 | 0.3 | 2026-10-20 | Starck | **DEC-012** (commanditaire), qui remplace DEC-011 : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » | ADR-011 révisé : fuseau de référence **fixe Europe/Paris** (constante) pour la journée, les rappels et les créneaux ; instants en UTC. Suppression du paramètre de fuseau de l'agenda et de l'enregistrement du fuseau de l'appareil. §8.1 : A-F1, A-F2, A-F4 et A-F5 sans objet ; A-F3 et P-T1 reformulés ; nouveau point A-F6 (affichage en voyage). Ajout de PT-16 (changements d'heure du 25/10/2026 et du 28/03/2027). Mise à jour d'ADR-006, d'ADR-008 et de l'avis sur le lot 1. |
 | 0.4 | 2026-10-21 | Starck | E3 de LOT-001 ; RG-043 (réponse « non » à Q-22.3 : données conservées sur l'appareil à la déconnexion) ; cahier des charges v0.4 (RG-043 à RG-054) | Alignement sur RG-043, DEC-013 à DEC-016 : plus aucun effacement à la déconnexion ; action distincte de suppression des données (DEC-015) ; PC hors ligne dès le lot 1 (DEC-013, US-031) ; base locale **cloisonnée par compte** (§4.1.4, §4.1.5, §7.1, DS-07, ADR-004). Ajouts issus de l'analyse d'impact : empreinte SHA-256 des fichiers Drive et `generation` du manifeste (RG-044) ; registre « cycle de vie » unique (état et dates) ; conséquences des suppressions dérivées à la lecture (RG-046, RG-047) ; réparation des hiérarchies (RG-048) ; incohérences dérivées (RG-049) ; chargement non bloquant de Google Identity Services. Nouveaux risques R11 à R14. Test technique préalable R1/R2 : `test-technique-R1-R2.md`. |
+| 0.5 | 2026-10-21 | Starck | E7 de LOT-001 ; DEC-018 (V-01 à V-23) : RG-044 b et extension aux fichiers modifiés à la main, RG-047 à RG-050, RG-054 à RG-056 établies ; nouvelles RG-057 et RG-058 ; V-13 (dossier « Done Juan », DEC-017) | Dossier du Drive et nom du système : « Done Juan » (remplace « Objectifs et Tâches »). Retrait des mentions « proposée » des règles établies. §4.2 : règle de compatibilité des versions (RG-058) précisée, consultation seule sans écriture Drive ni effacement local, contrôle de `generation` effectué seulement après compatibilité de schéma, empreinte du manifeste. §4.1.5 bis : rappel après 24 h hors ligne (RG-057), calcul local. Aucun nouvel ADR ; ADR-003 inchangé dans sa décision. |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -82,7 +83,7 @@ Chaque appareil porte **l'application complète** : interface, règles métier, 
 ```mermaid
 flowchart TB
     U(["Utilisateur unique<br/>(le commanditaire)"])
-    subgraph SYS["Système : application Objectifs et Tâches"]
+    subgraph SYS["Système : application Done Juan"]
         APP["Application<br/>(smartphone et PC)"]
     end
     GID["Google Identity<br/>(OAuth 2.0)"]
@@ -124,7 +125,7 @@ flowchart TB
     end
     subgraph GOOGLE["Services Google (compte de l'utilisateur)"]
         GID["Google Identity<br/>OAuth 2.0"]
-        DRIVE[("Drive : dossier « Objectifs et Tâches »<br/>un fichier d'état par appareil")]
+        DRIVE[("Drive : dossier « Done Juan »<br/>un fichier d'état par appareil")]
         CAL[("Calendar : agenda principal<br/>séries de rappels, créneaux")]
     end
     HOST["Hébergement statique<br/>(HTTPS, aucune donnée)"]
@@ -272,11 +273,16 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
   - Elle tente un dernier dépôt si le réseau et le jeton le permettent. Sinon, elle indique le nombre de modifications en attente.
   - Elle efface ensuite la session : jeton en mémoire, identifiant de compte actif et, sur Android, l'état d'identification du Credential Manager.
   - Les données ne sont plus affichées jusqu'à la reconnexion. À la reconnexion avec le même compte, l'espace local est rouvert et les modifications en attente sont déposées.
-- **« Supprimer les données de cet appareil » (DEC-015)** : action distincte de la déconnexion. Elle porte sur l'espace du compte connecté et se déroule ainsi (garde-fou encore à valider) :
+- **« Supprimer les données de cet appareil » (DEC-015)** : action distincte de la déconnexion. Elle porte sur l'espace du compte connecté et se déroule ainsi (garde-fou établi : V-09, RG-055) :
   - dépôt des modifications en attente ;
   - si le dépôt est impossible, confirmation qui indique le nombre de modifications perdues ;
   - suppression de l'espace de stockage du compte sur l'appareil.
 - L'action « Retirer l'accès » appelle le point de révocation de Google, puis applique la déconnexion.
+
+#### 4.1.5 bis Rappel après 24 h hors ligne (RG-057, US-018 et US-031)
+- Calcul **local** et identique sur les deux plateformes : bandeau affiché si (modifications en attente) ET (`dernierContactDrive` plus ancien que 24 h). `dernierContactDrive` est un instant local, mis à jour à chaque lecture ou dépôt réussi dans Drive ; il n'est pas synchronisé et ne change pas le format Drive.
+- Évaluation à l'ouverture, au retour au premier plan et chaque minute application ouverte. Pas de notification système ni de tâche de fond (DEC-007). Le bandeau ne bloque rien et ne limite pas l'usage hors ligne (RG-021).
+- Il disparaît après un dépôt confirmé par Drive. Il dépend de l'horloge de l'appareil, sans conséquence grave si elle est déréglée (information non bloquante).
 
 #### 4.1.6 PC hors ligne (DEC-013, US-031)
 - **Démarrage sans réseau** : le service worker (Workbox) met en cache l'ensemble de l'application, en mode « précache ». L'application s'ouvre sans réseau une fois installée ou visitée.
@@ -297,9 +303,9 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
 
 ### 4.2 Google Drive : stockage et format (ADR-003)
 
-**Arborescence** dans le dossier visible `Objectifs et Tâches/` (le nom est à valider par Steeve) :
+**Arborescence** dans le dossier visible `Done Juan/` (nom validé : V-13, DEC-018) :
 ```
-Objectifs et Tâches/
+Done Juan/
   manifeste.json                 # version de schéma, date de création
   appareils/
     <appareilId>.etat.json.gz    # état complet fusionnable, écrit par CET appareil uniquement
@@ -320,7 +326,7 @@ Objectifs et Tâches/
   - les cycles et les profondeurs illégales sont corrigés en annulant le déplacement le plus ancien, qui est consigné comme valeur écartée ;
   - les incohérences d'état ne sont pas corrigées automatiquement : elles sont **signalées** à l'utilisateur, par exemple « tâche terminée avec une sous-tâche à faire ».
 
-  Les règles exactes de réparation sont fixées par RG-047 à RG-049 (proposées, cahier des charges v0.4).
+  Les règles exactes de réparation sont fixées par RG-047 à RG-049 (établies, V-03 à V-05, DEC-018).
 - **Choix de mise en œuvre (E3 de LOT-001)** :
   - **suppressions** (RG-046, RG-047) : leurs conséquences sont **dérivées à la lecture**, sans écriture en cascade :
     - un lien vers un objectif supprimé est ignoré ;
@@ -335,11 +341,17 @@ Objectifs et Tâches/
 - **Taille** : moins de 5 Mo non compressé à 5 ans d'usage (ENF-T-05), soit environ 0,5 à 1 Mo compressé. Le fichier est réécrit en entier à chaque dépôt, ce qui est acceptable. Le journal pourra être partitionné par année si nécessaire.
 - **Versions de schéma** : chaque fichier porte un `schemaVersion`.
   - Un appareil lit les schémas antérieurs et les migre (Zod).
-  - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **lecture seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile.
+  - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **consultation seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile.
+  - **RG-058 (V-06 option 2)** : le `schemaVersion` est **le seul critère** de blocage. Deux versions de l'application qui partagent le même schéma coexistent, saisie comprise. Conséquences d'implémentation :
+    - une évolution compatible du modèle (champ optionnel ignoré par les anciennes versions) n'incrémente pas `schemaVersion` ; une évolution incompatible l'incrémente et est annoncée au commanditaire, car elle bloque la saisie des appareils non mis à jour ;
+    - en consultation seule, l'appareil n'écrit rien dans le Drive, ne fusionne pas les fichiers plus récents et n'efface rien en local. Ses modifications en attente restent dans la base locale (ENF-06) et sont déposées après la mise à jour ; l'interface masque les actions de saisie ;
+    - le contrôle de `generation` (RG-044 b) n'est effectué qu'une fois la compatibilité de schéma établie : un appareil en consultation seule n'efface jamais ses données locales ;
+    - le message indique la version de schéma attendue.
 - **Empreinte** : chaque fichier porte une empreinte SHA-256 de son contenu.
   - Un fichier dont l'empreinte ne correspond pas a été modifié hors de l'application. Il est traité comme **illisible** (RG-044) et n'est jamais fusionné.
-  - Ce mécanisme couvre aussi les modifications manuelles qui laissent le fichier lisible.
-- **Génération des données (RG-044 b, proposée)** : `manifeste.json` porte un identifiant `generation`.
+  - Ce mécanisme couvre aussi les modifications manuelles qui laissent le fichier lisible (extension de RG-044, établie : V-02). Le manifeste porte lui aussi une empreinte de son contenu, de sorte qu'un `generation` ou un `schemaVersion` modifié à la main est détecté.
+  - L'empreinte détecte une modification involontaire ou manuelle, elle ne constitue pas une protection contre un attaquant (qui détiendrait le compte Google). Restaurer une ancienne révision par l'historique de Drive produit un fichier valide, fusionné normalement.
+- **Génération des données (RG-044 b, établie : V-01)** : `manifeste.json` porte un identifiant `generation`.
   - « Repartir de zéro » crée une nouvelle génération.
   - Un appareil qui détient une génération différente signale ses modifications non déposées comme valeurs écartées, efface ses données locales du compte, puis relit le Drive.
   - Une erreur transitoire (`5xx`, `429`, réseau) n'est jamais interprétée comme une absence de données.
@@ -673,7 +685,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | PO-1 | Système du smartphone | A1 | Choix des modules natifs iOS, coûts |
 | PO-2 | Sens du délai d'une heure | Q-DEM001-21, F1 | Critères d'acceptation de US-017 |
 | PO-3 | Granularité de la règle « la plus récente l'emporte » | Q-DEM001-23 | Regroupement des champs dans le CRDT |
-| PO-4 | ~~Effacement volontaire et changement de compte~~ : **tranché** (DEC-015, DEC-016). Reste à valider le garde-fou de DEC-015. | Pepper | US-022 |
+| PO-4 | ~~Effacement volontaire et changement de compte~~ : **tranché** (DEC-015, DEC-016). Garde-fou validé (V-09, RG-055). | Pepper | US-022 |
 | PO-5 | ~~Fuseau de référence~~ : **tranché par DEC-012** (Europe/Paris). Restent A-F3, A-F6 et la confirmation de P-T1. | Pepper, Steeve | Lots « Rappels » et « Suivi du temps » ; aucun impact sur le lot 1 |
 | PO-6 | Scope `calendar.events.owned` ou `calendar.events` | Vérification dans la console Google | ADR-005 (lot avec agenda) |
 | PO-7 | Hébergeur du dépôt et de l'intégration continue (GitHub ?) | Commanditaire ou Jarvis | Conventions d'Anthony |

@@ -96,7 +96,7 @@ Statut : Validée
     - le comportement « bloquer la saisie dès que la version de l'application diffère » est déconseillé, car il bloquerait le PC à chaque publication de la PWA avant l'application Android.
 - **RG-044** :
   - **restaurer** : l'appareil réécrit son fichier et le manifeste ;
-  - **repartir de zéro** (b, proposée) : l'appareil crée un nouveau manifeste avec une nouvelle `generation` ;
+  - **repartir de zéro** (b, établie : V-01) : l'appareil crée un nouveau manifeste avec une nouvelle `generation` ;
   - l'autre appareil constate que sa `generation` locale est différente de celle du Drive. Il signale alors ses modifications non déposées comme valeurs écartées, efface ses données locales du compte, puis relit le Drive, sans reposer la question ;
   - une erreur transitoire (réseau, `5xx`, `429`) n'est **jamais** interprétée comme une absence de données. Seuls un dossier ou un fichier mis à la corbeille ou introuvable (`404`), ou un fichier invalide, déclenchent l'avertissement.
 - **Accès Google** : Drive seulement (`drive.file`). Erreurs gérées :
@@ -118,10 +118,12 @@ Statut : Validée
   - R5 : versions de schéma ;
   - R6 : modifications manuelles dans le Drive ;
   - R14 : correction de la fusion et de la réparation ; la parade est une couverture par tests de propriétés et un banc Cucumber à deux appareils.
-- **Règles proposées dont dépend l'architecture** :
-  - RG-044 b : mécanisme de `generation`, inutile si la règle est rejetée ;
-  - RG-047 à RG-049 : la passe de réparation. **Une règle déterministe de réparation des hiérarchies (RG-048) est techniquement indispensable**, quelle que soit sa formulation ;
-  - RG-054 : affichage seulement.
+- **Règles établies dont dépend l'architecture** (DEC-018) :
+  - RG-044 b et son extension aux fichiers modifiés à la main (V-01, V-02) : mécanisme de `generation` et vérification de l'empreinte, tels que décrits ci-dessus ;
+  - RG-047 à RG-049 : la passe de réparation (suppression dérivée, hiérarchie réparée de façon déterministe, incohérence dérivée) ;
+  - RG-054 : affichage seulement ;
+  - RG-056 : l'état « lu / non lu » des modifications non retenues est une donnée synchronisée (lecture valable sur les deux appareils, signalement unique à identifiant déterministe), mais le point « à lire » de l'indicateur est calculé localement, sans réseau ;
+  - **RG-058 (V-06 option 2) : seul un `schemaVersion` plus récent que celui de l'appareil le met en consultation seule.** Les versions d'application qui partagent le même schéma coexistent, saisie comprise. En consultation seule : aucune écriture dans le Drive, les modifications en attente restent dans la base locale (ENF-06) et sont déposées après la mise à jour ; la lecture des fichiers plus récents n'est pas fusionnée. Toute évolution du modèle de données doit donc distinguer évolution compatible (sans incrément) et incrément de `schemaVersion` (DAT §4.2, DS-10). L'application affiche la version de schéma bloquante (message de ECR-011).
 - **ADR applicables** : ADR-002, ADR-003, ADR-009, ADR-010, ADR-011.
 
 ## Impacts ergonomie
@@ -149,7 +151,7 @@ Statut : Validée
   - *synchronisation* : huit états ;
   - *conflit* : `DiscardedItem` (trois formes).
 - **Accessibilité et responsive** : changements d'état annoncés `role="status"` ; « Synchroniser maintenant » désactivé reste focalisable avec son explication ; feuille haute sur smartphone, boîte de dialogue ou panneau sur PC.
-- **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères (P) de CA-3, CA-9 et CA-11 attendent la validation de E6 ; les maquettes les appliquent.
+- **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères CA-3, CA-9 et CA-11 sont validés (DEC-018) ; les maquettes les appliquent. **Ajout E7** : état « consultation seule » de RG-058 (CA-12) maquetté dans ECR-011 K : bandeau non fermable « Consultation seule » avec l'unique action « Mettre à jour », indicateur « Action requise », cases inertes expliquées par un toast au toucher, bouton « + » masqué ; la consultation reste complète et les modifications en attente sont conservées.
 
 ## Tests métiers
 *Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **33 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`.

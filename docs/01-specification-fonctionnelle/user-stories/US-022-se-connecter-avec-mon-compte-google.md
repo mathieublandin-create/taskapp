@@ -93,7 +93,7 @@ Statut : Validée
   - clients OAuth publics, restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines autorisées sur le web ;
   - aucun jeton dans les journaux ni dans le stockage persistant ;
   - **RG-043** : après une déconnexion, les données restent au repos sur l'appareil, non chiffrées. Elles sont protégées par le bac à sable Android sur le smartphone, et seulement par le profil du navigateur sur PC. Le commanditaire a traité cette tension avec ENF-05 par l'action distincte « Supprimer les données de cet appareil » (DEC-015) ;
-  - **DEC-015** : cas d'usage `SupprimerDonneesAppareil`. Il tente un dépôt ; si c'est impossible, il demande une confirmation qui indique le nombre de modifications perdues (garde-fou à valider) ; puis il supprime l'espace de stockage du compte connecté et ferme la session.
+  - **DEC-015** : cas d'usage `SupprimerDonneesAppareil`. Il tente un dépôt ; si c'est impossible, il demande une confirmation qui indique le nombre de modifications perdues (garde-fou établi : V-09, RG-055) ; puis il supprime l'espace de stockage du compte connecté et ferme la session.
   - la déconnexion efface la session et les jetons en mémoire. Sur Android, elle efface aussi l'état d'identification du Credential Manager. Ce n'est pas une révocation.
 - **Exigences non fonctionnelles** :
   - réouverture d'une session existante sans aucun appel réseau bloquant (ENF-T-01) ;
@@ -116,7 +116,7 @@ Statut : Validée
 - **Parcours impactés** : P-07 (première connexion), P-08 (se déconnecter, se reconnecter, changer de compte), P-12 (supprimer les données de cet appareil).
 - **Nouveaux composants** : `SignInPanel` (bouton Google et liste de ce qui est demandé), `StepProgress`, `SyncSheet` section Compte, `DangerLink`, variantes de `ConfirmDialog` (guide §4.12, §4.25 à §4.27).
 - **Décisions d'ergonomie** :
-  - **nom du dossier du Drive fixé : « Objectifs et Tâches »** (CA-3) ;
+  - **nom du dossier du Drive : « Done Juan »** (CA-3, V-13), identique au nom de l'application (DEC-017) ;
   - un seul bouton « Continuer avec Google » ; la liste de ce qui est demandé (identité, dossier, pas d'agenda) prépare à l'écran de consentement de Google, qui n'affiche aucun avertissement « application non validée » au lot 1 (CA-8, ENF-08) ;
   - « Se déconnecter » (secondaire) et « Supprimer les données de cet appareil » (texte rouge isolé) sont deux actions séparées dans la feuille (DEC-015) ; la déconnexion n'est confirmée que s'il y a des modifications en attente, avec leur nombre (CA-6) ;
   - la suppression suit le déroulement de CA-10 : confirmation toujours, dépôt d'abord, nombre de modifications perdues si le dépôt est impossible, retour à la connexion ;
@@ -129,7 +129,7 @@ Statut : Validée
   - *synchronisation* : accès Google perdu → bandeau non fermable « Se reconnecter », travail possible comme hors ligne (CA-7, voir US-017) ;
   - *conflit* : sans objet.
 - **Accessibilité et responsive** : aucun test cognitif (WCAG 3.3.8) ; erreurs annoncées `role="alert"` ; dialogues `alertdialog` avec « Annuler » focalisé ; cible 48 px ; connexion en une colonne sur smartphone, bloc centré de 460 px sur PC.
-- **Questions et réserves** : Q-ERG-15 (nom de l'application) : tranchée par DEC-017, l'application s'appelle « Done Juan » ; le nom du dossier du Drive (« Objectifs et Tâches ») est à revoir par Steeve en E7. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
+- **Questions et réserves** : Q-ERG-15 (nom de l'application) tranchée : « Done Juan » (DEC-017), dossier du Drive identique (V-13) ; guide et maquettes alignés. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers
 *Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **23 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`.
