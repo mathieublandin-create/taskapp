@@ -95,7 +95,7 @@ Statut : Validée
   2. point gris « en attente d'envoi » sur chaque ligne modifiée ;
   3. liste lisible des modifications dans la feuille de synchronisation ;
   4. un toast unique au passage hors ligne ;
-  5. aucun bandeau, aucun bouton désactivé (sauf « Synchroniser maintenant », avec son explication).
+  5. aucun bandeau avant 24 h (rappel RG-057 ensuite, voir ci-dessous), aucun bouton désactivé (sauf « Synchroniser maintenant », avec son explication).
 - **Au retour du réseau (CA-4, CA-7)** : « Synchronisation… » puis « À jour », **sans toast** si tout s'est bien passé ; si des valeurs ont été écartées, point accent sur l'indicateur et toast « Voir » (voir US-017).
 - **Rappel après 24 h (CA-9, RG-057, V-12)** : bandeau d'attention (`Banner`, guide §4.9), non bloquant, fermable, sans action ; « Hors ligne depuis plus de 24 h · n modifications ne sont encore que sur ce smartphone. » Absent si aucune modification n'est en attente ; disparaît à l'enregistrement dans le Drive. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J.
   - **Proposition 1 (point de départ des 24 h)** : *plus ancienne modification en attente*. Recommandée : le risque porte sur l'âge des données non enregistrées, et le bandeau ne sonne pas pour une modification de la veille au soir. Variante : début du hors ligne, plus simple à expliquer mais qui alerte aussitôt après une première modification faite tard dans une longue coupure.
