@@ -1,8 +1,8 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.5 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
+> **Version 0.6 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
-> Toutes les décisions sont au statut **Proposé**. Elles passeront au statut « Accepté » à la clôture (E17) du lot qui les met en œuvre.
+> **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-011 sont au statut **Proposé** et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique R1, R2, R11, qui peut modifier ADR-004 (jetons du PC) et ADR-003 (format Drive) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
 
 ## Historique
 
@@ -13,6 +13,7 @@
 | 0.3 | 2026-10-20 | Starck | **DEC-012** (commanditaire), qui remplace DEC-011 : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » | ADR-011 révisé : fuseau de référence **fixe Europe/Paris** (constante) pour la journée, les rappels et les créneaux ; instants en UTC. Suppression du paramètre de fuseau de l'agenda et de l'enregistrement du fuseau de l'appareil. §8.1 : A-F1, A-F2, A-F4 et A-F5 sans objet ; A-F3 et P-T1 reformulés ; nouveau point A-F6 (affichage en voyage). Ajout de PT-16 (changements d'heure du 25/10/2026 et du 28/03/2027). Mise à jour d'ADR-006, d'ADR-008 et de l'avis sur le lot 1. |
 | 0.4 | 2026-10-21 | Starck | E3 de LOT-001 ; RG-043 (réponse « non » à Q-22.3 : données conservées sur l'appareil à la déconnexion) ; cahier des charges v0.4 (RG-043 à RG-054) | Alignement sur RG-043, DEC-013 à DEC-016 : plus aucun effacement à la déconnexion ; action distincte de suppression des données (DEC-015) ; PC hors ligne dès le lot 1 (DEC-013, US-031) ; base locale **cloisonnée par compte** (§4.1.4, §4.1.5, §7.1, DS-07, ADR-004). Ajouts issus de l'analyse d'impact : empreinte SHA-256 des fichiers Drive et `generation` du manifeste (RG-044) ; registre « cycle de vie » unique (état et dates) ; conséquences des suppressions dérivées à la lecture (RG-046, RG-047) ; réparation des hiérarchies (RG-048) ; incohérences dérivées (RG-049) ; chargement non bloquant de Google Identity Services. Nouveaux risques R11 à R14. Test technique préalable R1/R2 : `test-technique-R1-R2.md`. |
 | 0.5 | 2026-10-21 | Starck | E7 de LOT-001 ; DEC-018 (V-01 à V-23) : RG-044 b et extension aux fichiers modifiés à la main, RG-047 à RG-050, RG-054 à RG-056 établies ; nouvelles RG-057 et RG-058 ; V-13 (dossier « Done Juan », DEC-017) | Dossier du Drive et nom du système : « Done Juan » (remplace « Objectifs et Tâches »). Retrait des mentions « proposée » des règles établies. §4.2 : règle de compatibilité des versions (RG-058) précisée, consultation seule sans écriture Drive ni effacement local, contrôle de `generation` effectué seulement après compatibilité de schéma, empreinte du manifeste. §4.1.5 bis : rappel après 24 h hors ligne (RG-057), calcul local. Aucun nouvel ADR ; ADR-003 inchangé dans sa décision. |
+| 0.6 | 2026-10-21 | Starck | E7 de LOT-001, tour 1 : ANT-8, ANT-12, BEN-5c, PEP-9, ANT-4, ANT-11, PEP-11 | **Modèles de vue** : nouvelle couche `presentation/modeles-de-vue` (§2.4), requêtes de présentation pures testables sans React (ANT-8). **« Retirer l'accès »** : pas de bouton dans l'application au lot 1, la révocation passe par la gestion du compte Google (§4.1.5, BEN-5c). Statut du DAT et des ADR avant E9 explicité (ANT-12). Objet-valeur `Duree` et estimation calculée à 0 (§2.4, §6.2, PEP-9). Banc de test : en-tête `Date` simulé et `appareilId` fixe (§3.3, ANT-4, ANT-11). Bandeau RG-057 : calcul depuis la plus ancienne modification en attente, en hypothèse en attente de Q-ERG-16 (alternative a : dernier contact Drive) ; Q-ERG-17 ouverte (§4.1.5 bis). Revérification de l'alignement sur RG-043 (PEP-11) : aucun écart. Aucun nouvel ADR ; décisions des ADR inchangées. |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -147,12 +148,20 @@ flowchart TB
 | `application` | Cas d'usage (créer une tâche, saisir du temps, proposer un planning…), **ports** : `DepotLocal`, `TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Horloge`, `Notifieur`, `Planificateur` | `domaine` |
 | `synchro` | Moteur CRDT (fusion par champ, horloge HLC), cycle de synchronisation, journal des valeurs écartées | `domaine`, ports |
 | `infrastructure` | Adaptateurs : IndexedDB (Dexie), SQLite, Drive REST, Calendar REST, GIS web, authentification native, notifications locales | `application` (implémente les ports) |
-| `ui` | Écrans React et Ionic, état d'affichage | `application` |
+| `presentation/modeles-de-vue` | **Modèles de vue** (ANT-8) : fonctions pures qui transforment le résultat des cas d'usage et des requêtes en structures prêtes à afficher (listes triées et regroupées, libellés, codes d'état de l'indicateur et des bandeaux, compteurs « 3/3 en cours », états vides, activation des actions) | `application` (requêtes, types de résultat) et ports `Horloge` (heure et fuseau de référence) et `DepotLocal` en lecture seule, **par injection**. Aucune dépendance à React, Ionic, au DOM ni à une entrée-sortie |
+| `presentation/ui` | Écrans React et Ionic : composants « bêtes » qui affichent un modèle de vue et déclenchent des cas d'usage. Aucune règle métier ni mise en forme calculée | `presentation/modeles-de-vue`, `application` (cas d'usage) |
 
 **Alignement avec les conventions d'Anthony** (`conventions.md` §3) : le code est découpé d'abord par **contexte métier** (`objectifs-taches`, `planification`, `rappels`, `synchronisation`, `compte`, `commun`…), puis par couche à l'intérieur de chaque contexte (`domaine`, `application`, `infrastructure`, `presentation`). Les couches ci-dessus s'y projettent ainsi :
 - `synchro` correspond au contexte `synchronisation` ;
-- `ui` correspond aux dossiers `presentation` ;
+- `presentation/ui` et `presentation/modeles-de-vue` correspondent aux dossiers `presentation` ;
 - les adaptateurs Google partagés vont dans `infrastructure-google`.
+
+**Modèles de vue (ANT-8).** Ils appartiennent à la couche `presentation`, mais sous-couche **indépendante du framework**. Ils sont à l'écran ce que les cas d'usage sont au domaine : on les teste en Vitest et en Cucumber sans React ni navigateur. Règles :
+- un modèle de vue est une **requête de présentation pure** : `(données de lecture, Horloge) → structure d'affichage`. Il ne modifie rien et n'appelle jamais directement Drive, Calendar ou le stockage ;
+- il lit via les **requêtes de la couche `application`**, qui s'appuient sur `DepotLocal` (lecture) ; il utilise `Horloge` pour « aujourd'hui », la journée Europe/Paris et le calcul des bandeaux (RG-057). Les autres ports (`TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Notifieur`, `Planificateur`) ne lui sont pas accessibles ; l'état de synchronisation et de connexion lui parvient sous forme de **données** exposées par `application` ;
+- il produit les **codes d'état stables** et les libellés du catalogue (ANT-7), que les scénarios `@ihm` et les tests Vitest vérifient sans rendu ;
+- le composant React ne fait que lier ce modèle à des éléments d'écran. Les tests Playwright se limitent au câblage et à l'accessibilité.
+Cette couche répond à la demande d'Anthony : les scénarios Cucumber vérifient ce que l'écran affiche en s'exécutant sur la couche `application` et les modèles de vue, avec les simulateurs de §3.3.
 
 Les noms de ports du DAT prévalent. Il existe un port supplémentaire, `CoffreJetons`, défini par Anthony et dont la mise en œuvre est décrite par DS-06.
 
@@ -207,6 +216,10 @@ Section de référence pour Anthony (`conventions.md`). Les versions sont celles
   - les *step definitions* sont en TypeScript (emplacement fixé par Anthony, par exemple `tests/steps/`).
 
   Les scénarios s'exécutent sur la couche `application`, avec des **simulateurs en mémoire** de Drive, de Calendar, de l'horloge et du réseau. Un scénario peut ainsi instancier **deux appareils** qui partagent le même faux Drive, ce qui permet de tester en Gherkin la synchronisation, les conflits, le hors ligne et la perte d'accès Google. Ces scénarios sont déterministes et sans réseau, donc exécutables en intégration continue. Les tags `@US-xxx`, `@RG-xxx` et `@LOT-xxx` servent au filtrage.
+- **Banc de test déterministe** (ANT-4, ANT-11) :
+  - l'en-tête HTTP `Date` renvoyé par le faux Google est **simulé** et piloté par le scénario (valeur, écart de plusieurs minutes, ou absence). La correction de dérive de §6.4 et le seuil de l'horloge déréglée sont ainsi testables sans attente réelle ;
+  - l'`Horloge` simulée est la seule source de temps ; elle permet d'obtenir des **horodatages HLC strictement égaux** sur deux appareils, pour vérifier le départage par `appareilId` ;
+  - chaque appareil simulé reçoit un **`appareilId` fixe** déclaré dans le scénario (par exemple « A » et « B »), jamais un UUID aléatoire. Le générateur d'UUID est un port injectable, et seul le banc de test le fige.
 - **Adaptateurs Google** : tests de contrat avec MSW, sur des réponses enregistrées conformes à la documentation, y compris les erreurs 401, 403, 404, 409, 410, 429 et 5xx.
 - **Bout en bout (Playwright)** : quelques parcours sur la PWA, avec un faux Google injecté. Ils couvrent le démarrage, le hors ligne et l'accessibilité.
 - **Recette sur appareil réel** : un compte Google de recette dédié (§7.4).
@@ -277,10 +290,10 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
   - dépôt des modifications en attente ;
   - si le dépôt est impossible, confirmation qui indique le nombre de modifications perdues ;
   - suppression de l'espace de stockage du compte sur l'appareil.
-- L'action « Retirer l'accès » appelle le point de révocation de Google, puis applique la déconnexion.
+- **« Retirer l'accès » (BEN-5c)** : **aucune US du lot 1 ne la prévoit, donc il n'y a pas de bouton dans l'application.** L'utilisateur qui veut retirer l'accès passe par la gestion de son compte Google (« Sécurité > Applications tierces »). L'application constate ensuite la révocation à la prochaine requête (`invalid_grant` ou `401`) et applique le parcours « accès Google perdu » ci-dessus, sans rien effacer. L'appel au point de révocation Google par l'application n'est pas dans le périmètre du lot 1 ; s'il était souhaité plus tard, il faudrait une US.
 
 #### 4.1.5 bis Rappel après 24 h hors ligne (RG-057, US-018 et US-031)
-- Calcul **local** et identique sur les deux plateformes : bandeau affiché si (modifications en attente) ET (`dernierContactDrive` plus ancien que 24 h). `dernierContactDrive` est un instant local, mis à jour à chaque lecture ou dépôt réussi dans Drive ; il n'est pas synchronisé et ne change pas le format Drive.
+- Calcul **local** et identique sur les deux plateformes : bandeau affiché si la **plus ancienne modification en attente** date de plus de 24 h. **Hypothèse en attente de la réponse du commanditaire à Q-ERG-16** (option b, simple recommandation de Jarvis : c'est l'âge des données présentes seulement sur l'appareil qui compte). Alternative : a) depuis le dernier contact Drive réussi (`dernierContactDrive`, instant local mis à jour à chaque lecture ou dépôt réussi). Q-ERG-17 (un seul bandeau en cas d'accès perdu) reste également ouverte. L'instant de la plus ancienne modification en attente est déduit du journal local des modifications non déposées ; il est remis à zéro par un dépôt confirmé. Il n'est pas synchronisé et ne change pas le format Drive. Le calcul est porté par un modèle de vue (§2.4).
 - Évaluation à l'ouverture, au retour au premier plan et chaque minute application ouverte. Pas de notification système ni de tâche de fond (DEC-007). Le bandeau ne bloque rien et ne limite pas l'usage hors ligne (RG-021).
 - Il disparaît après un dépôt confirmé par Drive. Il dépend de l'horloge de l'appareil, sans conséquence grave si elle est déréglée (information non bloquante).
 
@@ -520,6 +533,7 @@ erDiagram
 - **Atteinte d'un objectif** (RG-025, Q-26) : calculée à partir des tâches, des sous-objectifs et des liens.
 - **Reste à faire** (RG-009) : estimation initiale moins temps passé, ou valeur corrigée moins le temps passé depuis la correction (recommandation Q-31.1 a).
 - **Estimation d'une tâche parente** : somme des estimations de ses sous-tâches (recommandation Q-25.3 a).
+- **Objet-valeur `Duree` et estimation calculée à 0 (PEP-9)** : `Duree` est un nombre entier de minutes, multiple de 30. Deux constructions : `Duree.saisie(n)`, utilisée pour toute valeur entrée par l'utilisateur, refuse 0 et applique le minimum de 30 min ; `Duree.calculee(n)`, utilisée pour les totaux dérivés (parente sans sous-tâche estimée, reste à faire épuisé), **accepte 0**. Une estimation calculée à 0 n'est donc pas une erreur, et elle n'est jamais stockée. La règle d'affichage et de planification d'une tâche à 0 relève de Pepper (BEN-10) ; le domaine ne la présume pas.
 - **Ordre de priorité proposé** (RG-005) et **planning proposé** (RG-031).
 - **Vélocité hebdomadaire** (RG-010) : calculée à partir des événements `TERMINEE` et `ROUVERTE` du journal et des estimations initiales.
 - **Évolution du backlog sur 12 semaines** (RG-015) : rejouée à partir du journal (planifications, restes à faire, états) à la fin de chaque semaine.
@@ -696,7 +710,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 
 ## 11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité
 
-Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md` §14 et §15). Statut : **Proposé**, comme le reste du DAT. Les décisions marquées ★ sont nécessaires avant E9 de LOT-001. La correspondance avec les points S1 à S10 de LOT-001 est indiquée dans `avis-dependances-lot1.md`.
+Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md` §14 et §15). Statut : **Proposé**, stable pour E9 (voir l'en-tête). Les décisions marquées ★ sont nécessaires avant E9 de LOT-001. La correspondance avec les points S1 à S10 de LOT-001 est indiquée dans `avis-dependances-lot1.md`.
 
 | DS | Décision | Référence |
 |---|---|---|
