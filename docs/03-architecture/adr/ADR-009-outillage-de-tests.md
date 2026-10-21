@@ -35,3 +35,4 @@ L'emplacement des *step definitions*, le nommage et les seuils de couverture son
 - \+ La suite est rapide, sans réseau ni compte Google.
 - − Il faut maintenir des simulateurs fidèles à Google. Les tests de contrat MSW et la recette sur appareil réel avec le compte de recette compensent ce risque.
 - − Les écrans sont couverts par les tests de composants et par Playwright, et non par Cucumber.
+- Précision (DAT v0.7, ANT-20) : seuls les scénarios tagués `@ihm` sont exécutés par cucumber-js piloté par Playwright (profil `ihm`), sur l'interface réelle avec un faux Google. Les autres scénarios s'exécutent sur la couche `application` et les modèles de vue. Décision inchangée sur le fond. Statut : Proposé.
