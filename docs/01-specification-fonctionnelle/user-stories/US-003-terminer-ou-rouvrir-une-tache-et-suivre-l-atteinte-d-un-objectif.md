@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** déclarer une tâche terminée, pouvoir la rouvrir, et voir si chacun de mes objectifs est atteint, **afin de** savoir ce qui est accompli.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Modifié** par rapport à la v0.1 :
   - une tâche n'est terminée que sur déclaration de l'utilisateur, jamais automatiquement (Q-DEM001-7.1 a) ;
@@ -109,7 +107,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`](../../../tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature) — **21 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-003`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`](../../../tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature) — **21 scénarios**. Chaque scénario porte les tags `@US-003`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -144,3 +142,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5.4 et 7. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25 et 26 intégrées (CA-2, CA-4 à CA-8) ; règles proposées RG-049 et RG-050 (CA-12, CA-13) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |

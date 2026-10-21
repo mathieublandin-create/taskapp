@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer une tâche, avec son délai et son estimation, et la rattacher à zéro, un ou plusieurs objectifs, **afin de** transformer mes objectifs en travail concret.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Modifié** par rapport à la v0.1 :
   - délai obligatoire (Q-DEM001-5.2) ;
@@ -121,14 +119,14 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-12 (écran d'accueil du lot 1 : la liste est l'accueil).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-002-creer-et-gerer-mes-taches.feature`](../../../tests/features/US-002-creer-et-gerer-mes-taches.feature) — **24 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-002`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-002-creer-et-gerer-mes-taches.feature`](../../../tests/features/US-002-creer-et-gerer-mes-taches.feature) — **25 scénarios**. Chaque scénario porte les tags `@US-002`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
-| CA-1 | S01, S04, S05 |
+| CA-1 | S01, S04, S05a, S05b |
 | CA-2 | S02 |
 | CA-3 | S03 |
-| CA-4 | S05 |
+| CA-4 | S05a, S05b |
 | CA-5 | S06 |
 | CA-6 | S07 |
 | CA-7 | S08 |
@@ -141,7 +139,7 @@ Statut : Validée
 | CA-14 (RG-050) | S24 |
 | Cas limite : délai égal à la journée en cours ; changement d'heure du 25/10/2026 | S16, S17 |
 | Cas limite : délai égal à celui de l'objectif | S08 |
-| Cas limite : estimation de 0 h ou non multiple de 30 min | S05 |
+| Cas limite : estimation de 0 h ou non multiple de 30 min (le minimum de 30 min vaut pour la saisie ; une estimation calculée de 0 h reste valide : US-024 S16, S16b) | S05b |
 | Cas limite : rattachement à un objectif atteint ou « à décliner en tâches » | S11 |
 | Cas limite : retrait du dernier objectif | S09, S11 |
 | Cas limite : délai sans heure, identique sur les deux appareils | S18 |
@@ -158,3 +156,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5, 6, 9 et 12. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-28 et 29 intégrées (CA-1, CA-3, CA-4, CA-9, CA-10, CA-12) ; réponse Q-ERG-03 (CA-2) ; règles proposées RG-047 et RG-050 (CA-13, CA-14) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-7 (S05 scindé en S05a et S05b pour supprimer la colonne de texte libre « résultat »), BEN-10 et PEP-9 (renvoi à US-024 pour l'estimation calculée de 0 h), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |

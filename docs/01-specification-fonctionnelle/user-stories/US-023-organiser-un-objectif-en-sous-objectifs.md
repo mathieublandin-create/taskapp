@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** décomposer un objectif en sous-objectifs, **afin de** structurer les objectifs ambitieux.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau** : issu de Q-DEM001-6.1 d), qui retient les sous-objectifs et les sous-tâches. La v0.1 ne prévoyait que deux niveaux.
 - **Précisé en v0.4** (Q-DEM001-24, 26, 29) : un seul niveau ; parent unique ; délai postérieur au parent accepté avec alerte ; déplacement et promotion possibles ; atteinte du parent conditionnée à celle de ses sous-objectifs ; à la suppression du parent, les sous-objectifs deviennent principaux.
@@ -101,7 +99,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **20 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **21 scénarios**. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -113,7 +111,7 @@ Statut : Validée
 | CA-6 | S09, S10, S11 |
 | CA-7 | S13, S14 |
 | CA-8 | S15 |
-| CA-9 (RG-048) | S16, S17, S18 |
+| CA-9 (RG-048) | S16, S17, S18, S18b (trois placements concurrents, seul le plus ancien est annulé) |
 | CA-10 (RG-047) | S19 |
 | CA-11 (RG-050) | S20 |
 | Cas limite : un des délais absent ; délais égaux | S05 |
@@ -129,3 +127,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Création (Pepper, E1), à partir de la réponse Q-DEM001-6.1 d). |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-24, 26 et 29 intégrées (CA-1 à CA-8) ; règles proposées RG-047, RG-048 et RG-050 (CA-9 à CA-11). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-9 (S18b : RG-048 avec trois déplacements concurrents), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |

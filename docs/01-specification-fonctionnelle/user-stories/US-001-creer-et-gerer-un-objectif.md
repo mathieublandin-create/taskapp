@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer un objectif, avec ou sans délai, **afin de** formaliser ce que je cherche à atteindre.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Modifié** par rapport à la v0.1 : le délai d'un objectif devient facultatif (Q-DEM001-5.1 : « non ») ; l'état « atteint » est calculé (Q-DEM001-5.4 a).
 - **Précisé en v0.4** :
@@ -119,7 +117,7 @@ Statut : Validée
 - **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est un choix de conception de Steeve (validé avec l'US en E6).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-001-creer-et-gerer-un-objectif.feature`](../../../tests/features/US-001-creer-et-gerer-un-objectif.feature) — **21 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-001`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-001-creer-et-gerer-un-objectif.feature`](../../../tests/features/US-001-creer-et-gerer-un-objectif.feature) — **21 scénarios**. Chaque scénario porte les tags `@US-001`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -152,3 +150,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Fichier détaillé créé (Pepper, E1), après les réponses Q-DEM001-5 et 6. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-26, 28 et 29 intégrées (CA-3, CA-7, CA-8, CA-9) ; règles proposées RG-047 et RG-050 (CA-10, CA-11) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |

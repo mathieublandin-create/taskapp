@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** abandonner une tâche que je ne réaliserai pas, sans la supprimer, **afin de** garder une trace et de ne plus la voir parmi mon travail à faire.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau** : issu de Q-DEM001-7.3 (« oui »).
 - **Précisé en v0.4** (Q-DEM001-26.2, 27) : une tâche abandonnée peut être reprise ; abandonner une tâche parente abandonne ses sous-tâches non terminées ; les tâches abandonnées sont ignorées dans l'atteinte d'un objectif ; une tâche abandonnée sort du backlog (sans effet visible au lot 1, le backlog n'étant pas encore livré).
@@ -91,7 +89,7 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-13 tranchée par le commanditaire : confirmation toujours (CA-1), appliquée dans ECR-007.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **17 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **17 scénarios**. Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -123,3 +121,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Création (Pepper, E1), à partir de la réponse Q-DEM001-7.3. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-26.2 et 27 intégrées (CA-3 à CA-9) ; règles proposées RG-049 et RG-050 (CA-10, CA-11) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |

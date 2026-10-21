@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** découper une tâche en sous-tâches, **afin de** suivre plus finement un travail important.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau** : issu de Q-DEM001-6.1 d).
 - **Tension levée** (Q-DEM001-25.3 a) : l'estimation d'une tâche parente est la somme de celles de ses sous-tâches, calculée ; dans la vélocité, seules comptent les tâches sans sous-tâche. Le même travail n'est donc jamais compté deux fois.
@@ -40,7 +38,7 @@ Statut : Validée
 - Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029.
 - Ajout d'une sous-tâche à une tâche terminée : l'application demande confirmation, puis rouvre la tâche parente, conformément à RG-023.
 - Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-025).
-- Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée.
+- Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée. Le minimum de 30 min (RG-028) ne s'applique qu'à une estimation **saisie** : une estimation calculée de 0 h est valide, n'est refusée par aucune opération sur la tâche (renommer, modifier son délai, la terminer, l'abandonner), et reste non modifiable puisqu'elle est calculée (CA-4). *Précision de rédaction E7 (BEN-10, PEP-9) : le cas était déjà validé ; elle en explicite la relation avec RG-028.*
 - Délai de sous-tâche déjà dépassé : accepté, la sous-tâche est signalée en retard (RG-045).
 
 ## Hors périmètre
@@ -101,7 +99,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle. Les confirmations d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **23 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **24 scénarios**. Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -120,7 +118,7 @@ Statut : Validée
 | Cas limite : suppression de la dernière sous-tâche | S10 |
 | Cas limite : ajout à une tâche terminée | S17 |
 | Cas limite : ajout à une tâche abandonnée | S18 |
-| Cas limite : toutes les sous-tâches abandonnées | S16 |
+| Cas limite : toutes les sous-tâches abandonnées | S16, S16b (estimation calculée de 0 h face au minimum de 30 min) |
 | Cas limite : délai de sous-tâche dépassé | S13 |
 
 ## Questions ouvertes
@@ -132,3 +130,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | Création (Pepper, E1), à partir de la réponse Q-DEM001-6.1 d). |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25, 27 et 29 intégrées (CA-1 à CA-9) ; règles proposées RG-047, RG-049 et RG-050 (CA-10 à CA-12). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-10 et PEP-9 (cas limite « estimation calculée de 0 h » explicité face à RG-028 ; scénario S16b), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié dans son sens. |

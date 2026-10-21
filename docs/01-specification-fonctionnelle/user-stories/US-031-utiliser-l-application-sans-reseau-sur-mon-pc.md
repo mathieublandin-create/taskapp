@@ -4,8 +4,6 @@ Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, mes modifications étant prises en compte au retour du réseau, **afin d'**avoir le même comportement sur mes deux appareils.
 
-> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
-
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau dans le lot** : US conditionnelle depuis la v0.2. Le commanditaire a retenu l'option b) de Q-DEM001-39 : le PC est utilisable hors ligne dès LOT-001 (DEC-013), comme le recommandait l'architecte.
 - **Transposition de US-018** : mêmes règles que sur le smartphone (RG-021, RG-035, RG-036, RG-047 à RG-049).
@@ -127,25 +125,25 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **20 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **21 scénarios** dont 7 exécutés par l'interface (`@ihm`). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
-| CA-1 | S01 |
+| CA-1 | S01a (adresse web, `@ihm`), S01b (application installée, `@ihm`) |
 | CA-2 | S02, S03 |
 | CA-3 | S04 |
 | CA-4 | S05 |
 | CA-5 | S06, S07 |
-| CA-6 | S08 |
+| CA-6 | S08 (`@ihm`) |
 | CA-7 | S09 |
 | CA-8 | S10, S11, S12 |
 | CA-9 | S13 |
 | CA-10 (RG-057) | S19, S20 |
-| Cas limite : première ouverture sans réseau | S14 |
-| Cas limite : données du navigateur effacées | S15 |
-| Cas limite : deux onglets | S16 |
+| Cas limite : première ouverture sans réseau | S14 (`@ihm` ; résultat observable : aucun écran de Done Juan, message d'indisponibilité du navigateur) |
+| Cas limite : données du navigateur effacées | S15 (`@ihm`) |
+| Cas limite : deux onglets | S16 (`@ihm`) |
 | Cas limite : navigation privée | **Non scénarisé** : le critère n'énonce qu'une absence de garantie, sans comportement vérifiable ; information portée par le guide utilisateur |
-| Cas limite : réseau perdu pendant une saisie | S17 |
+| Cas limite : réseau perdu pendant une saisie | S17 (`@ihm` ; saisie en cours décrite en étapes successives) |
 | Cas limite : réseau intermittent | S18 |
 | Cas limite : mise à jour application fermée | US-017 S04 |
 
@@ -159,3 +157,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-21 | Intégration à LOT-001 par décision du commanditaire (Q-DEM001-39 b, DEC-013). Fichier détaillé créé (Pepper, v0.5). |
 | 2026-10-21 | V-12 retenue (DEC-018) : nouveau CA-10 (bandeau de rappel non bloquant après 24 h hors ligne avec modifications en attente, RG-057) et CA-7 précisé ; scénarios S19 et S20. |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-5 et ANT-6 (tag `@ihm` sur S01a, S01b, S08, S14, S15, S16, S17 ; S01 scindé ; résultat observable de S14 ; S17 reformulé en étapes successives), ANT-16 (S09 : délais dépassés du contexte précisés), PEP-8. RG-057 et les scénarios S19 et S20 sont inchangés dans l'attente des réponses Q-ERG-16 à 18. |
