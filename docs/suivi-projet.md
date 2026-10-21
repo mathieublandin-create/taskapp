@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; questions Q-ERG-12 à 15 au commanditaire ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; Q-ERG-12 à 14 tranchées, Q-ERG-15 (nom) en attente ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -28,6 +28,7 @@
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-21 | E4 | Réponses Q-ERG-12 à 15 | Reçues | Verbatim : « Q-ERG-12 : oui, Q-ERG-13 : toujours, Q-ERG-14 : oui, Q-ERG-15 : propose-moi 3 noms drôles avec des jeux de mots ». LOT-001 s'ouvre sur « Tâches » (2 onglets) ; abandon toujours confirmé ; modifications non retenues listées jusqu'à « Compris » ; nom de l'application : propositions soumises. |
 | 2026-10-21 | E1 | Réponses P1 Q-DEM001-39, 41, 42 | Reçues | Verbatim : « Q39-b; Q41-oui; Q42-1-non, proposer seulement l'option déconnexion et une autre option supprimer les données;Q42-2:a) » → DEC-013 à DEC-016 |
 | 2026-10-20 | E1 | ENF-05 et ENF-06 | Validées | Verbatim « ok pour enf-05 et enf-06 ». Restent à valider : reformulation du besoin et exclusions proposées — à représenter en E6 avec les US de LOT-001 (demande du commanditaire). |
 | 2026-10-20 | Hors étape (socle UX) | Q-ERG-11 précisée | Reçue | « a) » : en cas de refus de la replanification, le créneau est supprimé de Google Calendar et la tâche est déplanifiée. Transmis à Pepper. |
