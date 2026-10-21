@@ -464,6 +464,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, l'action "Mettre à jour" est proposée
+    Et sur le smartphone, l'action "Mettre à jour" ouvre la page de téléchargement de la dernière version et ne renvoie pas vers Google Play
     Et sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et sur le smartphone, l'objectif "Publier le guide" existe toujours
 

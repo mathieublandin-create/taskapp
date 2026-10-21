@@ -11,6 +11,8 @@
 >
 > **Version 0.7 du 2026-10-21 (Pepper, fin de E6 pour LOT-001)** : validation du commanditaire du 2026-10-21 (DEC-018, « oui pour tous »). Les 10 US de LOT-001 passent au statut **Validée** ; les astérisques des RG proposées sont retirés (RG-044 b, RG-047 à RG-050, RG-054, garde-fous de RG-055, RG-056 a à c : établies) ; nouvelles RG-057 (bandeau après 24 h hors ligne, US-018 et US-031) et RG-058 (versions de l'application, US-017).
 >
+> **Version 0.8 du 2026-10-21 (Pepper, E7 tour 2)** : DEC-025 et DEC-021 intégrées (cahier des charges v0.9 : RG-057, RG-048, RG-058, ENF-07). US-017 n'est pas découpée (livrée en 4 incréments internes, ordre fixé par Anthony en E9). Aucune US ajoutée ni retirée ; 243 scénarios.
+>
 > Les 10 US de LOT-001 sont au statut **Validée** ; toutes les autres US non reportées sont au statut **En analyse**. Persona unique : **l'utilisateur** (le commanditaire). Voir le [cahier des charges v0.7](cahier-des-charges.md).
 
 ## Légende
