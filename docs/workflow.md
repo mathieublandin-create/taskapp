@@ -44,7 +44,7 @@ flowchart TD
     E8 -- non : précisions --> E1
     E8 -- oui --> E9[E9 Conception détaillée<br/>Anthony]
     E9 --> E10[E10 Tests unitaires<br/>Anthony]
-    E10 --> E11[E11 Revue de lancement<br/>Anthony → Benjamin]
+    E10 --> E11[E11 Revue de lancement<br/>Anthony → Benjamin, Pepper, Steeve, Starck]
     E11 --> E12[E12 Développement US par US<br/>Benjamin]
     E12 --> E13{E13 Revue de code<br/>Anthony}
     E13 -- changements requis --> E12
@@ -136,9 +136,14 @@ flowchart TD
 - Écrit les tests unitaires automatisés qui valident chaque évolution. Ils s'exécutent et **échouent** (phase rouge du TDD).
 - Ces tests font foi : Benjamin ne les modifie pas sans l'accord d'Anthony.
 
-### E11 — Revue de lancement du lot (Anthony → Benjamin, animée par Jarvis)
+### E11 — Revue de lancement du lot (Anthony → Benjamin, Pepper, Steeve, Starck ; animée par Jarvis)
 - Anthony présente le lot, l'ordre de réalisation, la conception détaillée et les tests.
-- Benjamin reformule le travail à produire et pose ses questions ; Anthony y répond.
+- **Pepper, Steeve et Starck relisent la conception détaillée avant le développement** et émettent des remarques numérotées `RL-LOT-xxx-n`, chacun dans son domaine :
+  - Pepper : conformité aux US, aux règles de gestion et aux tests métiers ;
+  - Steeve : conformité aux maquettes et au guide d'ergonomie ;
+  - Starck : conformité au DAT et aux ADR.
+- Anthony traite chaque remarque : correction de la ST ou des tests unitaires, ou justification. Les remarques bloquantes doivent être levées avant le début du développement. Les échanges sont soumis à la règle anti-boucle.
+- Benjamin reformule ensuite le travail à produire, sur la base de la conception corrigée, et pose ses questions ; Anthony y répond.
 - Compte rendu dans `docs/ceremonies/lancement-LOT-xxx.md`. Statut : **En développement**.
 
 ### E12 — Développement (Benjamin)

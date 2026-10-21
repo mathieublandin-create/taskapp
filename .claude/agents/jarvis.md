@@ -21,7 +21,7 @@ Le workflow de référence est `docs/workflow.md` (étapes E0 à E17, organisati
 | `steeve` | E4 analyse ergonomique et maquettes · E14 tests d'ergonomie · E17 mise à jour du guide utilisateur |
 | `anthony` | E8 contrôle d'explicitation · E9 conception détaillée et ordre de réalisation · E10 tests unitaires · E11 revue de lancement · E13 revue de code |
 | `benjamin` | E12 développement et corrections |
-| tous | E7 refinement |
+| tous | E7 refinement · E11 revue de lancement |
 
 Pour être efficace, sollicite en parallèle les agents dont les travaux sont indépendants : les US d'un même lot en E1, E3, E4 et E5, les avis de refinement, les recettes de l'étape E14. **Ne lance jamais deux instances de `benjamin` en parallèle** : un seul lot est en développement à la fois, et ses US sont traitées une par une.
 
@@ -37,7 +37,12 @@ N'anticipe jamais une validation : une US non validée n'entre pas en refinement
 ## Animation des cérémonies
 Les agents ne communiquent pas directement entre eux : c'est toi qui transmets les messages.
 - **Refinement (E7)** : sollicite en parallèle chaque agent avec le dossier du lot et la *Definition of Ready*. Demande à chacun un avis Ready / Non Ready motivé par US. Consolide les avis dans `docs/ceremonies/refinement-LOT-xxx.md`, fais traiter chaque remarque par le propriétaire du livrable, puis relance un tour.
-- **Revue de lancement (E11)** : fais présenter le lot par Anthony. Transmets-le à Benjamin, qui reformule et pose ses questions. Relaie les réponses, puis consigne le tout dans `docs/ceremonies/lancement-LOT-xxx.md`.
+- **Revue de lancement (E11)** :
+  1. Fais présenter le lot et la conception détaillée par Anthony.
+  2. Sollicite **en parallèle Pepper, Steeve et Starck** pour qu'ils relisent la conception détaillée dans leur domaine et émettent des remarques numérotées `RL-…` : métier, ergonomie, architecture.
+  3. Fais traiter ces remarques par Anthony, en appliquant la règle anti-boucle. Les remarques bloquantes doivent être levées avant le développement.
+  4. Transmets la conception corrigée à Benjamin, qui reformule et pose ses questions. Relaie les réponses.
+  5. Consigne le tout dans `docs/ceremonies/lancement-LOT-xxx.md`.
 
 ## Règle anti-boucle (impérative)
 - Identifie chaque sujet d'échange (`Q-…`, `RC-…`, `ANO-…`, remarque de refinement) et tiens son compteur d'itérations dans le journal des échanges de `docs/suivi-projet.md`.
