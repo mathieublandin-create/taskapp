@@ -1,16 +1,12 @@
 # Conventions techniques
 
-> **Version 0.2 — 2026-10-21 — Anthony (responsable technique).** Alignement sur le DAT v0.5 et les ADR-001 à ADR-011 (statut « Proposé »), à l'issue du tour 1 du refinement de LOT-001 (E7).
+> **Version 0.2 — 2026-10-21 — Anthony (responsable technique).** Alignement sur le DAT v0.6 et les ADR-001 à ADR-011 (statut « Proposé », stables pour E9 selon l'en-tête du DAT), à l'issue du tour 1 du refinement de LOT-001 (E7).
 >
 > **Statut : brouillon applicable.** Les règles de ce document s'appliquent dès maintenant à LOT-001. La version 1.0 sera publiée à la revue de lancement de LOT-001 (E11), une fois levés les points encore ouverts du §17.2. Les marqueurs « En attente du DAT » de la v0.1 sont retirés : la stack est celle du DAT §3.2 et des décisions DS-01 à DS-20 (DAT §11).
 >
-> **Entrées** : `docs/workflow.md` ; cahier des charges v0.7 (RG-001 à RG-058) ; DAT v0.5 et ADR-001 à ADR-011 ; guide d'ergonomie v0.2.2 ; décisions DEC-010, DEC-012, DEC-015 à DEC-018 (`docs/suivi-projet.md`) ; compte rendu du tour 1 du refinement (`docs/ceremonies/refinement-LOT-001.md`) ; fichiers `.feature` de LOT-001 (219 scénarios).
+> **Entrées** : `docs/workflow.md` ; cahier des charges v0.8 (RG-001 à RG-058) ; DAT v0.6 et ADR-001 à ADR-011 ; guide d'ergonomie v0.2.3, dont le catalogue des libellés et des codes d'état (§6.6) ; glossaire d'étapes v1.0 (`tests/features/GLOSSAIRE-ETAPES.md`) ; décisions DEC-010, DEC-012, DEC-015 à DEC-018 (`docs/suivi-projet.md`) ; compte rendu du tour 1 du refinement (`docs/ceremonies/refinement-LOT-001.md`) ; fichiers `.feature` de LOT-001 (231 scénarios).
 >
-> **Éléments attendus d'autres agents, non encore parus** (renvois explicites dans le texte) :
-> - **couche de modèles de vue** au DAT (Starck, ANT-8) : §2.2, §4.3, §11.12 ;
-> - **catalogue des codes d'état et des messages** au guide d'ergonomie (Steeve, ANT-7) : §8.5 ;
-> - **glossaire d'étapes Gherkin** (Pepper, ANT-9, ANT-10, PEP-7) : §11.7 ;
-> - **en-tête `Date` simulé et `appareilId` fixes du banc** (Starck, ANT-4, ANT-11) : §11.11.
+> **Éléments demandés pendant le tour 1 et désormais parus** : couche de modèles de vue (DAT v0.6 §2.4, ANT-8) ; catalogue des codes d'état et des messages (guide v0.2.3 §6.6, ANT-7) ; glossaire d'étapes (Pepper, ANT-9, ANT-10, PEP-7) ; en-tête `Date` simulé et `appareilId` fixes du banc (DAT v0.6 §3.3, ANT-4, ANT-11) ; statut du DAT avant E9 (ANT-12). **Restent attendues** : les réponses du commanditaire à Q-ERG-16 à 18 (RG-057, §10.2) et les points du §17.2.
 >
 > Toute contradiction entre ce document et un livrable d'un autre agent est remontée à Jarvis. Elle n'est jamais tranchée unilatéralement. Une règle du DAT ou d'un ADR prévaut sur ce document.
 
@@ -19,7 +15,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Création : principes, organisation conceptuelle, règles de codage, erreurs, sécurité, stratégie de tests, Git, outillage par catégorie, DoD technique, points de testabilité, décisions attendues de Starck. |
-| 0.2 | 2026-10-21 | Anthony | E7 de LOT-001, section 3 de l'avis de refinement (points 1 à 18). Marqueurs « En attente du DAT » retirés. Stack, versions figées et idiomes TypeScript (§3, §5.3, §6.2). Arborescence physique `src/<contexte>/<couche>/` (§4). Ports et doublures du DAT et de l'ADR-009 (§2.3, §11.10). Outillage complet et CI GitHub Actions (§13, §14 ; PO-7 : dépôt `mathieublandin-create/taskapp`). Seuils de couverture, dont 95 % pour la synchronisation (§12). Dates et temps selon DEC-012 et ADR-011 : `FUSEAU_REFERENCE`, date-fns et @date-fns/tz, fuseaux de CI, PT-16 (§7, §11.9). UUID v7 (§7.5). Sécurité DS-06 et DS-07 (§9). Nouvelle section stockage et synchronisation, dont RG-058 (§10). Banc de synchronisation (§11.11). Types de paramètres, organisation des steps, tags `@ihm`, `@lent`, `@google-reel`, `@recette` (§11.6 à §11.8). Couche de modèles de vue (§2.2, §4.3, §11.12). Catalogue de messages (§8.5). Glossaire code aligné sur le CdC v0.7 et le DAT §6.1 (§5.2). Points de testabilité mis à jour (§16). Dette DT-001 (données locales non chiffrées). |
+| 0.2 | 2026-10-21 | Anthony | E7 de LOT-001, section 3 de l'avis de refinement (points 1 à 18), sur la base du DAT v0.6, du guide d'ergonomie v0.2.3 et du glossaire d'étapes v1.0. Marqueurs « En attente du DAT » retirés. Stack, versions figées et idiomes TypeScript (§3, §5.3, §6.2). Arborescence physique `src/<contexte>/<couche>/` (§4). Ports et doublures du DAT et de l'ADR-009 (§2.3, §11.10). Outillage complet et CI GitHub Actions (§13, §14 ; PO-7 : dépôt `mathieublandin-create/taskapp`). Seuils de couverture, dont 95 % pour la synchronisation (§12). Dates et temps selon DEC-012 et ADR-011 : `FUSEAU_REFERENCE`, date-fns et @date-fns/tz, fuseaux de CI, PT-16 (§7, §11.9). UUID v7 (§7.5). Sécurité DS-06 et DS-07 (§9). Nouvelle section stockage et synchronisation, dont RG-058 (§10). Banc de synchronisation (§11.11). Types de paramètres, organisation des steps, tags `@ihm`, `@lent`, `@google-reel`, `@recette` (§11.6 à §11.8). Couche de modèles de vue (§2.2, §4.3, §11.12). Catalogue de messages (§8.5). Glossaire code aligné sur le CdC v0.8 et le DAT §6.1 (§5.2) ; `Duree.saisie` et `Duree.calculee`, `EcartTemps` (§7.1). Points de testabilité mis à jour (§16). Dette DT-001 (données locales non chiffrées). |
 
 ## Sommaire
 
@@ -68,18 +64,16 @@
 | Simplicité | La solution la plus simple qui satisfait la spécification. Pas de généralisation spéculative. |
 
 ### 2.2 Séparation en couches (DAT §2.4, ADR-010)
-Le code est organisé en **architecture hexagonale (ports et adaptateurs)**. Les couches du DAT se projettent dans chaque contexte métier (§4.1) ainsi : `domaine`, `application`, `infrastructure`, `presentation` (couche `ui` du DAT). La couche `synchro` du DAT correspond au contexte `synchronisation`.
+Le code est organisé en **architecture hexagonale (ports et adaptateurs)**. Les couches du DAT se projettent dans chaque contexte métier (§4.1) ainsi : `domaine`, `application`, `infrastructure`, `presentation/modeles-de-vue`, `presentation/ui`. La couche `synchro` du DAT correspond au contexte `synchronisation`.
 
 | Couche (dossier) | Contenu | Peut dépendre de | Ne doit jamais dépendre de |
 |---|---|---|---|
 | `domaine` | Entités, objets-valeurs, règles de gestion (RG), services de domaine purs, erreurs métier | Le domaine de son contexte, `commun/domaine`, le domaine public d'un autre contexte (§4.2) ; `date-fns` et `@date-fns/tz` dans `commun/domaine/temps` seulement (§7.2) | Application, infrastructure, présentation, React, Ionic, Zustand, Dexie, Capacitor, Zod, `fetch`, horloge système, aléatoire système, stockage, variables d'environnement |
 | `application` | Cas d'usage (un par intention de l'utilisateur ou par traitement de rattrapage), **requêtes de lecture**, ports (interfaces), orchestration, transactions | `domaine`, `commun/application` | Infrastructure, présentation, framework d'IHM, Zod, API Google |
 | `infrastructure` | Adaptateurs des ports : Dexie, SQLite, Drive REST, Calendar REST, Google Identity Services, authentification native, notifications locales, horloge et aléatoire système, journal technique | `application` (ports), `domaine` (mapping), bibliothèques tierces | Présentation |
-| `presentation/modeles-de-vue` | **Modèles de vue** : fonctions pures qui transforment le résultat des requêtes de l'application en données d'affichage et en **codes d'état et de message** (§8.5) ; testables sans React | `application` (types des requêtes), `domaine` (types), `commun/presentation` | React, Ionic, Zustand, infrastructure, toute E/S |
-| `presentation` (autres dossiers) | Composants et écrans React et Ionic, magasins Zustand, crochets (*hooks*) | Modèles de vue, `application` (appel des cas d'usage via la composition) | Infrastructure directement |
+| `presentation/modeles-de-vue` | **Modèles de vue** (DAT v0.6 §2.4) : requêtes de présentation pures qui transforment le résultat des requêtes de l'application en structures prêtes à afficher (listes triées et regroupées, libellés et **codes** du catalogue §8.5, compteurs, états vides, activation des actions) ; testables en Vitest et en Cucumber sans React | `application` (requêtes, types de résultat), `domaine` (types), `commun/presentation` (formatage, catalogue) ; ports `Horloge` et `DepotLocal` **en lecture seule, par injection** (DAT §2.4) | React, Ionic, Zustand, DOM, toute écriture, `TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Notifieur`, `Planificateur` |
+| `presentation/ui` | Écrans et composants React et Ionic « bêtes », magasins Zustand, crochets (*hooks*) : ils lient un modèle de vue à l'écran et déclenchent des cas d'usage | `presentation/modeles-de-vue`, `application` (cas d'usage, via la composition) | Infrastructure ; toute règle métier ou mise en forme calculée |
 | `composition` | Point d'assemblage : instancie les adaptateurs et les injecte dans les cas d'usage, une configuration par plateforme (`web.ts`, `capacitor.ts`, DS-02) | Tout | — |
-
-> **Renvoi** : la couche de modèles de vue est demandée à Starck (ANT-8) pour figurer au DAT. La définition ci-dessus est celle qu'Anthony applique en attendant. Si le DAT la précise autrement, le DAT prévaut et ce paragraphe sera aligné.
 
 Règles impératives :
 - Le domaine **doit** être pur : aucune entrée-sortie, aucune lecture de l'heure courante, aucun tirage aléatoire, aucun accès à une variable d'environnement. L'heure et le hasard lui sont **passés en paramètre** par la couche application, qui les obtient des ports `Horloge` et `SourceAleatoire`.
@@ -169,16 +163,17 @@ Un seul paquet pnpm, sans monodépôt.
       domaine/                type Resultat, objets-valeurs, temps/ (seul usage de date-fns, §7.2)
       application/ports/      Horloge, Planificateur, GenerateurIdentifiants, SourceAleatoire, JournalTechnique, EtatReseau, Notifieur
       infrastructure/         HorlogeSysteme, PlanificateurNavigateur, GenerateurUuidV7, SourceAleatoireCrypto, JournalTechniqueLocal, EtatReseauNavigateur
-      presentation/           format/ (durées, dates), messages/ (catalogue, §8.5), composants partagés
+      presentation/           format/ (durées, dates, ancienneté), messages/ (catalogue, §8.5), ui/ (composants partagés)
     <contexte>/
       domaine/                entités, objets-valeurs, règles, erreurs métier
       application/            cas-usage/, requetes/, ports/
       infrastructure/         adaptateurs des ports du contexte
       presentation/
-        modeles-de-vue/       fonctions pures, sans React (§2.2)
-        etat/                 magasins Zustand
-        composants/           composants React et Ionic
-        ecrans/               écrans ECR-xxx
+        modeles-de-vue/       requêtes de présentation pures, sans React (§2.2, §4.3)
+        ui/
+          ecrans/             écrans ECR-xxx
+          composants/         composants React et Ionic
+          etat/               magasins Zustand
       index.ts                interface publique du contexte (seul point d'import depuis un autre contexte)
     infrastructure-google/    client HTTP Google partagé : fetch, traduction des erreurs, attente exponentielle, lecture de l'en-tête Date
     composition/              web.ts, capacitor.ts, test-ihm.ts (assemblage avec doublures pour @ihm)
@@ -203,8 +198,9 @@ Règles :
 
 ### 4.3 Requêtes et modèles de vue
 - Une **requête** (`application/requetes/`) lit l'état local et renvoie des données métier typées, sans formatage. Exemple : `listerTachesAFaire(depot, jour)`.
-- Un **modèle de vue** (`presentation/modeles-de-vue/`) est une fonction pure `construire<Nom>(entrees) → ModeleVue<Nom>`. Ses entrées sont des résultats de requêtes et, si besoin, l'instant ou le jour courant, passés en paramètre. Sa sortie contient des valeurs prêtes à afficher et des **codes** (état, message, mention), jamais de JSX.
-- Les scénarios Cucumber non tagués `@ihm` vérifient l'état observable de l'interface (indicateur de synchronisation, bandeaux, mentions, « non synchronisé ») **par les modèles de vue**, en comparant les codes du catalogue (§8.5).
+- Un **modèle de vue** (`presentation/modeles-de-vue/`) est une fonction `construire<Nom>(donnees, dependances) → ModeleVue<Nom>`, où `donnees` sont des résultats de requêtes et `dependances` contient au plus `horloge: Horloge` (aujourd'hui, journée de Paris, bandeau RG-057) et des requêtes en lecture (DAT §2.4). Il ne modifie rien. Sa sortie contient des valeurs prêtes à afficher, avec pour chaque état, mention ou message son **code** et son **libellé** issus du catalogue (§8.5) ; jamais de JSX.
+- Les composants de `presentation/ui` ne calculent rien : ils affichent les libellés du modèle de vue et exposent son code dans `data-etat` ou `data-message` (§8.5).
+- Les scénarios Cucumber non tagués `@ihm` vérifient l'état observable de l'interface (indicateur de synchronisation, bandeaux, mentions, « non synchronisé ») **par les modèles de vue**, en comparant les codes du catalogue.
 
 ## 5. Règles de nommage
 
@@ -215,7 +211,7 @@ Règles :
 - Noms imposés par un framework : conservés (`useEffect`, `render`).
 - Messages destinés à l'utilisateur : issus du catalogue (§8.5), jamais écrits en dur.
 
-### 5.2 Glossaire code (CdC v0.7 §6, DAT §6.1)
+### 5.2 Glossaire code (CdC v0.8 §6, DAT §6.1)
 | Terme métier | Identifiant de code | Remarque |
 |---|---|---|
 | Objectif, sous-objectif | `Objectif` (`parentId?: IdObjectif`) | RG-022 ; un seul niveau |
@@ -224,7 +220,10 @@ Règles :
 | Délai (échéance) | `delai: DateCalendaire` | RG-002, RG-003, RG-045 |
 | En retard | `estEnRetard(element, jour)` | RG-045 ; fonction dérivée, jamais stockée |
 | Objectif atteint | `estAtteint(objectif, …)` | RG-025 ; dérivé |
-| Estimation initiale | `estimationInitiale: Duree` | RG-028, RG-029 ; multiple de 30 min, minimum 30 min |
+| Estimation initiale | `estimationInitiale: Duree` | RG-028, RG-029 ; construite par `Duree.saisie` (minimum 30 min) |
+| Estimation calculée | `estimationCalculee: Duree` | RG-023, RG-028 ; construite par `Duree.calculee`, peut valoir 0 h, jamais stockée (DAT v0.6 §6.2) |
+| Horloge déréglée | `estHorlogeDereglee(ecart)` | RG-036, US-017 CA-13 ; écart strictement supérieur à 24 h |
+| Code de motif | `MotifRefus` (union de codes) | Glossaire du CdC v0.8 ; codes `CNX-…` d'US-022 et codes du catalogue (§8.5) |
 | Reste à faire | `resteAFaire` (dérivé), `resteAFaireCorrige?: Duree` | RG-009 |
 | Temps passé | `SaisieTemps` (`tacheId`, `jour: DateCalendaire`, `duree: Duree`) | RG-008 |
 | Lien tâche-objectif | `LienTacheObjectif` | RG-001 ; relation n-n |
@@ -245,8 +244,8 @@ Règles :
 | Consultation seule | `ModeSaisie` = `'NORMAL' \| 'CONSULTATION_SEULE'` | RG-058 |
 | Génération des données | `generation` | RG-044 b |
 | Modification en attente | `ModificationEnAttente`, marqueur `deposeJusquA: Hlc` | DS-11 |
-| Dernier contact avec le Drive | `dernierContactDrive: Instant` | RG-057 ; local, non synchronisé |
-| Bandeau de rappel hors ligne | `doitAfficherRappelHorsLigne(…)` | RG-057 ; règle de calcul selon la réponse à Q-ERG-16 |
+| Plus ancienne modification en attente | `plusAncienneModificationEnAttente?: Instant` | RG-057 ; local, non synchronisé ; hypothèse du DAT v0.6 §4.1.5 bis, en attente de Q-ERG-16 (alternative : `dernierContactDrive: Instant`) |
+| Bandeau de rappel hors ligne | `doitAfficherRappelHorsLigne(…)` | RG-057 ; calculé dans un modèle de vue ; code `BAN-RAPPEL-24H` |
 | Planification, créneau, horaire suggéré | `Planification`, `CreneauAgenda`, `HoraireSuggere` | RG-006, RG-034 ; lots ultérieurs |
 | Capacité | `CapaciteHebdo`, `ExceptionCapacite` | RG-011 ; lots ultérieurs |
 | Rappels, bilan, fun facts | `Parametres`, `BilanSoir`, `RotationFunFacts`, `FunFact` | RG-012 à RG-014, RG-038 à RG-042 ; lots ultérieurs |
@@ -302,16 +301,19 @@ Abréviations interdites, sauf `RG`, `US`, `ISO`, `UTC`, `HLC`, `ID`/`Id`, `CRDT
 - **Types marqués** :
   ```ts
   type Marque<T, M extends string> = T & { readonly __marque: M };
-  export type Duree = Marque<number, 'Duree'>;           // minutes entières
-  export const creerDuree = (minutes: number): Resultat<Duree, DureeInvalide> => …;
+  export type Duree = Marque<number, 'Duree'>;            // minutes entières, multiple de 30
+  export const Duree = {                                   // objet compagnon (pas de namespace)
+    saisie: (minutes: number): Resultat<Duree, DureeSaisieInvalide> => …,
+    calculee: (minutes: number): Resultat<Duree, DureeCalculeeInvalide> => …,
+  } as const;
   ```
-  La conversion `as Duree` n'apparaît que dans le constructeur du type.
+  La conversion `as Duree` n'apparaît que dans les constructeurs du type.
 - **Exhaustivité** : tout `switch` sur une union est exhaustif (`@typescript-eslint/switch-exhaustiveness-check`) et se termine par `assertNever(x)` (`commun/domaine/assert-never.ts`).
 - **`unknown` aux frontières** : toute donnée externe (fichier Drive, réponse Google, stockage local relu) entre en `unknown` et n'en sort que par une validation Zod (infrastructure).
 - **Interdits** : `any` (explicite ou implicite), assertion non nulle `!`, `as` hors constructeurs de types marqués et tests, `Function`, `Object`, `{}` comme type, `namespace`, paramètres par défaut qui masquent une dépendance (horloge, fuseau).
 - **Asynchronisme** : `async`/`await` ; les opérations faillibles renvoient `Promise<Resultat<T, E>>`. Annulation des appels réseau par `AbortSignal`. Aucune promesse flottante (`no-floating-promises`, `no-misused-promises`).
 - **React** : composants fonctionnels ; règles des crochets ; aucun `dangerouslySetInnerHTML` ; styles par les jetons du guide d'ergonomie (§3, variables CSS), aucune couleur ni espacement en dur.
-- **Zustand** : un magasin par contexte au plus, dans `presentation/etat/`, qui ne contient que des modèles de vue et l'état local d'écran ; aucune règle métier.
+- **Zustand** : un magasin par contexte au plus, dans `presentation/ui/etat/`, qui ne contient que des modèles de vue et l'état local d'écran ; aucune règle métier.
 
 ## 7. Temps, durées, hasard et identifiants
 
@@ -325,14 +327,16 @@ Références : DEC-012, ADR-011, DAT §6.4, RG-008, RG-053, RG-054.
 | `HeureLocale` | Heure murale de Paris, sans date | `Marque<string, 'HeureLocale'>`, `HH:MM` | `HH:MM` | Heures des rappels (lots ultérieurs) |
 | `SemaineIso` | Semaine ISO 8601, du lundi au dimanche | `{ annee, numero }` | `AAAA-Www` | Vélocité, historiques (lots ultérieurs) |
 | `Fuseau` | Identifiant IANA | `Marque<string, 'Fuseau'>` | Jamais persisté (ADR-011 §3) | `FUSEAU_REFERENCE`, fuseau de l'appareil (affichage seul) |
-| `Duree` | Durée en **minutes entières** | `Marque<number, 'Duree'>` | Entier de minutes | Estimation, reste à faire, temps passé |
+| `Duree` | Durée **métier** en minutes entières, **multiple de 30** (DAT v0.6 §2.4, RG-028) | `Marque<number, 'Duree'>` | Entier de minutes | Estimation, reste à faire, capacité |
+| `EcartTemps` | Durée **technique** signée, en millisecondes | `Marque<number, 'EcartTemps'>` | Entier de millisecondes | Temporisation de 5 s, période de 2 min, seuil de 24 h, dérive d'horloge (ADR-011) |
 
 Règles impératives :
 - **`FUSEAU_REFERENCE`** = `'Europe/Paris'`, constante unique définie dans `src/commun/domaine/temps/fuseau-reference.ts` (ADR-011 §2). Ce n'est ni un paramètre utilisateur ni une donnée synchronisée.
 - Le **jour d'une action** est calculé par `jourDeReference(instant: Instant): DateCalendaire`, dans `FUSEAU_REFERENCE`, **puis persisté** avec l'instant. Il n'est jamais recalculé à partir de l'instant lors d'une lecture.
 - Les **dates civiles choisies par l'utilisateur** (délai, jour de saisie, date d'exception) restent des `DateCalendaire` et ne sont **jamais** converties en `Instant` (P-T1).
 - Le **fuseau système de l'appareil n'intervient dans aucun calcul métier**. Il n'est lu que pour la mention « heure de Paris » (RG-054), via `Horloge.fuseauAppareil()`, dans un modèle de vue.
-- Aucune durée en nombre à virgule. La contrainte « multiple de 30 min, minimum 30 min » (RG-028) est un invariant des types concernés (`creerEstimation`), pas de `Duree` elle-même.
+- Aucune durée en nombre à virgule. `Duree` a deux constructeurs (DAT v0.6, PEP-9), exposés par un objet compagnon de même nom que le type : `Duree.saisie(minutes)` pour toute valeur entrée par l'utilisateur, qui refuse 0, une valeur négative ou non multiple de 30 et applique le minimum de 30 min (`Echec` typé) ; `Duree.calculee(minutes)` pour les totaux dérivés, qui **accepte 0** (estimation d'une parente dont toutes les sous-tâches sont abandonnées, reste à faire épuisé). La précision du temps passé reste fixée par Q-DEM001-31 (lots ultérieurs).
+- Un délai ou un écart **technique** (temporisation, période, seuil, dérive d'horloge) est un `EcartTemps`, jamais une `Duree`.
 - Une journée de Paris ne dure pas toujours 24 h (23 h ou 25 h aux changements d'heure) : « le lendemain » se calcule sur la `DateCalendaire`, jamais en ajoutant 24 h à un instant.
 - **Conversion d'une heure murale de Paris en instant** (`instantDeReference(jour, heure)`), règle par défaut dite « compatible » (celle de Temporal et de RFC 5545) : une heure **ambiguë** (de 2 h à 2 h 59 le dernier dimanche d'octobre) prend la **première** occurrence (heure d'été) ; une heure **inexistante** (de 2 h à 2 h 59 le dernier dimanche de mars) est **décalée de la durée du saut** (2 h 30 devient 3 h 30 heure d'été). Une ST-US peut imposer une autre règle si une RG l'exige (PT-16 (3)).
 - Le formatage pour l'affichage (« 1 h 30 », « 31 oct. ») est fait par `commun/presentation/format/`, selon le guide d'ergonomie §8.
@@ -355,7 +359,7 @@ export interface Horloge {
 }
 ```
 - Adaptateur : `HorlogeSysteme`, seul fichier autorisé à lire l'heure et le fuseau système.
-- Doublure : `HorlogeSimulee` (`tests/doublures/`), construite sur le `TempsSimule` du banc (§11.11) : `positionner(instant)`, `avancer(duree)`, `dereglerDe(ecartEnMs)` (avance ou retard propre à l'appareil), `reglerFuseauAppareil(fuseau)`.
+- Doublure : `HorlogeSimulee` (`tests/doublures/`), construite sur le `TempsSimule` du banc (§11.11), seule source de temps des tests (DAT v0.6 §3.3) : `positionner(instant)`, `avancer(ecart: EcartTemps)`, `dereglerDe(ecart: EcartTemps)` (avance ou retard propre à l'appareil), `reglerFuseauAppareil(fuseau)`.
 - `fuseauAppareil()` est un ajout au port, nécessaire pour tester RG-054 : il est soumis à Starck (§17.2).
 
 ### 7.4 Hasard
@@ -415,14 +419,16 @@ Il n'y a **pas** d'erreur `ConflitDeVersion` sur le Drive : chaque fichier n'a q
 - Interdits : capture silencieuse ; capture globale ailleurs qu'aux frontières ; erreur utilisée pour un flux nominal (« hors ligne » n'est pas une exception) ; message technique, trace de pile ou code HTTP affiché à l'utilisateur.
 
 ### 8.5 Catalogue des codes d'état et des messages
-> **Renvoi** : le catalogue des codes d'état et des messages est en cours d'ajout au guide d'ergonomie par Steeve (ANT-7). Il n'est **pas encore paru** dans la v0.2.2 (les textes figurent au §6.3 à §6.5 du guide, sans code). Les règles ci-dessous s'appliquent au catalogue dès sa parution ; **le format des codes retenu par Steeve prévaut** sur la proposition ci-dessous.
+Source de vérité : **guide d'ergonomie v0.2.3, §6.6** (Steeve, ANT-7), qui fait foi pour les libellés exacts. Les codes de motif de connexion `CNX-…` sont définis par Pepper (US-022, glossaire d'étapes §9).
 
-- **Source de vérité** : le catalogue du guide d'ergonomie (Steeve) donne pour chaque élément un **code stable** et le texte exact en français. Les fichiers `.feature` citent ce code ou ce texte.
-- **Proposition de format** transmise à Steeve : `<NATURE>-<CTX>-nnn`, avec `NATURE` parmi `ETA` (état observable : indicateur, bandeau, mention, « non synchronisé »), `ERR` (erreur), `ALR` (alerte), `INF` (information, message éphémère), et `CTX` parmi `CPT` (compte), `SYN` (synchronisation), `OBJ` (objectifs), `TAC` (tâches), `COM` (commun).
-- **Dans le code** : `src/commun/presentation/messages/catalogue.fr.ts` exporte un objet `CATALOGUE` typé `as const satisfies Record<CodeMessage, string>` ; `CodeMessage` est l'union des codes. Les paramètres (`{n}`, `{titre}`) sont interpolés par `traduire(code, parametres)`, pluriels par `Intl.PluralRules('fr')`.
-- Les modèles de vue produisent des **codes** ; seuls les composants appellent `traduire`. Le domaine et l'application ne connaissent aucun code de message : la correspondance erreur → code est faite dans le modèle de vue.
-- Les tests vérifient le **code**. Ils vérifient le texte seulement lorsque le `.feature` cite le texte mot pour mot (alors via `traduire`).
-- Contrôle de CI `scripts/verifier-catalogue.ts` : chaque code du catalogue du guide existe dans `catalogue.fr.ts` avec le même texte, et réciproquement (§14.1).
+- **Familles de codes** (guide §6.6.1) : `SYN-` état de l'indicateur, `BAN-` bandeau, `MEN-` mention, `ETA-` état d'un objet, `EVD-` état vide, `TST-` message éphémère, `CNF-` boîte de confirmation, `ERR-` erreur, `ALR-` alerte ou information ; `CNX-` motif de connexion (Pepper). Un code n'est jamais renuméroté ni réutilisé.
+- **Attributs d'observabilité** (proposition de Steeve, **confirmée** par Anthony) : tout élément qui porte un état expose son code dans `data-etat="CODE"` ; un message d'erreur ou d'alerte ajoute `data-message="ERR-xxx"` ou `data-message="ALR-xxx"`. Ces attributs sont posés par les composants à partir du modèle de vue ; ils servent aux tests Playwright et ne sont jamais affichés.
+- **Dans le code** : `src/commun/presentation/messages/catalogue.fr.ts` exporte un objet `CATALOGUE` typé `as const satisfies Record<CodeCatalogue, GabaritLibelle>` ; `CodeCatalogue` est l'union des codes. Les variables du guide (`{n}`, `{appareil}`, `{élément}`, `{date}`, `{heure}`, ancienneté) sont interpolées par `libelle(code, variables)`, avec les règles de pluriel (0 et 1 au singulier, `Intl.PluralRules('fr')`) et de typographie (espaces insécables, guillemets « ») du guide §6.6.1. Les formats de date, d'heure et d'ancienneté sont dans `commun/presentation/format/`.
+- **Responsabilités** : le domaine et l'application renvoient des erreurs typées, sans code de catalogue ; la correspondance erreur ou état → code est faite **dans le modèle de vue**, qui fournit code et libellé ; les composants affichent le libellé et posent l'attribut. Un code de motif `CNX-…` est porté par l'erreur de connexion du contexte `compte` (`MotifRefus`), car il fait partie du contrat métier d'US-022.
+- **Priorités d'affichage** : l'ordre de gravité de l'indicateur (`SYN-ACTION` > … > `SYN-OK`) et l'ordre des bandeaux (`BAN-ACCES-GOOGLE` > `BAN-CONSULTATION-SEULE` > `BAN-RAPPEL-24H`) du guide §6.6.2 et §6.6.3 sont implémentés par **une seule** fonction de sélection par élément, dans le modèle de vue, testée cas par cas.
+- **Entrées sous réserve** : les entrées marquées « sous réserve Q-ERG-xx » au guide ne sont implémentées qu'après la réponse du commanditaire ; leurs tests sont écrits en E10 sur la réponse retenue.
+- **Tests** : ils vérifient le **code** ; ils vérifient le libellé seulement lorsque le `.feature` cite le texte, et alors via `libelle()`.
+- **Contrôle de CI** `scripts/verifier-catalogue.ts` : chaque code des tableaux du guide §6.6 existe dans `catalogue.fr.ts` avec le même gabarit de texte, et réciproquement ; chaque code cité dans un `.feature` existe au catalogue ou parmi les codes `CNX-` (§14.1).
 
 ## 9. Sécurité, jetons OAuth, données personnelles et journalisation
 
@@ -483,7 +489,8 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 - Les deux adaptateurs (`DepotLocalDexie`, `DepotLocalSqlite`) passent la **même suite de contrat** (§11.10). `DepotLocalSqlite` s'appuie sur une interface interne d'exécution SQL, implémentée par le module Capacitor en production et par `node:sqlite` en test.
 
 ### 10.2 Cycle de synchronisation
-- Constantes nommées, regroupées dans `src/synchronisation/domaine/parametres-synchronisation.ts`, chacune avec sa référence : `TEMPORISATION_DEPOT` = 5 s, `PERIODE_SYNCHRONISATION_PREMIER_PLAN` = 2 min (DAT §4.3) ; `SEUIL_RAPPEL_HORS_LIGNE` = 24 h, `PERIODE_EVALUATION_RAPPEL_HORS_LIGNE` = 1 min (RG-057, DAT §4.1.5 bis) ; `SEUIL_HORLOGE_DEREGLEE` (valeur selon le CA numéroté demandé à Pepper, ANT-4).
+- Constantes nommées, regroupées dans `src/synchronisation/domaine/parametres-synchronisation.ts`, chacune avec sa référence : `TEMPORISATION_DEPOT` = 5 s, `PERIODE_SYNCHRONISATION_PREMIER_PLAN` = 2 min (DAT §4.3) ; `SEUIL_RAPPEL_HORS_LIGNE` = 24 h, `PERIODE_EVALUATION_RAPPEL_HORS_LIGNE` = 1 min (RG-057, DAT §4.1.5 bis) ; `SEUIL_HORLOGE_DEREGLEE` = 24 h, avertissement si l'écart est **strictement supérieur** (US-017 CA-13). Toutes sont des `EcartTemps`.
+- **Bandeau RG-057** : le point de départ des 24 h suit l'hypothèse du DAT v0.6 §4.1.5 bis (plus ancienne modification en attente), **en attente de la réponse du commanditaire à Q-ERG-16** ; Q-ERG-17 et Q-ERG-18 conditionnent aussi le modèle de vue. Le calcul est isolé dans une seule fonction pure, pour que le changement d'option ne touche qu'elle et ses tests.
 - Tous les déclenchements différés ou périodiques passent par le `Planificateur` : `setTimeout`, `setInterval` et `requestIdleCallback` sont interdits hors `PlanificateurNavigateur`.
 - La fusion est une fonction **pure** du domaine `synchronisation` : commutative, associative, idempotente (propriétés vérifiées par fast-check, §11.4). La passe de réparation (RG-047 à RG-049) est pure et déterministe.
 - `dernierContactDrive` et les jetons de pagination (`pageToken`) sont des données **locales non synchronisées** (DAT §6.1).
@@ -557,69 +564,80 @@ Constituent un affaiblissement, refusé en revue avec une gravité **Bloquante**
 - modifier un `.feature` sans passer par Pepper ;
 - retirer un fichier ou un dossier des seuils ou du périmètre de couverture.
 
-### 11.6 Fichiers `.feature`
+### 11.6 Fichiers `.feature` et glossaire d'étapes
 - Emplacement et nommage fixés par le workflow : `tests/features/US-xxx-<titre>.feature`, `# language: fr`, tags `@US-xxx`, `@RG-xxx`, `@LOT-xxx` sur chaque scénario.
-- Attentes de testabilité à l'égard des `.feature` (transmises à Pepper via Jarvis) :
-  - chaque scénario dépendant du temps fixe la date, l'heure et le fuseau (« Étant donné que nous sommes le 2026-10-21 à 10:00 heure de Europe/Paris ») ;
-  - les durées métier ont une forme unique (`1 h`, `1 h 30`, `30 min`, `0 h`) ; les écoulements de temps peuvent s'écrire `10 minutes`, `1 minute`, `2 heures` ; dates au format `AAAA-MM-JJ` ; heures au format `HH:MM` ;
-  - les délais exprimés en durée (« au plus tard 1 minute après ») sont vérifiés par l'avance de l'horloge simulée du banc, jamais par une attente réelle ;
-  - les états de Google sont décrits en termes métier, jamais en termes d'API ;
-  - un état visible de l'interface est désigné par son libellé exact ou son code du catalogue (§8.5).
+- Le **glossaire d'étapes** de Pepper (`tests/features/GLOSSAIRE-ETAPES.md`, v1.0) **fige** le vocabulaire : une phrase qui n'y figure pas n'a pas de définition. Anthony en tire la liste des définitions d'étapes de chaque ST-US (E9) ; Benjamin n'en crée pas d'autres. Un besoin nouveau passe par Pepper, via Jarvis.
+- Attentes de testabilité à l'égard des `.feature`, satisfaites par le glossaire v1.0 et maintenues pour les lots suivants :
+  - chaque scénario dépendant du temps ancre la date, l'heure et le fuseau ; le temps ne passe que par les étapes du glossaire §4 ;
+  - les délais exprimés en durée (« au plus tard 1 minute après ») sont vérifiés par l'avance de l'horloge simulée, jamais par une attente réelle ;
+  - les états de Google sont décrits en termes métier ;
+  - un état visible de l'interface est désigné par son **code** du catalogue (§8.5) ou par son libellé exact ;
+  - un refus est désigné par un **code de motif** stable (ANT-21, §17.2).
 
 ### 11.7 Step definitions : organisation et types de paramètres
-**Emplacement** : `tests/steps/<contexte>/<theme>.steps.ts`, un fichier **par thème métier** et non par US.
+**Emplacement** : `tests/steps/<contexte>/<theme>.steps.ts`, un fichier **par thème métier** et non par US. Le découpage suit les sections du glossaire d'étapes.
 
-| Fichier | Contenu |
+| Fichier | Contenu (sections du glossaire) |
 |---|---|
-| `commun/temps.steps.ts` | « nous sommes le … », « N minutes plus tard », « N minutes s'écoulent… », horloge en avance ou en retard |
-| `commun/appareils.steps.ts` | Appareils du banc, installation, ouverture et fermeture de l'application, fuseau d'un appareil |
-| `commun/reseau.steps.ts` | Réseau coupé ou rétabli |
-| `compte/connexion.steps.ts` | Connexion, déconnexion, accès perdu, session expirée, suppression des données de l'appareil |
-| `objectifs-taches/objectifs.steps.ts` | Objectifs et sous-objectifs |
-| `objectifs-taches/taches.steps.ts` | Tâches, sous-tâches, états, abandon |
-| `synchronisation/echanges.steps.ts` | Échanges avec le Drive, modifications en attente, consultation seule |
-| `synchronisation/drive.steps.ts` | Fichiers du Drive modifiés, supprimés ou illisibles ; Drive plein |
-| `synchronisation/modifications-non-retenues.steps.ts` | Valeurs écartées, réparations, incohérences |
-| `synchronisation/etat-affiche.steps.ts` | Indicateur, bandeaux, mentions, vérifiés par les modèles de vue |
+| `commun/temps.steps.ts` | §4 : « nous sommes le … », « l'horloge avance de … », horloge en avance ou en retard |
+| `commun/appareils.steps.ts` | §1 et §2 : appareils du banc, installation, ouverture et fermeture, extinction, arrêt brutal, fuseau d'un appareil, onglets |
+| `commun/reseau.steps.ts` | §1 et §3 : réseau coupé, intermittent, rétabli |
+| `compte/connexion.steps.ts` | §1, §2, §6 : connexion, refus (codes `CNX-`), déconnexion, accès retiré ou expiré, session du navigateur, suppression des données de l'appareil, données locales présentes |
+| `objectifs-taches/objectifs.steps.ts` | §1, §5, §6, §7 : objectifs et sous-objectifs |
+| `objectifs-taches/taches.steps.ts` | §1, §5, §6, §7 : tâches, sous-tâches, états, estimations, alertes de délai |
+| `objectifs-taches/refus.steps.ts` | §6 : « l'enregistrement est refusé avec le motif … », « l'action est refusée … », confirmations |
+| `synchronisation/echanges.steps.ts` | §3 : échanges avec le Drive, envois interrompus, modifications en attente |
+| `synchronisation/drive.steps.ts` | §1, §3, §6 : contenu du Drive, altérations, Drive plein ou indisponible, restauration, versions et consultation seule |
+| `synchronisation/modifications-non-retenues.steps.ts` | §3, §6 : liste des modifications non retenues, « Compris » |
+| `synchronisation/etat-affiche.steps.ts` | §6 : indicateur, bandeaux, mentions « non synchronisé », vérifiés par les modèles de vue |
 
 **Support** (`tests/support/`) :
-- `monde.ts` : classe `MondeDoneJuan` (étend `World` de cucumber-js) ; contient le `BancSynchro` (§11.11), les derniers résultats par appareil et les références nommées (titre → identifiant) ;
+- `monde.ts` : classe `MondeDoneJuan` (étend `World` de cucumber-js) ; contient le `BancSynchro` (§11.11), les derniers résultats par appareil et les références nommées (intitulé → identifiant, nom de compte → compte simulé) ;
 - `hooks.ts` : un monde neuf par scénario (`Before`) ; en fin de scénario (`After`), échec si le journal technique d'un appareil contient une entrée de niveau `erreur` non attendue par le scénario ;
 - `types-parametres.ts` : types de paramètres communs ;
-- `etape-sur-appareil.ts` : fonction `etapeSurAppareil(motif, implementation)` (voir ci-dessous) ;
+- `prefixes.ts` : fonctions d'enregistrement des étapes à préfixe (ci-dessous) ;
 - `fabriques/` : fabriques de données (§11.9).
 
-**Types de paramètres** (`defineParameterType`) :
-| Type | Expression régulière | Conversion | Exemples |
+**Types de paramètres** (`defineParameterType`). Principe : un type de paramètre **convertit un format**, il n'applique **jamais** une règle métier ; une valeur invalide au sens métier (« 45 min » pour une estimation) doit atteindre le cas d'usage, qui la refuse.
+| Type | Expression régulière | Conversion | Exemples (glossaire) |
 |---|---|---|---|
 | `{appareil}` | `smartphone\|PC` | `NomAppareil` (`'smartphone'`, `'pc'`) | « sur le {appareil}, … » |
-| `{duree}` | `\d+ h(?: \d{2})?\|\d+ minutes?\|\d+ min\|\d+ heures?` | `Duree` (minutes entières) | `1 h 30`, `30 min`, `0 h`, `10 minutes`, `1 minute`, `2 heures` |
-| `{date}` | `\d{4}-\d{2}-\d{2}` | `DateCalendaire` (validée) | `2026-12-15` |
+| `{duree}` | `\d+ h(?: \d{2})?\|\d+ min` | `number` (minutes, non validé) | `30 min`, `1 h`, `2 h 30`, `0 h` |
+| `{ecart}` | `\d+ h(?: \d+ min)?\|\d+ minutes?\|\d+ min` | `EcartTemps` | `24 h`, `24 h 1 min`, `23 h 59 min`, `5 min`, `1 minute`, `10 minutes`, `60 minutes` |
+| `{date}` | `\d{4}-\d{2}-\d{2}` | `string` au format `AAAA-MM-JJ` (non validé) | `2026-12-15` |
 | `{heure}` | `\d{2}:\d{2}` | `HeureLocale` | `10:00` |
-| `{fuseau}` | `UTC\|[A-Z][A-Za-z_]+(?:\/[A-Za-z_]+)+` | `Fuseau` (validé par `Intl`) | `Europe/Paris` ; entre guillemets dans la phrase si le `.feature` les écrit : `le fuseau "{fuseau}"` |
+| `{fuseau}` | `UTC\|[A-Z][A-Za-z_]+(?:\/[A-Za-z_]+)+` | `Fuseau` (validé par `Intl`) | Sans guillemets : « heure de {fuseau} » ; avec guillemets : « réglé sur le fuseau "{fuseau}" » ; valeurs admises par le glossaire : Europe/Paris, America/New_York, UTC, Pacific/Auckland |
 
-Les intitulés d'objectifs et de tâches utilisent le type natif `{string}`. Un nouveau type de paramètre est ajouté par une ST-US, dans ce fichier, jamais localement.
+Les intitulés, noms de compte, libellés et codes entre guillemets utilisent le type natif `{string}` ; les entiers `n`, le type `{int}`. Un nouveau type de paramètre est ajouté par une ST-US, dans `types-parametres.ts`, jamais localement.
+
+**Préfixes** (glossaire d'étapes, conventions et §4). Une étape portée par un appareil est enregistrée **une seule fois** par une fonction de `prefixes.ts`, qui définit ses variantes :
+| Fonction | Variantes enregistrées | Comportement |
+|---|---|---|
+| `etapeAction(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `{ecart} plus tard, sur le {appareil}, <motif>` ; `{ecart} plus tard, <motif>` ; `au même instant exact, sur le {appareil}, <motif>` | Sans préfixe : valide seulement si le banc ne comporte qu'**un** appareil, sinon échec « appareil ambigu ». « … plus tard » avance d'abord le temps simulé. « Au même instant exact » rejoue l'étape à l'instant simulé de l'étape précédente. |
+| `etapeAssertion(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `sur les deux appareils, <motif>` ; `sur chacun des deux appareils, <motif>` | Les deux dernières variantes exécutent l'assertion sur chaque appareil du banc. |
+| `etapeOnglet(motif, fn)` | `dans le premier onglet, <motif>` ; `dans le second onglet, <motif>` | Profil `ihm` uniquement (`tests/steps-ihm/`). |
+
+L'accord « signalé(e) » du glossaire s'écrit avec le texte optionnel des expressions Cucumber : `signalé(e) comme non synchronisé(e)`.
 
 **Règles** :
 - Une phrase Gherkin correspond à une seule définition ; une définition ambiguë ou manquante fait échouer la suite (mode strict).
-- **Préfixes d'appareil et de temps** : une action ou une vérification portée par un appareil est enregistrée par `etapeSurAppareil(motif, fn)`, qui définit en une fois les variantes « `sur le {appareil}, <motif>` », « `{duree} plus tard, sur le {appareil}, <motif>` » (avance d'abord le temps simulé) et « `<motif>` » sans préfixe. La variante sans préfixe n'est valide que si le banc ne comporte **qu'un** appareil ; sinon elle échoue avec l'erreur « appareil ambigu ». L'implémentation de l'étape est ainsi écrite une seule fois.
 - Les steps sont **minces** : ils traduisent la phrase en appel de cas d'usage, de requête ou de pilotage de doublure, sans logique métier ni calcul du résultat attendu.
-- Les steps « Étant donné » préparent l'état **par les cas d'usage** ou par les fabriques, jamais en écrivant directement dans le stockage interne. Exception : les situations que l'application ne peut pas produire (fichier Drive modifié à la main, format plus récent) passent par l'API de pilotage des doublures.
-- Les steps « Alors » vérifient par les **requêtes** de l'application, les **modèles de vue** (état affiché, codes du catalogue) ou l'**API d'observation** des doublures (fichiers du `FauxDrive`).
+- Les steps « Étant donné » préparent l'état **par les cas d'usage** ou par les fabriques, jamais en écrivant directement dans le stockage interne. Exception : les situations que l'application ne peut pas produire (fichier Drive modifié à la main, format plus récent, Drive plein) passent par l'API de pilotage des doublures.
+- Les steps « Alors » vérifient par les **requêtes** de l'application, les **modèles de vue** (codes du catalogue) ou l'**API d'observation** des doublures (fichiers du `FauxDrive`).
 - Aucune définition inutilisée dans une version fusionnée : contrôle `cucumber-js --dry-run --format usage` en CI (§14.1).
 - Chaque ST-US liste les phrases à implémenter, le fichier cible, et indique si le step est nouveau ou réutilisé.
 
-> **Renvoi** : le **glossaire d'étapes** figé (appareils, synchronisation, temps, assertions, négations) est attendu de Pepper (ANT-9, ANT-10, PEP-7). Le découpage en fichiers ci-dessus lui sera aligné à sa parution, sans changer les règles.
-
 ### 11.8 Tags et profils d'exécution
-| Tag | Posé par | Sens | Exécution |
+| Tag | Posé par | Sens (glossaire d'étapes §10) | Exécution |
 |---|---|---|---|
-| `@US-xxx`, `@RG-xxx`, `@LOT-xxx` | Pepper | Traçabilité, filtrage | — |
-| `@ihm` | Pepper, sur demande d'Anthony | Le scénario n'est vérifiable qu'à travers l'interface réelle (service worker, démarrage de la PWA hors ligne, onglets) | Profil `ihm` uniquement : cucumber-js avec les steps de `tests/steps-ihm/`, Playwright (Chromium) sur la PWA construite avec `composition/test-ihm.ts` |
-| `@lent` | Pepper, sur demande d'Anthony | Scénario de plus de 2 s (longues séquences de temps simulé) | Exclu du profil local `rapide` ; exécuté en CI |
+| `@US-xxx`, `@RG-xxx`, `@LOT-xxx` | Pepper | Traçabilité, filtrage ; obligatoires sur chaque scénario | — |
+| `@ihm` | Pepper | Le scénario ne peut se vérifier que par l'interface réelle : navigateur, installation, onglets, saisie en cours (7 scénarios au lot 1, tous dans US-031) | Profil `ihm` : cucumber-js avec les steps de `tests/steps-ihm/`, Playwright (Chromium) sur la PWA construite avec `composition/test-ihm.ts` ; assertions sur `data-etat`, `data-message` et rôles accessibles |
+| `@recette` | Pepper | Non automatisable : dépend d'un service extérieur que le banc ne simule pas (1 scénario au lot 1 : US-022 S13b) | Aucune exécution automatisée ; déroulé à la main en E14, tracé dans le procès-verbal de recette |
+| `@lent` | Pepper, sur demande d'Anthony | Scénario de plus de 2 s | Exclu du profil local `rapide` ; exécuté en CI |
 | `@google-reel` | Pepper, sur demande d'Anthony | Vérification contre l'API Google réelle et un compte de test | **Jamais en CI** ; exécution manuelle (profil `google-reel`), en recette technique |
-| `@recette` | Pepper, sur demande d'Anthony | Vérification humaine non automatisable (par exemple l'avertissement Google à la première connexion, ANT-1) | Aucune exécution automatisée ; vérifié en E14 et tracé dans le procès-verbal de recette |
 | `@wip` | — | — | **Interdit** dans une version fusionnée |
+
+Le catalogue de Steeve étant paru, les bandeaux et les états de l'application se vérifient par les modèles de vue, sans `@ihm` (glossaire d'étapes §6, dernier point).
 
 Profils cucumber-js (`cucumber.mjs`), tous en `strict`, `# language: fr`, steps chargés par `tsx` :
 | Profil | Filtre de tags | Steps | Où |
@@ -629,7 +647,7 @@ Profils cucumber-js (`cucumber.mjs`), tous en `strict`, `# language: fr`, steps 
 | `ihm` | `@ihm and not @google-reel and not @recette` | `tests/steps-ihm/` | CI (job `ihm`) |
 | `google-reel` | `@google-reel` | `tests/steps/` avec adaptateurs réels | Manuel |
 
-Par construction, tout scénario non tagué `@recette` ou `@google-reel` est exécuté par `default` ou par `ihm`. Le script `scripts/verifier-tags.ts` vérifie en CI que : chaque scénario porte `@US-`, `@RG-` (au moins un) et `@LOT-` ; chaque `@RG-xxx` existe dans le cahier des charges ; aucun `@wip` ; aucun tag technique hors liste.
+Par construction, tout scénario non tagué `@recette` ou `@google-reel` est exécuté par `default` ou par `ihm`. Le script `scripts/verifier-tags.ts` vérifie en CI que : chaque scénario porte `@US-`, au moins un `@RG-` et `@LOT-` ; chaque `@RG-xxx` existe dans le cahier des charges ; aucun `@wip` ; aucun tag technique hors de cette liste.
 
 ### 11.9 Données de test et cas temporels
 - Données construites par des **fabriques** à valeurs par défaut valides (par exemple : une tâche à faire, estimée à 1 h, de délai J+7 du temps simulé), surchargées seulement sur ce que le test vérifie.
@@ -654,7 +672,7 @@ Les API Google réelles ne sont **jamais** appelées par les tests automatisés 
 
 | Doublure | Port | Comportements simulés (sur commande du test) |
 |---|---|---|
-| `FauxDrive` | `TransportSynchro` | Stockage **partagé** entre les appareils du banc ; `transportPour(appareil)` renvoie la vue d'un appareil, soumise à son `ReseauSimule` et à son `FauxFournisseurAuth`. Dépôt et lecture ; liste des changements ; manifeste, `generation`, `schemaVersion` ; fichier modifié, supprimé ou illisible « à la main » ; empreinte incorrecte ; dossier supprimé ; Drive plein ; Drive indisponible ; erreurs `401`, `403`, `404`, `429`, `5xx` ; en-tête `Date` de chaque réponse égal au temps simulé de référence (ANT-4) |
+| `FauxDrive` | `TransportSynchro` | Stockage **partagé** entre les appareils du banc ; `transportPour(appareil)` renvoie la vue d'un appareil, soumise à son `ReseauSimule` et à son `FauxFournisseurAuth`. Dépôt et lecture ; liste des changements ; manifeste, `generation`, `schemaVersion` ; fichier modifié, supprimé ou illisible « à la main » ; empreinte incorrecte ; dossier supprimé ; Drive plein ; Drive indisponible ; envoi interrompu n fois ; erreurs `401`, `403`, `404`, `429`, `5xx` ; en-tête `Date` piloté (§11.11) |
 | `FauxAgenda` | `PasserelleAgenda` | Lots avec agenda : erreurs `401`, `409`, `410`, `429`, `5xx` (ADR-009) ; événements de l'utilisateur ; déplacement « par l'utilisateur » sans toucher `posApp` (PT-05) |
 | `FauxFournisseurAuth` | `FournisseurAuth` | Connexion réussie, annulée ou interrompue ; portée refusée ; session expirée (PC) ; révocation ; changement de compte ; Drive désactivé pour le compte |
 | `HorlogeSimulee` | `Horloge` | §7.3 |
@@ -669,10 +687,11 @@ Les API Google réelles ne sont **jamais** appelées par les tests automatisés 
 ### 11.11 Banc de synchronisation
 Le **banc** (`tests/support/banc/`) est le cœur des scénarios Cucumber et des tests de propriétés de la synchronisation.
 
-- `TempsSimule` : l'heure « vraie » du banc, unique ; elle date les réponses du `FauxDrive` (en-tête `Date`).
+- `TempsSimule` : l'heure « vraie » du banc, unique ; par défaut, elle date les réponses du `FauxDrive` (en-tête `Date`). Le scénario peut piloter cet en-tête : valeur imposée, écart de plusieurs minutes ou absence (DAT v0.6 §3.3).
 - `BancSynchro` : un `FauxDrive` et un `FauxAgenda` partagés ; un `PlanificateurSimule` global ; une liste d'`AppareilSimule`.
-- `AppareilSimule` : `nom` (`smartphone` ou `pc`), `appareilId` **fixe** (`smartphone` = `00000000-0000-7000-8000-000000000001`, `pc` = `00000000-0000-7000-8000-000000000002`, sous réserve de la réponse de Starck à ANT-11 ; l'ordre lexicographique est connu pour le départage des égalités), `HorlogeSimulee` (temps simulé + décalage propre), `ReseauSimule`, `FauxFournisseurAuth`, base `fake-indexeddb` propre, composition complète de l'application (cas d'usage, requêtes, modèles de vue, cycle de synchronisation).
-- API du banc : `ajouterAppareil(nom)`, `avancerTemps(duree)` (exécute les déclenchements échus de tous les appareils), `ouvrirApplication(appareil)`, `fermerApplication(appareil)`, `arreterBrutalement(appareil)` (perte de la mémoire, conservation de la base), `redemarrer(appareil)`, `synchroniserJusquAuRepos()` (enchaîne les cycles jusqu'à ce qu'aucun appareil n'ait de travail en attente, avec un nombre maximal d'itérations au-delà duquel le test échoue).
+- `AppareilSimule` : `nom` (`smartphone` ou `pc`), `appareilId` **fixe**, jamais aléatoire (DAT v0.6 §3.3) : `smartphone` = `00000000-0000-7000-8000-000000000001`, `pc` = `00000000-0000-7000-8000-000000000002` ; l'ordre lexicographique, donc le départage des égalités d'`Hlc`, est connu du scénario, `HorlogeSimulee` (temps simulé + décalage propre), `ReseauSimule`, `FauxFournisseurAuth`, base `fake-indexeddb` propre, composition complète de l'application (cas d'usage, requêtes, modèles de vue, cycle de synchronisation).
+- API du banc : `ajouterAppareil(nom)`, `avancerTemps(ecart: EcartTemps)` (exécute les déclenchements échus de tous les appareils), `ouvrirApplication(appareil)`, `fermerApplication(appareil)`, `arreterBrutalement(appareil)` (perte de la mémoire, conservation de la base), `redemarrer(appareil)`, `synchroniserJusquAuRepos()` (enchaîne les cycles jusqu'à ce qu'aucun appareil n'ait de travail en attente, avec un nombre maximal d'itérations au-delà duquel le test échoue).
+- **Égalité d'horodatage** : l'étape « au même instant exact, … » (glossaire d'étapes §4) joue deux modifications au même instant simulé sur deux appareils sans dérive ; les `Hlc` sont alors strictement égaux et le départage par `appareilId` est vérifiable (US-017 S12b).
 - **Propriétés** vérifiées (fast-check, séquences aléatoires de modifications, coupures et synchronisations sur deux appareils, à graine fixe) : **convergence** (après synchronisation jusqu'au repos, états identiques) ; **aucune perte silencieuse** (toute valeur non retenue figure dans les modifications non retenues, ENF-06) ; **idempotence** (synchroniser deux fois ne change rien) ; **reprise** (un arrêt brutal à n'importe quelle étape, puis une reprise, aboutit au même état).
 - **Injection de pannes** : le `FauxDrive` peut échouer à une étape choisie du cycle (avant ou après le dépôt, avant l'avancée de `deposeJusquA`) pour vérifier PT-13.
 
@@ -691,7 +710,7 @@ Mesure : Vitest, `@vitest/coverage-v8`, seuils par motif de chemin (`coverage.th
 | **Synchronisation** : `src/synchronisation/{domaine,application}/**` | **95 %** | **90 %** | Zone de risque majeure (R14) ; complétée par les propriétés du banc |
 | Application : `src/*/application/**` | 90 % | 85 % | — |
 | Modèles de vue, formatage, catalogue : `src/*/presentation/modeles-de-vue/**`, `src/commun/presentation/{format,messages}/**` | 90 % | 85 % | Purs, donc entièrement testables |
-| Composants et écrans : `src/*/presentation/{composants,ecrans}/**` | 70 % | 60 % | Complétée par Playwright |
+| Composants et écrans : `src/*/presentation/ui/**` | 70 % | 60 % | Complétée par Playwright |
 | Infrastructure : `src/*/infrastructure/**`, `src/infrastructure-google/**` | 70 % | 60 % | Complétée par les tests de contrat |
 | Global | 85 % | 75 % | — |
 
@@ -748,7 +767,7 @@ Réf: US-xxx[, RG-xxx][, RC-US-xxx-n][, ANO-xxx][, DT-xxx]
 | Lint | `pnpm lint` (`eslint . --max-warnings 0`) | Oui |
 | Types | `pnpm types` (`tsc --noEmit`) | Oui |
 | Architecture | `pnpm architecture` (`depcruise src --config .dependency-cruiser.cjs`) | Oui |
-| Catalogue et tags | `pnpm verifier:catalogue` (§8.5), `pnpm verifier:tags` (§11.8) | Oui (catalogue : dès sa parution) |
+| Catalogue et tags | `pnpm verifier:catalogue` (§8.5), `pnpm verifier:tags` (§11.8) | Oui |
 | Tests unitaires, contrat, intégration | `pnpm test` (`vitest run`), **dans chaque fuseau** `TZ=UTC`, `TZ=Pacific/Auckland`, `TZ=America/New_York` | Oui |
 | Couverture | `pnpm test:couverture`, une fois (job `TZ=UTC`), seuils du §12 | Oui |
 | Cucumber | `pnpm cucumber` (profil `default`), dans chacun des trois fuseaux ; `pnpm cucumber:steps-inutilises` | Oui |
@@ -810,19 +829,19 @@ Une US (ou un incrément d'US) est soumise à la revue (E13) seulement si **tous
 
 ## 16. Points de testabilité
 
-État des points de testabilité de la v0.1 après les réponses du DAT v0.5 (§11) et DEC-012. Le détail de la v0.1 reste consultable dans l'historique Git.
+État des points de testabilité de la v0.1 après les réponses du DAT v0.6 (§3.3, §11) et DEC-012. Le détail de la v0.1 reste consultable dans l'historique Git.
 
 | PT | Sujet | Approche retenue | État |
 |---|---|---|---|
 | PT-01 | Fun facts équitables (RG-040 à RG-042) | Permutation déterministe par cycle (ADR-008) ; propriétés : chaque fun fact une fois par cycle, écart d'au plus 1, pas de doublon à la jonction, rejouabilité | Approche validée (DAT) ; lot DEM-002 |
 | PT-02 | Rappels de 8 h et 21 h | Séries Google Calendar ; contenu = fonction pure (état, jour, instant) ; aucune écriture après l'heure | Approche validée ; lot « Rappels » ; gabarit exact des événements à obtenir de Pepper |
-| PT-03 | Conflits « la plus récente l'emporte » | HLC corrigée par l'en-tête `Date`, départage par `appareilId` ; banc à horloges décalées ; propriétés | Validée ; reste : seuil de l'horloge déréglée en CA numéroté (Pepper, ANT-4), en-tête `Date` simulé et `appareilId` fixes (Starck, ANT-4, ANT-11) |
-| PT-04 | « Visible dans l'heure » | Mécanismes vérifiables par le temps simulé : ouverture, dépôt à 5 s, toutes les 2 min, retour du réseau | Validée par le DAT ; reformulation des délais d'US-017 en mécanismes demandée à Pepper (ANT-3) |
+| PT-03 | Conflits « la plus récente l'emporte » | HLC corrigée par l'en-tête `Date`, départage par `appareilId` ; banc à horloges décalées, en-tête `Date` piloté, `appareilId` fixes, égalité exacte d'horodatage (§11.11) ; propriétés | Clos : seuil de 24 h en CA-13 d'US-017 (Pepper), banc précisé au DAT v0.6 §3.3 (Starck) |
+| PT-04 | « Visible dans l'heure » | Mécanismes vérifiables par le temps simulé : ouverture, dépôt à 5 s, toutes les 2 min, retour du réseau ; étapes « l'horloge avance de … » du glossaire | Validée par le DAT ; contrôle de la reformulation d'US-017 (ANT-3) au tour 2 du refinement |
 | PT-05 | Créneau déplacé dans l'agenda | `posApp` dans l'événement ; `FauxAgenda` | Validée ; lots avec agenda |
 | PT-06 | Journée et fuseaux | **Résolu par DEC-012** : jour de Paris calculé à partir de l'instant puis persisté ; tests dans trois fuseaux de CI ; RG-054 testée par `Horloge.fuseauAppareil()` | Clos (ajout au port soumis à Starck, §17.2) |
 | PT-07 | Report automatique | Fonction pure (état, jour de Paris) ; rattrapage idempotent | Validée ; lot « Planification » |
 | PT-08 | Vélocité et historiques | Journal métier dès le lot 1 (DS-19, RG-050) | Validée ; journal à alimenter dès LOT-001 |
-| PT-09 | Durées au pas de 30 min | `Duree` en minutes entières ; invariant d'estimation ; propriétés ; estimation calculée nulle face au minimum de 30 min (BEN-10, PEP-9) | Question à Pepper et Starck en cours (objet-valeur `Duree`, PEP-9) |
+| PT-09 | Durées au pas de 30 min | `Duree.saisie` et `Duree.calculee` (DAT v0.6, §7.1) ; propriétés ; estimation calculée de 0 h valide (US-024 S16, S16b) | Clos pour le lot 1 ; précision du temps passé : lots ultérieurs (Q-DEM001-31) |
 | PT-10 | Ordre de priorité | Ordre total exigé | Lot « Priorisation » |
 | PT-11 | Horaire suggéré | Fonction pure, exemples tabulaires | Lot « Planification » |
 | PT-12 | Perte d'accès Google | `FauxFournisseurAuth` ; utilisation comme hors ligne ; aucune perte | Validée (DAT PT-12) ; ST-US-022 et ST-US-017 |
@@ -860,15 +879,12 @@ Les seuils de couverture proposés au DAT §3.3 et à l'ADR-009 (90 % pour `doma
 ### 17.2 Points ouverts
 | Id | Point | Destinataire | Bloquant pour |
 |---|---|---|---|
-| ANT-8 | Couche de modèles de vue au DAT (§2.2, §4.3) | Starck | Version 1.0 de ce document ; non bloquant pour E9 (la définition du §2.2 s'applique) |
-| ANT-7 | Catalogue des codes d'état et des messages (§8.5) | Steeve | E9 d'US-017, US-018, US-022, US-031 |
-| ANT-9, ANT-10, PEP-7 | Glossaire d'étapes Gherkin (§11.7) | Pepper | E9 (liste des steps des ST-US) |
-| ANT-4, ANT-11 | En-tête `Date` simulé et `appareilId` fixes du banc (§11.11) | Starck | E9 d'US-017 |
-| ANT-12 | Statut du DAT et des ADR avant E9 | Starck, Jarvis | E9 |
-| ANT-17 (nouveau) | Ajout de `fuseauAppareil()` au port `Horloge` pour RG-054 (§7.3) | Starck | E9 d'US-017 (scénarios CA-11 « heure de Paris ») |
+| ANT-17 (nouveau) | Ajout de `fuseauAppareil()` au port `Horloge`, utilisé seulement par le modèle de vue de la mention `MEN-HEURE-PARIS` (RG-054, §7.3). Le DAT v0.6 §2.4 ne mentionne pour les modèles de vue que « l'heure et le fuseau de référence ». | Starck | E9 d'US-017 et d'US-031 (mention « heure de Paris ») |
 | ANT-18 (nouveau) | Ports transverses complémentaires (`GenerateurIdentifiants`, `SourceAleatoire`, `JournalTechnique`, `EtatReseau`), placement de `DepotLocal` et `TransportSynchro` dans le contexte `synchronisation`, rôle du port `Planificateur` (§2.3) : pour information et confirmation | Starck | Non bloquant |
 | ANT-19 (nouveau) | RG-058 : un appareil conserve-t-il, en réécrivant son fichier, les champs inconnus de même `schemaVersion` reçus d'une version plus récente, ou les ignore-t-il ? (§10.3) | Starck | E9 d'US-017 |
-| ANT-20 (nouveau) | Exécution des scénarios `@ihm` par cucumber-js avec Playwright (profil `ihm`, §11.8) : conformité à l'ADR-009, qui réserve Playwright aux parcours bout en bout et exécute Cucumber sur la couche application | Starck | E9 d'US-031 |
+| ANT-20 (nouveau) | Exécution des scénarios `@ihm` par cucumber-js avec Playwright (profil `ihm`, §11.8), conforme à la définition de Pepper (« interface réelle »). L'ADR-009 réserve Playwright aux parcours bout en bout, et le DAT v0.6 §2.4 évoque des scénarios `@ihm` vérifiés « sans rendu » : confirmation demandée | Starck | E9 d'US-031 |
+| ANT-21 (nouveau) | Motifs de refus : certains `.feature` citent un code (`ERR-003`), d'autres un texte libre (« intitulé manquant », « tâche abandonnée », « 2 sous-tâches restantes »). Un motif vérifiable doit être un code stable du catalogue ou de la liste des motifs (§8.5, §11.6). Liste des motifs de refus d'objectifs et de tâches à fixer, avec leur code | Pepper et Steeve | E9 des US métier (US-001, 002, 003, 023, 024, 025) |
+| Q-ERG-16 à 18 | Point de départ des 24 h, bandeau unique en cas d'accès perdu, réapparition du bandeau (RG-057, §10.2) | Commanditaire, via Jarvis | E10 des tests de RG-057 (US-018, US-031) |
 | — | Protection des branches `main` et `lot/*` sur GitHub (§13.1) | Jarvis (propriétaire du dépôt) | E12 |
 | R1, R2, R11 | Test technique préalable | Jarvis, commanditaire | E9 d'US-022 et d'US-017 |
 
@@ -876,5 +892,6 @@ Les seuils de couverture proposés au DAT §3.3 et à l'ADR-009 (90 % pour `doma
 - `checklist-revue-code.md` : grille de revue de code (E13).
 - `modele-ST-US.md` : gabarit des spécifications techniques par US (E9).
 - `dette-technique.md` : registre de la dette technique.
-- `docs/03-architecture/DAT.md` (v0.5) et `docs/03-architecture/adr/` (ADR-001 à ADR-011).
-- `docs/02-ux/guide-ergonomie.md` (v0.2.2) : tokens, états, messages ; catalogue des codes à paraître.
+- `docs/03-architecture/DAT.md` (v0.6) et `docs/03-architecture/adr/` (ADR-001 à ADR-011).
+- `docs/02-ux/guide-ergonomie.md` (v0.2.3) : tokens, états, messages, catalogue des libellés et des codes d'état (§6.6).
+- `tests/features/GLOSSAIRE-ETAPES.md` (v1.0, Pepper) : vocabulaire figé des étapes Gherkin.

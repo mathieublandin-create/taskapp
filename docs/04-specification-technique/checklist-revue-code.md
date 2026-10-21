@@ -1,6 +1,6 @@
 # Grille de revue de code (E13)
 
-> **Version 0.2 — 2026-10-21 — Anthony.** Grille appliquée à chaque US (ou incrément d'US) à l'étape E13 du workflow, et à chaque correction d'anomalie (`ANO-xxx`) avant sa nouvelle recette. Elle découle de `conventions.md` v0.2, alignée sur le DAT v0.5.
+> **Version 0.2 — 2026-10-21 — Anthony.** Grille appliquée à chaque US (ou incrément d'US) à l'étape E13 du workflow, et à chaque correction d'anomalie (`ANO-xxx`) avant sa nouvelle recette. Elle découle de `conventions.md` v0.2, alignée sur le DAT v0.6.
 
 ## Historique
 
@@ -133,7 +133,7 @@ Chaque revue produit un compte rendu `docs/04-specification-technique/revues/REV
 | CR-61 | Aucun test affaibli (`conventions.md` §11.5). |
 | CR-62 | Tous les tests sont passants, sans régression ; Cucumber en mode strict (profils `default` et `ihm`) ; exécution verte dans les trois fuseaux de la CI. |
 | CR-63 | Seuils de couverture atteints, sans baisse sur les fichiers modifiés ; exclusions justifiées. |
-| CR-64 | Step definitions minces, sans logique métier, placées dans le fichier de thème prévu par la ST-US (`tests/steps/<contexte>/<theme>.steps.ts`), enregistrées par `etapeSurAppareil` quand elles portent un appareil, utilisant les types de paramètres communs, sans doublon ni définition inutilisée (`conventions.md` §11.7). |
+| CR-64 | Step definitions minces, sans logique métier, placées dans le fichier de thème prévu par la ST-US (`tests/steps/<contexte>/<theme>.steps.ts`), enregistrées par les fonctions de préfixe de `tests/support/prefixes.ts` quand elles portent un appareil, conformes au glossaire d'étapes de Pepper, utilisant les types de paramètres communs, sans doublon ni définition inutilisée (`conventions.md` §11.7). |
 | CR-65 | Tests ajoutés par Benjamin conformes aux règles d'écriture (nommage, Préparer / Agir / Vérifier, déterminisme, assertions précises) et utiles (pas de test sans assertion pertinente). |
 | CR-66 | Doublures Google conformes à leur suite de contrat ; les cas d'erreur prévus par la ST-US sont simulés et testés. |
 | CR-67 | Cas temporels applicables testés selon la ST-US : minuit de Paris, changements d'heure PT-16, semaine ISO, appareil hors du fuseau de Paris (`conventions.md` §11.9). |

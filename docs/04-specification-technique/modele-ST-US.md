@@ -1,14 +1,14 @@
 # Modèle de spécification technique d'US (ST-US)
 
-> **Version 0.1 — 2026-10-20 — Anthony.** Gabarit des documents `docs/04-specification-technique/ST-US-xxx.md`, rédigés à l'étape **E9** du workflow (conception détaillée).
+> **Version 0.2 — 2026-10-21 — Anthony.** Gabarit des documents `docs/04-specification-technique/ST-US-xxx.md`, rédigés à l'étape **E9** du workflow (conception détaillée).
 >
 > **Objectif.** Une ST-US donne à Benjamin **tous** les entrants nécessaires pour réaliser l'US **sans interprétation**. Si une section ne peut pas être remplie sans hypothèse, la conception n'est pas terminée : la question part vers Pepper (`Q-US-xxx-n`, E8) ou vers Starck (architecture), via Jarvis.
 >
 > **Mode d'emploi.**
 > - Copier ce fichier sous le nom `ST-US-xxx.md`, puis remplacer chaque `<…>`.
 > - Aucune section n'est supprimée. Une section sans objet porte la mention « Sans objet » et une justification d'une ligne.
-> - Les signatures sont écrites dans le langage retenu par le DAT. **En attente du DAT (choix de stack)** : jusqu'à sa parution, elles sont écrites en notation neutre : `nomFonction(param: Type, …) → TypeRetour | ErreurA | ErreurB`.
-> - Les termes respectent le glossaire code (`conventions.md` §4.2). Tout nouveau terme y est ajouté.
+> - Les signatures sont écrites en **TypeScript** (DAT §3.2, `conventions.md` §6.2) : types et unions discriminées, ports en `interface`, erreurs renvoyées par `Resultat<T, E>` ; par exemple `creerTache(commande: CommandeCreerTache): Promise<Resultat<IdTache, ErreurCreationTache>>`.
+> - Les termes respectent le glossaire code (`conventions.md` §5.2). Tout nouveau terme y est ajouté. Les phrases Gherkin respectent le glossaire d'étapes de Pepper (`tests/features/GLOSSAIRE-ETAPES.md`).
 > - La checklist de complétude (§17) est cochée avant la revue de lancement (E11).
 
 ---
@@ -57,14 +57,15 @@
 
 ## 3. Composants et fichiers
 
-> Chemins conformes à l'arborescence du DAT (`conventions.md` §3). Un fichier = un concept principal.
+> Chemins conformes à l'arborescence `src/<contexte>/<couche>/` (`conventions.md` §4.2). Un fichier = un concept principal. Couches : Domaine, Application, Infrastructure, Modèle de vue, UI, Composition.
 
 | # | Fichier | Couche | Action | Responsabilité | Dépend de |
 |---|---|---|---|---|---|
 | 1 | `<chemin>` | Domaine | Créer | <…> | — |
 | 2 | `<chemin>` | Application | Créer | Cas d'usage `<Nom>` | 1, port `<Port>` |
 | 3 | `<chemin>` | Infrastructure | Modifier | <…> : <nature précise de la modification> | <…> |
-| 4 | `<chemin>` | Présentation | Créer | Écran ECR-xxx | 2 |
+| 4 | `src/<contexte>/presentation/modeles-de-vue/<nom>.ts` | Modèle de vue | Créer | Modèle de vue de l'écran ECR-xxx : données, codes et libellés du catalogue | 2 |
+| 4b | `src/<contexte>/presentation/ui/ecrans/<nom>.tsx` | UI | Créer | Écran ECR-xxx, sans logique | 4 |
 | 5 | `<chemin>` | Composition | Modifier | Enregistrement de `<Nom>` | 2, 3 |
 
 **Fichiers qui ne doivent pas être modifiés** dans cette US : <liste, si utile>.
@@ -72,11 +73,12 @@
 ## 4. Interfaces et signatures
 
 ### 4.1 Domaine
-```text
-<TypeOuEntite>
-  champs : <nom>: <Type> — <contrainte / invariant>
-  construire(<params>) → <TypeOuEntite> | <ErreurMetier>
-  <fonction>(<params>) → <Retour>
+```ts
+export type <TypeOuEntite> = {
+  readonly <nom>: <Type>; // <contrainte / invariant, RG-xxx>
+};
+export const construire<TypeOuEntite> = (<params>): Resultat<<TypeOuEntite>, <ErreurMetier>> => …;
+export const <fonction> = (<params>): <Retour> => …;
 ```
 Invariants vérifiés à la construction : <liste>.
 
@@ -90,9 +92,10 @@ Séquence nominale, pas à pas :
 2. <…>
 
 ### 4.3 Ports (nouveaux ou modifiés)
-```text
-<NomPort>
-  <operation>(<params>) → <Retour> | <ErreurPort>
+```ts
+export interface <NomPort> {
+  <operation>(<params>): Promise<Resultat<<Retour>, <ErreurPort>>>;
+}
 ```
 Contrat : préconditions, postconditions, idempotence, comportement en erreur. La suite de contrat associée figure au §13.
 
@@ -102,11 +105,11 @@ Contrat : préconditions, postconditions, idempotence, comportement en erreur. L
 | `<Nom>` | `<Port>` | <…> | <pagination, quotas, mapping, idempotence> |
 
 ### 4.5 Présentation
-| Écran / composant | Maquette | Données affichées | Actions → cas d'usage | États à gérer |
-|---|---|---|---|---|
-| <…> | ECR-xxx | <…> | <bouton> → `<CasUsage>` | vide, chargement, erreur, hors ligne, accès Google perdu |
+| Écran / composant | Maquette | Modèle de vue (signature) | Données affichées | Codes du catalogue produits (guide §6.6) | Actions → cas d'usage | États à gérer |
+|---|---|---|---|---|---|---|
+| <…> | ECR-xxx | `construire<Nom>(donnees, { horloge })` | <…> | `SYN-…`, `BAN-…`, `MEN-…`, `ETA-…`, `EVD-…`, `ERR-…`, `ALR-…` | <bouton> → `<CasUsage>` | vide, chargement, erreur, hors ligne, accès Google perdu, consultation seule |
 
-Libellés et messages : codes du catalogue (`ERR-…`, `ALR-…`) et textes exacts issus de l'US ou de la maquette.
+Libellés et messages : codes et textes exacts du catalogue (guide d'ergonomie §6.6), exposés par `data-etat` et `data-message` (`conventions.md` §8.5).
 Accessibilité : <exigences du guide d'ergonomie applicables>.
 
 ## 5. Modèle de données et migrations
@@ -116,14 +119,14 @@ Accessibilité : <exigences du guide d'ergonomie applicables>.
 |---|---|---|---|---|---|---|
 | <…> | <…> | `Duree` (minutes entières) | Oui | multiple de 30 (RG-028) | — | <…> |
 
-Représentations concernées : stockage local ; données dans l'espace de l'utilisateur (format DS-10) ; événements Google Calendar (champs utilisés, marquage applicatif).
+Représentations concernées : stockage local (`DepotLocal`, registres CRDT et journal métier) ; fichier d'état Drive (schéma Zod, `SCHEMA_VERSION`) ; événements Google Calendar (champs utilisés, marquage applicatif).
 
 ### 5.2 Migrations
 | Version de schéma | De → vers | Opération | Données existantes | Réversibilité | Test |
 |---|---|---|---|---|---|
 | <n> | <n-1> → <n> | <…> | <transformation exacte> | <oui / non, justification> | UT-US-xxx-nn |
 
-Compatibilité entre appareils : comportement d'une version précédente de l'application, installée sur l'autre appareil, face aux nouvelles données (selon DS-10).
+Compatibilité entre appareils (RG-058, `conventions.md` §10.3) : évolution compatible (sans incrément de `SCHEMA_VERSION`) ou incompatible (accord de Starck, annonce au commanditaire, migration) ; tests de lecture des versions antérieures, de coexistence et de consultation seule.
 
 ## 6. Règles et algorithmes
 
@@ -148,7 +151,7 @@ Hasard : <utilisation de `SourceAleatoire`, propriété garantie>.
 
 | Opération | Port | Portée OAuth requise | Données envoyées / lues | Idempotence | Erreurs traitées |
 |---|---|---|---|---|---|
-| <…> | `AgendaGoogle` | <portée, déjà accordée ou nouvelle> | <champs exacts> | <identifiant déterministe, écriture conditionnelle> | <…> |
+| <…> | `PasserelleAgenda` | <portée, déjà accordée ou nouvelle> | <champs exacts> | <identifiant déterministe, écriture conditionnelle> | <…> |
 
 - Nouvelle portée OAuth : non / oui (validée par Starck le <date>, ADR-xxx).
 - Marquage des événements de l'application : <selon DS-18>.
@@ -158,9 +161,9 @@ Hasard : <utilisation de `SourceAleatoire`, propriété garantie>.
 
 | # | Situation | Détection (où) | Erreur / alerte | Comportement attendu | Message (code) | Journalisation (niveau, champs autorisés) | Test |
 |---|---|---|---|---|---|---|---|
-| 1 | <saisie invalide> | Domaine | `<ErreurMetier>` | Refus, aucune écriture | `ERR-<CTX>-nnn` | info : `cas_usage`, `code` | UT-US-xxx-nn |
+| 1 | <saisie invalide> | Domaine | `<ErreurMetier>` | Refus, aucune écriture | `ERR-0nn` | info : `cas_usage`, `code` | UT-US-xxx-nn |
 | 2 | Réseau indisponible | Adaptateur `<…>` | `ReseauIndisponible` | Écriture locale, mise en file | — (indicateur hors ligne) | info | UT-US-xxx-nn |
-| 3 | Accès Google révoqué | Adaptateur | `AccesGoogleRevoque` | <selon RG-035 / Q-DEM001-22> | `ERR-COMPTE-nnn` | avertissement | UT-US-xxx-nn |
+| 3 | Accès Google révoqué | Adaptateur | `AccesGoogleRevoque` | <selon RG-035 / Q-DEM001-22> | `ERR-0nn` / `CNX-…` | avertissement | UT-US-xxx-nn |
 
 Paramètres de nouvelle tentative : <nombre maximal, délai initial, plafond>.
 
@@ -176,7 +179,7 @@ Patterns **interdits** dans cette US, le cas échéant : <…>.
 ## 10. Sécurité et données personnelles
 
 - Données personnelles manipulées : <liste> ; données sensibles (bilan du soir…) : <oui / non>.
-- Jetons : <aucun accès direct / via `FournisseurIdentite` uniquement>.
+- Jetons : <aucun accès direct / via `FournisseurAuth` et `CoffreJetons` uniquement>.
 - Journalisation : champs autorisés pour cette US ; champs interdits à surveiller particulièrement.
 - Validation des entrées : <champs, bornes, longueurs maximales>.
 - Points OWASP spécifiques : <…>.
@@ -191,17 +194,18 @@ Patterns **interdits** dans cette US, le cas échéant : <…>.
 
 ## 12. Step definitions Cucumber à implémenter
 
-> Règles : `conventions.md` §9.7. Steps minces, un fichier par domaine dans `tests/steps/`, mode strict.
+> Règles : `conventions.md` §11.7. Phrases issues du glossaire d'étapes uniquement ; steps minces, un fichier par thème dans `tests/steps/<contexte>/<theme>.steps.ts`, préfixes d'appareil par `tests/support/prefixes.ts`, mode strict.
 
 | # | Phrase Gherkin exacte (avec paramètres) | Mot-clé | Fichier | Nouveau / réutilisé | Implémentation attendue |
 |---|---|---|---|---|---|
-| 1 | `nous sommes le {date} à {heure} heure de {fuseau}` | Étant donné | `tests/steps/commun` | Réutilisé | Positionne l'`HorlogeControlable` du monde |
+| 1 | `nous sommes le {date} à {heure} heure de {fuseau}` | Étant donné | `tests/steps/commun/temps.steps.ts` | Réutilisé | Positionne le `TempsSimule` du banc |
 | 2 | `<phrase>` | Quand | `tests/steps/<domaine>` | Nouveau | Appelle `<CasUsage>` avec <…> ; mémorise le résultat dans le monde |
 | 3 | `<phrase>` | Alors | `tests/steps/<domaine>` | Nouveau | Vérifie <…> via <requête ou observation de doublure> |
 
 Types de paramètres nouveaux : <nom, expression, conversion>.
 Doublures et monde : <éléments à ajouter au monde partagé, API de pilotage ou d'observation à ajouter aux doublures>.
-Scénarios exécutés via l'IHM (`@ihm`) : <liste ou « aucun »>.
+Scénarios exécutés via l'IHM (`@ihm`, profil `ihm`, steps dans `tests/steps-ihm/`) : <liste ou « aucun »>.
+Scénarios de recette manuelle (`@recette`) : <liste ou « aucun »>, avec le mode opératoire attendu en E14.
 
 ## 13. Tests unitaires fournis (E10)
 
@@ -212,8 +216,8 @@ Scénarios exécutés via l'IHM (`@ihm`) : <liste ou « aucun »>.
 | UT-US-xxx-01 | `tests/unitaires/<…>` | `<fonction>` | « <élément> — <résultat> quand <condition> » | RG-xxx / CA-1 | Fonction absente |
 
 Suites de contrat concernées : <port → fichier de suite>.
-Cas temporels couverts (`conventions.md` §9.10) : <minuit, changement d'heure, semaine ISO, fuseaux…>.
-Commande d'exécution : <commande exacte, selon DS-14>.
+Cas temporels couverts (`conventions.md` §11.9) : <minuit de Paris, changements d'heure PT-16, semaine ISO, appareil hors du fuseau de Paris…>.
+Commande d'exécution : `pnpm test -- tests/unitaires/<chemin>` (et `pnpm cucumber -- --tags @US-xxx` pour les scénarios).
 
 ## 14. Tests attendus de Benjamin
 
@@ -250,7 +254,7 @@ Tests que Benjamin **doit** ajouter (en plus de ceux du §13), avec le niveau at
 - [ ] Les interactions Google sont décrites : portées, idempotence, format exact des événements (§7).
 - [ ] Chaque erreur et chaque alerte a un comportement, un code de message et un test (§8).
 - [ ] Les patterns imposés sont listés (§9) ; les exigences de sécurité sont explicites (§10).
-- [ ] Chaque phrase Gherkin du `.feature` a une ligne au §12 ; aucun step n'est laissé implicite.
+- [ ] Chaque phrase Gherkin du `.feature` a une ligne au §12, conforme au glossaire d'étapes ; aucun step n'est laissé implicite.
 - [ ] Les tests unitaires du §13 existent, s'exécutent et échouent pour la raison attendue.
 - [ ] Aucun point ouvert ni hypothèse non validée (§16).
 - [ ] La ST-US est conforme au DAT, aux ADR, aux maquettes et à `conventions.md`.
