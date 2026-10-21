@@ -1,10 +1,10 @@
 # US-031 — Utiliser l'application sans réseau sur mon PC
 Demande d'origine : DEM-001 · Lot : LOT-001
-Statut : En analyse
+Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, mes modifications étant prises en compte au retour du réseau, **afin d'**avoir le même comportement sur mes deux appareils.
 
-> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6.
+> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
 
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau dans le lot** : US conditionnelle depuis la v0.2. Le commanditaire a retenu l'option b) de Q-DEM001-39 : le PC est utilisable hors ligne dès LOT-001 (DEC-013), comme le recommandait l'architecte.
@@ -21,7 +21,7 @@ Statut : En analyse
 - RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
 - RG-017 : exception du PC quand la session Google du navigateur a expiré (F14).
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
-- RG-047 à RG-049 (proposées) : réparations après fusion.
+- RG-047 à RG-049 : réparations après fusion.
 - RG-019 : la première connexion nécessite le compte Google, donc le réseau.
 - ENF-04, ENF-06 (validée), ENF-07.
 
@@ -32,16 +32,16 @@ Statut : En analyse
 4. **CA-4** — Au retour du réseau, si la session Google du navigateur est active, les modifications sont enregistrées dans le Drive sans action de l'utilisateur, et celles faites entre-temps sur l'autre appareil sont intégrées. L'indication « non synchronisé » disparaît une fois l'enregistrement fait.
 5. **CA-5** — *(limite F14)* Si la session Google du navigateur a expiré, l'utilisateur continue de consulter et de saisir sur les données du PC. L'application indique qu'une reconnexion est nécessaire pour la mise à jour avec l'autre appareil ; après le geste de reconnexion, les modifications en attente sont enregistrées et celles de l'autre appareil intégrées. Aucune n'est perdue.
 6. **CA-6** — Aucune modification faite sans réseau n'est perdue, même si l'onglet ou le navigateur est fermé, ou le PC éteint, avant le retour du réseau (ENF-06). Elle est enregistrée dans le Drive au premier retour du réseau, application ouverte et session Google active.
-7. **CA-7** — Il n'y a pas de durée maximale d'utilisation sans réseau **(P)**.
-8. **CA-8** — Au retour du réseau, la règle de conflit, l'information sur les valeurs écartées et les règles de réparation proposées s'appliquent comme sur le smartphone (RG-036, RG-047 à RG-049 ; US-017, CA-6, CA-8 et CA-10).
+7. **CA-7** — Il n'y a pas de durée maximale d'utilisation sans réseau.
+8. **CA-8** — Au retour du réseau, la règle de conflit, l'information sur les valeurs écartées et les règles de réparation s'appliquent comme sur le smartphone (RG-036, RG-047 à RG-049 ; US-017, CA-6, CA-8 et CA-10).
 9. **CA-9** — Quand l'accès au compte Google est perdu (retiré ou expiré), le PC se comporte comme sans réseau (CA-2 à CA-6), et l'application propose de se reconnecter (RG-035 ; US-022, CA-7).
 
 ## Cas limites et cas d'erreur
 - Première ouverture de l'application sur ce PC, ou dans ce navigateur, sans réseau : impossible ; le navigateur ne peut pas afficher l'application **(P : message éventuel fixé en E4)**.
 - Données du navigateur effacées par l'utilisateur alors que des modifications ne sont pas encore enregistrées dans le Drive : ces modifications sont perdues ; l'application ne peut pas l'empêcher. Les données sont rechargées depuis le Drive à la connexion suivante **(P : avertissement à prévoir dans le guide utilisateur)**.
-- Deux onglets de l'application ouverts sur le même PC sans réseau : aucune modification n'est perdue, et les deux onglets affichent les mêmes données **(P)**.
-- Navigateur en mode « navigation privée » : les données ne sont pas conservées après la fermeture ; l'usage hors ligne n'est pas garanti **(P)**.
-- Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié **(P)**.
+- Deux onglets de l'application ouverts sur le même PC sans réseau : aucune modification n'est perdue, et les deux onglets affichent les mêmes données.
+- Navigateur en mode « navigation privée » : les données ne sont pas conservées après la fermeture ; l'usage hors ligne n'est pas garanti.
+- Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié.
 - Réseau intermittent : aucune modification n'est enregistrée deux fois, et aucune n'est perdue.
 - Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
 
@@ -116,32 +116,33 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **18 scénarios, dont 8 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **18 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`.
 
 | Critère ou cas | Scénario(s) |
 |---|---|
 | CA-1 | S01 |
 | CA-2 | S02, S03 |
-| CA-3 | S04 (P) |
+| CA-3 | S04 |
 | CA-4 | S05 |
 | CA-5 | S06, S07 |
 | CA-6 | S08 |
-| CA-7 | S09 (P) |
-| CA-8 | S10, S11 (P), S12 (P) |
+| CA-7 | S09 |
+| CA-8 | S10, S11, S12 |
 | CA-9 | S13 |
-| Cas limite : première ouverture sans réseau | S14 (P) |
-| Cas limite : données du navigateur effacées | S15 (P) |
-| Cas limite : deux onglets | S16 (P) |
+| Cas limite : première ouverture sans réseau | S14 |
+| Cas limite : données du navigateur effacées | S15 |
+| Cas limite : deux onglets | S16 |
 | Cas limite : navigation privée | **Non scénarisé** : le critère n'énonce qu'une absence de garantie, sans comportement vérifiable ; information portée par le guide utilisateur |
-| Cas limite : réseau perdu pendant une saisie | S17 (P) |
+| Cas limite : réseau perdu pendant une saisie | S17 |
 | Cas limite : réseau intermittent | S18 |
 | Cas limite : mise à jour application fermée | US-017 S04 |
 
 ## Questions ouvertes
-Aucune. Les critères (P) sont soumis à la validation du commanditaire en E6.
+Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
 |---|---|
 | 2026-10-20 | v0.2 : US conditionnelle au backlog (Q-DEM001-39). |
 | 2026-10-21 | Intégration à LOT-001 par décision du commanditaire (Q-DEM001-39 b, DEC-013). Fichier détaillé créé (Pepper, v0.5). |
+| 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |

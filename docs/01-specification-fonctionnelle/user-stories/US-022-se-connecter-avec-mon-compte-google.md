@@ -1,10 +1,10 @@
 # US-022 — Se connecter avec mon compte Google
 Demande d'origine : DEM-001 · Lot : LOT-001
-Statut : En analyse
+Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** me connecter à l'application avec mon compte Google, **afin d'**accéder à mes données conservées dans mon propre espace de stockage, depuis chacun de mes appareils.
 
-> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6.
+> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
 
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau.** La v0.1 ne prévoyait de connexion Google que pour les rappels (US-014). La réponse Q-DEM001-19.2 (« non » : application inutilisable sans compte Google) fait de la connexion un préalable à toute utilisation. Q-DEM001-3 b) y ajoute la conservation des données dans l'espace personnel de l'utilisateur.
@@ -21,20 +21,20 @@ Statut : En analyse
 - RG-020 : données conservées dans le Google Drive du compte de connexion, dans un dossier visible.
 - RG-035 : accès retiré ou expiré → avertissement, proposition de reconnexion, fonctionnement comme sans réseau en attendant, aucune perte de donnée.
 - RG-043 : à la déconnexion volontaire, les données restent sur l'appareil ; elles restent aussi, à part, quand un autre compte se connecte.
-- RG-055 : suppression des données de l'appareil, action distincte de la déconnexion (garde-fous proposés).
+- RG-055 : suppression des données de l'appareil, action distincte de la déconnexion (garde-fous validés, DEC-018).
 - ENF-05 (validée) : accès minimal au compte Google. ENF-06 (validée) : aucune perte de donnée. ENF-08 : consentement Google.
 
 ## Critères d'acceptation
 1. **CA-1** — Sur un appareil où aucune session n'est ouverte, l'application n'affiche que l'invitation à se connecter avec un compte Google. Aucune autre fonction n'est accessible, et aucune donnée n'est affichée, même si des données sont restées sur l'appareil après une déconnexion (RG-019, RG-043).
-2. **CA-2** — Après une connexion réussie, l'utilisateur accède à ses objectifs et à ses tâches, conservés dans le Google Drive du compte avec lequel il s'est connecté (RG-020). Lors de la toute première connexion, le Drive ne contient aucune donnée de l'application, et celle-ci affiche un état vide invitant à créer un premier objectif ou une première tâche **(P)**.
+2. **CA-2** — Après une connexion réussie, l'utilisateur accède à ses objectifs et à ses tâches, conservés dans le Google Drive du compte avec lequel il s'est connecté (RG-020). Lors de la toute première connexion, le Drive ne contient aucune donnée de l'application, et celle-ci affiche un état vide invitant à créer un premier objectif ou une première tâche.
 3. **CA-3** — Après la première connexion, un dossier de l'application est visible dans le Drive de l'utilisateur (RG-020, DEC-009). Son nom est fixé en E4.
 4. **CA-4** — Si l'utilisateur annule la connexion ou refuse les autorisations demandées, il reste sur l'écran de connexion. Un message lui explique que la connexion à un compte Google est nécessaire pour utiliser l'application. Aucune donnée n'est créée.
-5. **CA-5** — À la réouverture de l'application sur le même appareil, l'utilisateur n'a pas à se reconnecter tant que son accès est valide **(P)**.
+5. **CA-5** — À la réouverture de l'application sur le même appareil, l'utilisateur n'a pas à se reconnecter tant que son accès est valide.
 6. **CA-6** — L'utilisateur peut se déconnecter à tout moment depuis l'application. Il revient alors à l'écran de connexion (RG-043) :
    - les données restent sur l'appareil, y compris les modifications pas encore enregistrées dans son Drive ;
    - elles ne sont plus affichées jusqu'à la reconnexion (CA-1) ;
    - à la reconnexion avec le même compte, il retrouve toutes ses données, et les modifications en attente sont enregistrées dans son Drive ;
-   - avant la déconnexion, si des modifications ne sont pas encore enregistrées dans son Drive, l'application lui en indique le nombre et lui précise qu'elles le seront à sa prochaine connexion sur cet appareil **(P)**.
+   - avant la déconnexion, si des modifications ne sont pas encore enregistrées dans son Drive, l'application lui en indique le nombre et lui précise qu'elles le seront à sa prochaine connexion sur cet appareil.
    - La déconnexion n'efface jamais les données de l'appareil ; il n'existe pas d'action combinée « se déconnecter et effacer » (DEC-015).
 7. **CA-7** — Si l'accès au compte Google a été retiré ou a expiré, l'application l'indique à l'utilisateur dès sa prochaine utilisation et lui propose de se reconnecter. En attendant, il continue de consulter et de saisir ses données, comme sans réseau (RG-035, US-018). Après reconnexion, ses modifications faites entre-temps sont enregistrées dans son Drive ; aucune n'est perdue (ENF-06).
 8. **CA-8** — Au lot 1, l'application ne demande que l'identification du compte et l'accès à ses propres fichiers dans le Drive. Elle ne demande pas l'accès à l'agenda (ENF-05). Aucun écran d'avertissement de Google du type « application non validée » ne s'affiche lors de la connexion (ENF-08).
@@ -42,7 +42,7 @@ Statut : En analyse
    - l'utilisateur connecté avec B ne voit jamais les données de A (RG-018) ;
    - les données de A restent sur l'appareil, conservées à part, y compris ses modifications pas encore enregistrées dans le Drive de A ;
    - quand A se reconnecte sur cet appareil, il retrouve toutes ses données, et ses modifications en attente sont enregistrées dans son Drive.
-10. **CA-10** — L'utilisateur dispose, en plus de « Se déconnecter », d'une action distincte **« Supprimer les données de cet appareil »** (DEC-015, RG-055). Elle retire de l'appareil les données du compte connecté, sans rien supprimer dans son Drive ni sur son autre appareil. Déroulement **(P)** :
+10. **CA-10** — L'utilisateur dispose, en plus de « Se déconnecter », d'une action distincte **« Supprimer les données de cet appareil »** (DEC-015, RG-055). Elle retire de l'appareil les données du compte connecté, sans rien supprimer dans son Drive ni sur son autre appareil. Déroulement :
    - l'action est proposée quand l'utilisateur est connecté ;
    - elle demande toujours une confirmation, qui précise que les données restent dans le Drive ;
    - elle enregistre d'abord dans le Drive les modifications en attente ; si c'est impossible (par exemple sans réseau), elle indique le nombre de modifications qui seraient perdues et demande une confirmation explicite ; si l'utilisateur renonce, rien n'est supprimé ;
@@ -51,14 +51,14 @@ Statut : En analyse
    - les données d'un autre compte conservées sur l'appareil (CA-9) ne sont pas touchées.
 
 ## Cas limites et cas d'erreur
-- Première connexion sans réseau : l'application indique qu'une connexion réseau est nécessaire pour se connecter la première fois **(P)**.
-- Réseau interrompu pendant la connexion : message d'erreur et possibilité de réessayer, sans donnée créée à moitié **(P)**.
+- Première connexion sans réseau : l'application indique qu'une connexion réseau est nécessaire pour se connecter la première fois.
+- Réseau interrompu pendant la connexion : message d'erreur et possibilité de réessayer, sans donnée créée à moitié.
 - Drive indisponible ou désactivé pour ce compte (par exemple, un compte d'organisation sans accès au Drive) : message explicite, et pas d'accès aux fonctions (RG-019, RG-020).
 - Accès retiré pendant que l'application est ouverte : traité comme CA-7 dès l'action suivante qui nécessite l'accès.
 - Sur PC, session Google du navigateur expirée : l'application reste utilisable avec les données présentes sur le PC ; la mise à jour avec l'autre appareil reprend après un geste de reconnexion (US-017, CA-3).
-- Déconnexion puis reconnexion avec le même compte, sans réseau : la reconnexion n'est pas possible sans réseau ; l'application l'indique **(P)**.
+- Déconnexion puis reconnexion avec le même compte, sans réseau : la reconnexion n'est pas possible sans réseau ; l'application l'indique.
 - Changement de compte : voir CA-9.
-- Les données du compte A, restées sur l'appareil, ne peuvent être supprimées qu'en se connectant avec le compte A, puis en utilisant « Supprimer les données de cet appareil » (CA-10) **(P)**.
+- Les données du compte A, restées sur l'appareil, ne peuvent être supprimées qu'en se connectant avec le compte A, puis en utilisant « Supprimer les données de cet appareil » (CA-10).
 - « Supprimer les données de cet appareil » sur un appareil où les données ne sont pas encore toutes chargées depuis le Drive : sans perte, puisque seules les données de l'appareil sont retirées.
 - À ne pas confondre avec le choix « repartir de zéro » de RG-044 (US-017, CA-9), qui efface les données sur les deux appareils.
 
@@ -132,33 +132,33 @@ Statut : En analyse
 - **Questions et réserves** : Q-ERG-15 (nom de l'application) : tranchée par DEC-017, l'application s'appelle « Done Juan » ; le nom du dossier du Drive (« Objectifs et Tâches ») est à revoir par Steeve en E7. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **23 scénarios, dont 10 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **23 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`.
 
 | Critère ou cas | Scénario(s) |
 |---|---|
 | CA-1 | S01, S02 |
-| CA-2 | S03, S04 (P) |
+| CA-2 | S03, S04 |
 | CA-3 | S05 |
 | CA-4 | S06 |
-| CA-5 | S07 (P) |
-| CA-6 | S08, S09 (P), S10 |
+| CA-5 | S07 |
+| CA-6 | S08, S09, S10 |
 | CA-7 | S11 |
 | CA-8 | S13 |
 | CA-9 | S14 |
-| CA-10 (RG-055) | S10, S15 (P), S16 (P), S17 (P), S18 (P), S19 (P) |
-| Cas limite : première connexion sans réseau ; réseau interrompu | S20 (P) |
+| CA-10 (RG-055) | S10, S15, S16, S17, S18, S19 |
+| Cas limite : première connexion sans réseau ; réseau interrompu | S20 |
 | Cas limite : Drive indisponible ou désactivé | S21 |
 | Cas limite : accès retiré pendant l'utilisation | S12 |
 | Cas limite : session Google expirée sur PC | S23 |
-| Cas limite : reconnexion sans réseau | S22 (P) |
-| Cas limite : données du compte A supprimables seulement par A | S19 (P) |
-| Cas limite : suppression sur un appareil pas encore entièrement chargé | S15 (P) (le Drive n'est jamais touché) |
-| Cas limite : distinction avec « repartir de zéro » | S15 (P) ; US-017 S21 (P) |
+| Cas limite : reconnexion sans réseau | S22 |
+| Cas limite : données du compte A supprimables seulement par A | S19 |
+| Cas limite : suppression sur un appareil pas encore entièrement chargé | S15 (le Drive n'est jamais touché) |
+| Cas limite : distinction avec « repartir de zéro » | S15 ; US-017 S21 |
 
 Nom de l'application : « Done Juan » (DEC-017), utilisé dans les scénarios. Le dossier du Drive garde le nom « Objectifs et Tâches » (S05), à revoir par Steeve en E7.
 
 ## Questions ouvertes
-Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déroulement proposé de CA-10 et les autres critères (P) sont soumis à la validation du commanditaire en E6.
+Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déroulement de CA-10 et les autres critères sont validés par le commanditaire (DEC-018).
 
 > **Note pour l'architecte (via Jarvis).** Le DAT (§4.1.4, §4.1.5, §7.1, DS-07) prévoit l'effacement des données locales à la déconnexion, sur la base de la recommandation Q-22.3 a). Le commanditaire a répondu b) : les données restent sur l'appareil (RG-043), y compris quand un autre compte se connecte (DEC-016), et une action distincte permet de les supprimer (RG-055). Le DAT est à aligner.
 
@@ -168,3 +168,4 @@ Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déro
 | 2026-10-20 | Création (Pepper, E1), à partir des réponses Q-DEM001-3 b), 19.2 et 19.3 et des compléments du commanditaire. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-22 intégrées (CA-2, CA-3, CA-6, CA-7) ; décisions DEC-001 (Android), DEC-008 (avertissement Google, hors lot 1) et DEC-009 (dossier visible) ; nouvelle question Q-DEM001-42. |
 | 2026-10-21 | v0.5 (Pepper) : réponses Q-DEM001-42 intégrées (DEC-015, DEC-016) : CA-6 complété, CA-9 réécrit, nouveau CA-10 « Supprimer les données de cet appareil » (déroulement proposé). |
+| 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |

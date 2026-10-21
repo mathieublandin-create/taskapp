@@ -1,10 +1,10 @@
 # US-018 — Utiliser l'application sans réseau sur mon smartphone
 Demande d'origine : DEM-001 · Lot : LOT-001
-Statut : En analyse
+Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon smartphone sans réseau, mes modifications étant prises en compte au retour du réseau, **afin de** ne pas dépendre de la couverture réseau.
 
-> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6.
+> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
 
 ## Analyse d'écart (cahier des charges et existant)
 - **Confirmé** : Q-DEM001-4.1 c) (consultation et saisie sans réseau) ; smartphone prioritaire (complément du commanditaire).
@@ -17,7 +17,7 @@ Statut : En analyse
 - RG-021 : consultation et saisie sans réseau, sur le smartphone et sur le PC ; prise en compte au retour du réseau ; smartphone prioritaire.
 - RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
-- RG-047 à RG-049 (proposées) : réparations après fusion.
+- RG-047 à RG-049 : réparations après fusion.
 - RG-019 : la première connexion nécessite le compte Google, donc le réseau.
 - ENF-04, ENF-06 (validée).
 
@@ -27,15 +27,15 @@ Statut : En analyse
 3. **CA-3** — Sans réseau, l'application indique qu'elle est hors ligne et que des modifications ne sont pas encore synchronisées **(P : forme et contenu fixés en E4)**.
 4. **CA-4** — Au retour du réseau, sans action de l'utilisateur, ses modifications sont enregistrées dans son Drive, et celles faites entre-temps sur l'autre appareil sont intégrées. L'indication « non synchronisé » disparaît une fois l'enregistrement fait.
 5. **CA-5** — Aucune modification faite sans réseau n'est perdue, même si l'application est fermée, ou le smartphone éteint, avant le retour du réseau (ENF-06). Elle est enregistrée dans le Drive au premier retour du réseau, application ouverte.
-6. **CA-6** — Il n'y a pas de durée maximale d'utilisation sans réseau : les modifications restent conservées sur l'appareil jusqu'au retour du réseau **(P)**.
-7. **CA-7** — Au retour du réseau, si la même information a été modifiée sur l'autre appareil, la règle de conflit et l'information sur les valeurs écartées s'appliquent (RG-036 ; US-017, CA-6 et CA-8), ainsi que les règles de réparation proposées (RG-047 à RG-049 ; US-017, CA-10).
+6. **CA-6** — Il n'y a pas de durée maximale d'utilisation sans réseau : les modifications restent conservées sur l'appareil jusqu'au retour du réseau.
+7. **CA-7** — Au retour du réseau, si la même information a été modifiée sur l'autre appareil, la règle de conflit et l'information sur les valeurs écartées s'appliquent (RG-036 ; US-017, CA-6 et CA-8), ainsi que les règles de réparation (RG-047 à RG-049 ; US-017, CA-10).
 8. **CA-8** — Quand l'accès au compte Google est perdu (retiré ou expiré), le smartphone se comporte comme sans réseau (CA-2 à CA-5), et l'application propose de se reconnecter (RG-035 ; US-022, CA-7).
 
 ## Cas limites et cas d'erreur
 - Première connexion sans réseau : impossible ; l'application l'indique (US-022).
-- Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié **(P)**.
+- Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié.
 - Réseau intermittent : aucune modification n'est enregistrée deux fois, et aucune n'est perdue.
-- Objet supprimé sur le PC pendant qu'il est modifié sur le smartphone sans réseau : RG-047 (proposée).
+- Objet supprimé sur le PC pendant qu'il est modifié sur le smartphone sans réseau : RG-047.
 - Drive plein au retour du réseau : US-017, cas limites.
 - Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
 
@@ -100,28 +100,28 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. Perte de l'accès Google (CA-8) : bandeau « Se reconnecter » (voir US-022 et ECR-011 D), travail inchangé.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`](../../../tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature) — **14 scénarios, dont 4 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-018`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`](../../../tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature) — **14 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-018`, `@RG-xxx` et `@LOT-001`.
 
 | Critère ou cas | Scénario(s) |
 |---|---|
 | CA-1 | S01 |
 | CA-2 | S02, S03, S04 |
-| CA-3 | S05 (P) |
+| CA-3 | S05 |
 | CA-4 | S06 |
 | CA-5 | S09 |
-| CA-6 | S10 (P) |
-| CA-7 | S07, S08 (P) |
+| CA-6 | S10 |
+| CA-7 | S07, S08 |
 | CA-8 | S11 |
 | Cas limite : première connexion sans réseau | S12 |
-| Cas limite : réseau perdu pendant une saisie | S13 (P) |
+| Cas limite : réseau perdu pendant une saisie | S13 |
 | Cas limite : réseau intermittent | S14 |
-| Cas limite : suppression sur le PC pendant une modification hors ligne | S08 (P) |
+| Cas limite : suppression sur le PC pendant une modification hors ligne | S08 |
 | Cas limite : Drive plein au retour du réseau | US-017 S29 |
 | Cas limite : mise à jour application fermée | US-017 S04 |
 | Heure de Paris hors ligne | S04 |
 
 ## Questions ouvertes
-Aucune. Q-DEM001-39 a été répondue le 2026-10-21 (b, DEC-013) : le PC fait l'objet de US-031, dans le même lot. Les critères (P) sont soumis à la validation du commanditaire en E6.
+Aucune. Q-DEM001-39 a été répondue le 2026-10-21 (b, DEC-013) : le PC fait l'objet de US-031, dans le même lot. Tous les critères sont validés par le commanditaire (DEC-018).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -129,3 +129,4 @@ Aucune. Q-DEM001-39 a été répondue le 2026-10-21 (b, DEC-013) : le PC fait l'
 | 2026-10-20 | v0.1 et v0.2 : US au backlog, proposée pour le lot suivant LOT-001. |
 | 2026-10-20 | Intégration à LOT-001 par décision du commanditaire (DEC-002). Fichier détaillé créé (Pepper, fin de E1, v0.4). |
 | 2026-10-21 | v0.5 (Pepper) : Q-DEM001-39 b) (DEC-013) ; le PC est traité par US-031, dans le même lot. |
+| 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |

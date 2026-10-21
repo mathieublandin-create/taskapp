@@ -1,16 +1,16 @@
 # US-024 — Décomposer une tâche en sous-tâches
 Demande d'origine : DEM-001 · Lot : LOT-001
-Statut : En analyse
+Statut : Validée
 
 **En tant qu'**utilisateur, **je veux** découper une tâche en sous-tâches, **afin de** suivre plus finement un travail important.
 
-> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6. Les critères qui appliquent une règle **proposée** (RG-047, RG-049, RG-050) sont soumis à la validation de cette règle.
+> Les marqueurs (P) (propositions de Pepper) ont été retirés : tous les critères sont validés par le commanditaire (DEC-018, 2026-10-21).
 
 ## Analyse d'écart (cahier des charges et existant)
 - **Nouveau** : issu de Q-DEM001-6.1 d).
 - **Tension levée** (Q-DEM001-25.3 a) : l'estimation d'une tâche parente est la somme de celles de ses sous-tâches, calculée ; dans la vélocité, seules comptent les tâches sans sous-tâche. Le même travail n'est donc jamais compté deux fois.
 - **Précisé en v0.4** (Q-DEM001-25, 29) : un seul niveau ; délai et estimation obligatoires pour chaque sous-tâche ; alerte si le délai d'une sous-tâche dépasse celui de la tâche parente ; objectifs hérités de la tâche parente ; fin de la tâche parente conditionnée ; sous-tâches supprimées avec leur tâche parente.
-- **Proposé en v0.4** (à valider en E6) : réparations après fusion (RG-047, RG-049, F12) ; historique (RG-050).
+- **Établi en v0.7** (validé le 2026-10-21, DEC-018) : réparations après fusion (RG-047, RG-049, F12) ; historique (RG-050).
 - **Existant.** Aucune fonctionnalité livrée.
 
 ## Règles de gestion applicables (RG-xxx)
@@ -19,33 +19,33 @@ Statut : En analyse
 - RG-026 : fin sur déclaration.
 - RG-045 : « en retard ».
 - RG-046 : suppression d'une tâche qui a des sous-tâches.
-- RG-047, RG-049, RG-050 (proposées).
+- RG-047, RG-049, RG-050.
 
 ## Critères d'acceptation
 1. **CA-1** — Depuis le détail d'une tâche qui n'est pas elle-même une sous-tâche, l'utilisateur crée une sous-tâche, rattachée à cette tâche. Sur une sous-tâche, l'action « créer une sous-tâche » n'est pas proposée (un seul niveau).
 2. **CA-2** — Une sous-tâche se saisit comme une tâche (US-002, CA-1 à CA-4) : intitulé, délai obligatoire et estimation obligatoire, sans valeur présélectionnée.
-3. **CA-3** — Le détail d'une tâche affiche ses sous-tâches, avec leur intitulé, leur délai, leur estimation, leur état et l'indication « en retard » le cas échéant, ainsi que le nombre de sous-tâches terminées sur le nombre de sous-tâches non abandonnées **(P)**.
+3. **CA-3** — Le détail d'une tâche affiche ses sous-tâches, avec leur intitulé, leur délai, leur estimation, leur état et l'indication « en retard » le cas échéant, ainsi que le nombre de sous-tâches terminées sur le nombre de sous-tâches non abandonnées.
 4. **CA-4** — L'estimation d'une tâche qui a des sous-tâches est la somme des estimations de ses sous-tâches non abandonnées **(P pour l'exclusion des sous-tâches abandonnées)**. Elle est calculée, ne peut pas être saisie, et se met à jour à chaque ajout, modification d'estimation, abandon, reprise ou suppression d'une sous-tâche (RG-023).
    - Exemple : une tâche a deux sous-tâches de 1 h 00 et 1 h 30 ; son estimation est 2 h 30. La sous-tâche de 1 h 00 est abandonnée : l'estimation devient 1 h 30.
-5. **CA-5** — Quand l'utilisateur ajoute la première sous-tâche à une tâche, l'estimation saisie jusque-là pour cette tâche est remplacée par la somme calculée. L'application l'en informe avant l'enregistrement **(P)**.
+5. **CA-5** — Quand l'utilisateur ajoute la première sous-tâche à une tâche, l'estimation saisie jusque-là pour cette tâche est remplacée par la somme calculée. L'application l'en informe avant l'enregistrement.
 6. **CA-6** — Si le délai d'une sous-tâche est postérieur à celui de sa tâche parente, la sous-tâche est enregistrée et une alerte nomme la tâche parente. L'alerte est recalculée dès que l'un des deux délais change.
 7. **CA-7** — Une sous-tâche est rattachée aux objectifs de sa tâche parente, sans pouvoir en changer. Quand les objectifs de la tâche parente changent, ceux de ses sous-tâches changent aussi.
 8. **CA-8** — La tâche parente ne peut pas être déclarée terminée tant qu'il lui reste une sous-tâche ni terminée ni abandonnée : l'action est refusée, avec un message qui indique le nombre de sous-tâches restantes. Quand toutes ses sous-tâches sont terminées ou abandonnées, la tâche parente reste à faire jusqu'à ce que l'utilisateur la déclare terminée (RG-023 ; voir US-003).
 9. **CA-9** — La suppression d'une tâche qui a des sous-tâches les supprime avec elle, après une confirmation qui indique leur nombre (RG-046). La suppression d'une sous-tâche recalcule l'estimation de la tâche parente.
-10. **CA-10** — *(RG-049, proposée)* Si, après échange des modifications des deux appareils, une tâche parente terminée a une sous-tâche à faire (par exemple : tâche parente terminée sur le PC, pendant qu'une de ses sous-tâches est rouverte, ou créée, sur le smartphone sans réseau), l'application ne corrige rien automatiquement : elle signale l'incohérence sur la tâche jusqu'à ce que l'utilisateur termine ou abandonne la sous-tâche, ou rouvre la tâche parente.
-11. **CA-11** — *(RG-047, proposée)* Si une tâche est supprimée sur un appareil pendant qu'une sous-tâche lui est ajoutée sur l'autre, la sous-tâche ajoutée est elle aussi supprimée après échange, et l'utilisateur en est informé.
-12. **CA-12** — *(RG-050, proposée)* La création d'une sous-tâche (avec sa tâche parente) et sa suppression sont conservées dans l'historique, comme pour toute tâche (US-002, CA-14).
+10. **CA-10** — *(RG-049)* Si, après échange des modifications des deux appareils, une tâche parente terminée a une sous-tâche à faire (par exemple : tâche parente terminée sur le PC, pendant qu'une de ses sous-tâches est rouverte, ou créée, sur le smartphone sans réseau), l'application ne corrige rien automatiquement : elle signale l'incohérence sur la tâche jusqu'à ce que l'utilisateur termine ou abandonne la sous-tâche, ou rouvre la tâche parente.
+11. **CA-11** — *(RG-047)* Si une tâche est supprimée sur un appareil pendant qu'une sous-tâche lui est ajoutée sur l'autre, la sous-tâche ajoutée est elle aussi supprimée après échange, et l'utilisateur en est informé.
+12. **CA-12** — *(RG-050)* La création d'une sous-tâche (avec sa tâche parente) et sa suppression sont conservées dans l'historique, comme pour toute tâche (US-002, CA-14).
 
 ## Cas limites et cas d'erreur
-- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029 **(P)**.
-- Ajout d'une sous-tâche à une tâche terminée : l'application demande confirmation, puis rouvre la tâche parente, conformément à RG-023 **(P)**.
-- Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-025) **(P)**.
-- Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée **(P)**.
+- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029.
+- Ajout d'une sous-tâche à une tâche terminée : l'application demande confirmation, puis rouvre la tâche parente, conformément à RG-023.
+- Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-025).
+- Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée.
 - Délai de sous-tâche déjà dépassé : accepté, la sous-tâche est signalée en retard (RG-045).
 
 ## Hors périmètre
 - Plus d'un niveau de sous-tâches (exclu, Q-DEM001-25.1 a).
-- Transformation d'une tâche existante en sous-tâche d'une autre tâche, ou l'inverse **(P)**.
+- Transformation d'une tâche existante en sous-tâche d'une autre tâche, ou l'inverse.
 - Planification et suivi du temps des sous-tâches (lots ultérieurs).
 - Calcul de la vélocité (US-010) : la règle « seules comptent les tâches sans sous-tâche » y sera vérifiée.
 
@@ -101,33 +101,34 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. Les confirmations (P) d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **23 scénarios, dont 11 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **23 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`.
 
 | Critère ou cas | Scénario(s) |
 |---|---|
 | CA-1 | S01, S02 |
 | CA-2 | S03, S04 |
-| CA-3 | S05 (P) |
-| CA-4 | S06, S07, S08 (P) |
-| CA-5 | S09 (P) |
+| CA-3 | S05 |
+| CA-4 | S06, S07, S08 |
+| CA-5 | S09 |
 | CA-6 | S11, S12 |
 | CA-7 | S14 |
 | CA-8 | S15 |
 | CA-9 | S19, S07 |
-| CA-10 (RG-049) | S20 (P), S21 (P) |
-| CA-11 (RG-047) | S22 (P) |
-| CA-12 (RG-050) | S23 (P) |
-| Cas limite : suppression de la dernière sous-tâche | S10 (P) |
-| Cas limite : ajout à une tâche terminée | S17 (P) |
-| Cas limite : ajout à une tâche abandonnée | S18 (P) |
-| Cas limite : toutes les sous-tâches abandonnées | S16 (P) |
+| CA-10 (RG-049) | S20, S21 |
+| CA-11 (RG-047) | S22 |
+| CA-12 (RG-050) | S23 |
+| Cas limite : suppression de la dernière sous-tâche | S10 |
+| Cas limite : ajout à une tâche terminée | S17 |
+| Cas limite : ajout à une tâche abandonnée | S18 |
+| Cas limite : toutes les sous-tâches abandonnées | S16 |
 | Cas limite : délai de sous-tâche dépassé | S13 |
 
 ## Questions ouvertes
-Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10 à CA-12) sont soumis à la validation du commanditaire en E6.
+Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
 |---|---|
 | 2026-10-20 | Création (Pepper, E1), à partir de la réponse Q-DEM001-6.1 d). |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25, 27 et 29 intégrées (CA-1 à CA-9) ; règles proposées RG-047, RG-049 et RG-050 (CA-10 à CA-12). |
+| 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
