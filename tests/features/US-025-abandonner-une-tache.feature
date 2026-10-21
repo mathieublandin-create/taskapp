@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-025 — Abandonner une tâche
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-025
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-025
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -116,7 +117,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de l'objectif "Nouvelle identité visuelle" est "atteint"
     Quand l'utilisateur reprend la tâche "Refaire le logo"
     Alors l'état de la tâche "Refaire le logo" est "à faire"
-    Et la tâche "Refaire le logo" n'a pas de date d'abandon affichée
+    Et la tâche "Refaire le logo" n'a pas de date d'abandon
     Et la tâche "Refaire le logo" est en retard
     Et l'état de l'objectif "Nouvelle identité visuelle" est "en cours"
 
@@ -163,6 +164,8 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section B" est "à faire"
     Et l'état de la tâche "Section C" est "abandonnée"
 
+  # Q-US-025-2 (E8) : la réouverture d'une sous-tâche terminée dont la tâche parente est abandonnée est soumise au commanditaire.
+  # Aucun scénario n'est écrit pour ce cas avant sa réponse.
   @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S12 — La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée
     Étant donné les tâches suivantes :
@@ -199,7 +202,7 @@ Fonctionnalité: Abandonner une tâche
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'état de la tâche "Refaire le logo" est "abandonnée"
     Et sur les deux appareils, la tâche "Refaire le logo" existe avec le délai 2026-12-15
-    Et la liste des modifications non retenues est vide
+    Et sur les deux appareils, la liste des modifications non retenues est vide
 
   @US-025 @RG-049 @LOT-001
   Scénario: S15 — Tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise sur le smartphone : incohérence signalée
@@ -243,3 +246,21 @@ Fonctionnalité: Abandonner une tâche
       | événement | journée    | avant                                  | après                                  |
       | abandon   | 2026-10-21 | à faire                                | abandonnée, date d'abandon 2026-10-21  |
       | reprise   | 2026-10-24 | abandonnée, date d'abandon 2026-10-21  | à faire                                |
+
+  @US-025 @RG-050 @RG-027 @RG-023 @LOT-001
+  Scénario: S18 — L'abandon et la reprise en cascade des sous-tâches sont conservés dans l'historique de chaque sous-tâche concernée
+    # E8, Q-US-001-2 c : une conséquence enregistrée (abandon ou reprise d'une sous-tâche avec sa tâche parente) a sa propre entrée.
+    Étant donné les tâches suivantes :
+      | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
+      | Section A  | terminée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | Section B  | à faire  | 2026-11-25 | 1 h        |           | Chapitre 1    |
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Quand l'utilisateur abandonne la tâche "Chapitre 1" et confirme
+    Et que nous sommes le 2026-10-24 à 09:00 heure de Europe/Paris
+    Et l'utilisateur reprend la tâche "Chapitre 1"
+    Alors l'historique de la tâche "Section B" se termine par :
+      | événement | journée    | avant                                 | après                                 |
+      | abandon   | 2026-10-22 | à faire                               | abandonnée, date d'abandon 2026-10-22 |
+      | reprise   | 2026-10-24 | abandonnée, date d'abandon 2026-10-22 | à faire                               |
+    Et l'historique ne contient aucune entrée "abandon" pour la tâche "Section A"

@@ -40,8 +40,10 @@ Statut : Validée
 9. **CA-9** — Rouvrir une sous-tâche dont la tâche parente est terminée rouvre aussi la tâche parente, après confirmation.
 10. **CA-10** — Une tâche terminée n'est pas « en retard », même si elle a été terminée après son délai. Rouverte, elle redevient « en retard » si son délai est antérieur à la journée en cours (RG-045).
 11. **CA-11** — Les listes permettent de distinguer, ou de filtrer, les tâches « à faire » et « terminées ».
+    - *Précision E8 (Q-US-002-1)* : la liste « Tâches » s'ouvre sur les tâches à faire ; le filtre d'état propose à faire, terminées, abandonnées ; les terminées sont présentées de la plus récemment terminée à la plus ancienne (US-002 CA-11).
 12. **CA-12** — *(RG-049)* Si, après échange des modifications des deux appareils, une tâche parente est terminée alors qu'une de ses sous-tâches est à faire, l'application le signale sur la tâche sans rien corriger automatiquement. Tant que l'incohérence persiste, les objectifs de la tâche ne sont pas atteints (CA-5). Elle est résolue quand la sous-tâche est terminée ou abandonnée, ou quand la tâche parente est rouverte.
 13. **CA-13** — *(RG-050)* La fin et la réouverture d'une tâche sont conservées dans l'historique, avec la journée concernée.
+    - *Précision E8 (Q-US-001-2, Q-US-003-1)* : la réouverture d'une tâche parente entraînée par celle d'une sous-tâche (CA-9) a sa propre entrée dans l'historique de la tâche parente (S22). « Annuler » dans le message qui suit « Terminer » est une réouverture : une entrée « fin » puis une entrée « réouverture ».
 
 ## Cas limites et cas d'erreur
 - Déclarer terminée une tâche déjà terminée : l'action n'est pas proposée.
@@ -107,7 +109,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`](../../../tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature) — **21 scénarios**. Chaque scénario porte les tags `@US-003`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E8).* Fichier : [`tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`](../../../tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature) — **22 scénarios**. Chaque scénario porte les tags `@US-003`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -121,9 +123,9 @@ Statut : Validée
 | CA-8 | S12 |
 | CA-9 | S13, S14 |
 | CA-10 | S15 |
-| CA-11 | S16 |
+| CA-11 | S16 ; US-002 S20, S20c |
 | CA-12 (RG-049) | S18, S19 |
-| CA-13 (RG-050) | S20 |
+| CA-13 (RG-050) | S20, S22 |
 | Cas limite : terminer une tâche déjà terminée | S05 |
 | Cas limite : terminée sur un appareil, abandonnée sur l'autre | S17 |
 | Cas limite : objectif sans délai | S11 |
@@ -143,3 +145,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25 et 26 intégrées (CA-2, CA-4 à CA-8) ; règles proposées RG-049 et RG-050 (CA-12, CA-13) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-002-1 (filtres, CA-11), Q-US-001-2 (historique ; S22 ajouté), Q-US-003-1 (« Annuler » = réouverture), Q-US-003-2 (glossaire v1.2 : actions, sous-objectif de contexte, formes), Q-US-017-7 (préfixes d'appareil, S17 et S18). Précisions sans changement de règle de gestion ni de critère validé. |

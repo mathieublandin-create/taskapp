@@ -31,9 +31,11 @@ Statut : Validée
 9. **CA-9** — L'utilisateur peut abandonner une sous-tâche seule. L'estimation de la tâche parente est recalculée (US-024, CA-4). Si c'était la dernière sous-tâche ni terminée ni abandonnée, la tâche parente peut désormais être déclarée terminée.
 10. **CA-10** — *(RG-049)* Si, après échange des modifications des deux appareils, une tâche parente est abandonnée alors qu'une de ses sous-tâches est à faire (par exemple, tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise, ou créée, sur le smartphone), l'application le signale sans rien corriger automatiquement, jusqu'à ce que l'utilisateur termine ou abandonne la sous-tâche, ou reprenne la tâche parente.
 11. **CA-11** — *(RG-050)* L'abandon et la reprise d'une tâche sont conservés dans l'historique, avec la journée concernée.
+    - *Précision E8 (Q-US-001-2)* : l'abandon et la reprise en cascade (CA-6, CA-7) ont une entrée dans l'historique de chaque sous-tâche concernée (S18) ; rendu au §11 du glossaire d'étapes.
 
 ## Cas limites et cas d'erreur
 - Abandonner une tâche terminée : l'action n'est pas proposée ; il faut d'abord la rouvrir.
+- Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée : **cas non couvert par les règles validées, soumis au commanditaire (Q-US-025-2)** ; voir « Questions ouvertes ».
 - Abandonner la dernière tâche non abandonnée d'un objectif sans sous-objectif : l'objectif devient « à décliner en tâches » (RG-025).
 - Abandon sur un appareil, modification sur l'autre : RG-036 (US-017).
 - Ajouter une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-024).
@@ -89,12 +91,12 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-13 tranchée par le commanditaire : confirmation toujours (CA-1), appliquée dans ECR-007.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **17 scénarios**. Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E8).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **18 scénarios**. Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
 | CA-1 | S01, S02, S03 |
-| CA-2 | S04 |
+| CA-2 | S04 ; US-002 S20c (ordre des abandonnées) |
 | CA-3 | S05 |
 | CA-4 | S07 |
 | CA-5 | S08 |
@@ -103,7 +105,7 @@ Statut : Validée
 | CA-8 | S12 |
 | CA-9 | S13 |
 | CA-10 (RG-049) | S15, S16 |
-| CA-11 (RG-050) | S17 |
+| CA-11 (RG-050) | S17, S18 (cascade) |
 | Cas limite : abandonner une tâche terminée | S06 |
 | Cas limite : dernière tâche non abandonnée d'un objectif | S07 |
 | Cas limite : abandon sur un appareil, modification sur l'autre | S14 |
@@ -113,7 +115,7 @@ Statut : Validée
 Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée. La date d'abandon (CA-1, S03) et le contenu de la confirmation (CA-6, S10), proposés par Pepper, sont validés par le commanditaire le 2026-10-21 (DEC-018, V-21 n et p).
 
 ## Questions ouvertes
-Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
+- **Q-US-025-2 (E8, en attente du commanditaire)** : une sous-tâche terminée avant l'abandon de sa tâche parente peut-elle être rouverte tant que la tâche parente est abandonnée ? Option recommandée : a) non, l'action n'est pas proposée ; il faut d'abord reprendre la tâche parente (comme CA-8 pour la reprise). Texte de la question : `docs/ceremonies/explicitation-LOT-001.md`, section « Réponses aux Q-US ». Selon la réponse, un critère et un scénario seront ajoutés et l'US repassera en validation (E6) pour ce point.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -122,3 +124,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-26.2 et 27 intégrées (CA-3 à CA-9) ; règles proposées RG-049 et RG-050 (CA-10, CA-11) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-025-1 (glossaire v1.2 ; « n'a pas de date d'abandon »), Q-US-001-2 (historique de la cascade ; S18 ajouté), Q-US-002-1 (filtre « abandonnée », S04 conforme), Q-US-024-1 (construction des tableaux de contexte), Q-US-017-7 (préfixe d'appareil, S14). Précisions sans changement de règle. **Q-US-025-2 soumise au commanditaire** (réouverture d'une sous-tâche terminée sous une tâche parente abandonnée). |

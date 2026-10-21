@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-017 — Retrouver mes données sur smartphone et sur PC
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-017
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-017
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -148,7 +149,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Rédiger le plan" existe avec le délai 2026-11-15
-    Et la liste des modifications non retenues est vide
+    Et sur les deux appareils, la liste des modifications non retenues est vide
 
   @US-017 @RG-036 @RG-056 @LOT-001
   Scénario: S10 — La même information modifiée sur les deux appareils : la plus récente l'emporte et la valeur écartée est signalée
@@ -161,7 +162,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | B       | intitulé    | A                  | B                |
 
@@ -175,7 +176,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le smartphone, l'utilisateur renomme la tâche "A" en "B"
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
-    Et la liste des modifications non retenues est vide
+    Et sur les deux appareils, la liste des modifications non retenues est vide
 
   @US-017 @RG-036 @LOT-001
   Scénario: S12 — Avec l'horloge d'un appareil décalée de quelques minutes, la modification réellement la plus récente l'emporte
@@ -204,12 +205,34 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors les deux appareils affichent le même intitulé pour la tâche "Plan", "A" ou "B"
     Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 1 information
 
+  @US-017 @RG-036 @RG-056 @LOT-001
+  Scénario: S12c — Avec l'horloge d'un appareil décalée de plus de 24 h de façon constante, la modification réellement la plus récente l'emporte
+    # E8, Q-US-017-4 : écart constant, mesuré lors du dernier échange avec Google (DAT §6.4, point 2). Ce scénario ne préjuge pas
+    # de la réponse du commanditaire sur la portée de CA-13 quand l'horloge est modifiée hors ligne (arbitrage A8) : CA-13 n'est pas modifié.
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que l'horloge du smartphone est en retard de 25 h
+    Quand les deux appareils échangent leurs modifications
+    Et que le smartphone est sans réseau
+    Et sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
+      | élément | information | valeur non retenue | valeur conservée |
+      | B       | intitulé    | A                  | B                |
+    Et sur le smartphone, l'alerte "ALR-001" est affichée
+
   # Seuil de l'horloge déréglée (CA-13) : l'avertissement n'est émis que si l'écart dépasse 24 h strictement.
   @US-017 @RG-036 @LOT-001
   Plan du scénario: S13a — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
     Étant donné que l'horloge du smartphone est <sens> de <écart>
     Quand les deux appareils échangent leurs modifications
     Alors sur le smartphone, l'alerte "ALR-001" est affichée
+    # E8, Q-US-017-5 : l'alerte n'est affichée que sur l'appareil dont l'horloge est décalée.
+    Et sur le PC, l'alerte "ALR-001" n'est pas affichée
 
     Exemples:
       | sens       | écart       |
@@ -233,24 +256,40 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   @US-017 @RG-056 @LOT-001
   Scénario: S14 — Une modification non retenue reste listée jusqu'à ce que l'utilisateur la marque comme lue, même après réouverture
-    Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
+    Étant donné que sur le smartphone, la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
     Quand l'utilisateur ferme l'application sur le smartphone
     Et que nous sommes le 2026-11-21 à 10:00 heure de Europe/Paris
     Et l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
-    Alors la liste des modifications non retenues contient toujours la valeur écartée pour l'intitulé de la tâche "B"
-    Quand l'utilisateur marque comme lue la modification non retenue de la tâche "B"
-    Alors la liste des modifications non retenues est vide
+    Alors sur le smartphone, la liste des modifications non retenues contient toujours la valeur écartée pour l'intitulé de la tâche "B"
+    Quand sur le smartphone, l'utilisateur marque comme lue la modification non retenue de la tâche "B"
+    Alors sur le smartphone, la liste des modifications non retenues est vide
 
   @US-017 @RG-056 @LOT-001
   Scénario: S15 — Tant qu'une modification non retenue n'est pas lue, l'application le signale sans bloquer
-    Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
-    Et que la liste des modifications non retenues contient une valeur écartée pour le délai de la tâche "Chapitre 1"
-    Alors l'indicateur de synchronisation est "SYN-INFO"
-    Et toutes les fonctions restent utilisables
-    Quand l'utilisateur marque comme lue la modification non retenue de la tâche "B"
-    Alors l'indicateur de synchronisation est toujours "SYN-INFO"
-    Quand l'utilisateur marque comme lue la modification non retenue de la tâche "Chapitre 1"
-    Alors l'indicateur de synchronisation n'est pas "SYN-INFO"
+    Étant donné que sur le smartphone, la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
+    Et que sur le smartphone, la liste des modifications non retenues contient une valeur écartée pour le délai de la tâche "Chapitre 1"
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-INFO"
+    Et sur le smartphone, l'indicateur de synchronisation signale 2 informations à lire
+    Et sur le smartphone, toutes les fonctions restent utilisables
+    Quand sur le smartphone, l'utilisateur marque comme lue la modification non retenue de la tâche "B"
+    Alors sur le smartphone, l'indicateur de synchronisation est toujours "SYN-INFO"
+    Et sur le smartphone, l'indicateur de synchronisation signale 1 information à lire
+    Quand sur le smartphone, l'utilisateur marque comme lue la modification non retenue de la tâche "Chapitre 1"
+    Alors sur le smartphone, l'indicateur de synchronisation n'est pas "SYN-INFO"
+    Et sur le smartphone, l'indicateur de synchronisation ne signale aucune information à lire
+
+  @US-017 @RG-056 @RG-021 @LOT-001
+  Scénario: S15b — Le signalement des informations à lire est présent quel que soit l'état de la synchronisation, hors ligne compris
+    # E8, Q-US-017-6, option a) : le point « à lire » s'ajoute à tout état de l'indicateur ; RG-056 a) est tenue sans être modifiée.
+    Étant donné que sur le smartphone, la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
+    Et que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
+    Et sur le smartphone, l'indicateur de synchronisation signale 1 information à lire
+    Et sur le smartphone, l'indicateur de synchronisation n'est pas "SYN-INFO"
+    Quand sur le smartphone, l'utilisateur marque comme lue la modification non retenue de la tâche "B"
+    Alors sur le smartphone, l'indicateur de synchronisation ne signale aucune information à lire
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
 
   @US-017 @RG-056 @LOT-001
   Scénario: S16 — Une modification non retenue lue sur un appareil l'est aussi sur l'autre, et n'est signalée qu'une fois
@@ -330,6 +369,23 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et les deux appareils échangent leurs modifications
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
     Et sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    # E8, Q-US-017-2 b : le choix fait sur le smartphone vaut pour le PC, qui réécrit ses propres données sans poser la question (RG-044).
+    Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
+
+  @US-017 @RG-044 @RG-021 @LOT-001
+  Scénario: S20b — « Restaurer » choisi sans réseau est mémorisé, puis fait au retour du réseau
+    # E8, précision de conception de Steeve (guide §6.6.8, ERR-012 ; Q-US-017-11 b) : sans changement de RG-044.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
+    Et que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur choisit de restaurer ses données
+    Alors sur le smartphone, la restauration est en attente du retour du réseau
+    Et rien n'a été réécrit dans le Drive
+    Quand le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-017 @RG-044 @LOT-001
   Scénario: S21 — Repartir de zéro efface les données des deux appareils ; l'autre appareil ne repose pas la question
@@ -346,9 +402,12 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et les deux appareils échangent leurs modifications
     Alors sur le PC, aucun objectif n'existe
     Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
+    Et sur le PC, l'alerte "ALR-008" est affichée
+    # E8, Q-US-017-8 a) : une ligne par modification perdue, groupée sous l'alerte ALR-008 (code ALR-014), non comptée parmi les informations à lire.
     Et sur le PC, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue        | valeur conservée          |
       | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+    Et sur le PC, l'indicateur de synchronisation ne signale aucune information à lire
 
   @US-017 @RG-044 @LOT-001
   Scénario: S22 — Renoncer à repartir de zéro ne change rien
@@ -358,6 +417,20 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand sur le smartphone, l'utilisateur choisit de repartir de zéro et renonce
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et rien n'a été réécrit dans le Drive
+
+  @US-017 @RG-044 @RG-021 @LOT-001
+  Scénario: S22b — « Repartir de zéro » n'est pas disponible sans réseau ; « Restaurer » et « Décider plus tard » le restent
+    # E8, précision de conception de Steeve (guide §6.6.8, ERR-012 ; Q-US-017-11 b) : le choix reste possible au retour du réseau, sans changement de RG-044.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
+    Quand le réseau est coupé sur le smartphone
+    Alors sur le smartphone, l'action "repartir de zéro" n'est pas disponible
+    Et sur le smartphone, l'action "restaurer" est disponible
+    Et sur le smartphone, l'action "décider plus tard" est disponible
+    Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Quand le réseau revient sur le smartphone
+    Alors sur le smartphone, l'action "repartir de zéro" est disponible
 
   @US-017 @RG-044 @LOT-001
   Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
@@ -383,7 +456,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Chapitre 1" n'existe plus
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-10         | tâche supprimée  |
 
@@ -397,7 +470,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, "Bêta" est un sous-objectif de l'objectif "Alpha"
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
@@ -499,7 +572,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   @US-017 @RG-044 @LOT-001
   Scénario: S32 — Un fichier du Drive modifié à la main mais resté lisible est traité comme illisible : avertissement, et rien n'est effacé ni réécrit avant le choix
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
-    Et qu'un fichier de données de l'application a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible
+    Et que le fichier de données du smartphone a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, le message d'erreur "ERR-012" est affiché
     Et sur le smartphone, l'utilisateur se voit proposer "restaurer" et "repartir de zéro"
@@ -509,10 +582,24 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   @US-017 @RG-044 @LOT-001
   Scénario: S33 — Le contenu modifié à la main dans le Drive n'est jamais fusionné avec les données de l'application
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
-    Et que dans le Drive, le délai de l'objectif "Publier le guide" a été changé à la main en 2027-06-30, le fichier restant lisible
+    Et que dans le fichier de données du smartphone, le délai de l'objectif "Publier le guide" a été changé à la main en 2027-06-30, le fichier restant lisible
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Quand sur le smartphone, l'utilisateur choisit de restaurer ses données
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et le Drive du compte "A" contient l'objectif "Publier le guide"
+
+  @US-017 @RG-044 @LOT-001
+  Scénario: S32b — Seul le fichier du smartphone est altéré : seul le smartphone pose la question ; le PC continue d'enregistrer ses propres modifications sans toucher au fichier altéré
+    # E8, Q-US-017-2 a : « rien n'est réécrit dans le Drive » (RG-044) protège les données altérées ; l'appareil qui pose la question n'écrit rien,
+    # l'autre appareil continue d'enregistrer son propre fichier, distinct du fichier altéré, qu'il ne fusionne jamais.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et que le fichier de données du smartphone a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible
+    Quand sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Et les deux appareils échangent leurs modifications
+    Alors sur le smartphone, le message d'erreur "ERR-012" est affiché
+    Et sur le PC, le message d'erreur "ERR-012" n'est pas affiché
+    Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon"
+    Et le fichier de données du smartphone n'a pas été réécrit dans le Drive
+    Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15

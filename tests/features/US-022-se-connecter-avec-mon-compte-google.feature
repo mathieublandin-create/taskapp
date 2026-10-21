@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-022 — Se connecter avec mon compte Google
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-022
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-022
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -115,6 +116,27 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et qu'aucune modification n'est en attente sur le smartphone
     Quand sur le smartphone, l'utilisateur demande à se déconnecter
     Alors sur le smartphone, l'utilisateur est déconnecté sans confirmation
+
+  # E8, Q-US-022-4 : avec le réseau, la déconnexion tente d'abord d'enregistrer les modifications en attente dans le Drive ;
+  # la confirmation n'est demandée que s'il en reste après cette tentative, avec leur nombre.
+  @US-022 @RG-043 @LOT-001
+  Scénario: S09c — Avec le réseau, la déconnexion enregistre d'abord les modifications en attente ; s'il n'en reste aucune, elle se fait sans confirmation
+    Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
+    Et que sur le smartphone, l'utilisateur a créé un objectif "Courir un semi-marathon" sans délai, pas encore enregistré dans le Drive
+    Quand sur le smartphone, l'utilisateur demande à se déconnecter
+    Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon"
+    Et sur le smartphone, l'utilisateur est déconnecté sans confirmation
+    Et les données du compte "A" sont toujours présentes sur le smartphone
+
+  @US-022 @RG-043 @LOT-001
+  Scénario: S09d — Avec le réseau mais un Drive momentanément indisponible, la déconnexion annonce les modifications restées en attente
+    Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
+    Et que sur le smartphone, 2 modifications ne sont pas encore enregistrées dans le Drive
+    Et que le Drive est momentanément indisponible
+    Quand sur le smartphone, l'utilisateur demande à se déconnecter
+    Alors une confirmation est demandée, qui annonce 2 modifications enregistrées dans le Drive à la prochaine connexion sur cet appareil
+    Quand l'utilisateur confirme
+    Alors les données du compte "A" sont toujours présentes sur le smartphone, y compris 2 modifications en attente
 
   @US-022 @RG-043 @RG-055 @LOT-001
   Scénario: S10 — La déconnexion n'efface jamais les données ; aucune action combinée « se déconnecter et effacer » n'existe
@@ -281,6 +303,16 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
 
+  @US-022 @RG-019 @LOT-001
+  Scénario: S20c — Drive momentanément indisponible à la connexion : connexion interrompue, nouvel essai possible
+    # E8, Q-US-022-2 a) : ERR-005 ; ERR-006 reste réservé au Drive désactivé ou refusé pour le compte (S21).
+    Étant donné que l'application n'a jamais été utilisée sur le smartphone
+    Et que le Drive est momentanément indisponible
+    Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
+    Alors la connexion échoue avec le motif "ERR-005"
+    Et sur le smartphone, l'utilisateur peut réessayer
+    Et aucune donnée n'est créée sur le smartphone
+
   @US-022 @RG-019 @RG-020 @LOT-001
   Scénario: S21 — Drive indisponible ou désactivé pour le compte : message explicite et aucun accès aux fonctions
     Étant donné que le Drive est désactivé pour le compte "C"
@@ -306,3 +338,27 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors sur le PC, aucune connexion n'est demandée avant d'afficher les données
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+
+  # E8, Q-US-022-3 : en consultation seule (RG-058), aucune action de compte n'écrit dans le Drive.
+  @US-022 @RG-055 @RG-058 @LOT-001
+  Scénario: S24 — En consultation seule, la suppression des données de l'appareil ne tente aucun enregistrement et annonce les modifications qui seraient perdues
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
+    Et que sur le smartphone, 2 modifications ne sont pas encore enregistrées dans le Drive
+    Quand le smartphone échange ses modifications avec le Drive
+    Et sur le smartphone, l'utilisateur demande la suppression des données de cet appareil
+    Et l'utilisateur confirme
+    Alors une confirmation explicite est demandée, qui annonce que 2 modifications seraient perdues
+    Et aucune écriture n'a été faite dans le Drive par le smartphone
+
+  @US-022 @RG-043 @RG-058 @LOT-001
+  Scénario: S25 — En consultation seule, la déconnexion ne tente aucun enregistrement et conserve les modifications en attente sur l'appareil
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
+    Et que sur le smartphone, 2 modifications ne sont pas encore enregistrées dans le Drive
+    Quand le smartphone échange ses modifications avec le Drive
+    Et sur le smartphone, l'utilisateur demande à se déconnecter
+    Alors une confirmation est demandée, qui annonce 2 modifications enregistrées dans le Drive à la prochaine connexion sur cet appareil
+    Quand l'utilisateur confirme
+    Alors les données du compte "A" sont toujours présentes sur le smartphone, y compris 2 modifications en attente
+    Et aucune écriture n'a été faite dans le Drive par le smartphone

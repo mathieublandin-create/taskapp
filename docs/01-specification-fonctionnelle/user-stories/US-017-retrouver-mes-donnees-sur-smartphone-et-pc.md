@@ -45,11 +45,17 @@ Statut : Validée
 8. **CA-8** — Quand une valeur saisie sur un appareil est écartée par une modification concurrente faite sur l'autre (CA-6), l'utilisateur en est informé : élément concerné, information, valeur non retenue (RG-036). Une valeur remplacée plus tard, en connaissance de cause, n'est pas signalée.
    - Exemple signalé : intitulé « A » saisi sur le PC, puis intitulé « B » saisi sur le smartphone sans réseau, avant d'avoir reçu « A » ; « B » l'emporte, et « A » est signalé comme valeur écartée.
    - Exemple non signalé : le smartphone reçoit « A », puis l'utilisateur le remplace par « B ».
+   - *Précision E8 (Q-US-017-1, réponse de Starck, DAT §4.2.1)* : une valeur est écartée si et seulement si la modification qui l'emporte a été faite sans connaissance d'elle ; qu'elle ait déjà été enregistrée dans le Drive ou non n'intervient pas (S10, S11). Une même valeur écartée constatée par les deux appareils n'est signalée qu'une fois.
 9. **CA-9** — Si les données de l'application sont absentes ou illisibles dans le Drive, ou si leurs fichiers ont été modifiés à la main dans le Drive (même s'ils restent lisibles), alors que l'appareil en détient une copie, l'application avertit l'utilisateur et lui propose (RG-044) :
    - **restaurer** ses données à partir de la copie de l'appareil : elles sont de nouveau présentes dans le Drive et sur les deux appareils ;
    - **repartir de zéro** : après une confirmation, les données sont effacées de l'appareil ; à sa prochaine synchronisation, l'autre appareil efface aussi les siennes, sans reposer la question. S'il détenait des modifications pas encore enregistrées, l'utilisateur en est informé (valeurs écartées).
    - Un fichier modifié à la main est traité comme un fichier illisible : son contenu n'est jamais fusionné avec les données de l'application (V-02, extension de RG-044).
    - Tant que l'utilisateur n'a pas choisi, rien n'est effacé et rien n'est réécrit dans le Drive.
+   - *Précisions E8 (sans changement de RG-044)* :
+     - *(Q-US-017-2, DAT §4.2.2)* si seul le fichier de données d'un appareil est altéré, seul cet appareil avertit l'utilisateur et lui propose le choix ; l'autre appareil n'affiche rien, ne fusionne jamais le fichier altéré et continue d'enregistrer ses propres données, distinctes de celui-ci. « Rien n'est réécrit dans le Drive » protège les données altérées : l'appareil qui pose la question n'écrit rien (S32, S32b, S33) ;
+     - *(Q-US-017-2 b)* après « restaurer » sur un appareil, l'autre appareil réécrit ses propres données sans reposer la question (S20) ;
+     - *(précision de conception de Steeve, guide §6.6.8)* sans réseau, « restaurer » est mémorisé et fait au retour du réseau ; « repartir de zéro », qui efface, n'est disponible qu'avec le réseau (S20b, S22b) ;
+     - *(Q-US-017-8 a)* au « repartir de zéro », l'autre appareil affiche une information qui l'annonce, et chaque modification qu'il n'avait pas encore enregistrée figure dans la liste « Modifications non retenues », avec la valeur conservée « données effacées (repartir de zéro) » ; ces lignes ne sont pas comptées dans le signalement « à lire » de CA-14 (S21).
 10. **CA-10** — *(RG-047 à RG-049)* Après l'échange des modifications des deux appareils, l'application applique les règles de réparation :
     - suppression d'un côté, modification de l'autre : la suppression l'emporte, et les modifications écartées sont signalées (RG-047 ; détail dans US-001, US-002, US-024) ;
     - hiérarchie d'objectifs invalide : les déplacements sont annulés un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide, chaque annulation étant signalée (RG-048 ; détail dans US-023) ;
@@ -57,7 +63,9 @@ Statut : Validée
 11. **CA-11** — *(RG-054)* Quand l'appareil est réglé sur un autre fuseau horaire que celui de Paris, l'application signale que les horaires et la journée « aujourd'hui » qu'elle affiche sont à l'heure de Paris (mention « heure de Paris »). Quand l'appareil est à l'heure de Paris, cette mention n'apparaît pas.
 12. **CA-12** — *(RG-058, V-06 option 2)* Deux appareils qui n'ont pas la même version de l'application continuent de travailler normalement, saisie comprise, tant que les données qu'ils échangent ont le même format. La saisie n'est bloquée que si un appareil rencontre des données enregistrées dans un format plus récent que celui qu'il connaît : cet appareil passe alors en consultation seule et invite l'utilisateur à mettre l'application à jour. Les données présentes sur l'appareil, y compris ses modifications en attente, restent consultables et ne sont pas perdues (ENF-06). **En consultation seule, l'appareil n'écrit rien dans le Drive** ; ses modifications en attente sont déposées dans le Drive après la mise à jour, et la saisie reprend à ce moment (DEC-025, Q-REF-2 ; scénario S30b). Sur le smartphone, l'action « Mettre à jour » ouvre la page de téléchargement de la dernière version de l'application, sans renvoi vers Google Play (DEC-021 ; scénario S30).
 13. **CA-13** — *(RG-036 ; seuil de l'horloge déréglée, E7 ANT-4 et BEN-12)* Quand l'horloge d'un appareil est décalée, en retard ou en avance, par rapport à l'heure réelle, l'application avertit l'utilisateur **si et seulement si l'écart est strictement supérieur à 24 h**. Un écart de 24 h exactement, ou moins, ne déclenche aucun avertissement ; un écart de 24 h et 1 min en déclenche un. Quel que soit l'écart, la modification réellement la plus récente l'emporte (CA-6). *Cette précision rend numéroté et exact le cas limite « si l'écart dépasse 24 h », déjà validé ; le seuil n'est pas modifié.*
+    - *E8 (Q-US-017-4 et Q-US-017-5)* : CA-13 **n'est pas modifié** ; la portée de sa dernière phrase quand l'horloge est changée pendant que l'appareil est hors ligne est soumise au commanditaire par Jarvis (arbitrage A8). Sont déjà précisés : l'avertissement n'est affiché que sur l'appareil dont l'horloge est décalée (S13a) ; un écart constant de plus de 24 h, mesuré au dernier échange, ne fausse pas la règle (S12c).
 14. **CA-14** — *(RG-056, E7 STE-3)* Une modification non retenue (valeur écartée, modification écartée par une suppression, déplacement annulé) reste dans la liste « Modifications non retenues », **sans limite de durée, jusqu'à ce que l'utilisateur indique l'avoir lue (« Compris »)** ; fermer puis rouvrir l'application ne la retire pas. Tant qu'au moins une information n'a pas été lue, l'application le signale de façon discrète et permanente, sans bloquer ; le signalement disparaît quand la dernière est lue. Une information lue sur un appareil l'est aussi sur l'autre, après échange des modifications. Une même information n'est signalée qu'une fois, même si les deux appareils constatent le même écart.
+    - *Précision E8 (Q-US-017-6, option a, sans changement de RG-056)* : le signalement « à lire » est présent quel que soit l'état de la synchronisation (hors ligne, modifications à envoyer, session à reprendre…), et indique le nombre d'informations à lire (S15, S15b).
 
 ## Cas limites et cas d'erreur
 - Drive plein : l'utilisateur est averti que ses modifications ne peuvent pas être enregistrées dans son Drive ; elles restent conservées sur l'appareil et rien n'est perdu sans avertissement.
@@ -155,7 +163,7 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères CA-3, CA-9 et CA-11 sont validés (DEC-018) ; les maquettes les appliquent. **Ajout E7** : état « consultation seule » de RG-058 (CA-12) maquetté dans ECR-011 K : bandeau non fermable « Consultation seule » avec l'unique action « Mettre à jour », indicateur « Action requise », cases inertes expliquées par un toast au toucher, bouton « + » masqué ; la consultation reste complète et les modifications en attente sont conservées.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E7).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **37 scénarios**. Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E7 et E8).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **42 scénarios**. Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -167,16 +175,16 @@ Statut : Validée
 | CA-6 | S09, S10, S12b |
 | CA-7 | S17a, S17b ; détail : US-018, US-031 |
 | CA-8 | S10, S11 |
-| CA-9 (RG-044) | S18, S19, S20, S21, S22, S23, S32, S33 |
+| CA-9 (RG-044) | S18, S19, S20, S20b, S21, S22, S22b, S23, S32, S32b, S33 |
 | CA-10 (RG-047 à RG-049) | S24, S25, S26 ; détail : US-001 S19-S20, US-002 S23, US-023 S16-S19, US-024 S20-S22, US-003 S18-S19, US-025 S15-S16 |
 | CA-11 (RG-054) | S27 ; US-003 S21 |
-| CA-14 (RG-056 : modifications non retenues, jusqu'à « Compris », point « à lire ») | S14, S15, S16 |
+| CA-14 (RG-056 : modifications non retenues, jusqu'à « Compris », point « à lire ») | S14, S15, S15b (point « à lire » hors ligne), S16 |
 | Cas limite : Drive plein | S29 |
 | Cas limite : fuseaux différents sur les deux appareils, voyage | S28 |
-| CA-13 ; cas limite : horloge déréglée (quelques minutes ; seuil de 24 h) | S12, S13a, S13b |
+| CA-13 ; cas limite : horloge déréglée (quelques minutes ; seuil de 24 h ; écart constant de plus de 24 h) | S12, S12c, S13a, S13b |
 | Cas limite : horodatages strictement identiques | S12b |
 | CA-12 (RG-058) ; cas limite : versions différentes | S30, S30b, S31 |
-| Cas limite : fichiers du Drive modifiés à la main mais restés lisibles | S32, S33 |
+| Cas limite : fichiers du Drive modifiés à la main mais restés lisibles | S32, S32b (seul le fichier du smartphone est altéré), S33 |
 | Session Google expirée sur PC (F14) | S06 ; US-031 S06, S07 ; US-022 S23 |
 
 **Délais (CA-2, CA-3, E7 ANT-3)** : les scénarios ne mesurent aucun temps réel. Le délai d'une heure se vérifie en faisant avancer l'horloge contrôlée du banc de 60 minutes sans action de l'utilisateur (S02, S03) ; le délai d'une minute à l'ouverture ou après le geste de reconnexion, en l'avançant de 1 minute (S04, S05, S06). S04 vérifie aussi, par une avance de 1 minute seulement, qu'on n'attend pas le délai d'une heure.
@@ -188,7 +196,8 @@ Statut : Validée
 - *Fichiers du Drive modifiés à la main mais restés lisibles* (V-02) : traités comme des données illisibles (CA-9, RG-044 étendue). S32 couvre l'avertissement et le choix ; S33 vérifie que le contenu modifié à la main n'est jamais fusionné.
 
 ## Questions ouvertes
-Aucune. Q-DEM001-41 (DEC-014) et Q-DEM001-39 (DEC-013) ont été répondues le 2026-10-21. Tous les critères sont validés par le commanditaire (DEC-018).
+- **Q-US-017-3 (E8, posée au commanditaire par Jarvis)** : choix RG-044 concurrents sur les deux appareils (« restaurer » sur l'un, « repartir de zéro » sur l'autre, avant tout échange). Rien n'est écrit dans l'US ni dans les scénarios avant la réponse.
+- **Q-US-017-4 (E8, posée au commanditaire par Jarvis, arbitrage A8)** : portée de la dernière phrase de CA-13 quand l'horloge d'un appareil est modifiée pendant qu'il est hors ligne. CA-13 n'est pas modifié avant la réponse ; le scénario S12c (écart constant de plus de 24 h) est ajouté sans attendre.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -201,3 +210,4 @@ Aucune. Q-DEM001-41 (DEC-014) et Q-DEM001-39 (DEC-013) ont été répondues le 2
 | 2026-10-21 | v0.7 (Pepper) : V-06 option 2 mise en œuvre (CA-12, RG-058 ; scénarios S30 et S31) ; V-02 : fichiers du Drive modifiés à la main traités comme illisibles (CA-9, cas limites ; scénarios S32 et S33). Les deux cas qui étaient en attente d'arbitrage sont tranchés. |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-3 (délais reformulés par l'avance de l'horloge contrôlée) ; ANT-4 et BEN-12 (CA-13, seuil strictement supérieur à 24 h, S13a/S13b) ; STE-3 (CA-14, conservation jusqu'à « Compris ») ; ANT-11 (S12b, égalité stricte des horodatages) ; STA-5 (S30b) ; PEP-7 (S17 scindé en S17a/S17b) ; PEP-8 (mentions caduques retirées). Aucune règle validée n'est modifiée dans son sens ; CA-13 et CA-14 explicitent des éléments déjà validés (cas limite de l'horloge, RG-056). |
 | 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 : Q-REF-2 ajoutée au CA-12 (aucune écriture dans le Drive en consultation seule ; dépôt après la mise à jour ; S30b conservé) ; Q-REF-1 a : annulations RG-048 un par un (cas limites, CA-10) ; Q-LOT-1 b : US-017 n'est pas découpée, livrée en 4 incréments internes avec une revue de code chacun (voir LOT-001 §9.3). DEC-021 sans effet sur cette US (aucune mention de Google Play). |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-017-1 (critère de valeur écartée, CA-8 précisé ; S10 et S11 vérifiés par Starck), Q-US-017-2 (granularité de RG-044 : fichier du smartphone dans S32 et S33, S32b ajouté, S20 complété ; lecture de « rien n'est réécrit » confirmée), Q-US-017-5 (S13a complété), Q-US-017-6 (point « à lire » dans tous les états ; S15 complété, S15b ajouté), Q-US-017-7 (préfixes d'appareil), Q-US-017-8 (valeurs fermées du tableau, S21 complété), Q-US-017-9 à 12 (glossaire v1.2) ; précisions de conception de Steeve sur RG-044 sans réseau (S20b, S22b) ; S12c ajouté (écart d'horloge constant de plus de 24 h). Aucune règle ni aucun critère validé n'est modifié. **En attente du commanditaire** : Q-US-017-3 et Q-US-017-4 (A8), posées par Jarvis. |

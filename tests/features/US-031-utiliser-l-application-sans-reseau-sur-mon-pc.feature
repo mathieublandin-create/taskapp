@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-031 — Utiliser l'application sans réseau sur mon PC
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-031
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-031
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -162,7 +163,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | B       | intitulé    | A                  | B                |
 
@@ -174,7 +175,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Chapitre 1" n'existe plus
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-05         | tâche supprimée  |
 
@@ -324,7 +325,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Étant donné que l'accès au compte Google "A" a été retiré sur le PC
     Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
-    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" variante 24H mentionne 1 modification en attente
     Et sur le PC, un seul bandeau est affiché
     Et sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
@@ -337,6 +338,23 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Étant donné que l'accès au compte Google "A" a été retiré sur le PC
     Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:00 heure de Europe/Paris
-    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
     Et sur le PC, un seul bandeau est affiché
+
+  @US-031 @RG-057 @RG-017 @LOT-001
+  Scénario: S22c — Session Google expirée avec une modification en attente depuis plus de 24 h : rappel "BAN-RAPPEL-24H" avec l'action "Reprendre la synchronisation"
+    # E8, Q-US-031-2 a) : RG-057 porte sur l'âge de la plus ancienne modification en attente, quel que soit l'état de la synchronisation.
+    # Avant 24 h, la session expirée reste sans bandeau (CA-5).
+    Étant donné que la session Google du navigateur du PC a expiré
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:00 heure de Europe/Paris
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le PC, aucun bandeau n'est affiché
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché, avec l'action "Reprendre la synchronisation"
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" n'est pas affiché
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le PC, aucun bandeau n'est affiché

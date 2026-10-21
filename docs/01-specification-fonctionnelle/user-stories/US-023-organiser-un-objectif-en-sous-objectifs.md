@@ -100,7 +100,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **22 scénarios**. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E8).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **22 scénarios**. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -109,7 +109,7 @@ Statut : Validée
 | CA-3 | S04 |
 | CA-4 | S05, S06 |
 | CA-5 | S07, S08 |
-| CA-6 | S09, S10, S11 |
+| CA-6 | S09, S10, S11 (dont, E8 Q-US-023-1, les refus cumulés : un seul code, par ordre de priorité ERR-031, puis ERR-030 variante objectif-a-des-sous-objectifs, puis ERR-030 variante cible-est-sous-objectif) |
 | CA-7 | S13, S14 |
 | CA-8 | S15 |
 | CA-9 (RG-048) | S16, S17, S18, S18b (trois placements concurrents, seul le plus ancien est annulé), S18c (chaîne de trois placements, deux annulations successives, du plus ancien au plus récent) |
@@ -120,7 +120,7 @@ Statut : Validée
 | Cas limite : sous-objectif atteint, parent avec tâches à faire | S13 |
 
 ## Questions ouvertes
-Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
+- **Q-US-001-1 (E8, en attente du commanditaire ; question portée par US-001)** : faut-il signaler dans la liste « Modifications non retenues » un sous-objectif créé sous un objectif supprimé sur l'autre appareil, devenu objectif principal (RG-047) ? Selon la réponse, CA-10 et S19 seront complétés et l'US repassera en validation (E6) pour ce point.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -130,3 +130,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-9 (S18b : RG-048 avec trois déplacements concurrents), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |
 | 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 / Q-REF-1 a intégrée à RG-048 et au CA-9 (annulation un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide ; chaque annulation signalée). Nouveau scénario S18c (chaîne de trois déplacements, deux annulations). S16, S17, S18 et S18b restent valables. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-023-1 (ordre des refus cumulés ; deux exemples ajoutés à S11), Q-US-023-2 (glossaire v1.2), Q-US-001-2 (rendu de l'historique de S20 confirmé, valeur « aucun (objectif principal) » inscrite au glossaire), Q-US-017-7 (préfixes d'appareil, S16 à S18c). Précisions sans changement de règle. Q-US-001-1 (S19) en attente du commanditaire. |

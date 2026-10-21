@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-003 — Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-003
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-003
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -215,6 +216,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Quand l'utilisateur rouvre la tâche "Payer la facture"
     Alors la tâche "Payer la facture" est en retard
 
+  # E8, Q-US-002-1 : valeurs du filtre d'état « à faire », « terminée », « abandonnée » (pas de « tous ») ; à l'ouverture, « à faire ».
   @US-003 @RG-026 @LOT-001
   Plan du scénario: S16 — Les tâches peuvent être filtrées selon qu'elles sont à faire ou terminées
     Étant donné les tâches suivantes :
@@ -244,7 +246,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'état de la tâche "Chapitre 1" est "abandonnée"
     Et sur les deux appareils, la tâche "Chapitre 1" n'a pas de date de fin
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | état        | terminée           | abandonnée       |
 
@@ -264,7 +266,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors sur les deux appareils, l'état de la tâche "Chapitre 1" est "terminée"
     Et sur les deux appareils, l'état de la tâche "Section A" est "à faire"
     Et sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
-    Et l'état de l'objectif "Publier le guide" est "en cours"
+    Et sur les deux appareils, l'état de l'objectif "Publier le guide" est "en cours"
 
   @US-003 @RG-049 @LOT-001
   Plan du scénario: S19 — L'incohérence d'une tâche parente terminée est résolue par l'utilisateur
@@ -292,6 +294,23 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | événement   | journée    | avant      | après      |
       | fin         | 2026-10-21 | à faire    | terminée, date de fin 2026-10-21 |
       | réouverture | 2026-10-23 | terminée, date de fin 2026-10-21 | à faire |
+
+  @US-003 @RG-050 @RG-026 @RG-023 @LOT-001
+  Scénario: S22 — La réouverture d'une tâche parente, entraînée par la réouverture d'une de ses sous-tâches, est conservée dans l'historique de la tâche parente
+    # E8, Q-US-001-2 c : une conséquence enregistrée (ici, la tâche parente rouverte) a sa propre entrée dans l'historique.
+    Étant donné les tâches suivantes :
+      | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | terminée | 2026-11-30 |            |           |               |
+      | Section A  | terminée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Quand l'utilisateur rouvre la tâche "Section A"
+    Et l'utilisateur confirme
+    Alors l'historique de la tâche "Section A" se termine par :
+      | événement   | journée    | avant                            | après   |
+      | réouverture | 2026-10-22 | terminée, date de fin 2026-10-21 | à faire |
+    Et l'historique de la tâche "Chapitre 1" se termine par :
+      | événement   | journée    | avant                            | après   |
+      | réouverture | 2026-10-22 | terminée, date de fin 2026-10-21 | à faire |
 
   # ---------------------------------------------------------------- Mention « heure de Paris » (RG-054)
 

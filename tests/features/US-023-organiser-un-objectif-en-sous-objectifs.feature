@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-023 — Organiser un objectif en sous-objectifs
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-023
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-023
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -132,10 +133,14 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Quand l'utilisateur place l'objectif "<objectif déplacé>" sous l'objectif "<parent visé>"
     Alors l'action est refusée avec le motif "<motif>"
 
+    # E8, Q-US-023-1 : quand plusieurs motifs s'appliquent, un seul code est donné, dans cet ordre de priorité :
+    # ERR-031, puis ERR-030 variante objectif-a-des-sous-objectifs, puis ERR-030 variante cible-est-sous-objectif.
     Exemples:
-      | objectif déplacé    | parent visé         | motif                                    |
-      | Apprendre l'italien | Apprendre l'italien | ERR-031                                  |
-      | Apprendre l'italien | Version imprimable  | ERR-030 variante cible-est-sous-objectif |
+      | objectif déplacé    | parent visé         | motif                                          |
+      | Apprendre l'italien | Apprendre l'italien | ERR-031                                        |
+      | Apprendre l'italien | Version imprimable  | ERR-030 variante cible-est-sous-objectif       |
+      | Publier le guide    | Publier le guide    | ERR-031                                        |
+      | Publier le guide    | Version imprimable  | ERR-030 variante objectif-a-des-sous-objectifs |
 
   @US-023 @RG-022 @LOT-001
   Scénario: S12 — Déplacer un sous-objectif sous son parent actuel est sans effet
@@ -201,7 +206,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, "Bêta" est un sous-objectif de l'objectif "Alpha"
     Et sur les deux appareils, "Alpha" est un objectif principal
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée     |
       | Alpha   | parent      | sous Bêta          | placement annulé     |
 
@@ -217,7 +222,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, "O" est un objectif principal
     Et sur les deux appareils, "S" est un sous-objectif de l'objectif "O"
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | O       | parent      | sous P             | placement annulé |
 
@@ -236,7 +241,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et sur les deux appareils, "Alpha" est un objectif principal
     Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
     Et les deux appareils présentent la même hiérarchie d'objectifs
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
@@ -259,7 +264,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
     Et les deux appareils présentent la même hiérarchie d'objectifs
     Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 1 information
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
@@ -284,11 +289,13 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
     Et les deux appareils présentent la même hiérarchie d'objectifs
     Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 2 informations
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
       | Gamma   | parent      | sous Alpha         | placement annulé |
 
+  # Q-US-001-1 (E8) : la présence d'une ligne dans la liste des modifications non retenues pour la création de « Version imprimable »
+  # sous l'objectif supprimé est soumise au commanditaire. S19 n'est pas modifié avant sa réponse.
   @US-023 @RG-047 @LOT-001
   Scénario: S19 — Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour

@@ -35,7 +35,7 @@ Statut : Validée
 12. **CA-12** — *(RG-050)* La création d'une sous-tâche (avec sa tâche parente) et sa suppression sont conservées dans l'historique, comme pour toute tâche (US-002, CA-14).
 
 ## Cas limites et cas d'erreur
-- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029.
+- Suppression de la dernière sous-tâche : la tâche redevient une tâche simple ; son estimation est alors la dernière somme calculée, de nouveau modifiable selon RG-029. *Précision E8 (Q-US-024-2, hypothèse a retenue)* : si cette dernière somme vaut 0 h (seule sous-tâche restante abandonnée, puis supprimée), la tâche garde 0 h ; la saisie suivante respecte le minimum de 30 min (S10b). L'estimation ainsi recopiée a sa propre entrée « modification estimation » dans l'historique (Q-US-001-2 ; S10).
 - Ajout d'une sous-tâche à une tâche terminée : l'application demande confirmation, puis rouvre la tâche parente, conformément à RG-023.
 - Ajout d'une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-025).
 - Toutes les sous-tâches abandonnées : l'estimation calculée de la tâche parente est de 0 h, et la tâche parente peut être déclarée terminée ou abandonnée. Le minimum de 30 min (RG-028) ne s'applique qu'à une estimation **saisie** : une estimation calculée de 0 h est valide, n'est refusée par aucune opération sur la tâche (renommer, modifier son délai, la terminer, l'abandonner), et reste non modifiable puisqu'elle est calculée (CA-4). *Précision de rédaction E7 (BEN-10, PEP-9) : le cas était déjà validé ; elle en explicite la relation avec RG-028.*
@@ -99,7 +99,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle. Les confirmations d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **24 scénarios**. Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E8).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **25 scénarios**. Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -114,8 +114,8 @@ Statut : Validée
 | CA-9 | S19, S07 |
 | CA-10 (RG-049) | S20, S21 |
 | CA-11 (RG-047) | S22 |
-| CA-12 (RG-050) | S23 |
-| Cas limite : suppression de la dernière sous-tâche | S10 |
+| CA-12 (RG-050) | S23 ; S10 (estimation recopiée) |
+| Cas limite : suppression de la dernière sous-tâche | S10, S10b (dernière somme de 0 h) |
 | Cas limite : ajout à une tâche terminée | S17 |
 | Cas limite : ajout à une tâche abandonnée | S18 |
 | Cas limite : toutes les sous-tâches abandonnées | S16, S16b (estimation calculée de 0 h face au minimum de 30 min) |
@@ -131,3 +131,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-25, 27 et 29 intégrées (CA-1 à CA-9) ; règles proposées RG-047, RG-049 et RG-050 (CA-10 à CA-12). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-10 et PEP-9 (cas limite « estimation calculée de 0 h » explicité face à RG-028 ; scénario S16b), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié dans son sens. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-024-1 (construction des tableaux de contexte : glossaire v1.2 §1), Q-US-024-2 (dernière somme de 0 h conservée ; S10b), Q-US-024-3 (glossaire v1.2), Q-US-001-2 (historique : estimation recopiée, S10 complété), Q-US-017-7 (préfixe d'appareil, S22). Précisions sans changement de règle : le cas de 0 h découle du cas limite validé « dernière somme calculée » et de l'estimation calculée de 0 h (S16, S16b). |

@@ -41,7 +41,7 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
-| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | Réponses en cours | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
+| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | 36 répondues ; 4 en attente du commanditaire (Q-US-017-3, A8/CA-13, Q-US-001-1, Q-US-025-2) | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
 | Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)
@@ -78,6 +78,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- Starck : aligner DAT §4.1.5 bis (élément créé puis supprimé hors ligne : non compté comme modification en attente, guide §6.6.1 et US-018 S05c) ; ajouter 3 points au protocole du test technique (Q-US-031-1).
 - Distribution par APK (DEC-021, ADR-012) : ajouter un `.gitignore` avant de créer la clé de signature (Anthony, socle E9) ; questions QC-8 (clé dans les secrets GitHub) et QC-9 (compte gratuit « distribution limitée » ou ADB) posées au commanditaire.
 - ETU-001 (plus tard) : étude d'auto-hébergement sur le Raspberry Pi du commanditaire (option C de `03-architecture/etude-sans-cloud-ou-gratuit.md`).
 - DEC-023 : le dépôt GitHub est actuellement privé ; le passage en public est une action du commanditaire (paramètres du dépôt).

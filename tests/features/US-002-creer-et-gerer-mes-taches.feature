@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-002 — Créer et gérer mes tâches
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-002
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-002
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -123,8 +124,8 @@ Fonctionnalité: Créer et gérer mes tâches
     Exemples:
       | délai du second objectif | délai      | alerte                                                                                       |
       | de délai 2026-11-25      | 2026-11-30 | porte une alerte de délai qui nomme les objectifs "Publier le guide" et "Développer mon activité" |
-      | de délai 2026-12-31      | 2026-11-30 | porte une alerte de délai qui nomme le seul objectif "Publier le guide"                      |
-      | sans délai               | 2026-11-30 | porte une alerte de délai qui nomme le seul objectif "Publier le guide"                      |
+      | de délai 2026-12-31      | 2026-11-30 | porte une alerte de délai qui nomme l'objectif "Publier le guide"                      |
+      | sans délai               | 2026-11-30 | porte une alerte de délai qui nomme l'objectif "Publier le guide"                      |
       | sans délai               | 2026-11-20 | ne porte aucune alerte de délai                                                              |
       | de délai 2026-12-31      | 2026-11-10 | ne porte aucune alerte de délai                                                              |
 
@@ -154,7 +155,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | intitulé   | état    | délai      | estimation | objectifs        | tâche parente |
       | Chapitre 1 | à faire | 2026-11-10 | 2 h        | Publier le guide |               |
     Quand l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-11-25
-    Alors la tâche "Chapitre 1" porte une alerte de délai qui nomme le seul objectif "Publier le guide"
+    Alors la tâche "Chapitre 1" porte une alerte de délai qui nomme l'objectif "Publier le guide"
     Quand l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-10-20
     Alors la tâche "Chapitre 1" ne porte aucune alerte de délai
     Et la tâche "Chapitre 1" est en retard
@@ -283,8 +284,10 @@ Fonctionnalité: Créer et gérer mes tâches
 
   # ---------------------------------------------------------------- Liste (CA-11)
 
+  # E8, Q-US-002-1 (guide d'ergonomie §5.7) : la liste s'ouvre sur le filtre d'état « à faire » ; trois valeurs de filtre, « à faire »,
+  # « terminée », « abandonnée », sans valeur « tous » ; les sous-tâches ne sont jamais des lignes de la liste.
   @US-002 @RG-045 @RG-001 @LOT-001
-  Scénario: S20 — La liste des tâches est triée par délai croissant et présente les informations de chaque tâche
+  Scénario: S20 — Par défaut, la liste des tâches présente les tâches à faire, triées par délai croissant, avec les informations de chaque tâche
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé         | état     | délai      | estimation | objectifs        | tâche parente |
@@ -292,11 +295,83 @@ Fonctionnalité: Créer et gérer mes tâches
       | Payer la facture | à faire  | 2026-10-19 | 30 min     |                  |               |
       | Chapitre 1       | terminée | 2026-11-15 | 2 h        | Publier le guide |               |
     Quand l'utilisateur consulte la liste des tâches
-    Alors la liste des tâches présente, dans cet ordre :
+    Alors le filtre d'état de la liste des tâches est "à faire"
+    Et la liste des tâches présente, dans cet ordre :
       | intitulé         | délai      | estimation | état     | objectifs        | en retard |
       | Payer la facture | 2026-10-19 | 30 min     | à faire  |                  | oui       |
-      | Chapitre 1       | 2026-11-15 | 2 h        | terminée | Publier le guide | non       |
       | Chapitre 2       | 2026-12-01 | 3 h        | à faire  | Publier le guide | non       |
+    Quand l'utilisateur filtre les tâches sur l'état "terminée"
+    Alors la liste des tâches présente, dans cet ordre :
+      | intitulé         | délai      | estimation | état     | objectifs        | en retard |
+      | Chapitre 1       | 2026-11-15 | 2 h        | terminée | Publier le guide | non       |
+
+  @US-002 @RG-003 @LOT-001
+  Scénario: S20b — À délai égal, les tâches à faire sont classées de la plus anciennement créée à la plus récente, puis par intitulé
+    # Ordre alphabétique de l'intitulé sans tenir compte des majuscules ni des accents (guide d'ergonomie §5.7).
+    Quand l'utilisateur crée une tâche :
+      | intitulé | délai      | estimation | objectifs |
+      | Relire   | 2026-11-30 | 1 h        |           |
+    Et 5 minutes plus tard, l'utilisateur crée une tâche :
+      | intitulé | délai      | estimation | objectifs |
+      | Zoom     | 2026-11-30 | 1 h        |           |
+    Et au même instant exact, l'utilisateur crée une tâche :
+      | intitulé | délai      | estimation | objectifs |
+      | écrire   | 2026-11-30 | 1 h        |           |
+    Et au même instant exact, l'utilisateur crée une tâche :
+      | intitulé | délai      | estimation | objectifs |
+      | Appeler  | 2026-11-30 | 1 h        |           |
+    Et l'utilisateur crée une tâche :
+      | intitulé | délai      | estimation | objectifs |
+      | Banque   | 2026-11-20 | 30 min     |           |
+    Et l'utilisateur consulte la liste des tâches
+    Alors la liste des tâches présente, dans cet ordre :
+      | intitulé |
+      | Banque   |
+      | Relire   |
+      | Appeler  |
+      | écrire   |
+      | Zoom     |
+
+  @US-002 @RG-026 @RG-027 @LOT-001
+  Scénario: S20c — Les tâches terminées sont présentées de la plus récemment terminée à la plus ancienne, et les tâches abandonnées de la plus récemment abandonnée à la plus ancienne
+    Étant donné les tâches suivantes :
+      | intitulé | état     | délai      | estimation | objectifs | tâche parente | date de fin |
+      | Plan     | terminée | 2026-12-01 | 1 h        |           |               | 2026-10-10  |
+      | Sommaire | terminée | 2026-10-05 | 1 h        |           |               | 2026-10-18  |
+      | Préface  | terminée | 2026-11-15 | 1 h        |           |               | 2026-10-14  |
+    Et les tâches suivantes :
+      | intitulé | état       | délai      | estimation | objectifs | tâche parente | date d'abandon |
+      | Logo     | abandonnée | 2026-10-01 | 1 h        |           |               | 2026-10-12     |
+      | Affiche  | abandonnée | 2026-12-20 | 1 h        |           |               | 2026-10-19     |
+    Quand l'utilisateur filtre les tâches sur l'état "terminée"
+    Alors la liste des tâches présente, dans cet ordre :
+      | intitulé |
+      | Sommaire |
+      | Préface  |
+      | Plan     |
+    Quand l'utilisateur filtre les tâches sur l'état "abandonnée"
+    Alors la liste des tâches présente, dans cet ordre :
+      | intitulé |
+      | Affiche  |
+      | Logo     |
+
+  @US-002 @RG-023 @RG-001 @LOT-001
+  Scénario: S20d — Les sous-tâches ne sont jamais des lignes de la liste des tâches ; la tâche parente indique leur avancement
+    Étant donné les tâches suivantes :
+      | intitulé         | état       | délai      | estimation | objectifs | tâche parente |
+      | Payer la facture | à faire    | 2026-10-25 | 30 min     |           |               |
+      | Chapitre 1       | à faire    | 2026-11-30 |            |           |               |
+      | Section A        | terminée   | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | Section B        | à faire    | 2026-11-25 | 1 h        |           | Chapitre 1    |
+      | Section C        | abandonnée | 2026-11-25 | 1 h        |           | Chapitre 1    |
+    Quand l'utilisateur filtre les tâches sur l'état "à faire"
+    Alors la liste des tâches contient exactement "Payer la facture" et "Chapitre 1"
+    Et dans la liste des tâches, la tâche "Chapitre 1" indique 1 sous-tâche terminée sur 2 sous-tâches non abandonnées
+    Et la tâche "Section B" ne figure pas parmi les tâches sans objectif
+    Quand l'utilisateur filtre les tâches sur l'état "terminée"
+    Alors la liste des tâches est vide
+    Quand l'utilisateur filtre les tâches sur l'état "abandonnée"
+    Alors la liste des tâches est vide
 
   # ---------------------------------------------------------------- Suppression (CA-12)
 
@@ -338,7 +413,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Chapitre 1" n'existe plus
     Et sur les deux appareils, la tâche "Chapitre 1 revu" n'existe pas
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | intitulé    | Chapitre 1 revu    | tâche supprimée  |
 

@@ -34,7 +34,9 @@ Statut : Validée
    - à la reconnexion avec le même compte, il retrouve toutes ses données, et les modifications en attente sont enregistrées dans son Drive ;
    - avant la déconnexion, si des modifications ne sont pas encore enregistrées dans son Drive, l'application lui en indique le nombre et lui précise qu'elles le seront à sa prochaine connexion sur cet appareil.
    - La déconnexion n'efface jamais les données de l'appareil ; il n'existe pas d'action combinée « se déconnecter et effacer » (DEC-015).
+   - *Précision E8 (Q-US-022-4, sans changement de règle)* : avec le réseau, l'application tente d'abord d'enregistrer les modifications en attente dans le Drive ; elle n'indique leur nombre (et ne demande confirmation) que s'il en reste après cette tentative (S09c, S09d). En consultation seule (RG-058), elle ne tente aucun enregistrement (Q-US-022-3 ; S25).
 7. **CA-7** — Si l'accès au compte Google a été retiré ou a expiré, l'application l'indique à l'utilisateur dès sa prochaine utilisation et lui propose de se reconnecter. En attendant, il continue de consulter et de saisir ses données, comme sans réseau (RG-035, US-018). Après reconnexion, ses modifications faites entre-temps sont enregistrées dans son Drive ; aucune n'est perdue (ENF-06).
+   - *Précision E8 (Q-US-031-1, sans changement de règle)* : sur le PC, l'accès expiré est la session Google du navigateur expirée, signalée sans bandeau, avec l'action « Reprendre la synchronisation » (US-031 CA-5 et CA-9) ; l'accès retiré est signalé par le bandeau « Se reconnecter » dès que l'application en a la preuve.
 8. **CA-8** — Au lot 1, l'application ne demande que l'identification du compte et l'accès à ses propres fichiers dans le Drive. Elle ne demande pas l'accès à l'agenda (ENF-05). Aucun écran d'avertissement de Google du type « application non validée » ne s'affiche lors de la connexion (ENF-08). *Cette dernière vérification se fait à la main en recette métier (scénario S13b, tag `@recette`) : le banc ne peut pas simuler l'écran de Google.*
 9. **CA-9** — Quand un compte Google B se connecte sur un appareil où restent les données d'un compte A (RG-043, DEC-016) :
    - l'utilisateur connecté avec B ne voit jamais les données de A (RG-018) ;
@@ -47,10 +49,12 @@ Statut : Validée
    - une fois les données supprimées, la session prend fin et l'application revient à l'écran de connexion ;
    - à la prochaine connexion avec ce compte sur cet appareil, les données sont de nouveau chargées depuis le Drive, comme sur un nouvel appareil (réseau nécessaire) ;
    - les données d'un autre compte conservées sur l'appareil (CA-9) ne sont pas touchées.
+   - *Précision E8 (Q-US-022-3, réponse de Starck, DAT §4.2)* : en consultation seule (RG-058), l'enregistrement préalable est considéré comme impossible : l'application annonce directement le nombre de modifications qui seraient perdues et n'écrit rien dans le Drive (S24).
 
 ## Cas limites et cas d'erreur
 - Première connexion sans réseau : l'application indique qu'une connexion réseau est nécessaire pour se connecter la première fois (motif `ERR-003`).
 - Réseau interrompu pendant la connexion : message d'erreur et possibilité de réessayer, sans donnée créée à moitié (motif `ERR-005`).
+- Drive **momentanément** indisponible à la connexion (erreurs passagères qui persistent après les nouvelles tentatives) : traité comme une connexion interrompue, motif `ERR-005` (précision E8, Q-US-022-2 a ; S20c). `ERR-006` reste réservé au Drive désactivé ou refusé pour le compte.
 - Drive indisponible ou désactivé pour ce compte (par exemple, un compte d'organisation sans accès au Drive) : message explicite, et pas d'accès aux fonctions (RG-019, RG-020 ; motif `ERR-006`).
 - Accès retiré pendant que l'application est ouverte : traité comme CA-7 dès l'action suivante qui nécessite l'accès.
 - Sur PC, session Google du navigateur expirée : l'application reste utilisable avec les données présentes sur le PC ; la mise à jour avec l'autre appareil reprend après un geste de reconnexion (US-017, CA-3).
@@ -143,7 +147,7 @@ Chaque échec ou refus de connexion porte un code, que les tests vérifient. **L
 - **Questions et réserves** : Q-ERG-15 (nom de l'application) tranchée : « Done Juan » (DEC-017), dossier du Drive identique (V-13) ; guide et maquettes alignés. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **27 scénarios** dont 1 en recette manuelle (`@recette`). Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **32 scénarios** dont 1 en recette manuelle (`@recette`). Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -152,13 +156,13 @@ Chaque échec ou refus de connexion porte un code, que les tests vérifient. **L
 | CA-3 | S05 |
 | CA-4 | S06 |
 | CA-5 | S07 |
-| CA-6 | S08, S09a, S09b, S10 |
+| CA-6 | S08, S09a, S09b, S09c (avec réseau : enregistrement d'abord), S09d (avec réseau, Drive momentanément indisponible), S10, S25 (consultation seule) |
 | CA-7 | S11 |
 | CA-8 | S13a ; S13b (recette manuelle, `@recette`) |
 | CA-9 | S14 |
-| CA-10 (RG-055) | S10, S15, S16, S17a, S17b, S18, S19 |
+| CA-10 (RG-055) | S10, S15, S16, S17a, S17b, S18, S19, S24 (consultation seule) |
 | Cas limite : première connexion sans réseau ; réseau interrompu | S20a, S20b |
-| Cas limite : Drive indisponible ou désactivé | S21 |
+| Cas limite : Drive indisponible ou désactivé | S21 (désactivé, `ERR-006`), S20c (momentanément indisponible, `ERR-005`) |
 | Cas limite : accès retiré pendant l'utilisation | S12 |
 | Cas limite : session Google expirée sur PC | S23 |
 | Cas limite : reconnexion sans réseau | S22 |
@@ -180,3 +184,4 @@ Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déro
 | 2026-10-21 | Nom du dossier du Drive : « Done Juan » (V-13, DEC-018), CA-3 précisé. |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-1 (S13 scindé, avertissement Google en recette manuelle, tag `@recette`), BEN-6 (CA-2 précisé : les deux actions sont proposées), ANT-2 et ANT-15 (motifs de connexion identifiés par les codes `ERR-001` à `ERR-006` du catalogue de Steeve), PEP-7 et ANT-9 (S09, S17 et S20 scindés pour supprimer les colonnes de texte libre), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère validé n'est modifié dans son sens. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-022-1 (formes au glossaire v1.2 ; « l'accès a été retiré » = perte déjà constatée ; forme unique « est affiché, avec l'action »), Q-US-022-2 (Drive momentanément indisponible : `ERR-005` ; S20c), Q-US-022-3 (consultation seule : aucune écriture pour la suppression des données ni pour la déconnexion ; S24, S25), Q-US-022-4 (déconnexion avec réseau : enregistrement d'abord ; S09c, S09d), Q-US-031-1 (accès expiré sur le PC, CA-7). Précisions sans changement de règle. |

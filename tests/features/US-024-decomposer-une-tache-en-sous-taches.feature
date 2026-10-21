@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-024 — Décomposer une tâche en sous-tâches
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-024
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-024
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -151,6 +152,27 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et l'estimation de la tâche "Chapitre 1" est 1 h 30
     Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1" en 2 h
     Alors l'estimation initiale de la tâche "Chapitre 1" est 2 h
+    # E8, Q-US-001-2 c : l'estimation recopiée à la suppression de la dernière sous-tâche est une conséquence enregistrée, qui a sa propre
+    # entrée ; « avant » est l'estimation calculée en vigueur juste avant (la somme des sous-tâches).
+    Et l'historique de la tâche "Chapitre 1" se termine par :
+      | événement               | journée    | avant  | après  |
+      | modification estimation | 2026-10-21 | 1 h 30 | 1 h 30 |
+      | modification estimation | 2026-10-21 | 1 h 30 | 2 h    |
+
+  @US-024 @RG-023 @RG-028 @RG-029 @LOT-001
+  Scénario: S10b — Si la dernière somme valait 0 h, la tâche redevenue simple garde une estimation de 0 h, que l'utilisateur peut ensuite modifier au pas de 30 min
+    # E8, Q-US-024-2, hypothèse a) retenue : 0 h est la dernière somme calculée (S10, S16) ; le minimum de 30 min s'applique à la saisie suivante.
+    Étant donné les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | à faire    | 2026-11-30 |            |           |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+    Quand l'utilisateur supprime la tâche "Section A" et confirme
+    Alors la tâche "Chapitre 1" n'a aucune sous-tâche
+    Et l'estimation de la tâche "Chapitre 1" est 0 h
+    Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1" en 0 h
+    Alors la modification est refusée avec le motif "ERR-023"
+    Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1" en 1 h
+    Alors l'estimation initiale de la tâche "Chapitre 1" est 1 h
 
   # ---------------------------------------------------------------- Délai (CA-6) et objectifs hérités (CA-7)
 
@@ -338,7 +360,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, les tâches "Chapitre 1" et "Section A" n'existent plus
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément   | information | valeur non retenue      | valeur conservée                  |
       | Section A | création    | sous-tâche de Chapitre 1 | supprimée avec la tâche Chapitre 1 |
 

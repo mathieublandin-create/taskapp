@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-018 — Utiliser l'application sans réseau sur mon smartphone
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-018
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-018
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -84,6 +85,28 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et sur le smartphone, l'objectif "Courir un semi-marathon" porte la mention "MEN-ATTENTE"
     Et sur le smartphone, l'objectif "Publier le guide" ne porte pas la mention "MEN-ATTENTE"
 
+  # E8, Q-US-018-1, option a) : le nombre de modifications en attente est le nombre d'éléments distincts (objectifs, tâches, sous-tâches)
+  # qui portent la mention MEN-ATTENTE ; plusieurs modifications d'un même élément comptent pour une.
+  @US-018 @RG-021 @LOT-001
+  Scénario: S05b — Plusieurs modifications d'un même élément comptent pour une seule modification en attente
+    Étant donné que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Et sur le smartphone, l'utilisateur renomme l'objectif "Courir un semi-marathon" en "Courir un marathon"
+    Et sur le smartphone, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
+    Et sur le smartphone, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-10
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 2 modification(s) en attente
+    Et sur le smartphone, l'objectif "Courir un marathon" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la tâche "Chapitre 1" porte la mention "MEN-ATTENTE"
+
+  @US-018 @RG-021 @RG-046 @LOT-001
+  Scénario: S05c — Un élément créé puis supprimé sans réseau ne compte pas ; la suppression d'un élément déjà enregistré compte pour une modification
+    Étant donné que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur crée un objectif "Brouillon" sans délai
+    Et sur le smartphone, l'utilisateur supprime l'objectif "Brouillon" et confirme
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 0 modification(s) en attente
+    Quand sur le smartphone, l'utilisateur supprime la tâche "Chapitre 1" et confirme
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
+
   # ---------------------------------------------------------------- Retour du réseau (CA-4, CA-7)
 
   @US-018 @RG-021 @LOT-001
@@ -107,7 +130,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Chapitre 1" existe avec le délai 2026-12-05
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-01         | 2026-12-05       |
 
@@ -119,7 +142,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "Chapitre 1" n'existe plus
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément    | information | valeur non retenue    | valeur conservée |
       | Chapitre 1 | intitulé    | Chapitre 1 : contexte | tâche supprimée  |
 
@@ -141,6 +164,19 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | l'utilisateur ferme l'application sur le smartphone |
       | le smartphone est éteint puis rallumé            |
       | l'application est arrêtée brutalement sur le smartphone |
+
+  @US-018 @RG-021 @recette @LOT-001
+  Scénario: S09b — Recette manuelle sur un vrai smartphone : après un arrêt forcé de l'application puis un redémarrage du téléphone, aucune modification faite sans réseau n'est perdue
+    # E8, Q-US-018-3 : S09 s'exécute au niveau des cas d'usage ; cette variante se déroule à la main sur l'appareil (recette, E14).
+    Étant donné que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et l'application est arrêtée brutalement sur le smartphone
+    Et le smartphone est éteint puis rallumé
+    Et l'utilisateur ouvre l'application sur le smartphone
+    Alors sur le smartphone, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
+    Quand le réseau revient sur le smartphone
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
   @US-018 @RG-021 @LOT-001
   Scénario: S10 — Il n'y a pas de durée maximale d'utilisation sans réseau
@@ -182,7 +218,9 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
 
   @US-018 @RG-021 @LOT-001
   Scénario: S13 — Le réseau perdu pendant une saisie ne laisse aucune donnée enregistrée à moitié
-    Quand sur le smartphone, l'utilisateur commence la création d'une sous-tâche "Section A" de la tâche "Chapitre 1", de délai 2026-11-20, estimée à 1 h
+    # E8, Q-US-018-2 : saisie en étapes successives, alignée sur US-031 S17.
+    Quand sur le smartphone, l'utilisateur commence la saisie d'une sous-tâche de la tâche "Chapitre 1"
+    Et sur le smartphone, l'utilisateur saisit l'intitulé "Section A", le délai 2026-11-20 et l'estimation 1 h
     Et le réseau est coupé sur le smartphone pendant la saisie
     Et l'utilisateur termine la saisie
     Alors sur le smartphone, la tâche "Section A" existe avec le délai 2026-11-20
@@ -219,6 +257,16 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et que sur le smartphone, l'utilisateur a créé un objectif "Courir un semi-marathon" sans délai
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
     Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 2 modifications en attente
+
+  @US-018 @RG-057 @LOT-001
+  Scénario: S15c — Modifier de nouveau un élément déjà en attente ne remet pas à zéro les 24 h
+    # E8, Q-US-018-1 : les 24 h partent de la première modification non encore enregistrée dans le Drive, tous éléments confondus.
+    Étant donné que le smartphone est sans réseau
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Et que sur le smartphone, l'utilisateur a modifié le délai de la tâche "Chapitre 1 : contexte" en 2026-12-05
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
 
   @US-018 @RG-057 @LOT-001
   Plan du scénario: S16 — Pas de bandeau "BAN-RAPPEL-24H" tant que la plus ancienne modification en attente a 24 h ou moins, ni sans modification en attente
@@ -272,7 +320,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
     Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
-    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H mentionne 1 modification en attente
     Et sur le smartphone, un seul bandeau est affiché
     Et sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
@@ -285,6 +333,6 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
     Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:00 heure de Europe/Paris
-    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
     Et sur le smartphone, un seul bandeau est affiché

@@ -47,12 +47,20 @@ Statut : Validée
 9. **CA-9** — L'utilisateur peut modifier l'estimation d'une tâche tant qu'aucun temps passé n'a été saisi sur elle (RG-029). Au lot 1, la saisie du temps passé n'existe pas encore : l'estimation reste donc modifiable. La valeur en vigueur est l'estimation initiale qui servira à la vélocité. Pour une tâche qui a des sous-tâches, l'estimation est calculée et ne peut pas être modifiée (US-024).
 10. **CA-10** — Un délai déjà dépassé est accepté ; la tâche est aussitôt signalée « en retard ». Une tâche est « en retard » quand elle est à faire et que son délai est antérieur à la journée en cours. Elle ne l'est plus dès que son délai est reporté à aujourd'hui ou plus tard, ou qu'elle est terminée ou abandonnée (RG-045).
 11. **CA-11** — La liste des tâches affiche, pour chacune : l'intitulé, le délai, l'estimation, l'état, le ou les objectifs, et l'indication « en retard » le cas échéant. Elle est triée par délai croissant, en attendant l'ordre de priorité (US-004).
+    - *Précision E8 (Q-US-002-1, sans changement de règle ; guide d'ergonomie §5.7, ECR-002)* :
+      - à l'ouverture, la liste présente les tâches **à faire** ; un filtre d'état propose trois valeurs, à faire, terminées, abandonnées (pas de valeur « toutes ») ;
+      - tâches à faire : délai croissant ; à délai égal, de la plus anciennement créée à la plus récente ; puis par intitulé (ordre alphabétique, sans tenir compte des majuscules ni des accents) ;
+      - tâches terminées : de la plus récemment terminée à la plus ancienne ; tâches abandonnées : de la plus récemment abandonnée à la plus ancienne ;
+      - les sous-tâches ne sont jamais des lignes de la liste, dans aucun filtre (« Sans objectif » compris) : la tâche parente indique le nombre de sous-tâches terminées sur le nombre de sous-tâches non abandonnées ; les sous-tâches figurent dans son détail (US-024).
 12. **CA-12** — La suppression d'une tâche demande une confirmation, puis elle est définitive. Si la tâche a des sous-tâches, la confirmation indique leur nombre, et elles sont supprimées avec elle (RG-046). L'état de ses objectifs est recalculé.
 13. **CA-13** — *(RG-047)* Si une tâche est supprimée sur un appareil et modifiée sur l'autre avant qu'ils n'aient échangé leurs modifications, elle reste supprimée sur les deux appareils, et l'utilisateur est informé des modifications écartées.
 14. **CA-14** — *(RG-050)* La création d'une tâche (avec son estimation, son délai, ses objectifs), la modification de son délai ou de son estimation, son rattachement à un objectif ou son détachement, et sa suppression sont conservés dans l'historique, avec la journée et les valeurs avant et après.
+    - *Précision E8 (Q-US-001-2)* : rendu des valeurs et liste fermée des événements au §11 du glossaire d'étapes. Les sous-tâches supprimées avec leur tâche parente n'ont pas d'entrée propre.
 
 ## Cas limites et cas d'erreur
 - Délai égal à la journée en cours : accepté, la tâche n'est pas en retard.
+- Espaces au début ou à la fin de l'intitulé : retirés à l'enregistrement ; aucune longueur maximale (précision E8, Q-US-001-3).
+- Plusieurs tâches de même délai : classées par date de création, puis par intitulé (CA-11, S20b).
 - Délai de la tâche égal au délai de l'objectif : pas d'alerte, puisque le délai n'est pas postérieur.
 - Estimation de 0 h, ou non multiple de 30 min : refusée.
 - Rattachement à un objectif atteint : l'objectif repasse « en cours » (RG-025).
@@ -119,7 +127,7 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-12 (écran d'accueil du lot 1 : la liste est l'accueil).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-002-creer-et-gerer-mes-taches.feature`](../../../tests/features/US-002-creer-et-gerer-mes-taches.feature) — **25 scénarios**. Chaque scénario porte les tags `@US-002`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21 ; mis à jour en E8).* Fichier : [`tests/features/US-002-creer-et-gerer-mes-taches.feature`](../../../tests/features/US-002-creer-et-gerer-mes-taches.feature) — **28 scénarios**. Chaque scénario porte les tags `@US-002`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -133,7 +141,7 @@ Statut : Validée
 | CA-8 | S09, S10, S11 |
 | CA-9 | S12, S13 |
 | CA-10 | S14, S15 |
-| CA-11 | S20 |
+| CA-11 | S20 (filtre par défaut « à faire », tri par délai), S20b (départage par création puis intitulé), S20c (terminées et abandonnées, plus récentes d'abord), S20d (sous-tâches jamais listées) ; US-003 S16 ; US-025 S04 |
 | CA-12 | S21, S22 |
 | CA-13 (RG-047) | S23 |
 | CA-14 (RG-050) | S24 |
@@ -157,3 +165,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-28 et 29 intégrées (CA-1, CA-3, CA-4, CA-9, CA-10, CA-12) ; réponse Q-ERG-03 (CA-2) ; règles proposées RG-047 et RG-050 (CA-13, CA-14) ; DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-7 (S05 scindé en S05a et S05b pour supprimer la colonne de texte libre « résultat »), BEN-10 et PEP-9 (renvoi à US-024 pour l'estimation calculée de 0 h), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |
+| 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-002-1 (contenu, filtres et tri de la liste, précisés dans CA-11 ; S20 réécrit, S20b, S20c, S20d ajoutés), Q-US-002-2 (une alerte nomme exactement les objectifs cités ; forme « nomme le seul objectif » retirée), Q-US-002-3 (glossaire v1.2), Q-US-001-2 (historique), Q-US-001-3 (espaces de l'intitulé), Q-US-017-7 (préfixe d'appareil, S23). Précisions sans changement de règle de gestion ni de critère validé. |

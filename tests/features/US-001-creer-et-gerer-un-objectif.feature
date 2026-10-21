@@ -1,7 +1,8 @@
 # language: fr
 #
 # Tests métiers — US-001 — Créer et gérer un objectif
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-001
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-001
+# E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture, communes aux fichiers du lot :
 # - les étapes s'exécutent au niveau des cas d'usage (conventions techniques §9.6 et §9.7), sans détail d'interface, sauf les scénarios tagués @ihm ;
@@ -57,6 +58,13 @@ Fonctionnalité: Créer et gérer un objectif
       | intitulé                     |
       | vide                         |
       | composé uniquement d'espaces |
+
+  @US-001 @RG-002 @LOT-001
+  Scénario: S04b — Les espaces placés au début et à la fin d'un intitulé ne sont pas conservés
+    # E8, Q-US-001-3 : les espaces de début et de fin sont retirés à l'enregistrement ; aucune longueur maximale n'est fixée.
+    Quand l'utilisateur crée un objectif "   Publier le guide  " de délai 2026-12-15
+    Alors l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et il existe 1 objectif d'intitulé "Publier le guide"
 
   @US-001 @RG-002 @LOT-001
   Scénario: S05 — Deux objectifs peuvent porter le même intitulé
@@ -245,10 +253,12 @@ Fonctionnalité: Créer et gérer un objectif
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'objectif "Publier le guide" n'existe plus
-    Et la liste des modifications non retenues contient :
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue | valeur conservée   |
       | Publier le guide | délai       | 2027-01-31         | objectif supprimé  |
 
+  # Q-US-001-1 (E8) : la présence, dans la liste des modifications non retenues, d'une ligne pour le rattachement de « Annexe »
+  # et pour la création de « Version imprimable » sous l'objectif supprimé est soumise au commanditaire. S20 n'est pas modifié avant sa réponse.
   @US-001 @RG-047 @RG-046 @LOT-001
   Scénario: S20 — Ce qui a été rattaché ou créé entre-temps sous l'objectif supprimé subit les conséquences de la suppression
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
@@ -277,7 +287,25 @@ Fonctionnalité: Créer et gérer un objectif
     Et l'utilisateur supprime l'objectif "Publier le guide" et confirme
     Alors l'historique contient, pour l'objectif "Publier le guide" :
       | événement           | journée    | avant      | après      |
-      | création            | 2026-10-21 |            | 2026-12-15 |
-      | modification délai  | 2026-10-22 | 2026-12-15 | 2027-01-31 |
-      | suppression         | 2026-10-23 |            |            |
+      | création            | 2026-10-21 |            | délai 2026-12-15 |
+      | modification délai  | 2026-10-22 | 2026-12-15 | 2027-01-31       |
+      | suppression         | 2026-10-23 |            |                  |
     Et l'historique n'est affiché nulle part dans l'application
+
+  @US-001 @RG-050 @RG-046 @LOT-001
+  Scénario: S22 — Le détachement des tâches et la promotion des sous-objectifs, qui découlent de la suppression d'un objectif, n'ajoutent aucune entrée à l'historique
+    # E8, Q-US-001-2 c : une conséquence qui se déduit d'un autre événement de l'historique (ici, la suppression de l'objectif) n'a pas d'entrée propre.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide", sans délai
+    Et les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs        | tâche parente |
+      | Plan     | à faire | 2026-11-10 | 1 h        | Publier le guide |               |
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Quand l'utilisateur supprime l'objectif "Publier le guide" et confirme
+    Alors la tâche "Plan" existe sans objectif
+    Et "Version imprimable" est un objectif principal
+    Et l'historique de l'objectif "Publier le guide" se termine par :
+      | événement   | journée    | avant | après |
+      | suppression | 2026-10-22 |       |       |
+    Et l'historique ne contient aucune entrée "détachement" pour la tâche "Plan"
+    Et l'historique ne contient aucune entrée "changement parent" pour l'objectif "Version imprimable"

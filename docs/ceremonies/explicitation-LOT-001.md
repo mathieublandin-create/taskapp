@@ -395,3 +395,97 @@ Chaque incrément a sa revue de code E13 (DEC-025).
 | 13 | US-031 | Tous les scénarios ; service worker, Web Locks, `storage.persist()`, profil `@ihm` | Spécificités du PC |
 
 **Point à faire valider par Jarvis et Pepper (DoD par US).** Selon cet ordre, la revue E13 d'une US métier porte sur ses scénarios à un appareil. Ses scénarios à deux appareils sont livrés et revus avec l'incrément 2 d'US-017, comme le prévoit déjà le CA-10 d'US-017 (« détail dans US-001, … »). L'US métier n'est pas déclarée « En recette » avant l'approbation de l'incrément 2.
+
+---
+
+## Réponses aux Q-US
+
+> Pepper, business analyste, le 2026-10-21. Étape E8 de LOT-001, itération 1/2 de la règle anti-boucle. Réponses établies avec celles de Starck (DAT v0.9 : §4.1.5 bis, §4.1.6 bis, §4.2, §4.2.1, §4.2.2, §6.1, §6.4) et de Steeve (guide d'ergonomie v0.2.7 : §5.7, §6.6.1, §6.6.2, §6.6.3, §6.6.8, §6.6.9, §6.6.11 ; ECR-002 L5, ECR-011 M), vérifiées dans leurs fichiers. Les décisions DEC-001 à DEC-029 ne sont pas rouvertes ; le DAT, le guide d'ergonomie et `suivi-projet.md` ne sont pas modifiés.
+>
+> **Fichiers modifiés** : cahier des charges v0.10 ; les 10 US (sections métier, « Tests métiers », « Questions ouvertes », « Historique ») ; les 10 `.feature` (en-tête : cahier des charges v0.10, ANT-24) ; `GLOSSAIRE-ETAPES.md` v1.2 (nettoyage ANT-24 compris). Syntaxe vérifiée avec le parseur Cucumber (`@cucumber/gherkin`, dialecte `fr`) : 10 fichiers, **266 scénarios** (243 auparavant, 23 ajoutés), aucune erreur, tags `@US-xxx`, `@RG-xxx` et `@LOT-001` présents sur chaque scénario.
+>
+> Abréviations : « GL » = `tests/features/GLOSSAIRE-ETAPES.md` v1.2 ; « CdC » = cahier des charges v0.10 ; « US-xxx » = fichier d'US ; « .f » = fichier `.feature` de l'US.
+
+### Synthèse
+
+| Statut | Nombre | Q-US |
+|---|---|---|
+| Répondue | 36 | toutes les autres |
+| En attente commanditaire | 4 | Q-US-001-1 et Q-US-025-2 (questions de Pepper, ci-dessous) ; Q-US-017-3 et Q-US-017-4 / A8 (posées par Jarvis) |
+
+**Ce qui reste bloquant pour Anthony** : US-001 S20 et US-023 S19 (E10, Q-US-001-1) ; le cas d'usage `RouvrirTache` pour une sous-tâche sous une tâche parente abandonnée (E10, Q-US-025-2) ; US-017, incrément 3 (Q-US-017-3) et la dernière phrase de CA-13 (incréments 2 et 4, Q-US-017-4 / A8 ; la conception retient le DAT §6.4, points 1 à 3). Toutes les autres questions bloquantes sont levées.
+
+**Divergence à aligner par Starck (sans question au commanditaire)** : pour un élément créé puis supprimé hors ligne, le DAT §4.1.5 bis le compte « pour un tant que sa suppression n'est pas déposée » ; le guide §6.6.1 (Steeve) et ma réponse à Q-US-018-1 ne le comptent pas (rien à envoyer, aucune ligne dans la feuille). La règle retenue pour l'affichage est celle du guide (US-018 S05c).
+
+**Précisions de conception de Steeve reprises comme précisions, sans changement de règle validée** : « Restaurer » choisi sans réseau est mémorisé et fait au retour du réseau ; « Repartir de zéro » n'est pas disponible sans réseau (RG-044 garde ses deux choix, le second est seulement différé ; US-017 S20b, S22b) ; action « Reprendre la synchronisation » dans `BAN-RAPPEL-24H` variante `session` (RG-057 vaut « que l'appareil soit hors ligne ou non » ; US-031 S22c).
+
+**Lecture de RG-044 (Q-US-017-2)** : ma lecture est celle de Starck. « Rien n'est réécrit dans le Drive » protège les données altérées : l'appareil qui pose la question n'écrit rien, et l'autre appareil peut continuer d'enregistrer son propre fichier, distinct du fichier altéré, qu'il ne fusionne jamais. Aucune question au commanditaire n'est nécessaire.
+
+### Réponses détaillées
+
+| Q-US | Réponse | Fichiers modifiés | Statut |
+|---|---|---|---|
+| Q-US-022-1 | Formes ajoutées au glossaire (§1, §6, §7). Une seule forme : `le bandeau "X" est affiché, avec l'action "X"` (avec virgule). Sens retenu : a) l'accès est perdu **et déjà constaté** par l'application ; un retrait non encore constaté s'écrit avec l'étape `Quand` « l'accès … est retiré depuis le compte Google ». Sur le PC, « a expiré » ne s'emploie pas (session expirée, Q-US-031-1). | GL ; US-018.f (S17c, S17d) ; US-031.f (S22, S22b) ; US-022 | Répondue |
+| Q-US-022-2 | a) `ERR-005` (réponse commune avec Steeve) ; `ERR-006` reste réservé au Drive désactivé ou refusé. | US-022 (cas limites) ; US-022.f (S20c ajouté) | Répondue |
+| Q-US-022-3 | (1) Oui ; (2) Oui (réponse commune avec Starck, DAT §4.2). Aucune action de compte n'écrit dans le Drive en consultation seule. | US-022 (CA-6, CA-10 précisés) ; US-022.f (S24, S25 ajoutés) | Répondue |
+| Q-US-022-4 | Oui : avec le réseau, l'enregistrement est tenté d'abord ; la confirmation n'apparaît que s'il reste des modifications en attente, avec leur nombre (réponse commune avec Steeve). | US-022 (CA-6 précisé) ; US-022.f (S09c, S09d ajoutés) | Répondue |
+| Q-US-017-1 | Réponse de Starck (DAT §4.2.1) : une valeur est écartée si et seulement si l'écriture gagnante a été faite sans connaissance d'elle. Conforme à RG-036 et à CA-8 ; US-017 S10, S11, S12b, US-018 S07, US-031 S10, US-003 S17 et US-001 S19 sont vérifiés et inchangés. | US-017 (CA-8 précisé) | Répondue |
+| Q-US-017-2 | Réponse de Starck (DAT §4.2.2). S32 et S33 désignent le **fichier du smartphone** ; nouveau S32b (seul le smartphone pose la question, le PC continue d'enregistrer son propre fichier) ; S20 complété (b : l'autre appareil ne repose pas la question après une restauration). Ma lecture de « rien n'est réécrit » est celle de Starck (voir ci-dessus). | US-017 (CA-9 précisé) ; US-017.f (S20, S32, S33 ; S32b ajouté) ; GL §1 | Répondue |
+| Q-US-017-3 | Posée au commanditaire par Jarvis. Rien n'est écrit avant sa réponse. | US-017 (Questions ouvertes) | En attente commanditaire |
+| Q-US-017-4 | Posée au commanditaire par Jarvis (arbitrage A8). CA-13 n'est pas modifié. Réponse à la dernière question : oui, scénario ajouté pour un écart constant de plus de 24 h (S12c). | US-017 (CA-13 annoté, Questions ouvertes) ; US-017.f (S12c ajouté) | En attente commanditaire |
+| Q-US-017-5 | Réponse de Starck : oui, `ALR-001` n'est affiché que sur l'appareil déréglé. | US-017.f (S13a complété) ; GL §6 | Répondue |
+| Q-US-017-6 | Option a) (réponse de Steeve) : le point « à lire » est indépendant de l'état (`data-a-lire`) ; RG-056 a) est tenue sans modification. Étapes ajoutées : « l'indicateur de synchronisation signale n information(s) à lire » et « … ne signale aucune information à lire ». | US-017 (CA-14 précisé) ; US-017.f (S15 complété, S15b ajouté) ; GL §6 ; CdC (RG-056) | Répondue |
+| Q-US-017-7 | Hypothèse retenue (sans préfixe dans un scénario à deux appareils : « sur chacun des deux appareils »), inscrite au glossaire, **et** préfixes rendus explicites dans les scénarios cités. | GL (conventions) ; US-001.f S19 ; US-002.f S23 ; US-003.f S17, S18 ; US-017.f S09, S10, S11, S14, S15, S24, S25 ; US-018.f S07, S08 ; US-023.f S16 à S18c ; US-024.f S22 ; US-025.f S14 ; US-031.f S10, S11 | Répondue |
+| Q-US-017-8 | Valeurs fermées des colonnes `information`, `valeur non retenue` et `valeur conservée`, et correspondance avec `ALR-009` à `ALR-011` et `ALR-014`, inscrites au glossaire §8. S21 : option a), une ligne par modification perdue, groupée sous `ALR-008` (code `ALR-014` créé par Steeve), non comptée parmi les informations à lire. | GL §8 ; US-017 (CA-9) ; US-017.f (S21 complété) | Répondue |
+| Q-US-017-9 | Sens observables proposés retenus (GL §12) ; liste fermée des états (tâche : à faire, terminée, abandonnée ; objectif : en cours, atteint, à décliner en tâches) ; toutes les formes citées ajoutées. | GL §1, §6, §8, §12 | Répondue |
+| Q-US-017-10 | Réponses de Starck et Steeve : (a) « Mettre à jour » sur le PC active la version en attente puis recharge, sans perte ; (b) non, la version de schéma n'est pas affichée. Aucun scénario ne vérifie la version : rien à modifier. | — | Répondue |
+| Q-US-017-11 | Réponses de Steeve : (a) feuille seulement ; (b) « Restaurer » mémorisé, « Repartir de zéro » indisponible sans réseau. Reprises comme précisions de RG-044 (voir ci-dessus). | US-017 (CA-9) ; US-017.f (S20b, S22b ajoutés) ; GL §3, §6 ; CdC (RG-044) | Répondue |
+| Q-US-017-12 | Réponses de Steeve et Starck : `ERR-016` ; les tentatives continuent après `SYN-ACTION`. US-018 S14 et US-031 S18 restent valables. | GL §3 | Répondue |
+| Q-US-018-1 | Option a) : nombre d'**éléments distincts** qui portent `MEN-ATTENTE` (exemple de la question : n = 2) ; la suppression d'un élément déjà enregistré compte pour 1 ; un élément créé puis supprimé hors ligne ne compte pas. Les 24 h partent de la première écriture non encore enregistrée, tous éléments confondus. Précision d'affichage, sans changement de règle. | US-018 (CA-3, CA-9) ; US-031 (CA-10) ; US-018.f (S05b, S05c, S15c ajoutés) ; GL §6 ; CdC (glossaire, RG-057) | Répondue |
+| Q-US-018-2 | Oui : S13 aligné sur la séquence d'US-031 S17. Formes ajoutées, dont la forme sur une ligne de création de sous-tâche (seule admise dans une colonne d'`Exemples`) ; pluriel en une seule définition. | US-018.f (S13) ; GL (conventions, §5, §6) | Répondue |
+| Q-US-018-3 | Proposition retenue (exécution au niveau des cas d'usage, avis de Starck DAT §3.3) ; oui, variante `@recette` de S09 ajoutée. | US-018 ; US-018.f (S09b ajouté) ; GL §10 | Répondue |
+| Q-US-031-1 | Réponse de Starck (DAT §4.1.6 bis) : `SYN-SESSION` tant que le retrait n'est pas prouvé, `BAN-ACCES-GOOGLE` ensuite ; sur le PC, « accès expiré » = session expirée, sans bandeau. Reflétée sans changement de règle (sous réserve du test technique R2 et R11). | US-031 (CA-9) ; US-022 (CA-7) ; GL §1 | Répondue |
+| Q-US-031-2 | a) (réponse commune avec Steeve) : `BAN-RAPPEL-24H`, variante `session`, avec l'action « Reprendre la synchronisation ». | US-031 (CA-10, cas limites) ; US-031.f (S22c ajouté) ; GL §6 | Répondue |
+| Q-US-031-3 | Corrigé : CA-10 c) renvoie à CA-9. | US-031 | Répondue |
+| Q-US-031-4 | Formes ajoutées ; sens proposé pour S14 confirmé (ANT-23). | GL §6, §7 ; US-031 (Tests métiers) | Répondue |
+| Q-US-001-1 | Le signalement de ces deux cas étend ce que RG-047 dit signaler (seule la sous-tâche ajoutée à une tâche supprimée y est « signalée ») : **question au commanditaire** (texte ci-dessous). S20 et US-023 S19 inchangés. | US-001, US-023 (Questions ouvertes) ; US-001.f, US-023.f (commentaires) ; CdC §11 | En attente commanditaire |
+| Q-US-001-2 | (a) Oui, règle validée, complétée : plusieurs objectifs s'écrivent « objectifs o1, o2 et o3 », toujours en dernier ; les valeurs sont celles que voyait l'utilisateur (estimation calculée pour une tâche parente). US-001 S21 aligné (« délai 2026-12-15 »). (b) Liste fermée retenue telle quelle (11 événements, identique au DAT §6.1). (c) Principe de Starck retenu : une conséquence **enregistrée** a son entrée (abandon et reprise en cascade, réouverture de la tâche parente, estimation recopiée, placement annulé par RG-048) ; une conséquence **déduite** n'en a pas (tâches détachées, sous-objectifs promus, sous-tâches supprimées avec leur tâche parente). (d) Confirmé. Rendu complet : GL §11. Précision de RG-050, sans changement de sens. | GL §11 ; CdC (RG-050, glossaire) ; US-001, US-002, US-003, US-024, US-025 ; US-001.f (S21 ; S22 ajouté) ; US-003.f (S22 ajouté) ; US-024.f (S10 complété) ; US-025.f (S18 ajouté) | Répondue |
+| Q-US-001-3 | Hypothèse retenue : espaces de début et de fin retirés ; aucune longueur maximale. | US-001, US-002 (cas limites) ; US-001.f (S04b ajouté) ; GL §5 | Répondue |
+| Q-US-001-4 | Règle retenue : première occurrence (UTC+2) ; une heure inexistante fait échouer l'étape. | GL §4 | Répondue |
+| Q-US-001-5 | Formes ajoutées ; sens proposés retenus pour « l'historique n'est affiché nulle part » et « aucune action ne permet … de saisir l'état ». | GL §1, §6, §7, §11, §12 | Répondue |
+| Q-US-023-1 | Ordre validé (avec Steeve) : `ERR-031`, puis `ERR-030 variante objectif-a-des-sous-objectifs`, puis `ERR-030 variante cible-est-sous-objectif`. | US-023 ; US-023.f (S11 : deux exemples ajoutés) | Répondue |
+| Q-US-023-2 | Formes ajoutées ; valeur « aucun (objectif principal) » inscrite au rendu de l'historique. | GL §6, §7, §11 | Répondue |
+| Q-US-002-1 | (a) « À faire » ; (b) S20 réécrit avec le filtre par défaut, l'étape de filtre « terminée » montre la tâche terminée ; (c) pas de valeur « Tous » ; (d) oui, sous-tâches jamais listées, « Sans objectif » compris ; (e) date de création croissante, puis intitulé ; (f) `à faire`, `terminée`, `abandonnée`. Réponse commune avec Steeve (guide §5.7). US-003 S16 et US-025 S04 conformes. Précision de CA-11, sans changement de règle. | US-002 (CA-11) ; US-003 (CA-11) ; US-002.f (S20 réécrit ; S20b, S20c, S20d ajoutés) ; US-003.f, US-025 ; GL §5, §6, §8 | Répondue |
+| Q-US-002-2 | « Exactement X ». Une seule forme `… qui nomme l'objectif "X"`, plus `… qui nomme les objectifs "X" et "X"` ; la forme « nomme le seul objectif » est retirée. | US-002.f (S08, S10) ; GL §6 | Répondue |
+| Q-US-002-3 | Formes ajoutées ; convention retenue (oui) : sans « dans cet ordre », l'ordre n'est pas vérifié ; seules les colonnes présentes sont vérifiées. | GL (conventions, §6) | Répondue |
+| Q-US-024-1 | (a) Oui ; (b) Oui ; (c) Non : un tableau qui donne une tâche parente terminée ou abandonnée avec une sous-tâche à faire décrit une incohérence ; l'étape échoue, et cette situation se construit par l'étape d'incohérence. | GL §1 | Répondue |
+| Q-US-024-2 | Hypothèse a) retenue : la tâche garde 0 h, modifiable ensuite au pas de 30 min. Elle découle du cas limite validé « dernière somme calculée » et de l'estimation calculée de 0 h (S16, S16b) : pas de changement de RG-028 ni de RG-029. | US-024 (cas limites) ; US-024.f (S10b ajouté) | Répondue |
+| Q-US-024-3 | Formes ajoutées ; construction proposée de l'incohérence retenue. | GL §1, §6 | Répondue |
+| Q-US-003-1 | a) (réponse commune avec Steeve) : « Annuler » est une réouverture ; une entrée « fin » puis une entrée « réouverture ». | US-003 (CA-13) ; GL §11 | Répondue |
+| Q-US-003-2 | Liste fermée des actions retenue (terminer, rouvrir, abandonner, reprendre, créer une sous-tâche, créer un sous-objectif) ; construction du sous-objectif de contexte retenue ; formes ajoutées, dont `la liste des tâches contient exactement "X" et "X"`. | GL §1, §5, §6, §7 | Répondue |
+| Q-US-025-1 | Formes ajoutées ; « n'a pas de date d'abandon » (alignée sur « n'a pas de date de fin »). | GL §6, §7 ; US-025.f (S08) | Répondue |
+| Q-US-025-2 | Cas non couvert par RG-023 et RG-027 : **question au commanditaire** (texte ci-dessous). Aucun scénario avant sa réponse. | US-025 (cas limites, Questions ouvertes) ; US-025.f (commentaire) ; CdC §11 | En attente commanditaire |
+
+### Questions au commanditaire (à transmettre par Jarvis)
+
+**Q-US-001-1 — Faut-il vous signaler un rattachement ou un sous-objectif « perdu » par la suppression d'un objectif sur l'autre appareil ?**
+
+Situation : votre smartphone est sans réseau. Sur le PC, vous supprimez l'objectif « Publier le guide ». Pendant ce temps, sur le smartphone, vous rattachez la tâche « Annexe » à cet objectif et vous créez sous lui un sous-objectif « Version imprimable ». Au retour du réseau, la suppression l'emporte (règle déjà validée, RG-047) : « Annexe » devient une tâche sans objectif et « Version imprimable » devient un objectif principal. Rien n'est perdu, mais ce que vous avez fait sur le smartphone n'a pas l'effet attendu.
+
+Faut-il vous l'indiquer dans la liste « Modifications non retenues » (celle qui vous signale déjà, jusqu'à « Compris », les modifications écartées) ?
+- **a) Oui, les deux** : une ligne « Annexe : rattachement à Publier le guide non retenu, objectif supprimé » et une ligne « Version imprimable : placement sous Publier le guide non retenu, objectif supprimé ». ★ Recommandé.
+- b) Seulement le rattachement de la tâche.
+- c) Non : vous constaterez vous-même que la tâche n'a plus d'objectif et que le sous-objectif est devenu principal.
+
+*Pourquoi a)* : sans signalement, vous pouvez croire « Annexe » rattachée à un objectif qui n'existe plus, ou chercher « Version imprimable » au mauvais endroit. C'est déjà ce que la règle prévoit pour une sous-tâche ajoutée à une tâche supprimée ; a) traite les trois cas de la même façon, conformément à l'exigence « rien ne disparaît sans que vous en soyez informé » (ENF-06). Coût : deux lignes de plus dans une liste qui existe déjà.
+
+**Q-US-025-2 — Peut-on rouvrir une sous-tâche terminée quand sa tâche parente est abandonnée ?**
+
+Situation : la tâche « Chapitre 1 » a deux sous-tâches. « Section A » était terminée, « Section B » à faire. Vous abandonnez « Chapitre 1 » : « Section B » est abandonnée avec elle, « Section A » reste terminée (règles déjà validées). Vous voulez ensuite rouvrir « Section A ».
+- **a) Non, pas directement** : l'action « Rouvrir » n'est pas proposée sur « Section A ». Vous reprenez d'abord « Chapitre 1 » (ce qui reprend aussi « Section B »), puis vous rouvrez « Section A ». ★ Recommandé.
+- b) Oui, avec une confirmation : rouvrir « Section A » reprend aussi « Chapitre 1 », et donc « Section B ».
+- c) Oui, sans rien changer à « Chapitre 1 » : la tâche resterait abandonnée avec une sous-tâche à faire, et l'application la signalerait comme incohérente.
+
+*Pourquoi a)* : c'est déjà la règle pour reprendre une sous-tâche abandonnée quand la tâche parente est abandonnée (US-025 CA-8) ; vous n'avez qu'une règle à retenir. b) reprendrait en cascade des sous-tâches sans que vous l'ayez demandé ; c) créerait volontairement une situation incohérente que l'application vous demanderait ensuite de corriger.
+
+Selon les réponses, Pepper complète les US concernées (US-001, US-023, US-025), leurs critères et leurs scénarios ; ces points repassent par la validation du commanditaire (E6).
