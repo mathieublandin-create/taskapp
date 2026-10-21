@@ -198,11 +198,11 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
     Et sur le PC, après échange, il existe 1 objectif d'intitulé "Courir un semi-marathon"
 
-  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-9, RG-057 ; Q-ERG-16 b, Q-ERG-18, DEC-025)
+  # ---------------------------------------------------------------- Modifications en attente depuis plus de 24 h (CA-9, RG-057 ; Q-ERG-16 b, Q-ERG-18, DEC-025)
   # Les 24 h courent depuis la plus ancienne modification en attente ; le bandeau est BAN-RAPPEL-24H.
 
   @US-018 @RG-057 @RG-021 @LOT-001
-  Scénario: S15 — Hors ligne avec une modification en attente depuis plus de 24 h, le bandeau "BAN-RAPPEL-24H" s'affiche sur le smartphone sans rien bloquer
+  Scénario: S15 — Avec une modification en attente depuis plus de 24 h, le bandeau "BAN-RAPPEL-24H" s'affiche sur le smartphone sans rien bloquer
     Étant donné que le smartphone est sans réseau
     Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
@@ -234,7 +234,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | aucune modification n'est en attente sur le smartphone                                              | 2026-10-22 à 10:01  |
 
   @US-018 @RG-057 @LOT-001
-  Scénario: S16b — Hors ligne depuis plus de 24 h mais avec une modification faite il y a 1 minute : pas de bandeau tant que la plus ancienne modification en attente a 24 h ou moins
+  Scénario: S16b — Appareil hors ligne depuis plus de 24 h mais dont la seule modification en attente a 1 minute : pas de bandeau tant que la plus ancienne modification en attente a 24 h ou moins
     Étant donné que le smartphone est sans réseau
     Et que nous sommes le 2026-10-22 à 11:00 heure de Europe/Paris
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"

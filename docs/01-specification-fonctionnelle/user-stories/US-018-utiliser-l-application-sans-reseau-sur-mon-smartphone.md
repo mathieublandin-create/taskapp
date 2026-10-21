@@ -12,7 +12,7 @@ Statut : Validée
 - **Existant.** Aucune fonctionnalité livrée.
 
 ## Règles de gestion applicables (RG-xxx)
-- RG-057 : bandeau de rappel non bloquant après 24 h hors ligne avec modifications en attente.
+- RG-057 : bandeau de rappel non bloquant quand la plus ancienne modification en attente date de plus de 24 h.
 - RG-021 : consultation et saisie sans réseau, sur le smartphone et sur le PC ; prise en compte au retour du réseau ; smartphone prioritaire.
 - RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
@@ -29,7 +29,7 @@ Statut : Validée
 6. **CA-6** — Il n'y a pas de durée maximale d'utilisation sans réseau : les modifications restent conservées sur l'appareil jusqu'au retour du réseau, et l'utilisation n'est jamais bloquée.
 7. **CA-7** — Au retour du réseau, si la même information a été modifiée sur l'autre appareil, la règle de conflit et l'information sur les valeurs écartées s'appliquent (RG-036 ; US-017, CA-6 et CA-8), ainsi que les règles de réparation (RG-047 à RG-049 ; US-017, CA-10).
 8. **CA-8** — Quand l'accès au compte Google est perdu (retiré ou expiré), le smartphone se comporte comme sans réseau (CA-2 à CA-5), et l'application propose de se reconnecter (RG-035 ; US-022, CA-7).
-9. **CA-9** — *(RG-057, V-12 ; DEC-025)* Quand le smartphone est hors ligne avec des modifications en attente (non encore enregistrées dans le Drive), l'application affiche un bandeau de rappel **non bloquant** (`BAN-RAPPEL-24H`) : ces modifications ne sont encore que sur le smartphone. (a) **Point de départ** : les 24 h courent depuis la **plus ancienne modification en attente** ; le bandeau s'affiche quand elle a **plus de 24 h** (à 24 h exactement, ou moins, il n'apparaît pas). Un appareil hors ligne depuis plus de 24 h dont la seule modification en attente date de 1 minute n'affiche pas le bandeau. (b) **Fermeture** : le bandeau peut être fermé ; il **réapparaît à la prochaine ouverture de l'application** tant que des modifications sont en attente. (c) **Accès Google perdu** (CA-8, RG-035) : si des modifications sont en attente depuis plus de 24 h, **un seul** bandeau est affiché, « Se reconnecter » (`BAN-ACCES-GOOGLE`), complété de la mention « n modifications ne sont encore que sur cet appareil » ; il n'y a pas de second bandeau. Depuis moins de 24 h, il est affiché sans cette mention. (d) Le bandeau n'empêche aucune opération et peut être ignoré. Il n'apparaît pas si aucune modification n'est en attente. Il disparaît dès que les modifications sont enregistrées dans le Drive.
+9. **CA-9** — *(RG-057, V-12 ; DEC-025)* Quand le smartphone a des modifications en attente (non encore enregistrées dans le Drive) dont la plus ancienne date de plus de 24 h, l'application affiche un bandeau de rappel **non bloquant** (`BAN-RAPPEL-24H`, titre « Modifications en attente depuis plus de 24 h ») : ces modifications ne sont encore que sur le smartphone. (a) **Point de départ** : les 24 h courent depuis la **plus ancienne modification en attente** ; le bandeau s'affiche quand elle a **plus de 24 h** (à 24 h exactement, ou moins, il n'apparaît pas). Un appareil hors ligne depuis plus de 24 h dont la seule modification en attente date de 1 minute n'affiche pas le bandeau. (b) **Fermeture** : le bandeau peut être fermé ; il **réapparaît à la prochaine ouverture de l'application** tant que des modifications sont en attente. (c) **Accès Google perdu** (CA-8, RG-035) : si des modifications sont en attente depuis plus de 24 h, **un seul** bandeau est affiché, « Se reconnecter » (`BAN-ACCES-GOOGLE`), complété de la mention « n modifications ne sont encore que sur cet appareil » ; il n'y a pas de second bandeau. Depuis moins de 24 h, il est affiché sans cette mention. (d) Le bandeau n'empêche aucune opération et peut être ignoré. Il n'apparaît pas si aucune modification n'est en attente. Il disparaît dès que les modifications sont enregistrées dans le Drive.
 
 ## Cas limites et cas d'erreur
 - Première connexion sans réseau : impossible ; l'application l'indique (US-022).
@@ -38,7 +38,7 @@ Statut : Validée
 - Objet supprimé sur le PC pendant qu'il est modifié sur le smartphone sans réseau : RG-047.
 - Drive plein au retour du réseau : US-017, cas limites.
 - Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
-- Hors ligne depuis plus de 24 h, mais modification en attente faite il y a 1 minute : pas de bandeau de rappel ; il apparaît quand cette modification a elle-même plus de 24 h (CA-9 a ; S16b).
+- Appareil hors ligne depuis plus de 24 h, mais seule modification en attente faite il y a 1 minute : pas de bandeau de rappel ; il apparaît quand cette modification a elle-même plus de 24 h (CA-9 a ; S16b).
 - Bandeau de rappel fermé : il réapparaît à la prochaine ouverture de l'application tant que des modifications sont en attente (CA-9 b ; S17b).
 - Accès Google perdu depuis plus de 24 h avec des modifications en attente : un seul bandeau « Se reconnecter », complété du nombre de modifications ; pas de second bandeau (CA-9 c ; S17c, S17d).
 

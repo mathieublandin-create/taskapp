@@ -29,7 +29,7 @@ Statut : Validée
    - Exemple 2 : O n'a pas de tâche propre, et son unique sous-objectif S est atteint : O est « atteint ».
    - Exemple 3 : O a un sous-objectif S « à décliner en tâches » : O n'est pas atteint.
 8. **CA-8** — La suppression d'un objectif qui a des sous-objectifs les transforme en objectifs principaux, après confirmation (RG-046).
-9. **CA-9** — *(RG-048)* Si l'échange des modifications des deux appareils produit un objectif placé sous l'un de ses sous-objectifs, ou un deuxième niveau de sous-objectifs, l'application annule le plus ancien des déplacements en cause (le seul, s'il n'y en a qu'un) et signale le déplacement annulé comme valeur écartée. Une création n'est jamais annulée.
+9. **CA-9** — *(RG-048)* Si l'échange des modifications des deux appareils produit un objectif placé sous l'un de ses sous-objectifs, ou un deuxième niveau de sous-objectifs, l'application annule les déplacements en cause **un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide** (le seul, s'il n'y en a qu'un) ; les déplacements restants, devenus sans conflit, sont conservés. **Chaque déplacement annulé est signalé** comme valeur écartée. Une création n'est jamais annulée. *(DEC-025, Q-REF-1 a.)*
    - Exemple 1 : sur le PC, A est placé sous B ; ensuite, sur le smartphone sans réseau, B est placé sous A. Après échange, B est sous A (le déplacement le plus récent est conservé), A est objectif principal, et l'utilisateur est informé que le placement de A sous B a été annulé.
    - Exemple 2 : sur le PC, l'objectif O est placé sous P ; sur le smartphone, un sous-objectif S est créé sous O. Après échange, O redevient objectif principal avec son sous-objectif S, et l'utilisateur est informé que le placement de O sous P a été annulé.
 10. **CA-10** — *(RG-047)* Si un objectif est supprimé sur un appareil pendant qu'un sous-objectif est créé sous lui sur l'autre, le sous-objectif créé devient objectif principal après échange.
@@ -40,6 +40,7 @@ Statut : Validée
 - Délai de sous-objectif égal à celui du parent : aucune alerte, puisqu'il n'est pas postérieur.
 - Déplacement d'un sous-objectif sous l'objectif qui est déjà son parent : sans effet.
 - Sous-objectif atteint dont le parent a encore des tâches à faire : le parent reste « en cours ».
+- Chaîne de trois déplacements concurrents : annuler le plus ancien ne suffit pas toujours à rendre la hiérarchie valide ; le suivant est alors annulé à son tour, et chaque annulation est signalée (CA-9 ; S18c : A sous B, puis C sous A, puis D sous C, deux annulations).
 
 ## Hors périmètre
 - Plus d'un niveau de sous-objectifs ; plusieurs parents pour un sous-objectif (exclus, Q-DEM001-24).
@@ -99,7 +100,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **21 scénarios**. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **22 scénarios**. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -111,7 +112,7 @@ Statut : Validée
 | CA-6 | S09, S10, S11 |
 | CA-7 | S13, S14 |
 | CA-8 | S15 |
-| CA-9 (RG-048) | S16, S17, S18, S18b (trois placements concurrents, seul le plus ancien est annulé) |
+| CA-9 (RG-048) | S16, S17, S18, S18b (trois placements concurrents, seul le plus ancien est annulé), S18c (chaîne de trois placements, deux annulations successives, du plus ancien au plus récent) |
 | CA-10 (RG-047) | S19 |
 | CA-11 (RG-050) | S20 |
 | Cas limite : un des délais absent ; délais égaux | S05 |
@@ -128,3 +129,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-24, 26 et 29 intégrées (CA-1 à CA-8) ; règles proposées RG-047, RG-048 et RG-050 (CA-9 à CA-11). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-9 (S18b : RG-048 avec trois déplacements concurrents), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |
+| 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 / Q-REF-1 a intégrée à RG-048 et au CA-9 (annulation un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide ; chaque annulation signalée). Nouveau scénario S18c (chaîne de trois déplacements, deux annulations). S16, S17, S18 et S18b restent valables. |
