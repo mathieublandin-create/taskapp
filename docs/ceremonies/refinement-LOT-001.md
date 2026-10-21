@@ -85,3 +85,8 @@ Tour 1 terminé. Un tour 2 sera mené après les corrections et les réponses du
 - **Anthony** : conventions v0.2. En cours.
 - **Pour le tour 2 (Steeve)** : codes manquants dans le catalogue pour les motifs de refus « estimation invalide », « tâche abandonnée », « objectifs hérités de la tâche parente », « n sous-tâches restantes », « estimation calculée » ; forme de `MEN-HEURE-PARIS` sur une date de fin (US-003 S21).
 - **Nouvelles questions pour le commanditaire** : Q-REF-1 (RG-048 avec une chaîne de déplacements) et Q-REF-2 (aucune écriture dans le Drive en consultation seule).
+- **Anthony** : conventions v0.2 (stack, arborescence, ports, temps Europe/Paris, catalogue, sécurité, CI GitHub Actions), checklist v0.2, modèle de ST v0.2, DT-001 (données locales non chiffrées). Fait.
+- **Ouverts avant le tour 2** :
+  - Starck : ANT-17 `fuseauAppareil()` au port `Horloge`, ANT-19 conservation des champs inconnus (RG-058), ANT-20 exécution de `@ihm`, ANT-18 (pour information) ;
+  - Steeve puis Pepper : ANT-21, codes de motif de refus ;
+  - Jarvis : protection des branches GitHub (à proposer au commanditaire) et test technique R1, R2, R11.
