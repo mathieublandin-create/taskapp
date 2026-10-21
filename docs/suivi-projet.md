@@ -41,11 +41,12 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
-| Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 1/2 | Corrections en cours | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
+| Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | Questions tranchées (DEC-025), dernières corrections puis avis du tour 2 | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-025 | 2026-10-21 | Refinement LOT-001 : Q-ERG-16 à 18, Q-LOT-1, Q-REF-1, Q-REF-2 | Verbatim « Reco ». Q-ERG-16 b) : les 24 h du bandeau RG-057 courent depuis la plus ancienne modification en attente ; Q-ERG-17 a) : un seul bandeau « Se reconnecter », complété de « n modifications ne sont encore que sur cet appareil » ; Q-ERG-18 : le bandeau fermé réapparaît à la prochaine ouverture tant que des modifications sont en attente ; Q-LOT-1 b) : US-017 conservée, livrée en 4 incréments avec une revue de code chacun ; Q-REF-1 a) : RG-048 annule les déplacements un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide, chaque annulation étant signalée ; Q-REF-2 : en consultation seule, aucune écriture dans le Drive, et les modifications en attente sont déposées après la mise à jour. |
 | DEC-019 | 2026-10-21 | QC-1 Motivation de l'étude sans cloud | c) coût et indépendance vis-à-vis des services en ligne (« Qc-2 : C) » lu comme QC-1, la réponse QC-2 étant donnée ensuite) — Verbatim : « Qc-2 : C), qc-2 : oui, qc-3 : installation moi même, qc-5 : calendrier, qc-7 : oui. On étudiera dans un second temps une installation sur un radpbrry pi( que j'ai déjà) » |
 | DEC-020 | 2026-10-21 | QC-2 Données dans Google Drive | Oui : option A maintenue (données dans le Google Drive du commanditaire) |
 | DEC-021 | 2026-10-21 | QC-3 Distribution Android (remplace DEC-005) | Installation directe de l'APK par le commanditaire, sans Google Play |
