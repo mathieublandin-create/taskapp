@@ -490,3 +490,205 @@ Situation : la tâche « Chapitre 1 » a deux sous-tâches. « Section A » éta
 *Pourquoi a)* : c'est déjà la règle pour reprendre une sous-tâche abandonnée quand la tâche parente est abandonnée (US-025 CA-8) ; vous n'avez qu'une règle à retenir. b) reprendrait en cascade des sous-tâches sans que vous l'ayez demandé ; c) créerait volontairement une situation incohérente que l'application vous demanderait ensuite de corriger.
 
 Selon les réponses, Pepper complète les US concernées (US-001, US-023, US-025), leurs critères et leurs scénarios ; ces points repassent par la validation du commanditaire (E6).
+
+---
+
+## Contrôle final (itération 2)
+
+> Anthony, responsable technique, le 2026-10-21. Étape E8 de LOT-001, **itération 2/2** de la règle anti-boucle (dernière).
+>
+> **Référentiel relu** :
+> - cahier des charges v0.11 ;
+> - les 10 US ;
+> - les 10 `.feature` : **270 scénarios**, recomptés au parseur (US-001 : 23, US-002 : 28, US-003 : 22, US-017 : 45, US-018 : 26, US-022 : 32, US-023 : 22, US-024 : 25, US-025 : 19, US-031 : 28) ;
+> - `GLOSSAIRE-ETAPES.md` v1.3 ;
+> - guide d'ergonomie v0.2.7 (§5.7, §6.6.1 à §6.6.11) ;
+> - DAT v0.10 (§3.3, §4.1.5 bis, §4.1.6 bis, §4.2, §4.2.1, §4.2.2, §4.3, §6.1, §6.4, §9, §10) ;
+> - `test-technique-R1-R2.md` §3.5 ;
+> - DEC-030 dans `suivi-projet.md`.
+>
+> Seul ce fichier est modifié. Une Q-US « non levée » partirait en arbitrage. Je ne relève donc comme non levé que ce qui empêche réellement de concevoir (E9) ou de tester (E10). Les points mineurs sont des **hypothèses de conception** (H-n), appliquées en E9 dans les ST. Elles sont modifiables par leur propriétaire jusqu'à E11, sans nouvel échange.
+
+### 1. Statut des 40 Q-US
+
+**Résultat : 40 levées sur 40, 0 non levée. Aucune question ne part en arbitrage.**
+
+| Q-US | Statut | Commentaire (si utile) |
+|---|---|---|
+| Q-US-022-1 | Levée | Sens a) retenu ; étape `Quand` distincte pour un retrait non constaté. |
+| Q-US-022-2 | Levée | `ERR-005` (S20c). |
+| Q-US-022-3 | Levée | S24 et S25 ; DAT §4.2. |
+| Q-US-022-4 | Levée | S09c, S09d ; guide §6.6.7. |
+| Q-US-017-1 | Levée | Contexte causal par écriture (DAT §4.2.1). Il remplace ma proposition « HLC de la valeur remplacée », dont le contre-exemple est valable. |
+| Q-US-017-2 | Levée | DAT §4.2.2 ; S32, S32b, S33. |
+| Q-US-017-3 | Levée | DEC-030 a) ; S22c, S22d ; voir H-5. |
+| Q-US-017-4 | Levée | DEC-030 (A8) ; DAT §6.4, points 1 à 4. **Écart É-1** introduit par S12d (§3), à corriger sans arbitrage. |
+| Q-US-017-5 | Levée | `ALR-001` sur le seul appareil déréglé (DAT §6.4, S13a). |
+| Q-US-017-6 | Levée | `data-a-lire` indépendant ; `SYN-INFO` dérivé (guide §6.6.2) ; S15b. |
+| Q-US-017-7 | Levée | Préfixes rendus explicites, et convention au glossaire. |
+| Q-US-017-8 | Levée | Glossaire §8 ; `ALR-014`. |
+| Q-US-017-9 | Levée | Glossaire §12. |
+| Q-US-017-10 | Levée | — |
+| Q-US-017-11 | Levée | S20b, S22b. |
+| Q-US-017-12 | Levée | `ERR-016` ; DAT §4.3. |
+| Q-US-018-1 | Levée | Éléments distincts (DAT §4.1.5 bis v0.10 aligné sur guide §6.6.1) ; S05b, S05c, S15c ; voir H-4. |
+| Q-US-018-2 | Levée | — |
+| Q-US-018-3 | Levée | DAT §3.3 ; S09b `@recette`. |
+| Q-US-031-1 | Levée | Hypothèse de conception du DAT §4.1.6 bis, indépendante des états affichés. Protocole §3.5 ajouté. Seule la détection précoce (ligne « 401 sur jeton non échu ») dépend de R2 et R11 (PO-10). |
+| Q-US-031-2 | Levée | `BAN-RAPPEL-24H`, variante `session` ; S22c. |
+| Q-US-031-3 | Levée | — |
+| Q-US-031-4 | Levée | Le sens de S14 est confirmé (ANT-23 clos). |
+| Q-US-001-1 | Levée | DEC-030 a) ; DAT §4.2.1 étendu ; S20 (US-001), S19 (US-023) ; voir É-2 et É-3. |
+| Q-US-001-2 | Levée | Glossaire §11 ; DAT §6.1. Le rendu est porté par les *step definitions* ; le format Drive est structuré. |
+| Q-US-001-3 | Levée | S04b. |
+| Q-US-001-4 | Levée | Glossaire §4. |
+| Q-US-001-5 | Levée | — |
+| Q-US-023-1 | Levée | Deux exemples ajoutés à S11. |
+| Q-US-023-2 | Levée | — |
+| Q-US-002-1 | Levée | Guide §5.7 ; S20 à S20d. |
+| Q-US-002-2 | Levée | — |
+| Q-US-002-3 | Levée | — |
+| Q-US-024-1 | Levée | Glossaire §1 (construction a, b et c). |
+| Q-US-024-2 | Levée | S10b (0 h conservé). |
+| Q-US-024-3 | Levée | — |
+| Q-US-003-1 | Levée | — |
+| Q-US-003-2 | Levée | — |
+| Q-US-025-1 | Levée | — |
+| Q-US-025-2 | Levée | DEC-030 a) ; RG-027 ; S12b. |
+
+### 2. Verdicts par US
+
+| US | Verdict | Réserve |
+|---|---|---|
+| US-022 | **Explicite** | E9 conditionnée au test technique R1, R2 et R11 (rappel, hors explicitation). |
+| US-017 | **Explicite** | E9 conditionnée au test technique. **É-1** : S12d est à corriger par Pepper avant l'E10 de l'incrément 4. Cette correction n'empêche ni l'E9 ni l'E10 des incréments 1 à 3. |
+| US-018 | **Explicite** | — |
+| US-031 | **Explicite** | Adaptateur `FournisseurAuth` web conçu selon le DAT §4.1.6 bis. Le résultat de R2 et R11 peut seulement retirer une ligne du tableau. |
+| US-001 | **Explicite** | Hypothèses H-1 et H-2 (É-2, É-3). |
+| US-023 | **Explicite** | H-1, H-2. |
+| US-002 | **Explicite** | — |
+| US-024 | **Explicite** | — |
+| US-003 | **Explicite** | — |
+| US-025 | **Explicite** | — |
+| **Total** | **10 / 10 explicites** | Seule É-1 appelle une correction, ciblée sur un scénario. |
+
+### 3. Écarts introduits par les réponses
+
+| Id | Écart | Nature | Traitement | Bloque |
+|---|---|---|---|---|
+| **É-1** | **US-017 S12d contredit le DAT §6.4 et la note de CA-13 d'US-017.** Le scénario se joue sur le **smartphone**, « application fermée », **sans redémarrage**. Or, selon le DAT §6.4 point 3 et selon la note de CA-13 elle-même (« une heure changée … sans redémarrage du smartphone ne relève pas de la limite »), l'ancrage sur l'horloge monotone d'Android reste valable dans ce cas. L'heure corrigée est donc juste, et « B » (10 min après « A ») l'emporte, alors que S12d attend « A ». Autre défaut : le PC renomme au même instant physique que la création du contexte (10:00). Après le changement d'heure, l'HLC du smartphone vaut « dernier HLC + 1 ». Les deux écritures peuvent donc avoir le même instant physique, et l'issue dépendrait du compteur et de l'`appareilId`, pas du scénario. | US contre `.feature`, et DAT contre `.feature` | **Correction fermée, sans arbitrage** (alignement sur DEC-030, déjà décidée). Pepper, avec l'avis de Starck, choisit (a) ou (b) : (a) remplacer « que l'application est fermée sur le smartphone » par un redémarrage du smartphone (forme au passé à ajouter au glossaire §1, par exemple `que le smartphone a été éteint puis rallumé`) ; (b) jouer S12d sur le **PC**, application fermée. Dans les deux cas, ajouter `Et 5 minutes plus tard,` avant le renommage sur le PC, pour que l'HLC de « A » soit strictement supérieur au dernier HLC connu du smartphone. Mettre aussi à jour le commentaire de S12c (« CA-13 n'est pas modifié » est caduc). | E10 de S12d (incrément 4) seulement |
+| É-2 | DAT §4.2.1 (extension v0.10) : le rattachement est décrit comme un champ `objectifId` de la tâche. Le DAT §6.1 modélise pourtant la relation n-n par `LienTacheObjectif` (id = tacheId, objectifId ; champ `actif`). | Incohérence interne au DAT | **H-1** : l'information « rattachement » est `LienTacheObjectif(tacheId, E).actif`. Le contexte de la pierre tombale de E couvre les écritures des liens dont `objectifId = E`. L'entrée `ValeurEcartee` affichée porte : élément = la tâche ; information = `objectifs` ; valeur non retenue = intitulé de E ; valeur conservée = `objectif supprimé` (conforme à US-001 S20). Wording à aligner par Starck, sans changement de schéma. | Rien |
+| É-3 | Le guide §6.6.9 n'a pas été revu après DEC-030. Le gabarit d'`ALR-010` (« Objectif « {élément} » supprimé … Votre modification de {sa/son} {information} ») ne précise pas quel élément est nommé pour un rattachement ou un placement non retenu. Le `DiscardedItem` porte sur l'enfant (« Annexe », « Version imprimable »). | Guide contre US et `.feature` | **H-2** : le code reste `ALR-010`. Le modèle de vue expose l'enfant comme élément et l'objectif supprimé comme cause. Les tests vérifient le code et les quatre colonnes du glossaire §8. Le texte exact est à fixer par Steeve avant l'E12 des écrans concernés. | Rien en E9 et E10 |
+| É-4 | Décompte des modifications en attente. Cas : une sous-tâche ou un sous-objectif est créé hors ligne sous un parent **déjà déposé**, puis le parent est supprimé hors ligne. Le DAT §4.1.5 bis ne purge les entrées d'un enfant que si le parent supprimé porte lui-même `creationNonDeposee`. Il compterait donc 2 (parent « Supprimée » et enfant), alors que la règle du guide §6.6.1 (« un élément créé puis supprimé hors ligne ne compte pas ») donne 1. Aucun scénario ne couvre ce cas. | DAT contre guide | **H-4** : à la suppression d'un élément, toutes les entrées de ses descendants qui portent `creationNonDeposee` et que la suppression rend supprimés par dérivation sont purgées dans la même transaction. Décompte = 1. Je le signale à Starck pour alignement, sans échange. | Rien |
+| É-5 | US-017 S22c. Les préconditions placent « le PC est sans réseau » **avant** « sur le PC, le message `ERR-012` est affiché », qu'un PC hors ligne ne peut pas constater. De plus, « l'utilisateur confirme », sans préfixe, figure dans un scénario à deux appareils. | Rédaction `.feature` | **H-5** : les préconditions `Étant donné` décrivent un état, pas une chronologie. La *step definition* de « `ERR-012` est affiché » fait constater l'altération par l'appareil **avant** d'appliquer la coupure réseau déclarée. Une action de confirmation sans préfixe s'applique à l'appareil qui a une confirmation en attente ; elle échoue s'il y en a zéro ou deux. | Rien |
+| É-6 | Points documentaires : en-têtes des 10 `.feature` restés à « cahier des charges v0.10 » au lieu de v0.11 ; en-tête de `test-technique-R1-R2.md` resté en « Version 2 » malgré l'ajout du §3.5 ; dans `suivi-projet.md`, « Points bloquants » liste encore l'alignement du DAT §4.1.5 bis, fait en v0.10 ; l'historique du DAT v0.9 annonce un « avis sur l'ordre de réalisation (A.2) » sans corps correspondant dans le DAT (voir §4). | Documentaire | À corriger par leurs propriétaires lors de leur prochaine mise à jour. | Rien |
+
+**Contrôles de cohérence sans écart** :
+- critère de valeur écartée : DAT §4.2.1 contre S10, S11, S12b, US-018 S07, US-031 S10, US-003 S17, US-001 S19 ;
+- RG-044 : DAT §4.2.2 contre S18 à S22d, S32, S32b, S33 ;
+- décompte et 24 h : DAT §4.1.5 bis contre guide §6.6.1, US-018 S05b, S05c, S15c, US-031 S22c ;
+- historique : DAT §6.1 contre glossaire §11, US-001 S21, S22, US-003 S22, US-024 S10, US-025 S18 ;
+- liste des tâches : guide §5.7 contre US-002 S20 à S20d ;
+- RG-027 : DEC-030 contre US-025 S12b ;
+- consultation seule : DAT §4.2 contre US-022 S24 et S25.
+
+**Autres hypothèses de conception appliquées en E9** (pas des écarts) :
+- **H-3** : dans US-024 S10, l'estimation recopiée produit une entrée `MODIFICATION_ESTIMATION` même si avant = après (1 h 30 → 1 h 30). Il en va de même pour 0 h → 0 h (S10b).
+- **H-6** : `ALR-014` est exclu de `data-a-lire` et retiré par le « Compris » de la carte `ALR-008`.
+- **H-7** : les tableaux de contexte appliquent la construction du glossaire §1. Une tâche parente « abandonnée » avec une sous-tâche « terminée » (US-025 S12b) est valide, puisque seule une sous-tâche « à faire » fait échouer l'étape.
+
+### 4. Ordre de réalisation définitif (ANT-14, BEN-2, BEN-14)
+
+#### 4.1 Constat complémentaire : dépendances entre US au niveau des scénarios
+
+La relecture des 270 scénarios montre que la proposition A.2 sous-estimait les dépendances. Plusieurs scénarios « à un appareil » d'une US métier construisent leur contexte avec des capacités d'US réalisées plus tard. Exemples :
+- US-001 S06 utilise des tâches terminées, abandonnées et une sous-tâche ;
+- US-001 S07, S16 et S22 utilisent des sous-objectifs et des tâches ;
+- US-017 S02, S03, S07 et S08 utilisent des tâches et « terminer ».
+
+Ces dépendances sont propres à un domaine unique. Aucun ordre des six US métier ne les supprime : le meilleur ordre testé en évite 2 sur environ 37. Je garde donc l'ordre fonctionnel de l'architecte (§7.3 point 3) et je fixe la règle suivante.
+
+**Règle de rattachement (s'impose à E10, E12 et E13)** :
+1. Un scénario reste tracé sur son US (tags inchangés).
+2. Il est **exécuté et revu au rang de son dernier prérequis** : la dernière US, ou le dernier incrément d'US-017, dont il utilise une capacité.
+3. La revue E13 d'un rang couvre le code du rang et tous les scénarios qui deviennent exécutables à ce rang, y compris les scénarios différés des rangs précédents. Une revue ne peut pas être approuvée si un scénario devenu exécutable est rouge.
+4. Une US n'est déclarée « En recette » que lorsque **tous** ses scénarios sont verts.
+5. La liste nominative des scénarios par rang est arrêtée en E9 dans `LOT-001.md`. La table de §4.4 en fixe la partie US-017 et les scénarios à deux appareils.
+
+#### 4.2 Ordre retenu
+
+**Préalables** : test technique R1, R2 et R11 avant l'E9 d'US-022 et d'US-017 (inchangé) ; correction É-1 avant l'E10 de l'incrément 4.
+
+| Rang | Élément | Périmètre livré | Scénarios exécutés à ce rang (outre les tests unitaires) |
+|---|---|---|---|
+| 0 | Socle (ST d'US-022) | Dépôt, outillage, CI, `.gitignore` avant la clé (BEN-13), protection de `main` dès la CI (DEC-029). Ports `DepotLocal` (cloisonné par compte), `Horloge` (murale et monotone), `GenerateurId`, `TransportSynchro`. Modèle d'écriture synchronisable (HLC, `appareilId`, contexte causal, pierres tombales, `EvenementJournal` typé, index des écritures en attente). Banc : faux Google avec en-tête `Date` simulé, réseau, deux appareils à `appareilId` fixes. | — |
+| 1 | US-022 | Connexion, compte, déconnexion, suppression des données | US-022 (scénarios sans prérequis métier) |
+| 2 | US-001 | Objectifs (cas d'usage, modèles de vue, journal) | US-001 S01 à S05, S04b, S08, S09, S11, S13, S14, S21 |
+| 3 | US-017, incrément 1 | Cycle de synchronisation, fusion par champ, marqueur « déposé jusqu'à », `MEN-ATTENTE`, indicateur et décompte, erreurs de dépôt | US-017 S04, S17a, S17b, S29 ; scénarios d'US-022 qui exigent un échange |
+| 4 | US-023 | Sous-objectifs, refus `ERR-030` et `ERR-031` | US-023 S01 à S06, S08 à S12, S15, S20 |
+| 5 | US-002 | Tâches, liste « Tâches » (guide §5.7) | US-002 (sans prérequis ultérieur) ; différés devenus exécutables : US-001 S07, S10, S16, S18, S22 ; US-023 S07 ; US-017 S05, S06 ; US-002 S18 (deux appareils, incrément 1) |
+| 6 | US-024 | Sous-tâches, estimation calculée | US-024 (sans prérequis ultérieur) ; US-002 S13 |
+| 7 | US-003 | Terminer, rouvrir, atteinte d'un objectif | US-003 (sans prérequis ultérieur) ; différés : US-001 S12, S17 ; US-002 S20, S21 ; US-023 S14 ; US-024 (S07, S10, S17, S19…) ; US-017 S02, S03, S07, S08 |
+| 8 | US-025 | Abandon, reprise, RG-027 complétée | US-025 sans deux appareils ; différés : US-001 S06, S15 ; US-002 S11, S15, S19, S20c, S20d ; US-023 S13 ; US-003 S07, S09, S12, S15 ; US-024 S05, S08, S10b, S15, S16, S16b, S18, S21 |
+| 9 | US-017, incrément 2 | Valeurs écartées (contexte causal, pierre tombale étendue), RG-056, réparations RG-047 à RG-049 | Voir §4.4 |
+| 10 | US-017, incrément 3 | RG-044 (fichier par appareil, manifeste, `generation`, choix concurrents) | Voir §4.4 |
+| 11 | US-017, incrément 4 | Correction d'horloge et `ALR-001`, RG-054, RG-058 | Voir §4.4 (S01 en dernier) |
+| 12 | US-018 | SQLite, `@capacitor/network`, extension native d'horloge monotone (DAT §6.4), RG-057, APK (BEN-13) | US-018 ; S09b en recette (E14) |
+| 13 | US-031 | Service worker, Web Locks, `storage.persist()`, `FournisseurAuth` web (DAT §4.1.6 bis), profil `@ihm` | US-031 |
+
+Les listes « différés » des rangs 5 à 8 sont tirées d'une analyse outillée des contextes ; elles sont reprises et vérifiées une à une dans `LOT-001.md` en E9.
+
+#### 4.3 Conditions pour placer US-001 avant l'incrément 1 d'US-017
+
+**Constat préalable** : le dépôt ne contient pas de texte de Starck qui énonce ces trois conditions. L'historique du DAT v0.9 mentionne un « avis sur l'ordre de réalisation (A.2) », mais aucune section du DAT, de `avis-dependances-lot1.md` ni de `LOT-001.md` ne le contient. Je reprends donc ci-dessous les trois conditions sous la forme où je les applique. **Jarvis vérifie qu'elles correspondent au verbatim de Starck.** En cas d'écart de formulation, le verbatim de Starck l'emporte sans nouvel échange, car il ne s'agit pas d'un arbitrage.
+
+1. **Aucun modèle provisoire** : dès le rang 2, US-001 écrit exclusivement par le modèle synchronisable définitif livré au rang 0 :
+   - écriture de champ avec HLC, `appareilId` et contexte causal ;
+   - pierres tombales ;
+   - `EvenementJournal` typé (DAT §6.1) ;
+   - index des écritures en attente (DAT §4.1.5 bis).
+
+   Le schéma 1 du format Drive est donc figé avant US-001. L'incrément 1 n'entraîne ni migration ni reprise du code d'US-001.
+2. **Périmètre de revue limité et pas de recette anticipée** : la revue E13 d'US-001 ne porte que sur les scénarios exécutables au rang 2 (§4.2). US-001 n'est pas déclarée « En recette » avant l'approbation de l'incrément 1, puis de l'incrément 2 (S19, S20) et des US qui portent ses scénarios différés (règle §4.1).
+3. **L'incrément 1 suit immédiatement US-001**, sans aucune autre US intercalée. Ainsi, US-022 puis US-017 restent « en premier » au sens de la condition 2 de l'architecte (`LOT-001.md` §7.1), à un objet métier près. L'incrément 1 est en outre validé par des tests de propriétés de la fusion (commutativité, associativité, idempotence, fast-check : R14) avant le rang 4.
+
+#### 4.4 Rattachement des scénarios d'US-017 à ses incréments (BEN-14, définitif)
+
+| Incrément | Scénarios US-017 (45) | Scénarios des autres US livrés et revus avec lui | Rang d'exécution effectif |
+|---|---|---|---|
+| 1. Synchronisation de base | S02, S03, S04, S05, S06, S07, S08, S17a, S17b, S29 (10) | US-002 S18 ; scénarios d'US-022 qui exigent un échange | S04, S17a, S17b, S29 au rang 3 ; S05, S06 au rang 5 ; S02, S03, S07, S08 au rang 7 |
+| 2. Conflits et modifications non retenues | S09, S10, S11, S12, S12b, S14, S15, S15b, S16, S24, S25, S26 (12) | US-001 S19, S20 ; US-002 S23 ; US-023 S16, S17, S18, S18b, S18c, S19 ; US-024 S20, S21, S22 ; US-003 S17, S18, S19 ; US-025 S14, S15, S16 (les trois scénarios d'incohérence, US-024 S21, US-003 S19 et US-025 S16, utilisent l'étape de construction à deux appareils) | Rang 9 |
+| 3. Restauration (RG-044) | S18, S19, S20, S20b, S21, S22, S22b, S22c, S22d, S23, S32, S32b, S33 (13) | — | Rang 10 |
+| 4. Horloge, fuseau, versions | S01, S12c, S12d, S13a, S13b, S27, S28, S30, S30b, S31 (10) | — | Rang 11 ; S12d après correction É-1 ; S01 en dernier |
+
+Total : 10 + 12 + 13 + 10 = 45 scénarios, conforme au fichier. Changements par rapport à A.1 :
+- S12c et S12d sont rattachés à l'incrément 4, car ils dépendent de la correction d'écart et d'`ALR-001` ;
+- S12 reste dans l'incrément 2 ;
+- les nouveaux scénarios S15b (incrément 2) et S20b, S22b, S22c, S22d, S32b (incrément 3) sont rattachés ;
+- Q-US-001-1 est levé : l'incrément 2 n'a plus de question en attente.
+
+**Suites pour E9** :
+- ANT-22 : `conventions.md` v0.4, avec les entrées v0.11, 270 scénarios, glossaire v1.3 et guide v0.2.7, et les hypothèses H-1 à H-7 ;
+- inscription de cet ordre, de la règle §4.1 et des listes nominatives dans `LOT-001.md` ;
+- ST-US-022 (socle) puis ST-US-017 après le test technique.
+
+## Note de Jarvis : conditions de Starck sur l'ordre de réalisation (texte qui fait foi)
+Ces conditions sont tirées du compte rendu de Starck en E8 (2026-10-21), qui n'avait pas été versé au dépôt. Selon la règle posée par Anthony, **le texte de Starck l'emporte**. Les conditions d'Anthony qui ne le contredisent pas s'y ajoutent en complément.
+
+Starck accepte de placer US-001 avant l'incrément 1 d'US-017, à trois conditions :
+1. **Modèle d'écriture.** US-001 est construite directement sur le modèle d'écriture de la synchronisation, et non sur un stockage provisoire à reprendre ensuite : écriture par information avec HLC et contexte causal, transaction unique, index des écritures en attente, journal RG-050 au format du §6.1. Les ST d'US-001 et de l'incrément 1 sont donc conçues ensemble en E9, avec le format Drive complet (schéma 1).
+2. **Revue de code.** La revue E13 d'US-001 couvre ce chemin d'écriture.
+3. **Questions préalables.** Q-US-001-2 et Q-US-001-3 sont tranchées avant le développement d'US-001, car le journal est alimenté dès la première création.
+
+Compléments d'Anthony retenus, car compatibles :
+- US-001 ne passe pas « En recette » avant l'approbation des incréments 1 et 2 ;
+- l'incrément 1 suit immédiatement US-001 et est validé par des tests de propriétés de la fusion.
+
+## Clôture de l'E8 (Jarvis, 2026-10-21)
+- 40/40 Q-US levées. Les 10 US sont **Explicites**. Aucun arbitrage.
+- Corrections non bloquantes en cours :
+  - É-1 et É-5 (Pepper) : US-017 S12d et S22c ;
+  - É-2 et É-4 (Starck) : DAT ;
+  - É-3 (Steeve) : texte d'`ALR-010` ;
+  - É-6 : en-têtes et documentation.
+- **Lot passé en E9.** E9 d'US-022 (y compris le socle) et d'US-017 reste conditionnée au test technique R1/R2/R11.

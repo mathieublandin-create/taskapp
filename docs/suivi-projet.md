@@ -9,21 +9,21 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8** : 40 demandes de précision (11 bloquantes), réponses en cours ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8 terminée** : 10 US explicites ; **E9** à lancer ; ordre : socle, US-022, US-001, US-017 incr. 1, US-023, 002, 024, 003, 025, US-017 incr. 2 à 4, US-018, US-031 ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-001 | Créer et gérer un objectif | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-002 | Créer et gérer mes tâches | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Prête | E7 → E8 | anthony | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
-| US-025 | Abandonner une tâche | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-001 | Créer et gérer un objectif | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-002 | Créer et gérer mes tâches | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Prête | E9 | anthony | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
+| US-025 | Abandonner une tâche | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
@@ -41,7 +41,7 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
-| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | 40/40 répondues (4 par DEC-030) ; intégration puis contrôle final d'Anthony (itération 2/2) | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
+| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | **Clos (2026-10-21) : 10 US Explicites**, 40/40 levées, sans arbitrage | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
 | Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)
