@@ -32,10 +32,11 @@ Statut : Validée
 10. **CA-10** — *(RG-049)* Si, après échange des modifications des deux appareils, une tâche parente est abandonnée alors qu'une de ses sous-tâches est à faire (par exemple, tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise, ou créée, sur le smartphone), l'application le signale sans rien corriger automatiquement, jusqu'à ce que l'utilisateur termine ou abandonne la sous-tâche, ou reprenne la tâche parente.
 11. **CA-11** — *(RG-050)* L'abandon et la reprise d'une tâche sont conservés dans l'historique, avec la journée concernée.
     - *Précision E8 (Q-US-001-2)* : l'abandon et la reprise en cascade (CA-6, CA-7) ont une entrée dans l'historique de chaque sous-tâche concernée (S18) ; rendu au §11 du glossaire d'étapes.
+12. **CA-12** — *(RG-023, RG-027 ; Q-US-025-2 a, DEC-030)* Une sous-tâche terminée dont la tâche parente est abandonnée ne peut pas être rouverte directement : l'action « rouvrir » n'est pas proposée. Il faut d'abord reprendre la tâche parente (CA-7) ; la sous-tâche terminée peut ensuite être rouverte (US-003, CA-9).
 
 ## Cas limites et cas d'erreur
 - Abandonner une tâche terminée : l'action n'est pas proposée ; il faut d'abord la rouvrir.
-- Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée : **cas non couvert par les règles validées, soumis au commanditaire (Q-US-025-2)** ; voir « Questions ouvertes ».
+- Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée : l'action « rouvrir » n'est pas proposée ; il faut d'abord reprendre la tâche parente, puis rouvrir la sous-tâche (Q-US-025-2 a, DEC-030 ; CA-12 ; S12b).
 - Abandonner la dernière tâche non abandonnée d'un objectif sans sous-objectif : l'objectif devient « à décliner en tâches » (RG-025).
 - Abandon sur un appareil, modification sur l'autre : RG-036 (US-017).
 - Ajouter une sous-tâche à une tâche abandonnée : refusé tant que la tâche n'a pas été reprise (US-024).
@@ -106,6 +107,7 @@ Statut : Validée
 | CA-9 | S13 |
 | CA-10 (RG-049) | S15, S16 |
 | CA-11 (RG-050) | S17, S18 (cascade) |
+| CA-12 (RG-023, RG-027) | S12b |
 | Cas limite : abandonner une tâche terminée | S06 |
 | Cas limite : dernière tâche non abandonnée d'un objectif | S07 |
 | Cas limite : abandon sur un appareil, modification sur l'autre | S14 |
@@ -115,7 +117,7 @@ Statut : Validée
 Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée. La date d'abandon (CA-1, S03) et le contenu de la confirmation (CA-6, S10), proposés par Pepper, sont validés par le commanditaire le 2026-10-21 (DEC-018, V-21 n et p).
 
 ## Questions ouvertes
-- **Q-US-025-2 (E8, en attente du commanditaire)** : une sous-tâche terminée avant l'abandon de sa tâche parente peut-elle être rouverte tant que la tâche parente est abandonnée ? Option recommandée : a) non, l'action n'est pas proposée ; il faut d'abord reprendre la tâche parente (comme CA-8 pour la reprise). Texte de la question : `docs/ceremonies/explicitation-LOT-001.md`, section « Réponses aux Q-US ». Selon la réponse, un critère et un scénario seront ajoutés et l'US repassera en validation (E6) pour ce point.
+Aucune. Q-US-025-2 est répondue par le commanditaire (DEC-030).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -125,3 +127,4 @@ Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmat
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-025-1 (glossaire v1.2 ; « n'a pas de date d'abandon »), Q-US-001-2 (historique de la cascade ; S18 ajouté), Q-US-002-1 (filtre « abandonnée », S04 conforme), Q-US-024-1 (construction des tableaux de contexte), Q-US-017-7 (préfixe d'appareil, S14). Précisions sans changement de règle. **Q-US-025-2 soumise au commanditaire** (réouverture d'une sous-tâche terminée sous une tâche parente abandonnée). |
+| 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : CA-12 ajouté : une sous-tâche terminée dont la tâche parente est abandonnée ne peut pas être rouverte directement ; il faut d'abord reprendre la tâche parente (Q-US-025-2 a ; S12b ajouté ; RG-027 complétée). |

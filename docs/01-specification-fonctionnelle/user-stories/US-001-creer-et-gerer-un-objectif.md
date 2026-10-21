@@ -41,7 +41,7 @@ Statut : Validée
    - ses tâches sont conservées et détachées de lui ; celles qui n'ont plus aucun objectif deviennent des tâches sans objectif ;
    - ses sous-objectifs deviennent des objectifs principaux ;
    - le message de confirmation indique le nombre de tâches détachées et de sous-objectifs concernés.
-10. **CA-10** — *(RG-047)* Si l'objectif est supprimé sur un appareil et modifié sur l'autre avant qu'ils n'aient échangé leurs modifications, il reste supprimé sur les deux appareils, et l'utilisateur est informé des modifications écartées. Une tâche rattachée entre-temps à cet objectif sur l'autre appareil en est détachée ; un sous-objectif créé entre-temps sous lui devient objectif principal.
+10. **CA-10** — *(RG-047)* Si l'objectif est supprimé sur un appareil et modifié sur l'autre avant qu'ils n'aient échangé leurs modifications, il reste supprimé sur les deux appareils, et l'utilisateur est informé des modifications écartées. Une tâche rattachée entre-temps à cet objectif sur l'autre appareil en est détachée ; un sous-objectif créé entre-temps sous lui devient objectif principal. **Ces deux cas sont signalés** dans « Modifications non retenues » (Q-US-001-1 a, DEC-030) : « rattachement non retenu, objectif supprimé » pour la tâche, « placement non retenu, objectif supprimé » pour le sous-objectif (S20).
 11. **CA-11** — *(RG-050)* La création d'un objectif, la modification de son délai et sa suppression sont conservées dans l'historique, avec la journée et les valeurs avant et après. Cet historique n'est pas affiché au lot 1.
     - *Précision E8 (Q-US-001-2, sans changement de règle)* : le rendu des valeurs avant et après et la liste fermée des événements sont fixés au §11 du glossaire d'étapes (par exemple, la création d'un objectif daté a pour valeur « après » « délai 2026-12-15 »). Le détachement des tâches et la promotion des sous-objectifs qui découlent de la suppression d'un objectif n'ont pas d'entrée propre : l'entrée « suppression » de l'objectif suffit à les retrouver (S22).
 
@@ -144,7 +144,7 @@ Statut : Validée
 | Cas limite : modification sur deux appareils (RG-036) | US-017 S09, S10 |
 
 ## Questions ouvertes
-- **Q-US-001-1 (E8, en attente du commanditaire)** : après une suppression concurrente d'un objectif (RG-047), faut-il signaler dans la liste « Modifications non retenues » le rattachement d'une tâche à cet objectif et la création d'un sous-objectif sous lui, faits entre-temps sur l'autre appareil ? Texte de la question : `docs/ceremonies/explicitation-LOT-001.md`, section « Réponses aux Q-US ». Selon la réponse, CA-10 et S20 (ainsi qu'US-023 S19) seront complétés ; l'US repasse alors en validation du commanditaire (E6) pour ce point.
+Aucune. Q-US-001-1 est répondue par le commanditaire (DEC-030).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -155,3 +155,4 @@ Statut : Validée
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-001-2 (rendu de l'historique, conséquences déduites sans entrée ; S21 aligné, S22 ajouté), Q-US-001-3 (espaces retirés, pas de longueur maximale ; S04b), Q-US-001-4 et Q-US-001-5 (glossaire v1.2), Q-US-017-7 (préfixe d'appareil, S19). Précisions sans changement de règle. **Q-US-001-1 soumise au commanditaire** (signalement RG-047 du rattachement et de la création sous l'objectif supprimé) : CA-10 et S20 inchangés jusqu'à sa réponse. |
+| 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : CA-10 : le rattachement d'une tâche et le placement d'un sous-objectif sous un objectif supprimé de façon concurrente sont tous deux signalés dans « Modifications non retenues » (Q-US-001-1 a ; S20 complété ; RG-047 complétée). |

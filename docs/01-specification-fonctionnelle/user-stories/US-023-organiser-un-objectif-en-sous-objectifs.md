@@ -32,7 +32,7 @@ Statut : Validée
 9. **CA-9** — *(RG-048)* Si l'échange des modifications des deux appareils produit un objectif placé sous l'un de ses sous-objectifs, ou un deuxième niveau de sous-objectifs, l'application annule les déplacements en cause **un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide** (le seul, s'il n'y en a qu'un) ; les déplacements restants, devenus sans conflit, sont conservés. **Chaque déplacement annulé est signalé** comme valeur écartée. Une création n'est jamais annulée. *(DEC-025, Q-REF-1 a.)*
    - Exemple 1 : sur le PC, A est placé sous B ; ensuite, sur le smartphone sans réseau, B est placé sous A. Après échange, B est sous A (le déplacement le plus récent est conservé), A est objectif principal, et l'utilisateur est informé que le placement de A sous B a été annulé.
    - Exemple 2 : sur le PC, l'objectif O est placé sous P ; sur le smartphone, un sous-objectif S est créé sous O. Après échange, O redevient objectif principal avec son sous-objectif S, et l'utilisateur est informé que le placement de O sous P a été annulé.
-10. **CA-10** — *(RG-047)* Si un objectif est supprimé sur un appareil pendant qu'un sous-objectif est créé sous lui sur l'autre, le sous-objectif créé devient objectif principal après échange.
+10. **CA-10** — *(RG-047)* Si un objectif est supprimé sur un appareil pendant qu'un sous-objectif est créé sous lui sur l'autre, le sous-objectif créé devient objectif principal après échange, et ce placement est signalé dans « Modifications non retenues » (« placement non retenu, objectif supprimé » ; Q-US-001-1 a, DEC-030 ; S19).
 11. **CA-11** — *(RG-050)* La création d'un sous-objectif et chaque changement de parent sont conservés dans l'historique, avec la journée et les valeurs avant et après.
 
 ## Cas limites et cas d'erreur
@@ -120,7 +120,7 @@ Statut : Validée
 | Cas limite : sous-objectif atteint, parent avec tâches à faire | S13 |
 
 ## Questions ouvertes
-- **Q-US-001-1 (E8, en attente du commanditaire ; question portée par US-001)** : faut-il signaler dans la liste « Modifications non retenues » un sous-objectif créé sous un objectif supprimé sur l'autre appareil, devenu objectif principal (RG-047) ? Selon la réponse, CA-10 et S19 seront complétés et l'US repassera en validation (E6) pour ce point.
+Aucune. Q-US-001-1 (volet US-023) est répondue par le commanditaire (DEC-030).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -131,3 +131,4 @@ Statut : Validée
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : BEN-9 (S18b : RG-048 avec trois déplacements concurrents), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère n'est modifié. |
 | 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 / Q-REF-1 a intégrée à RG-048 et au CA-9 (annulation un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide ; chaque annulation signalée). Nouveau scénario S18c (chaîne de trois déplacements, deux annulations). S16, S17, S18 et S18b restent valables. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-023-1 (ordre des refus cumulés ; deux exemples ajoutés à S11), Q-US-023-2 (glossaire v1.2), Q-US-001-2 (rendu de l'historique de S20 confirmé, valeur « aucun (objectif principal) » inscrite au glossaire), Q-US-017-7 (préfixes d'appareil, S16 à S18c). Précisions sans changement de règle. Q-US-001-1 (S19) en attente du commanditaire. |
+| 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : CA-10 : le placement d'un sous-objectif sous un objectif supprimé de façon concurrente est signalé dans « Modifications non retenues » (Q-US-001-1 a ; S19 complété ; RG-047 complétée). |

@@ -52,6 +52,8 @@ Statut : Validée
 - Objectif sans délai : son atteinte se calcule de la même façon.
 - Passage à l'heure d'été ou d'hiver : la journée reste celle de Paris, de minuit à minuit ; aucune date de fin n'est décalée.
 
+- Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée : l'action « rouvrir » n'est pas proposée ; il faut d'abord reprendre la tâche parente (US-025, CA-12 ; Q-US-025-2 a, DEC-030 ; US-025 S12b).
+
 ## Hors périmètre
 - Fin automatique quand le reste à faire atteint zéro (exclue, Q-DEM001-7.1 a).
 - Atteinte d'un objectif déclarée manuellement (exclue).
@@ -146,3 +148,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-002-1 (filtres, CA-11), Q-US-001-2 (historique ; S22 ajouté), Q-US-003-1 (« Annuler » = réouverture), Q-US-003-2 (glossaire v1.2 : actions, sous-objectif de contexte, formes), Q-US-017-7 (préfixes d'appareil, S17 et S18). Précisions sans changement de règle de gestion ni de critère validé. |
+| 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : cas limite ajouté : la réouverture d'une sous-tâche terminée sous une tâche parente abandonnée n'est pas proposée (Q-US-025-2 a ; US-025 CA-12 et S12b ; RG-027 complétée). |
