@@ -97,6 +97,29 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés** : [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) (cadres A, B et I : champs, estimation modifiable, saisie d'une sous-tâche).
+- **Écrans modifiés** : [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) (version LOT-001, cadres L1 à L4 : liste triée par délai, saisie rapide sans valeur par défaut, filtre « Sans objectif », heure de Paris) ; ECR-006 (états de la saisie rapide, décrits au guide §4.3).
+- **Parcours impactés** : P-02 (étape 4), P-07 (état vide), P-13 (étapes 1 à 3).
+- **Nouveaux composants** : `QuickAdd` v2 (libellés « obligatoire », aucune valeur présélectionnée, erreurs nommées), `DurationStepper` (usage dans le détail), `FieldRow` (guide §4.3, §4.4, §4.22).
+- **Décisions d'ergonomie** :
+  - **aucun délai ni aucune estimation présélectionnés** (CA-2, Q-ERG-03 « non ») ; le bouton « Ajouter » reste actif et, s'il manque une information, le message la nomme sous les puces (CA-3) ; l'intitulé saisi est conservé ;
+  - estimation au pas de 30 min, minimum 30 min (CA-4) : puces rapides et stepper ; aucune autre valeur n'est saisissable ;
+  - liste triée par délai croissant (CA-11), avec l'en-tête « Triées par délai » ; filtres À faire / Terminées / Abandonnées et puces d'objectif dont « Sans objectif » (CA-5) ;
+  - alerte de délai postérieur à celui d'un objectif (CA-7, RG-024) : icône + texte nommant l'objectif ; « En retard » (CA-10) ;
+  - suppression (CA-12) : confirmation avec le nombre de sous-tâches, définitive ;
+  - suppression concurrente d'une modification (CA-13) : dans la feuille de synchronisation.
+- **États** :
+  - *vide* : premier lancement (ECR-010 C), filtres vides ;
+  - *chargement* : données aussitôt ;
+  - *erreur* : « Indiquez un délai. », « Indiquez une estimation. », « Indiquez un intitulé. », focus sur le premier champ en erreur ;
+  - *hors ligne* : création, modification et suppression disponibles ;
+  - *synchronisation* : point « en attente » ;
+  - *conflit* : valeur écartée (ECR-011 C) et ligne « 1 modification non retenue » dans le détail.
+- **Accessibilité et responsive** : cibles de 44 px ; le clavier virtuel ne masque jamais le champ ni le bouton ; touche `N` sur PC ; stepper `spinbutton` avec valeur en toutes lettres.
+- **Questions et réserves** : Q-ERG-12 (écran d'accueil du lot 1 : la liste est l'accueil).
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-002-creer-et-gerer-mes-taches.feature`.
 

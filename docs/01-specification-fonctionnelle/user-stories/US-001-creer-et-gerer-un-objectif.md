@@ -95,6 +95,27 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés** : [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html), liste des objectifs (état, progression, délai ou « Sans délai », « En retard »), création d'un objectif, suppression avec ses conséquences, état vide.
+- **Écrans modifiés** : [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html) (version LOT-001 : en-tête, progression en tâches, menu « … », suppression ; réserves Q-DEM001-26.3 et 29 levées).
+- **Parcours impactés** : P-02 (créer un objectif et ses tâches, adapté au lot 1).
+- **Nouveaux composants** : `ObjectiveRow` (liste), `GoalProgress` (existant, états « atteint » et « à décliner en tâches »), variante « objectif » de la feuille de saisie, `ConfirmDialog` de suppression (guide §4.15, §4.28, §4.12).
+- **Décisions d'ergonomie** :
+  - création : intitulé seul obligatoire (CA-1), description facultative, « Sans délai » explicite (CA-2), pas d'importance au lot 1 ; après « Créer », le détail du nouvel objectif s'ouvre ;
+  - la liste affiche l'état en toutes lettres, les tâches terminées sur les tâches non abandonnées directement rattachées (CA-3) ; « En retard » = mot + icône + rouge (CA-7) ;
+  - suppression (CA-9) : texte de confirmation avec le nombre de tâches détachées et de sous-objectifs promus ; définitive, sans corbeille ;
+  - suppression concurrente d'une modification (CA-10, RG-047) : signalée dans la feuille de synchronisation, pas dans cet écran.
+- **États** :
+  - *vide* : « Un objectif donne une direction à vos tâches. » + « Créer un objectif » ;
+  - *chargement* : données de l'appareil aussitôt ;
+  - *erreur* : « Indiquez un intitulé. » sous le champ, focus dessus, texte conservé ;
+  - *hors ligne* : création, modification et suppression disponibles ;
+  - *synchronisation* : point « en attente » sur les lignes modifiées hors ligne ;
+  - *conflit* : voir US-017 (ECR-011 C).
+- **Accessibilité et responsive** : anneau de progression avec texte équivalent ; nom accessible complet de la ligne ; création en feuille sur smartphone, panneau de 400 px sur PC (`Maj`+`N`).
+- **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est une proposition de Steeve (E6).
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-001-creer-et-gerer-un-objectif.feature`.
 

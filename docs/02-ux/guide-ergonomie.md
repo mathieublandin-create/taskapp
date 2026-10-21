@@ -1,10 +1,12 @@
 # Guide d'ergonomie
 
-> **Version 0.1, 2026-10-20 (Steeve).** Socle UX initial, hors cycle de lot, demandé par le commanditaire.
+> **Version 0.2, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
 >
-> **Entrées** : DEM-001, DEM-002, cahier des charges v0.3, backlog initial v0.3 (US-001 à US-036), questions ouvertes (réponses du commanditaire, questions résiduelles Q-DEM001-21 à 40 et Q-DEM002-1 à 7), compléments du commanditaire transmis par Jarvis le 2026-10-20, DAT v0.1 (brouillon de Starck, décisions au statut « Proposé »).
+> **Entrées de la v0.2** : LOT-001 et ses 10 US (US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025), cahier des charges v0.5 (RG-043 à RG-055), DAT v0.4 et synthèse d'architecture du lot, décisions DEC-001 à DEC-016 (`suivi-projet.md`), réponses du commanditaire aux questions Q-ERG-02 à Q-ERG-11.
 >
-> **Statut** : document de travail. Les choix qui dépendent d'une question ouverte sont signalés par la mention **(sous réserve de Q-…)**. Les choix qui dépendent de la plateforme sont regroupés au §11, « En attente du DAT » : le DAT v0.1 propose une PWA pour le PC et une application Capacitor pour le smartphone, mais ces décisions ne sont pas encore acceptées.
+> **Ce qui change par rapport à la v0.1** : réponses Q-ERG-02 à 11 intégrées (§12.1) ; navigation du lot 1 (§2.1, Q-ERG-12) ; feuille de synchronisation et de compte, connexion, valeurs écartées, incohérences, données absentes du Drive, « Supprimer les données de cet appareil » (§4, §6, §7) ; mention « Heure de Paris » (§4.21) ; huit nouveaux composants (§4.21 à §4.28) ; nouvelles maquettes ECR-007, 008, 010, 011 et mise à jour des ECR-001, 002, 003 (§13). Les changements sont repérables par la mention **(v0.2)**.
+>
+> **Statut** : document de travail, en attente de la validation des US par le commanditaire (E6). Les choix qui dépendent d'une question ouverte sont signalés par la mention **(sous réserve de Q-…)**. Les choix de plateforme sont regroupés au §11 : le DAT v0.4 retient une PWA sur PC et une application Capacitor sur Android (DEC-001, DEC-006).
 
 ## Sommaire
 1. [Principes de design](#1-principes-de-design)
@@ -40,6 +42,7 @@ Références : Things (calme, rythme « Aujourd'hui »), Todoist (saisie rapide)
 | P8 | **Synchronisation visible, jamais bruyante** | Un indicateur discret et permanent indique l'état (à jour, en cours, hors ligne, action requise). Seul l'état « action requise » interrompt l'utilisateur. | Données dans l'espace personnel et créneaux Google (RG-017, RG-020, RG-034) ; usage hors ligne (RG-021) ; aucune perte silencieuse (ENF-06). |
 | P9 | **Le même modèle mental sur smartphone et sur PC** | Mêmes vues, mêmes noms, mêmes icônes. Le PC ajoute de la place (panneau de détail) et des raccourcis, pas de nouvelles notions. | Passage fréquent d'un appareil à l'autre (RG-017). |
 | P10 | **Le calme par défaut** | Couleur réservée au sens : accent pour l'action, orange pour l'attention, rouge pour le retard ou l'erreur. Pas de décoration. | Outil quotidien : la couleur doit rester un signal. |
+| P11 **(v0.2)** | **Aucune perte silencieuse** | Quand l'application écarte, annule ou ne peut pas enregistrer quelque chose, elle le dit : élément, information, valeur concernée. Elle dit aussi ce qui est préservé. Une action irréversible dit sa conséquence chiffrée avant le bouton. | ENF-06 (validée) ; RG-036, RG-047 à RG-049, RG-044, RG-055 ; la confiance dans un outil dont les données sont réparties sur deux appareils et un Drive. |
 
 ---
 
@@ -54,9 +57,11 @@ Références : Things (calme, rythme « Aujourd'hui »), Todoist (saisie rapide)
 | **Tâches** (ECR-002) | « Qu'est-ce qui est le plus important dans tout mon travail ? » | Ajouter une tâche |
 | **Objectifs** (ECR-008, liste ; ECR-003, détail) | « Où en suis-je de mes objectifs ? » | Ajouter un objectif (liste) ; ajouter une tâche (détail) |
 
+**Navigation par lot (v0.2, Q-ERG-12).** Les vues n'apparaissent que lorsqu'elles ont un contenu (P2 : pas d'onglet vide). Au **lot 1**, seules deux vues existent : **Tâches** (ECR-002, accueil, triée par délai) et **Objectifs** (ECR-008, ECR-003). Aujourd'hui (ECR-001) et Semaine (ECR-005) viennent avec les lots « Planification » et « Rappels » ; la barre passe alors à 4 entrées, dans l'ordre Aujourd'hui, Semaine, Tâches, Objectifs : Tâches et Objectifs ne changent pas de place relative. Les raccourcis `3` et `4` gardent leur sens d'un lot à l'autre.
+
 Le **bilan du soir** (ECR-004) n'est pas une vue permanente : c'est un parcours ponctuel, ouvert depuis la carte « Bilan du soir » d'Aujourd'hui ou depuis le lien du rappel de 21 h.
 
-Les **réglages** (capacité, plages, heures des rappels, compte Google, thème) sont accessibles depuis l'avatar, en haut de l'écran. Ils sont peu fréquents et n'ont donc pas leur place dans la barre de navigation.
+Les **réglages** (capacité, plages, heures des rappels, thème) sont accessibles depuis l'avatar, en haut de l'écran. Ils sont peu fréquents et n'ont donc pas leur place dans la barre de navigation. **(v0.2)** Au lot 1, l'avatar et l'indicateur de synchronisation ouvrent la même **feuille « Compte et synchronisation »** (ECR-011) : état de la synchronisation, modifications non retenues, compte, « Se déconnecter », « Supprimer les données de cet appareil ». Les réglages (ECR-009) s'y ajouteront avec leurs lots.
 
 Les **indicateurs** (évolution du backlog et de la vélocité, US-012, US-013) arriveront dans un lot ultérieur. Ils seront accessibles depuis le détail d'un objectif (vue par objectif) et depuis une entrée « Indicateurs » des réglages ou de la barre latérale sur PC. Leur emplacement définitif sera décidé à la conception du lot « Vélocité et pilotage » ; la barre de navigation mobile reste limitée à 4 entrées.
 
@@ -73,6 +78,7 @@ Pourquoi 4 onglets et pas 5 : chaque onglet supplémentaire réduit la cible tac
 ### 2.3 Badges de navigation
 - Un **point** (sans nombre) sur l'onglet Aujourd'hui signale qu'au moins une carte « À traiter » est en attente (alerte de délai, proposition de replanification, créneau déplacé).
 - Aucun badge numérique : il crée une pression inutile pour un outil personnel.
+- **(v0.2)** Un **point accent** (sans nombre) sur l'indicateur de synchronisation signale que des « modifications non retenues » attendent d'être lues (ECR-011). Il ne s'allume jamais pour un état normal.
 
 ---
 
@@ -186,7 +192,7 @@ Si l'utilisateur a demandé la réduction des animations (`prefers-reduced-motio
 | Terminer | cercle vide → cercle coché | Case ronde (Things, Rappels) |
 | Abandonner | cercle barré | Jamais en action rapide : menu uniquement |
 | Délai | drapeau | Métadonnée |
-| Durée, temps passé | horloge | Métadonnée |
+| Durée, estimation, temps passé | horloge | Métadonnée. **(v0.2)** Au lot 1, l'estimation d'une tâche s'affiche avec l'horloge ; le sablier est réservé au reste à faire (lot « Suivi du temps »). |
 | Reste à faire | sablier | Métadonnée |
 | Créneau Google | calendrier avec point | Indique que le créneau existe dans l'agenda |
 | Proposé par l'application | étincelle | Marqueur des propositions (P5) |
@@ -198,6 +204,13 @@ Si l'utilisateur a demandé la réduction des animations (`prefers-reduced-motio
 | Hors ligne | nuage barré | Indicateur |
 | Action requise | nuage avec point d'exclamation | Indicateur |
 | Réordonner | poignée (6 points) | Visible au survol sur PC, en mode réorganisation sur smartphone |
+| Sous-tâche, sous-objectif **(v0.2)** | flèche coudée vers le bas | Compteur « 1/3 » sur la ligne du parent |
+| Information, modification non retenue **(v0.2)** | cercle avec « i » | Niveau « information » ; toujours avec texte |
+| Verrou, valeur calculée ou héritée **(v0.2)** | cadenas | Estimation calculée, objectifs hérités ; jamais seul |
+| Dossier Drive **(v0.2)** | dossier | Dossier « Objectifs et Tâches » |
+| Se déconnecter **(v0.2)** | flèche vers une porte | Action secondaire de ECR-011 |
+| Supprimer | corbeille | Danger ; menu et feuille de compte |
+| Heure de Paris **(v0.2)** | horloge | Dans la puce `ParisTimeNote` (§4.21) |
 
 ---
 
@@ -222,7 +235,7 @@ Composant central, utilisé dans Aujourd'hui, Tâches, Objectif, Semaine.
 
 Structure (de gauche à droite) : case ronde « Terminer » · intitulé (2 lignes max, puis ellipse) · ligne de métadonnées · élément de droite contextuel.
 
-Métadonnées, dans cet ordre, **3 au maximum** affichées selon la vue :
+Métadonnées, dans cet ordre, **3 au maximum** affichées selon la vue (au lot 1 : délai, estimation, objectif, sous-tâches) :
 1. horaire suggéré (Aujourd'hui, Semaine) ou rang de priorité (Tâches) ;
 2. délai (drapeau), en rouge avec texte « En retard » si dépassé ;
 3. reste à faire (sablier) ;
@@ -239,6 +252,9 @@ Métadonnées, dans cet ordre, **3 au maximum** affichées selon la vue :
 | Proposée (planning non validé) | Bordure gauche pointillée `color.accent` et marqueur étincelle « Proposé » |
 | Reportée automatiquement | Métadonnée « Reportée d'hier » avec icône flèche circulaire, pendant la journée du report |
 | Modifiée hors ligne, non synchronisée | Petit point `color.text.tertiary` à droite (nom accessible : « Modification en attente d'envoi ») |
+| Incohérence après fusion **(v0.2, RG-049)** | Étiquette d'attention « Incohérence » (icône triangle + mot) dans les métadonnées, jusqu'à résolution ; détail dans ECR-007 (§4.23) |
+| Sous-tâche **(v0.2)** | En retrait de 28 px sous sa tâche parente dans l'objectif ; dans les listes de tâches, la tâche parente porte le compteur « 1/3 » et les sous-tâches ne sont pas listées une à une |
+| Délai postérieur à celui de l'objectif ou de la tâche parente **(v0.2, RG-024)** | Délai en `color.warning` + triangle + texte « après le délai de l'objectif » (ou « de la tâche ») ; jamais bloquant |
 | Sélectionnée (PC) | Fond `color.accent.subtle` |
 | Focus clavier | Anneau de focus sur toute la ligne |
 
@@ -246,13 +262,15 @@ Métadonnées, dans cet ordre, **3 au maximum** affichées selon la vue :
 - **Smartphone** : feuille basse ouverte par le FAB ; le clavier s'ouvre immédiatement sur le champ intitulé.
 - **PC** : champ en haut de la liste ou fenêtre flottante centrée, ouverte par la touche `N` (voir §5.3).
 - Contenu : champ intitulé, puis une rangée de **puces de choix rapide** :
-  - Délai (obligatoire, RG-003) : « Aujourd'hui », « Demain », « Vendredi », « Dans 1 semaine », « Date… » ;
-  - Estimation (RG-028, obligatoire **sous réserve de Q-DEM001-28.1**) : « 30 min », « 1 h », « 2 h », « Autre… » ;
+  - Délai (**obligatoire**, RG-003) : « Aujourd'hui », « Demain », « Vendredi », « Dans 1 semaine », « Date… » ;
+  - Estimation (**obligatoire**, RG-028, RG-029) : « 30 min », « 1 h », « 2 h », « Autre… » (pas de 30 min, minimum 30 min) ;
   - Objectif (facultatif, RG-001) : objectif de la vue courante pré-rempli si l'on est dans un objectif ;
   - Jour planifié (facultatif) : pré-rempli à « Aujourd'hui » si la saisie part de la vue Aujourd'hui.
 - Action principale : « Ajouter » (Entrée). La feuille reste ouverte et vide après l'ajout, pour enchaîner plusieurs tâches ; un glissement vers le bas ou Échap la ferme.
-- États : *vide* (bouton désactivé, avec l'indication « Intitulé, délai et estimation requis ») ; *incomplet* (puces manquantes soulignées) ; *prêt* ; *ajouté* (confirmation brève dans la feuille : « Ajoutée à Tâches »).
-- Pré-sélection d'un délai par défaut : **voir Q-ERG-03**.
+- **(v0.2) Aucune valeur présélectionnée** ni pour le délai ni pour l'estimation (Q-ERG-03 « non », RG-003, RG-029, US-002 CA-2). Les libellés portent « (obligatoire) ». Seuls les rattachements issus du contexte sont pré-remplis.
+- États : *initial* (rien de sélectionné, bouton « Ajouter » **actif**) ; *incomplet* (après « Ajouter » : message nommant l'information manquante sous les puces concernées, texte `color.danger` + icône, focus sur la première, saisie conservée, US-002 CA-3) ; *prêt* ; *ajouté* (confirmation brève dans la feuille : « Ajoutée à Tâches »). Le bouton n'est pas désactivé : un bouton grisé sans explication est inaccessible (WCAG 3.3.1), et le message d'erreur dit précisément quoi faire.
+- **(v0.2) Variante sous-tâche** : même feuille, titre « Nouvelle sous-tâche » avec le nom de la tâche parente en sous-titre, objectifs hérités affichés en lecture seule (verrou). Pour la première sous-tâche d'une tâche, un message d'information précède l'enregistrement : « L'estimation de la tâche (3 h) sera remplacée par la somme de ses sous-tâches » (US-024 CA-5).
+- **(v0.2) Variante objectif** : intitulé (obligatoire), description (facultative), délai (facultatif, « Sans délai » est un choix explicite), objectif parent (facultatif). L'importance n'est pas demandée au lot 1 (US-030).
 
 ### 4.4 Sélecteur de durée (`DurationStepper`)
 Utilisé pour l'estimation, le temps passé, le reste à faire et la capacité. Pas fixe de **30 min** (RG-028 ; temps passé : sous réserve de Q-DEM001-31.3).
@@ -284,11 +302,11 @@ Conteneur des alertes et propositions (§7). Fond `surface.raised` + `shadow.1`,
 ### 4.8 Indicateur de synchronisation (`SyncStatus`)
 - Smartphone : icône 20 px en haut à droite de l'en-tête, à côté de l'avatar. Libellé texte affiché seulement pour les états « Hors ligne » et « Action requise ».
 - PC : pied de la barre latérale, icône + libellé toujours visible (« À jour · il y a 2 min »).
-- Un appui ouvre la **feuille de synchronisation** (ECR-011) : dernier échange avec l'espace de stockage, dernier échange avec Google Calendar, modifications en attente (nombre et liste), modifications écartées par la règle de conflit (RG-036, sous réserve de Q-DEM001-23.2), bouton « Synchroniser maintenant ».
-- États : voir §6.5.
+- Un appui ouvre la **feuille « Compte et synchronisation »** (ECR-011, §4.26) : dernier échange avec l'espace de stockage (et, plus tard, avec Google Calendar), modifications en attente (nombre et liste), modifications non retenues par la règle de conflit (RG-036, RG-047, RG-048), bouton « Synchroniser maintenant », compte et actions de compte.
+- **(v0.2)** Huit états (§6.5). Le plus grave est seul affiché. Le nouvel état « informations à lire » ajoute un point accent à l'icône d'« À jour ». Chaque état a un nom accessible, y compris sur smartphone où seules les icônes « Hors ligne », « Action requise » et « Session à renouveler » portent un libellé visible.
 
 ### 4.9 Bandeau (`Banner`)
-Message persistant sous l'en-tête, pleine largeur, fermable sauf mention contraire. Réservé à **deux** cas : accès Google perdu (non fermable tant que non résolu, RG-035) et hors ligne prolongé avec modifications en attente depuis plus de 24 h (rappel non bloquant). Tout le reste passe par l'indicateur ou une carte.
+Message persistant sous l'en-tête, pleine largeur, fermable sauf mention contraire. Réservé à **deux** cas : accès Google perdu (non fermable tant que non résolu, RG-035 ; une seule action « Se reconnecter ») et hors ligne prolongé avec modifications en attente depuis plus de 24 h (rappel non bloquant ; US-018 CA-6 ne fixe aucune durée maximale d'utilisation hors ligne, et le rappel n'empêche rien). Tout le reste passe par l'indicateur ou une carte. **(v0.2)** Les données absentes du Drive (RG-044) utilisent l'état « Action requise » et la feuille de choix (§4.25), pas un troisième bandeau ; la **session Google expirée sur PC** n'est pas un bandeau non plus (état « Reprendre la synchronisation »).
 
 ### 4.10 Message éphémère (`Toast`)
 Bas de l'écran, au-dessus de la barre d'onglets, 4 s (6 s s'il contient une action), une seule ligne + action facultative « Annuler ». Annoncé aux lecteurs d'écran (`role="status"`). Mis en pause au survol ou au focus. Exemple : « Tâche terminée · Annuler ».
@@ -299,14 +317,27 @@ Bas de l'écran, au-dessus de la barre d'onglets, 4 s (6 s s'il contient une act
 - Focus piégé dans la feuille modale ; retour du focus à l'élément d'origine à la fermeture.
 
 ### 4.12 Boîte de confirmation (`ConfirmDialog`)
-Utilisée **uniquement** pour les actions destructrices et irréversibles (suppression, déconnexion avec modifications en attente). Titre = conséquence (« Supprimer la tâche et ses 3 sous-tâches ? »), action destructrice libellée explicitement (« Supprimer »), « Annuler » focalisé par défaut.
+Utilisée **uniquement** pour les actions destructrices ou irréversibles, ou dont la conséquence touche plusieurs éléments. Titre = conséquence (« Supprimer la tâche et ses 3 sous-tâches ? »), action libellée explicitement (« Supprimer »), « Annuler » focalisé par défaut, texte qui dit **ce qui est perdu et ce qui est préservé** (P11). Rôle `alertdialog`, focus piégé, Échap = Annuler.
+
+**(v0.2) Cas du lot 1** :
+| Action | Titre | Bouton d'action | Rouge ? |
+|---|---|---|---|
+| Supprimer une tâche (RG-046) | « Supprimer la tâche et ses 3 sous-tâches ? » | Supprimer | Oui (définitif, sans corbeille) |
+| Supprimer un objectif (RG-046) | « Supprimer « X » ? » avec nombre de tâches détachées et de sous-objectifs promus | Supprimer | Oui |
+| Abandonner une tâche (US-025 CA-1, CA-6) | « Abandonner « X » ? » avec nombre de sous-tâches abandonnées avec elle | Abandonner | Non (réversible) ; voir Q-ERG-13 |
+| Rouvrir une sous-tâche d'une tâche terminée (US-003 CA-9) | « Rouvrir aussi « X » ? » | Rouvrir les deux | Non |
+| Ajouter une sous-tâche à une tâche terminée (US-024) | « Rouvrir « X » pour y ajouter une sous-tâche ? » | Rouvrir et ajouter | Non |
+| Se déconnecter avec modifications en attente (US-022 CA-6) | « Se déconnecter ? » avec le nombre de modifications et la promesse de leur enregistrement | Se déconnecter | Non ; **absente** s'il n'y a rien en attente |
+| Supprimer les données de cet appareil (RG-055) | « Supprimer les données de cet appareil ? » : données du Drive préservées | Supprimer les données | Oui |
+| Idem, dépôt impossible (RG-055) | « 3 modifications seraient perdues » | Supprimer quand même | Oui |
+| Repartir de zéro (RG-044 b) | « Effacer toutes vos données sur vos deux appareils ? » avec le nombre de modifications non enregistrées perdues | Tout effacer | Oui |
 
 ### 4.13 En-tête de vue (`ViewHeader`)
 Titre de vue (`font.title.l`), sous-titre facultatif (date, progression), à droite : indicateur de synchronisation et avatar (réglages). Sur smartphone, le titre se réduit dans la barre au défilement.
 
 ### 4.14 Barre d'onglets (`TabBar`), rail (`NavRail`), barre latérale (`Sidebar`)
-- Barre d'onglets : 4 entrées, icône 24 px + libellé 12 px toujours visible ; onglet actif en `color.accent` et indiqué aussi par la graisse et `aria-current="page"`.
-- Barre latérale PC : mêmes 4 entrées, puis section « Objectifs » (5 premiers, « Tous les objectifs »), puis pied (synchronisation, réglages).
+- Barre d'onglets : 4 entrées (2 au lot 1, §2.1), icône 24 px + libellé 12 px toujours visible ; onglet actif en `color.accent` et indiqué aussi par la graisse et `aria-current="page"`.
+- Barre latérale PC : mêmes entrées que la barre d'onglets (2 au lot 1), puis section « Objectifs » (5 premiers, « Tous les objectifs »), puis pied (synchronisation, réglages).
 
 ### 4.15 Progression d'objectif (`GoalProgress`)
 Anneau 32 px (liste) ou barre (détail) + texte « 7 / 12 tâches · 18 h restantes ». État « Atteint » : coche `color.success` + texte « Atteint ». État « À décliner en tâches » (objectif vide, **sous réserve de Q-DEM001-26.3**) : texte `color.text.tertiary` et lien « Ajouter une tâche ».
@@ -326,6 +357,39 @@ Illustration absente (sobriété) ; une phrase qui dit pourquoi c'est vide, une 
 ### 4.20 Squelette de chargement (`Skeleton`)
 Blocs gris `color.surface` à la forme des lignes attendues, sans animation de balayage si la réduction des animations est demandée.
 
+### 4.21 Mention « Heure de Paris » (`ParisTimeNote`) — nouveau (v0.2, RG-054, A-F6)
+Réponse à A-F6 : **forme de la mention « heure de Paris »**.
+- **Quand** : seulement si le fuseau de l'appareil diffère de celui de Paris. Absente sinon (aucun bruit pour l'utilisateur à Paris).
+- **Où** : (1) puce sous le titre des vues qui affichent une journée ou un retard (Tâches, Objectifs ; Aujourd'hui et Semaine plus tard) ; (2) à côté des dates déterminées par la journée de Paris : date de fin, date d'abandon (ECR-007) ; (3) ligne « Fuseau » de la feuille de compte (ECR-011). **Jamais** sur un délai, qui est une date sans heure (RG-053).
+- **Forme** : puce `font.caption`, fond `color.surface`, bordure `color.border`, `radius.s`, icône horloge 14 px + texte « Heure de Paris ». Hauteur 22 px, zone tactile étendue à 44 px.
+- **Interaction** : un appui (ou le survol / focus sur PC) ouvre une info-bulle fermable : « Les jours, les retards et les horaires suivent l'heure de Paris, où que vous soyez. » Avec l'exemple utile quand il existe : « Il est 4 h à Paris, alors que votre appareil indique 22 h la veille. »
+- **Accessibilité** : bouton avec nom accessible « Heure de Paris : afficher l'explication » ; texte jamais seul porteur d'information.
+- **Justification** : DEC-012 fixe l'heure de Paris pour tous les appareils ; en voyage, « en retard » ou « terminée le 11 mars » peut surprendre. La mention le dit au moment où l'écart peut exister, sans l'imposer à l'utilisateur sédentaire.
+
+### 4.22 Champ de détail (`FieldRow`) et champ verrouillé (`LockedField`) — nouveau (v0.2)
+- `FieldRow` : libellé gris (92 px) · valeur · chevron ; hauteur minimale 48 px ; un appui ouvre le sélecteur. Utilisé dans ECR-007 (délai, estimation, objectifs). Pas de bouton « Enregistrer » (§5.6).
+- `LockedField` : même structure, **cadenas** + origine en texte (« Somme des sous-tâches », « Hérités de la tâche »). Non modifiable, non focalisable en saisie, mais lisible par les lecteurs d'écran avec l'explication. Utilisé pour l'estimation calculée d'une tâche parente (RG-023) et les objectifs d'une sous-tâche (US-024 CA-7).
+
+### 4.23 Carte d'incohérence (`InconsistencyCard`) — nouveau (v0.2, RG-049)
+Variante de `ActionCard` de niveau **attention**, placée en tête du détail de la tâche concernée. Titre court (« Incohérence avec une sous-tâche »), une phrase qui dit ce qui s'est passé, **ce qui n'a pas été modifié** (« Rien n'a été modifié ») et la conséquence (« l'objectif n'est pas atteint »), puis les issues possibles : une action principale (« Rouvrir la tâche ») et deux tertiaires (« Terminer la sous-tâche », « Abandonner la sous-tâche »). Marqueur « Incohérence » dans les listes tant qu'elle persiste. Disparaît seule dès que la cause disparaît.
+
+### 4.24 Élément « non retenu » (`DiscardedItem`) — nouveau (v0.2, RG-036, RG-047, RG-048, Q-DEM001-23.2)
+Ligne de la section « Modifications non retenues » de ECR-011 : icône information · titre (élément et information concernés) · phrase (**valeur non retenue**, d'où elle venait, **valeur conservée**) · actions « Voir l'élément » (si l'élément existe) et « Compris ». Trois formes : valeur écartée, suppression qui l'emporte, déplacement annulé. Signalements : point accent sur l'indicateur, toast à l'ouverture (« 3 modifications n'ont pas été retenues · Voir »), ligne discrète sur l'élément concerné (« 1 modification non retenue · Voir »). Une valeur remplacée en connaissance de cause n'est jamais signalée.
+
+### 4.25 Choix d'options (`OptionCard`) et étapes de préparation (`StepProgress`) — nouveaux (v0.2)
+- `OptionCard` : carte à titre, phrase de conséquence et bouton pleine largeur ; une seule porte le bouton principal. Utilisée pour « Restaurer mes données » (principal) et « Repartir de zéro » (secondaire, texte rouge, mène à une confirmation) (RG-044).
+- `StepProgress` : liste verticale d'étapes (terminée / en cours / à venir) avec icône, et barre de progression si elle est mesurable ; annoncée `role="status"`. Utilisée au premier chargement (ECR-010) : « Compte identifié », « Dossier trouvé / créé », « Récupération de vos données… ».
+
+### 4.26 Feuille « Compte et synchronisation » (`SyncSheet`) — nouveau (v0.2, ECR-011)
+Feuille (smartphone), boîte de dialogue ou panneau (PC). Sections, dans l'ordre : **Synchronisation** (état en une phrase, dernier échange, modifications en attente, « Synchroniser maintenant ») · **Modifications non retenues** (si présentes) · **Erreurs qui demandent une action** (si présentes) · **Compte** (adresse, dossier du Drive, fuseau si différent) · **Se déconnecter** (secondaire) · séparateur · **Supprimer les données de cet appareil** (`DangerLink`, texte rouge, avec sa phrase d'explication). Pas d'action principale dans l'état normal (feuille d'information) ; une action principale apparaît quand une décision est attendue.
+
+### 4.27 Action destructrice isolée (`DangerLink`) — nouveau (v0.2)
+Action de texte rouge, sans fond, avec icône corbeille, séparée des autres par un trait et suivie d'une phrase qui dit ce qui est retiré et ce qui reste. Jamais un bouton plein en dehors d'une `ConfirmDialog`. Utilisée pour « Supprimer les données de cet appareil » et « Supprimer la tâche / l'objectif » dans les menus.
+
+### 4.28 Ligne d'objectif (`ObjectiveRow`) et sélecteur de parent (`ParentPicker`) — nouveaux (v0.2)
+- `ObjectiveRow` : `GoalProgress` (anneau) · intitulé · métadonnées (état en toutes lettres, tâches terminées sur tâches non abandonnées, délai ou « Sans délai », « En retard ») · chevron. Un sous-objectif est en retrait de 28 px avec un anneau de 24 px. Nom accessible : « Publier le guide pratique, en cours, 7 tâches sur 12 terminées, délai 15 décembre ».
+- `ParentPicker` : liste à choix unique (boutons radio) des objectifs principaux possibles, plus « Aucun, objectif principal » ; l'objectif déplacé lui-même est présent mais indisponible, avec la raison. Un objectif qui a des sous-objectifs ne peut pas être déplacé : un message l'explique avant tout choix.
+
 ---
 
 ## 5. Règles d'interaction
@@ -338,6 +402,7 @@ Blocs gris `color.surface` à la forme des lignes attendues, sans animation de b
 
 - Le contexte pré-remplit ce qu'il peut : vue Aujourd'hui → planifiée aujourd'hui ; détail d'un objectif → rattachée à cet objectif ; jour de la vue Semaine → planifiée ce jour-là.
 - Le texte saisi n'est jamais perdu : si la feuille est fermée avec un intitulé non vide, il est conservé comme brouillon et réaffiché à la réouverture.
+- **(v0.2)** Le délai et l'estimation sont toujours choisis explicitement (Q-ERG-03). Le geste reste court : 2 appuis de puces (§4.3).
 - **Analyse du texte (« demain », « 2h »)** : non retenue en v0.1. Elle accélère la saisie sur PC, mais elle est source d'erreurs sur smartphone (dictée, correcteur). À réévaluer après les premiers retours d'usage.
 
 ### 5.2 Gestes mobiles
@@ -378,6 +443,8 @@ Principes : les raccourcis à **une seule touche** ne sont actifs que lorsque le
 | `B` | Ouvrir le bilan du soir |
 | `?` | Aide des raccourcis |
 
+**(v0.2)** Au lot 1, seuls `N`, `Maj`+`N`, `/`, `3`, `4`, `J`/`K`, `Entrée`, `Échap`, `X`/`Espace` et `?` sont actifs ; `P`, `T`, `E`, `B` et `Alt` + `←`/`→` arrivent avec la planification, le suivi du temps et le bilan.
+
 Les combinaisons avec `Ctrl`/`Cmd` ne sont pas utilisées en v0.1 : elles entrent en conflit avec le navigateur si l'application est une PWA (§11).
 
 ### 5.4 Planification
@@ -387,7 +454,9 @@ Les combinaisons avec `Ctrl`/`Cmd` ne sont pas utilisées en v0.1 : elles entren
 - L'horaire suggéré (RG-034) s'affiche dès que l'application l'a calculé ; avant cela, la ligne indique « Horaire à venir ». La modification de l'horaire dans l'application est **sous réserve de Q-DEM001-32.3**.
 
 ### 5.5 Annulation plutôt que confirmation
-Les actions réversibles (terminer, planifier, réordonner, accepter une proposition, abandonner) s'exécutent immédiatement, avec un toast « Annuler ». La confirmation est réservée aux suppressions (§4.12). Justification : moins de gestes pour 99 % des cas, et le filet de sécurité reste disponible.
+Les actions réversibles (terminer, rouvrir, planifier, réordonner, accepter une proposition) s'exécutent immédiatement, avec un toast « Annuler ». La confirmation est réservée aux suppressions, aux actions qui touchent plusieurs éléments et aux actions de données (§4.12). Justification : moins de gestes pour 99 % des cas, et le filet de sécurité reste disponible.
+
+**(v0.2)** *Abandonner* : US-025 CA-1 prévoit une confirmation (proposition de Pepper), parce que l'abandon d'une tâche parente abandonne ses sous-tâches. Le guide v0.1 le classait en action immédiate. Steeve applique l'US ; une alternative (confirmation seulement quand il y a des sous-tâches, sinon toast « Annuler ») est posée en Q-ERG-13.
 
 ### 5.6 Enregistrement
 Pas de bouton « Enregistrer » dans les détails : chaque modification est enregistrée dès qu'elle est faite (localement d'abord, puis synchronisée). Exception : le **bilan du soir**, qui se termine par une validation explicite, parce qu'il regroupe plusieurs saisies et des propositions à accepter.
@@ -403,7 +472,11 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 | Aujourd'hui, tout est terminé | « Tout est fait pour aujourd'hui. » + temps passé du jour | Lien « Faire mon bilan » |
 | Tâches, aucune tâche | « Aucune tâche pour l'instant. » / « Commencez par ce qui vous vient à l'esprit, vous trierez ensuite. » | « Ajouter une tâche » |
 | Objectifs, aucun objectif | « Un objectif donne une direction à vos tâches. » | « Créer un objectif » |
-| Objectif sans tâche | « À décliner en tâches. » (sous réserve de Q-DEM001-26.3) | « Ajouter une tâche » |
+| Objectif sans tâche | « À décliner en tâches. » (US-001 CA-8, RG-025) | « Ajouter une tâche » |
+| **(v0.2)** Premier lancement, Drive vide (US-022 CA-2) | « Bienvenue. Un objectif donne une direction à vos tâches. Commencez par le vôtre, ou ajoutez directement une tâche. » | « Créer mon premier objectif » (principal) ; « Ajouter une tâche sans objectif » (tertiaire) |
+| **(v0.2)** Tâches, filtre « Sans objectif » vide | « Toutes vos tâches ont un objectif. » | — |
+| **(v0.2)** Tâches, filtre « Abandonnées » ou « Terminées » vide | « Aucune tâche abandonnée. » / « Aucune tâche terminée. » | — |
+| **(v0.2)** Modifications non retenues, rien à lire | Section absente | — |
 | Semaine, aucune capacité définie | « Indiquez combien de temps vous consacrez à vos tâches chaque jour, pour que l'application puisse vous proposer un planning. » | « Définir ma capacité » |
 | Semaine, rien à planifier | « Toutes vos tâches sont planifiées. » | — |
 | Bilan du soir, aucune tâche du jour | « Aucune tâche prévue ni travaillée aujourd'hui. » | Questions de bilan toujours proposées (US-033) |
@@ -413,6 +486,8 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 - **Lancements suivants** : l'application affiche **immédiatement** les données présentes sur l'appareil (pas de squelette), puis l'indicateur passe en « Synchronisation… ». Justification : usage smartphone en mobilité ; attendre le réseau pour voir sa journée serait inacceptable (RG-021).
 - Squelettes (`Skeleton`) seulement pour les contenus jamais chargés sur l'appareil (ex. indicateurs, plus tard).
 - Au-delà de 10 s sans réponse, un texte apparaît : « C'est plus long que d'habitude. Vos données locales restent utilisables. »
+- **(v0.2)** Premier chargement après connexion (ECR-010) : `StepProgress` à trois étapes, annulation possible. Sur un compte neuf : « Création de votre dossier dans Google Drive ». Exigence de l'architecte : moins de 10 s sur 4G jusqu'à l'état vide.
+- **(v0.2)** Réouverture d'une session existante : aucun écran d'attente, même sans réseau (CA-5 de US-022, ENF-T-01 : ouverture en moins de 2 s).
 
 ### 6.3 Erreurs
 | Type | Présentation | Exemple de message |
@@ -431,15 +506,32 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 
 Règle : un message d'erreur dit **ce qui s'est passé**, **ce qui est préservé** (« vos données sont conservées ») et **quoi faire**. Jamais de code technique à l'écran.
 
-Le comportement de l'application pendant la perte d'accès Google (consultation seule ou saisie autorisée) est **sous réserve de Q-DEM001-22.2**.
+**(v0.2)** Messages ajoutés par LOT-001 (ECR-010, ECR-011) :
+| Type | Présentation | Message |
+|---|---|---|
+| Connexion annulée ou autorisation refusée (US-022 CA-4) | Message d'information sur l'écran de connexion (`role="alert"`) | « Connexion annulée. Une connexion à un compte Google est nécessaire pour utiliser l'application. Rien n'a été créé. » |
+| Première connexion ou reconnexion sans réseau | Message d'attention, bouton « Réessayer » | « Pas de connexion à Internet. Une connexion est nécessaire pour vous connecter la première fois. Rien n'a été créé. » |
+| Connexion interrompue | Même mise en page | « La connexion a été interrompue. Aucune donnée n'a été créée à moitié. Réessayez. » |
+| Drive indisponible ou désactivé (RG-019, RG-020) | Message d'erreur, une seule action | « Google Drive n'est pas disponible pour ce compte (par exemple, un compte d'organisation sans accès au Drive). L'application en a besoin pour enregistrer vos données. Essayez avec un autre compte Google. » |
+| Drive plein (US-017) | Carte d'erreur dans ECR-011 ; indicateur « Action requise » | « Votre Google Drive est plein. Vos modifications sont conservées sur cet appareil. Libérez de la place : l'enregistrement reprendra tout seul. » |
+| Horloge déréglée de plus de 24 h (US-017) | Carte d'attention dans ECR-011 | « L'heure de cet appareil semble incorrecte. Corrigez-la pour éviter des conflits entre vos appareils. » |
+| Données absentes ou illisibles dans le Drive (RG-044) | Indicateur « Action requise » + feuille de choix (§4.25) ; l'application reste utilisable | « Vos données ne sont plus dans votre Google Drive. Cet appareil en garde une copie. Rien n'est effacé tant que vous n'avez pas choisi. » |
+| Choix « repartir de zéro » fait sur l'autre appareil | Carte d'information dans ECR-011 | « Vous avez choisi de repartir de zéro sur votre PC. 2 modifications faites ici avant ce choix n'ont pas été conservées. » |
+| Modification supprimée ou écartée (RG-036, RG-047, RG-048) | `DiscardedItem` (§4.24) | Voir ECR-011 C |
+| Incohérence d'état (RG-049) | `InconsistencyCard` (§4.23) | « Cette tâche est terminée, mais 1 sous-tâche est à faire. Rien n'a été modifié. » |
+
+**(v0.2) Perte d'accès Google (Q-DEM001-22.2 c, RG-035, levée de la réserve)** : l'application reste entièrement utilisable comme hors ligne (consultation et saisie). Aucun bouton n'est désactivé ; le bandeau non fermable porte la seule action « Se reconnecter ».
 
 ### 6.4 Hors ligne
 - L'application reste entièrement utilisable en consultation et en saisie (RG-021). Aucun bouton n'est désactivé pour cause de réseau, sauf « Synchroniser maintenant » et la reconnexion Google.
 - Au passage hors ligne : indicateur « Hors ligne » (icône + libellé) et un toast unique : « Hors ligne. Vos modifications sont enregistrées sur l'appareil et seront envoyées au retour du réseau. »
 - Les éléments modifiés hors ligne portent le point « en attente » (§4.2).
 - Les actions qui dépendent de Google (création de créneau, prise en compte des événements) sont mises en file ; la jauge de capacité indique « Agenda non actualisé depuis 14 h 10 » si les événements n'ont pas pu être relus.
-- Au retour du réseau : indicateur « Synchronisation… » puis « À jour », sans toast si tout s'est bien passé. Si une modification a été écartée par la règle de conflit (RG-036) : carte « À traiter » de niveau information, avec la valeur écartée (sous réserve de Q-DEM001-23.2).
-- Sur PC : comportement identique **sous réserve de Q-DEM001-39** ; si le PC n'est pas utilisable hors ligne, écran « Connexion nécessaire » avec les données en lecture seule si elles sont disponibles.
+- Au retour du réseau : indicateur « Synchronisation… » puis « À jour », sans toast si tout s'est bien passé. **(v0.2, Q-DEM001-23.2 « oui »)** Si une modification a été écartée par la règle de conflit (RG-036), supprimée par une suppression concurrente (RG-047) ou annulée (RG-048) : point accent sur l'indicateur, toast « 2 modifications n'ont pas été retenues · Voir » et liste dans ECR-011 (§4.24). Ce n'est pas une carte « À traiter » : il n'y a pas de décision à prendre, et aucun écran « Aujourd'hui » n'existe au lot 1.
+- **(v0.2) Sur PC : comportement identique** (DEC-013, US-031). L'application doit avoir été ouverte une fois avec le réseau, dans ce navigateur : sans cela, le navigateur ne peut rien afficher et aucun écran n'est concevable (consigne dans le guide utilisateur). Hors ligne prolongé : **aucune durée maximale** (US-018 CA-6, US-031 CA-7).
+- **(v0.2) Forme de l'indication hors ligne** (CA-3 de US-018 et de US-031, « forme fixée en E4 ») : (1) libellé « Hors ligne · n en attente » à la place de l'icône, dans l'en-tête sur smartphone et dans le pied de la barre latérale sur PC ; (2) point « en attente d'envoi » sur chaque ligne modifiée ; (3) liste lisible des modifications dans ECR-011 ; (4) un toast unique au passage hors ligne ; (5) aucun bandeau. Le libellé disparaît au retour du réseau, **sans toast** si tout s'est bien passé.
+- **(v0.2) Session Google expirée sur PC** (F14, US-031 CA-5) : l'application reste utilisable ; l'indicateur propose « Reprendre la synchronisation » en un clic, sans bandeau (jeton d'une heure, état routinier).
+- **(v0.2) Deux onglets** (US-031) : les deux affichent les mêmes données ; un seul synchronise (verrou). L'onglet qui ne synchronise pas le dit dans ECR-011 uniquement ; aucun message ne l'interrompt. Si l'onglet qui synchronise est fermé, l'autre prend le relais sans message.
 
 ### 6.5 États de l'indicateur de synchronisation
 | État | Icône | Libellé (PC ; smartphone si affiché) | Intrusif ? |
@@ -451,6 +543,9 @@ Le comportement de l'application pendant la perte d'accès Google (consultation 
 | Nouvelle tentative | nuage avec flèches, `color.warning` | « Nouvelle tentative… » | Non |
 | Session à renouveler (PC) | nuage avec flèches, `color.accent` | « Reprendre la synchronisation » (bouton) | Non : un clic, pas de bandeau |
 | Action requise | nuage avec point d'exclamation, `color.danger` | « Action requise » | Oui : bandeau si Google, sinon indicateur + carte |
+| **(v0.2)** Informations à lire | nuage coché + point accent | « À jour · 2 informations » | Non : point seul, ni bandeau ni nombre sur smartphone |
+
+**(v0.2)** « Action requise » couvre : accès Google perdu (bandeau), Drive plein, données absentes du Drive, version de l'application trop ancienne. « Session à renouveler » est propre au PC et n'est jamais un bandeau. Les fréquences de synchronisation ne sont pas visibles : l'heure du « dernier échange » suffit (DAT : à l'ouverture, 5 s après une modification, puis toutes les 2 min au premier plan ; exigence de l'utilisateur : 1 h, DEC-014).
 
 L'indicateur couvre deux échanges distincts — l'espace de stockage (données) et Google Calendar (créneaux, événements, rappels) — mais n'affiche qu'**un** état, le plus grave des deux. La feuille de synchronisation détaille chacun.
 
@@ -480,7 +575,7 @@ Pourquoi : une phrase chiffrée.
 ```
 - **Accepter** (principal) : applique la proposition, toast « Annuler ».
 - **Modifier** (tertiaire) : ouvre le sélecteur pré-rempli avec la valeur proposée (date, jour, durée) ; l'utilisateur ajuste puis valide.
-- **Refuser** (tertiaire) : ferme la carte, toast « Proposition refusée · Annuler ». La réapparition éventuelle de la même alerte est **sous réserve de Q-ERG-07**.
+- **Refuser** (tertiaire) : ferme la carte, toast « Proposition refusée · Annuler ». **(v0.2, Q-ERG-07, RG-052)** Refuser ne traite pas l'alerte : tant que sa cause persiste, la carte est **réaffichée chaque jour**. L'icône d'attention reste sur l'élément. Exception : refuser la replanification d'un créneau déplacé la traite (§7.5).
 - Jamais de proposition appliquée automatiquement (CdC §4.3).
 
 ### 7.4 Propositions types
@@ -494,11 +589,21 @@ Pourquoi : une phrase chiffrée.
 | Rappels modifiés dans Google | « Rappels modifiés dans votre agenda » | « Le rappel de 21 h a été supprimé dans Google Agenda. » | Rétablir les rappels à 8 h et 21 h | US-014, US-029 (DAT R7) |
 | Planning de la semaine | « Planning proposé » | « 11 tâches placées selon vos priorités et votre capacité. » | Vue Semaine, éléments marqués « Proposé » | US-027, RG-031 |
 
-### 7.5 Créneau déplacé : deux temps (RG-037)
-1. **Au moment où l'application détecte le déplacement** : une carte d'attention « Créneau déplacé » apparaît dans « À traiter » (notification dans l'application), sans demander de décision immédiate : « Une replanification vous sera proposée dans votre bilan du soir. » Lien tertiaire « Voir dans l'agenda ».
-2. **Le soir** : la proposition de replanification est présentée dans l'étape « Propositions » du bilan du soir, avec Accepter / Modifier / Refuser.
+### 7.5 Créneau déplacé : traitement immédiat ou le soir (RG-037, v0.2)
+1. **Au moment où l'application détecte le déplacement** (à l'ouverture ou pendant l'utilisation ; jamais en temps réel, DEC-007, DEC-014) : une carte d'attention « Créneau déplacé dans votre agenda » apparaît dans « À traiter ». Action principale **« Traiter maintenant »** (Q-ERG-05 « oui »), qui ouvre la proposition en feuille ; lien tertiaire « Voir dans l'agenda ».
+2. **Sinon le soir** : la proposition est présentée dans l'étape « Propositions » du bilan du soir, avec Accepter / Modifier / Refuser, puis réaffichée chaque jour tant qu'elle n'est pas traitée (RG-052).
+3. **Accepter** replanifie ; **Modifier** ouvre le choix du jour ; **Refuser** (Q-ERG-11 a) **supprime le créneau de l'agenda Google et déplanifie la tâche**. La conséquence est écrite sous les boutons de la proposition (« Refuser supprime le créneau de votre agenda et retire la tâche du planning ») et reprise dans le toast : « Créneau supprimé de votre agenda · Tâche non planifiée · Annuler ». Refuser traite l'alerte.
 
-La possibilité de traiter la replanification immédiatement, sans attendre le soir, est **sous réserve de Q-ERG-05**. Le moment exact de la proposition dépend de Q-DEM001-33.1.
+Le moment exact de la proposition du soir dépend encore de Q-DEM001-33.1 (lot « Agenda »).
+
+### 7.6 Ordre de « Aujourd'hui » (v0.2, RG-051, Q-ERG-06)
+Les tâches du jour sont présentées **par priorité** (RG-005), pas par horaire. L'horaire suggéré reste affiché en tête de métadonnées ; il n'est donc pas croissant dans la liste. Une tâche en retard passe en tête.
+
+### 7.7 Fun fact du matin (v0.2, RG-040, Q-ERG-02)
+Une ligne discrète en fin d'« Aujourd'hui », jusqu'à midi, avec une croix « Masquer » (toast « Annuler »). Le masquage vaut pour la journée (proposition à valider avec US-035). Il reste affiché un jour sans tâche planifiée.
+
+### 7.8 Bilan du soir accessible plus tôt (v0.2, RG-039, Q-ERG-04)
+La carte « Bilan du soir » apparaît **avant l'heure du rappel du soir** (dès 17 h : valeur de conception de Steeve, RG-039 ne fixe pas d'heure) et le lendemain pour la veille non faite.
 
 ---
 
@@ -508,6 +613,8 @@ La possibilité de traiter la replanification immédiatement, sans attendre le s
 - Durées : « 30 min », « 1 h », « 1 h 30 » (espace insécable entre le nombre et l'unité). Jamais « 1,5 h ».
 - Dates : relatives quand c'est plus clair (« Aujourd'hui », « Demain », « Jeudi »), sinon « 31 oct. » ; l'année seulement si elle diffère de l'année en cours.
 - Jamais de jargon technique (« sync », « token », « OAuth », « 409 »). On dit « enregistré dans votre espace », « votre agenda Google ».
+- **(v0.2)** Vocabulaire des données : « votre Google Drive » (jamais « le cloud »), « cet appareil », « votre autre appareil », « votre smartphone », « votre PC ». « Se déconnecter » ne dit jamais « effacer ». « Supprimer les données de cet appareil » dit toujours que le Drive est préservé. « Modification non retenue » (jamais « conflit » ni « écrasée »). « Repartir de zéro » est réservé à RG-044.
+- **(v0.2)** Un message de perte potentielle donne **le nombre** (« 3 modifications ») et nomme l'élément (« Rédiger le plan »).
 - Les termes du glossaire du cahier des charges sont utilisés tels quels à l'écran : objectif, sous-objectif, tâche, sous-tâche, délai, estimation, reste à faire, temps passé, capacité, vélocité (« rythme » en texte d'aide), backlog (affiché « Travail restant » ou « À planifier » selon Q-DEM001-36 : le terme anglais n'apparaît pas à l'écran).
 
 ---
@@ -542,6 +649,16 @@ Engagement : **WCAG 2.2 niveau AA** sur smartphone et sur PC, en mode clair et e
 | 3.3.8 Authentification accessible | Connexion déléguée à Google, sans test cognitif propre à l'application. |
 | 4.1.3 Messages d'état | Toasts, changements de l'indicateur de synchronisation et jauges annoncés via `role="status"` (sans interrompre), alertes critiques via `role="alert"`. |
 
+**(v0.2) Points propres au lot 1** :
+- *Connexion* (3.3.8) : aucun test cognitif ; le bouton Google est focalisable en premier ; le message d'erreur est annoncé (`role="alert"`) et le focus reste sur le bouton.
+- *Hors ligne et synchronisation* (4.1.3) : chaque changement d'état est annoncé `role="status"` ; « Synchroniser maintenant » désactivé hors ligne reste focalisable (`aria-disabled`) et son explication est liée par `aria-describedby`.
+- *Boutons désactivés* : « Terminer la tâche » d'une tâche parente reste focalisable ; la phrase qui l'explique est annoncée avant le bouton.
+- *Dialogues de confirmation* : `alertdialog`, « Annuler » focalisé, Échap annule, le focus revient à l'élément d'origine.
+- *Listes de modifications non retenues* : liste sémantique, un élément par ligne, « Compris » avec nom accessible complet (« Compris : intitulé de Rédiger le plan »).
+- *Heure de Paris* : bouton avec info-bulle accessible au focus et fermable (1.4.13).
+- *Anneaux de progression* : texte équivalent « en cours, 58 % ». *Étapes de préparation* : liste ordonnée, état de chaque étape en texte.
+- *Cible de conception* : 44 × 44 px pour tous les nouveaux boutons (« Compris », « Masquer », puce Heure de Paris étendue).
+
 Composants : la case ronde est un `checkbox` (« Terminer "Rédiger l'introduction" ») ; le stepper un `spinbutton` ; la jauge un `meter` avec texte équivalent ; les onglets de vue une navigation (`nav`) avec `aria-current`.
 
 Tests en recette (E14) : navigation clavier complète, VoiceOver (iOS / macOS), TalkBack (Android), NVDA (Windows), zoom 200 %, largeur 320 px, mode sombre, réduction des animations.
@@ -567,6 +684,11 @@ Adaptations par écran :
 | Objectif | Pile : en-tête, sous-objectifs, tâches | En-tête + liste ; détail de tâche en panneau |
 | Bilan du soir | Une seule colonne défilante, bouton de validation fixé en bas | Boîte centrée (max. 720 px) |
 | Semaine | Liste verticale des 7 jours, chaque jour repliable, « À planifier » en tête | 7 colonnes + colonne « À planifier » à gauche, glisser-déposer |
+| **(v0.2)** Tâches (lot 1) | Liste triée par délai ; filtres en puces défilantes ; détail en feuille plein écran | Liste + panneau de détail (440 px) |
+| **(v0.2)** Objectifs | Liste avec sous-objectifs en retrait ; création en feuille | Liste + panneau de création ou de détail |
+| **(v0.2)** Détail d'une tâche | Écran plein, barre d'action fixée en bas | Panneau de droite ; l'action principale suit le contenu |
+| **(v0.2)** Connexion | 1 colonne, bouton pleine largeur | Bloc centré de 460 px |
+| **(v0.2)** Compte et synchronisation | Feuille haute (presque plein écran) | Boîte de dialogue de 480 px (actions courtes) ou panneau de 400 px |
 
 Autres règles :
 - Zones sûres (encoche, barre de geste) respectées : la barre d'onglets et le bouton de validation fixé en bas tiennent compte de la marge système.
@@ -577,7 +699,9 @@ Autres règles :
 
 ## 11. En attente du DAT
 
-Points qui dépendent du choix de plateforme ou de l'architecture. Le **DAT v0.1** (brouillon de Starck, 2026-10-20) **propose** :
+> **(v0.2)** Mise à jour au regard du DAT v0.4 et des décisions DEC-001 à DEC-016 : Android seul (DEC-001), Google Play en test interne (DEC-005), PWA hébergée sans domaine (DEC-006), aucun serveur (DEC-007), pas d'avertissement Google au lot 1 (ENF-08), hors ligne sur PC (DEC-013). Les lignes ci-dessous portent une colonne de statut en fin de ligne quand elles ont évolué. Le DAT reste « Proposé » : à confirmer à son acceptation.
+
+Points qui dépendent du choix de plateforme ou de l'architecture. Le **DAT v0.1** (brouillon de Starck, 2026-10-20) **proposait** :
 - une base de code TypeScript et React unique, avec des composants **Ionic React** ;
 - une **PWA** sur le PC et une application **Capacitor** sur le smartphone (ADR-001) ;
 - une architecture *local-first* sans serveur (ADR-002) ;
@@ -590,49 +714,74 @@ Ces décisions sont au statut « Proposé », et le système du smartphone (Andr
 | DAT-UX-01 | Notifications de l'application (créneau déplacé, rappels de secours Q-DEM001-38) | Une PWA n'émet pas de notification programmée sans serveur ; une application native le peut. | Notification visible **dans** l'application (carte « À traiter ») sur les deux appareils ; notification système en complément si la plateforme la permet. | Notification système sur smartphone seulement (DAT F2, F6), et sur Android si l'arrière-plan est actif. Sur PC : carte « À traiter » uniquement. |
 | DAT-UX-02 | Gestes système | Le balayage depuis le bord est réservé au retour sur iOS et Android : conflit possible avec le balayage de ligne. | Les balayages de ligne démarrent à 24 px du bord. | Inchangé ; à vérifier sur appareil réel (WebView Capacitor). |
 | DAT-UX-03 | Raccourcis clavier sur PC | Dans un navigateur, `Ctrl`/`Cmd` + lettre est souvent capturé (ex. `Ctrl+N`). | Raccourcis à une touche et `Alt` seulement (§5.3). | Confirmé (PWA). Une application de bureau (option F du DAT) permettrait plus tard des raccourcis globaux. |
-| DAT-UX-04 | Hors ligne sur PC (Q-DEM001-39) | Comportement de l'écran sans réseau sur PC. | Même comportement que le smartphone (§6.4). | L'architecture *local-first* rend le hors ligne natif sur les deux appareils (DAT F13) ; la PWA doit avoir été ouverte une fois en ligne. |
+| DAT-UX-04 | Hors ligne sur PC (Q-DEM001-39) | Comportement de l'écran sans réseau sur PC. | Même comportement que le smartphone (§6.4). | L'architecture *local-first* rend le hors ligne natif sur les deux appareils (DAT F13) ; la PWA doit avoir été ouverte une fois en ligne. **(v0.2) Résolu par DEC-013 (US-031).** |
 | DAT-UX-05 | Sélecteurs de date et d'heure | Natifs (aspect propre à chaque système) ou composants maison (aspect homogène, plus de travail d'accessibilité). | Puces de dates rapides maison + sélecteur « Autre date… » natif. | Composant de date Ionic, habillé avec nos tokens ; accessibilité à vérifier en E14. |
 | DAT-UX-06 | Lien depuis les rappels Google vers l'application | Le rappel du soir doit ouvrir directement le bilan (Q-DEM001-40, Q-DEM002-1, DAT F8). | Lien unique qui ouvre ECR-004. | Lien web de la PWA ; sur smartphone, ouverture de l'application si elle est installée (lien d'application), sinon de la PWA. À préciser par Starck. |
 | DAT-UX-07 | Retour haptique | Vibration au seuil des balayages et à la fin d'une tâche : variable selon la plateforme. | Facultatif, jamais seul porteur d'information. | Disponible via Capacitor sur smartphone ; absent sur PC. |
 | DAT-UX-08 | Accès rapide hors de l'application (widget, raccourci « Nouvelle tâche », partage) | Accélère la saisie rapide sur smartphone, mais dépend fortement de la plateforme. | Non conçu en v0.1. | Envisageable avec Capacitor dans un lot ultérieur. |
 | DAT-UX-09 | Bibliothèque de composants et icônes | Ionic propose deux apparences (iOS et Material) qui changent selon l'appareil, alors que P9 demande le même modèle mental partout. | Tokens en CSS custom properties, style d'icônes Lucide. | **Une seule apparence** imposée sur tous les appareils, habillée par nos tokens (variables CSS Ionic). Les composants Ionic dont l'accessibilité est insuffisante seront signalés en E14. |
 | DAT-UX-10 | Rythme de synchronisation (Q-DEM001-21) | Signification de « À jour · il y a x min » ; délai de détection d'un créneau déplacé. | L'indicateur affiche l'heure du dernier échange réussi. | Synchronisation immédiate à l'ouverture, 5 s après une modification, puis toutes les 2 min au premier plan (DAT §4.3). Un créneau déplacé est détecté à l'ouverture ou à la synchronisation suivante, jamais en temps réel (DAT F2). |
-| DAT-UX-11 | Parcours de connexion Google | Fenêtre surgissante, redirection ou écran natif ; écrans de consentement (agenda, stockage) ; écran d'avertissement « application non vérifiée » (arbitrage A5). | Écran de connexion ECR-010 avec un seul bouton « Continuer avec Google » et l'explication des accès demandés (ENF-05). | Accès demandés au fil des fonctions (autorisation incrémentale) : chaque demande sera précédée d'un écran d'explication. Si l'option A5 a) est retenue, ECR-010 devra préparer l'utilisateur à l'écran d'avertissement de Google. |
-| DAT-UX-12 | Effacement des données locales à la déconnexion (Q-DEM001-22.3) | Contenu de la confirmation de déconnexion. | Confirmation qui indique le nombre de modifications non envoyées. | Confirmé (DAT §4.1.5). |
-| DAT-UX-13 | Session Google expirée sur PC (DAT R3, F14) | Sur la PWA, le jeton expire au bout d'une heure ; la reprise de la synchronisation peut demander un clic. | — | État « Session à renouveler » de l'indicateur (§6.5), un clic, sans bandeau. À valider avec le commanditaire si la fréquence s'avère gênante. |
+| DAT-UX-11 **(v0.2 : résolu pour le lot 1 par ENF-08 et ECR-010)** | Parcours de connexion Google | Fenêtre surgissante, redirection ou écran natif ; écrans de consentement (agenda, stockage) ; écran d'avertissement « application non vérifiée » (arbitrage A5). | Écran de connexion ECR-010 avec un seul bouton « Continuer avec Google » et l'explication des accès demandés (ENF-05). | Accès demandés au fil des fonctions (autorisation incrémentale) : chaque demande sera précédée d'un écran d'explication. Si l'option A5 a) est retenue, ECR-010 devra préparer l'utilisateur à l'écran d'avertissement de Google. |
+| DAT-UX-12 | Effacement des données locales à la déconnexion (Q-DEM001-22.3) | Contenu de la confirmation de déconnexion. | Confirmation qui indique le nombre de modifications non envoyées. | Confirmé (DAT §4.1.5). **(v0.2) Remplacé : la déconnexion ne supprime plus rien (RG-043, DEC-015) ; l'effacement est l'action distincte « Supprimer les données de cet appareil » (RG-055, ECR-011). Le DAT doit s'aligner (note de Pepper).** |
+| DAT-UX-13 | Session Google expirée sur PC (DAT R3, F14) | Sur la PWA, le jeton expire au bout d'une heure ; la reprise de la synchronisation peut demander un clic. | — | État « Session à renouveler » de l'indicateur (§6.5), un clic, sans bandeau. À valider avec le commanditaire si la fréquence s'avère gênante. **(v0.2) Maquetté : ECR-011 H et I ; US-031 CA-5.** |
 | DAT-UX-14 | Report automatique (RG-032, DAT F5) | Sans appareil actif à minuit, le report est appliqué à la première ouverture du jour. | Mention « Reportée d'hier » sur la tâche (ECR-001). | Inchangé ; la mention couvre ce cas sans message supplémentaire. |
+| DAT-UX-16 **(v0.2)** | Verrou entre onglets (US-031, DAT §4.1) | Un seul onglet synchronise ; les autres doivent rester utilisables et cohérents. | — | Mention dans ECR-011 seulement, aucune interruption ; reprise sans message si l'onglet qui synchronise se ferme. À vérifier en E14 avec deux onglets hors ligne. |
+| DAT-UX-17 **(v0.2)** | Nom du dossier Drive et de l'application (CA-3 de US-022) | Le dossier est visible par l'utilisateur ; l'application porte le même nom sur l'écran de consentement Google. | — | Dossier **« Objectifs et Tâches »** (nom du DAT confirmé par Steeve) ; nom d'application provisoire identique, en attente de Q-ERG-15. |
+| DAT-UX-18 **(v0.2)** | Mention « Heure de Paris » (A-F6) | Affichage seulement ; l'appareil connaît son fuseau. | — | Forme définie au §4.21 ; aucune dépendance d'architecture. |
 | DAT-UX-15 | Vérification des notifications Google (DAT R10) | Les rappels ne servent à rien si les notifications de Google Agenda sont désactivées sur le smartphone. | — | Étape guidée à la connexion de l'agenda (lot « Rappels ») : « Vérifiez que les notifications de Google Agenda sont activées », avec un rappel de test. |
 
 ## 12. Questions ergonomiques
 
 Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choix d'écran qui ne peuvent pas être tranchés sans supposition. Les questions résiduelles de Pepper qui conditionnent aussi les écrans sont rappelées au §12.2 et ne sont pas reposées.
 
-### 12.1 Nouvelles questions
+### 12.1 Questions ergonomiques
+
+Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choix d'écran qui ne peuvent pas être tranchés sans supposition.
+
+**Statut des questions de la v0.1** : Q-ERG-02 à Q-ERG-11 ont reçu une réponse du commanditaire (2026-10-20, consignées dans `suivi-projet.md`). Elles sont **« Répondue »**, et leurs effets sont intégrés dans ce guide et dans les maquettes ECR-001, 002 et 003.
+
+| Id | Écran | Question | Statut | Réponse du commanditaire | Effet dans ce guide et les maquettes |
+|---|---|---|---|---|---|
+| ~~Q-ERG-01~~ | ECR-004 | *Retirée* : couverte par Q-DEM002-1, 2 et 3 de Pepper. Voir §12.2. | Retirée | — | — |
+| Q-ERG-02 | ECR-001 | Fun fact aussi dans l'application, masquable ? | **Répondue** | Oui (RG-040) | §7.7 ; ECR-001 : croix « Masquer », cadre D |
+| Q-ERG-03 | Saisie rapide | Délai et estimation présélectionnés par défaut ? | **Répondue** | Non (RG-003, RG-029) | §4.3, §5.1 ; ECR-002 L2, ECR-007 I |
+| Q-ERG-04 | ECR-004 | Bilan accessible avant 21 h et le lendemain ? | **Répondue** | Oui (RG-039) | §7.8 ; ECR-001 (carte Bilan du soir) |
+| Q-ERG-05 | ECR-001 / 004 | Traiter la replanification d'un créneau déplacé tout de suite ? | **Répondue** | Oui (RG-037) | §7.5 ; ECR-001 : « Traiter maintenant » principal, cadre E |
+| Q-ERG-06 | ECR-001 | Aujourd'hui : par horaire ou par priorité ? | **Répondue** | Par priorité (RG-051) | §7.6 ; **ECR-001 corrigée** |
+| Q-ERG-07 | Alertes | Refus d'une proposition de délai : l'alerte réapparaît-elle ? | **Répondue** | Réaffichée chaque jour tant que non traitée, même après refus (RG-052) | §7.3 ; ECR-001, ECR-003 |
+| Q-ERG-08 | ECR-005 | Planifier après le délai ? | **Répondue** | Oui, avec une alerte (RG-006) | À appliquer à ECR-005 (lot « Planification », hors LOT-001) |
+| Q-ERG-09 | ECR-004 / Réglages | Ré-estimation de la capacité : où et quand ? | **Répondue** | Chaque semaine, le dimanche | À appliquer à ECR-004 et ECR-009 (lot « Capacité », hors LOT-001) |
+| Q-ERG-10 | ECR-005 | Planning validé en bloc ou tâche par tâche ? | **Répondue** | Tâche par tâche | À appliquer à ECR-005 : **la v0.1 (validation en bloc) est à corriger** (hors LOT-001) |
+| Q-ERG-11 | ECR-004 / P-06 | Refus de la replanification : que devient le créneau ? | **Répondue** (a) | Le créneau est supprimé de l'agenda et la tâche déplanifiée (RG-037) | §7.5 ; ECR-001 cadre E ; parcours P-06 |
+
+**Nouvelles questions (v0.2)**
 
 | Id | Écran | Question | Proposition de Steeve |
 |---|---|---|---|
-| ~~Q-ERG-01~~ | ECR-004 | *Retirée* : couverte par Q-DEM002-1, 2 et 3 de Pepper (lieu de réponse, caractère facultatif, conservation). Voir §12.2. | — |
-| Q-ERG-02 | ECR-001 Aujourd'hui | Le fun fact du matin (DEM-002, US-035) est destiné au rappel de 8 h. Doit-il **aussi** apparaître dans l'application, sur Aujourd'hui, le matin ? Peut-on le masquer ? | Oui, une ligne discrète en bas d'Aujourd'hui jusqu'à midi, masquable d'un geste. |
-| Q-ERG-03 | Saisie rapide | Le délai est obligatoire (RG-003). Pour gagner un geste, l'application peut-elle **pré-sélectionner un délai par défaut** (par exemple « dans 1 semaine »), que vous changez si besoin ? Ou préférez-vous le choisir explicitement à chaque fois, pour éviter des délais « par défaut » qui fausseraient les alertes ? Même question pour l'estimation (par exemple 1 h). | Aucun défaut pour le délai (il pilote les alertes) ; aucun défaut pour l'estimation (elle pilote la vélocité). Les puces rapides gardent la saisie à 2 gestes. |
-| Q-ERG-04 | ECR-004 Bilan du soir | Le bilan est-il accessible **avant** l'heure du rappel du soir (par exemple si vous terminez à 18 h) ? Et peut-on le faire **le lendemain** pour la veille ? | Oui aux deux : la carte « Bilan du soir » apparaît dès 17 h ; le bilan de la veille reste proposé le lendemain matin s'il n'a pas été fait. |
-| Q-ERG-05 | ECR-001 / ECR-004 | Quand un créneau est déplacé dans Google, la replanification est proposée le soir (RG-037). Souhaitez-vous pouvoir la **traiter tout de suite**, depuis la notification, sans attendre le soir ? | Oui : bouton tertiaire « Traiter maintenant » sur la carte ; sinon, elle attend le bilan. |
-| Q-ERG-06 | ECR-001 Aujourd'hui | Dans Aujourd'hui, les tâches sont-elles affichées dans l'ordre **des horaires suggérés** (comme l'agenda) ou dans l'ordre **de priorité** ? | Ordre des horaires suggérés, avec l'horaire visible, pour que l'écran corresponde à l'agenda Google. |
-| Q-ERG-07 | Alertes | Si vous **refusez** une proposition de nouveau délai, l'alerte « délai non tenable » doit-elle réapparaître : dès le lendemain, seulement si la situation s'aggrave, ou plus jamais pour ce délai ? | Elle reste visible sur la tâche (icône), mais la carte de proposition ne réapparaît que si l'écart s'aggrave d'au moins une journée. |
-| Q-ERG-08 | ECR-005 Semaine | Peut-on planifier une tâche sur un jour **postérieur à son délai** ? Si oui, faut-il une alerte ? | Oui, avec une alerte « Après le délai » sur la tâche, sans blocage (même logique que RG-011 et RG-024). |
-| Q-ERG-09 | ECR-004 / Réglages | Quand l'application propose une **ré-estimation de votre capacité** (US-026) : dans le bilan du soir, dans un bilan hebdomadaire, ou seulement dans les réglages ? À quelle fréquence au maximum ? | Dans le bilan du soir du dernier jour travaillé de la semaine, au plus une fois par semaine. |
-| Q-ERG-10 | ECR-005 Semaine | Le planning proposé (US-027) doit-il être **validé en bloc** (« Valider le planning »), ou chaque tâche proposée est-elle considérée comme acceptée tant que vous ne la déplacez pas ? | Validation en bloc, après ajustements, conformément à l'exclusion « ajustement sans validation » (CdC §4.3). |
-| Q-ERG-11 | ECR-004 / P-06 | Après un créneau déplacé dans Google, si vous **refusez** la replanification proposée le soir, la tâche reste au jour prévu dans l'application. Que doit devenir le créneau dans votre agenda : être **remis** au jour prévu, ou être **laissé** où vous l'avez mis (l'agenda et l'application divergent alors) ? | Remettre le créneau au jour prévu, en le disant dans le toast : « Créneau remis à mardi dans votre agenda · Annuler ». Le DAT prévoit que l'application n'écrase jamais un déplacement sans décision (§4.4.3) : refuser est cette décision. |
+| Q-ERG-12 | Navigation, ECR-002 | Au lot 1, il n'existe ni planification, ni créneau, ni rappel : « Aujourd'hui » et « Semaine » seraient vides. L'application peut-elle s'ouvrir sur **Tâches** (triée par délai), avec seulement deux entrées **Tâches** et **Objectifs**, les autres vues arrivant avec leurs lots ? (Le principe P3 « Aujourd'hui d'abord » s'applique dès que cette vue a du contenu.) | Oui : deux onglets au lot 1 ; 4 onglets ensuite. Évite deux onglets vides (P2). |
+| Q-ERG-13 | ECR-007 | US-025 CA-1 (proposition de Pepper) demande une confirmation avant d'abandonner une tâche. L'abandon étant réversible (« Reprendre »), souhaitez-vous la confirmation **toujours**, ou **seulement quand la tâche a des sous-tâches** (sinon : action immédiate avec toast « Annuler ») ? | Confirmation seulement avec des sous-tâches (un geste de moins pour le cas courant, la cascade reste protégée). La maquette applique l'US (confirmation toujours). |
+| Q-ERG-14 | ECR-011 | Les « modifications non retenues » (valeurs écartées, suppressions, déplacements annulés) restent listées combien de temps ? | Jusqu'à ce que l'utilisateur les ferme (« Compris »), sans limite de durée ; le point accent de l'indicateur ne s'éteint qu'à ce moment. |
+| Q-ERG-15 | ECR-010 | Quel **nom** donner à l'application ? Il apparaît à l'écran de connexion, sur l'écran de consentement de Google (test technique R1/R2, étape P3), dans le Drive (nom du dossier) et dans les magasins d'applications. | Provisoire : « Objectifs et Tâches », identique au dossier du Drive. À remplacer par le nom choisi avant le test technique. |
+
+### 12.1 bis Décisions de conception prises par Steeve en v0.2 (pour information, sans question)
+- **Dossier Drive** : « Objectifs et Tâches » (CA-3 de US-022 : « son nom est fixé en E4 »).
+- **Mention « Heure de Paris »** : forme au §4.21 (A-F6).
+- **Un seul endroit** pour la synchronisation et le compte (ECR-011), ouvert par l'avatar ou l'indicateur.
+- **Estimation d'une tâche** : icône horloge au lot 1 (le sablier est réservé au reste à faire).
+- **Heure d'apparition de la carte « Bilan du soir »** : dès 17 h (valeur de conception ; RG-039 n'en fixe pas).
+- **Regroupement « Atteints »** replié dans la liste des objectifs (P2).
 
 ### 12.2 Questions résiduelles de Pepper qui conditionnent les écrans
 
 | Question | Écrans concernés | Effet sur la conception |
 |---|---|---|
-| Q-DEM001-22.2 | Tous | Pendant la perte d'accès Google : saisie possible ou lecture seule (bandeau, boutons désactivés ou non). |
-| Q-DEM001-23.2 | Feuille de synchronisation, « À traiter » | Affichage des modifications écartées. |
-| Q-DEM001-24 / 25 | ECR-002, ECR-003 | Profondeur de l'arborescence affichée ; la maquette suppose un seul niveau (recommandation de Pepper). |
-| Q-DEM001-26.3 | ECR-003, ECR-008 | État « À décliner en tâches ». |
-| Q-DEM001-28.1 | Saisie rapide | Estimation obligatoire ou non à la saisie. |
-| Q-DEM001-29.4 | Détail tâche / objectif | Confirmation définitive ou corbeille. |
+| ~~Q-DEM001-22.2~~ | Tous | **Levée (v0.2)** : option c), perte d'accès traitée comme une coupure de réseau (RG-035) ; saisie possible, aucun bouton désactivé. |
+| ~~Q-DEM001-23.2~~ | Feuille de synchronisation | **Levée (v0.2)** : l'utilisateur est informé de la valeur écartée (RG-036) ; ECR-011 C. |
+| ~~Q-DEM001-24 / 25~~ | ECR-002, ECR-003 | **Levée (v0.2)** : un seul niveau de sous-objectifs et de sous-tâches (RG-022, RG-023). |
+| ~~Q-DEM001-26.3~~ | ECR-003, ECR-008 | **Levée (v0.2)** : état « À décliner en tâches » (US-001 CA-8, RG-025). |
+| ~~Q-DEM001-28.1~~ | Saisie rapide | **Levée (v0.2)** : estimation obligatoire (RG-029). |
+| ~~Q-DEM001-29.4~~ | Détail tâche / objectif | **Levée (v0.2)** : suppression définitive, sans corbeille (RG-046). |
+| ~~Q-DEM001-39~~ | Tous | **Levée (v0.2)** : hors ligne sur PC dans LOT-001 (DEC-013, US-031). |
 | Q-DEM001-31.3 / 31.4 | ECR-004 | Pas du stepper de temps passé ; **total du jour** (la maquette le suppose) ou **ajout**. |
 | Q-DEM001-32.3 | ECR-001, ECR-005 | Horaire suggéré modifiable dans l'application ou non. |
 | Q-DEM001-33.1 / 33.2 | ECR-004 | Moment et jour proposés pour la replanification. |
@@ -653,23 +802,38 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 
 | Id | Écran | Maquette | US principales |
 |---|---|---|---|
-| ECR-001 | Aujourd'hui | [`maquettes/ECR-001-aujourdhui.html`](maquettes/ECR-001-aujourdhui.html) | US-006, US-020, US-028, US-003, US-002, US-007, US-011, US-032, US-019, US-017, US-018, US-035 |
-| ECR-002 | Tâches (liste priorisée) | [`maquettes/ECR-002-taches-priorisees.html`](maquettes/ECR-002-taches-priorisees.html) | US-004, US-030, US-002, US-003, US-024, US-025, US-009, US-007 |
-| ECR-003 | Détail d'un objectif | [`maquettes/ECR-003-detail-objectif.html`](maquettes/ECR-003-detail-objectif.html) | US-001, US-023, US-002, US-024, US-003, US-025, US-030 |
+| ECR-001 | Aujourd'hui (cible ; non livré au lot 1) — **v0.2** | [`maquettes/ECR-001-aujourdhui.html`](maquettes/ECR-001-aujourdhui.html) | US-006, US-020, US-028, US-003, US-002, US-007, US-011, US-032, US-019, US-017, US-018, US-035 |
+| ECR-002 | Tâches : **version LOT-001 (tri par délai)** et cible « Priorisation » — **v0.2** | [`maquettes/ECR-002-taches-priorisees.html`](maquettes/ECR-002-taches-priorisees.html) | **LOT-001 : US-002, US-003, US-024, US-025, US-017, US-018** ; cible : US-004, US-030, US-009, US-007 |
+| ECR-003 | Détail d'un objectif : **version LOT-001** et cible — **v0.2** | [`maquettes/ECR-003-detail-objectif.html`](maquettes/ECR-003-detail-objectif.html) | US-001, US-023, US-002, US-024, US-003, US-025 ; cible : US-030, US-007, US-011 |
 | ECR-004 | Bilan du soir | [`maquettes/ECR-004-bilan-du-soir.html`](maquettes/ECR-004-bilan-du-soir.html) | US-008, US-009, US-003, US-016, US-032, US-011, US-033 |
 | ECR-005 | Semaine (planification) | [`maquettes/ECR-005-planification-semaine.html`](maquettes/ECR-005-planification-semaine.html) | US-006, US-027, US-005, US-019, US-020, US-028, US-011 |
-| ECR-006 | Saisie rapide (feuille) | Décrite au §4.3 ; état visible dans ECR-001 | US-002 |
-| ECR-007 | Détail d'une tâche | À maquetter (LOT-001) | US-002, US-024, US-003, US-025, US-008, US-009 |
-| ECR-008 | Objectifs (liste) | À maquetter (LOT-001) | US-001, US-023, US-030 |
-| ECR-009 | Réglages (capacité, plages, rappels, compte, thème, raccourcis) | À maquetter | US-005, US-029, US-014, US-022 |
-| ECR-010 | Connexion | À maquetter (LOT-001) | US-022, US-014 |
-| ECR-011 | Feuille de synchronisation | À maquetter (LOT-001) | US-017, US-018 |
+| ECR-006 | Saisie rapide (feuille) | Décrite au §4.3 ; états : ECR-002 L2 (initial, sans valeur par défaut), ECR-007 I (sous-tâche, incomplet), ECR-001 C (cible) | US-002, US-024 |
+| ECR-007 | Détail d'une tâche et de ses sous-tâches — **v0.1 du 2026-10-21** | [`maquettes/ECR-007-detail-tache.html`](maquettes/ECR-007-detail-tache.html) | US-002, US-024, US-003, US-025, US-017 ; plus tard US-008, US-009 |
+| ECR-008 | Objectifs (liste, création, déplacement) — **v0.1 du 2026-10-21** | [`maquettes/ECR-008-liste-objectifs.html`](maquettes/ECR-008-liste-objectifs.html) | US-001, US-023 ; plus tard US-030 |
+| ECR-009 | Réglages (capacité, plages, rappels, thème, raccourcis) | À maquetter (lots ultérieurs) ; le compte est dans ECR-011 | US-005, US-029, US-014 |
+| ECR-010 | Connexion Google et premier lancement — **v0.1 du 2026-10-21** | [`maquettes/ECR-010-connexion.html`](maquettes/ECR-010-connexion.html) | US-022 ; US-017 (premier chargement) |
+| ECR-011 | Feuille de synchronisation et de compte — **v0.1 du 2026-10-21** | [`maquettes/ECR-011-synchronisation-et-compte.html`](maquettes/ECR-011-synchronisation-et-compte.html) | US-017, US-018, US-031, US-022 |
 | ECR-012 | Indicateurs (backlog, vélocité) | Lot « Vélocité et pilotage » | US-012, US-013, US-010 |
 | ECR-013 | Journal des bilans | Lot « Rappels », selon Q-DEM002-3 | US-034 |
 
 ---
 
+### 13.1 Écrans de LOT-001 et lecture par US (v0.2)
+| US | Écrans |
+|---|---|
+| US-022 | ECR-010 (A à G, PC), ECR-011 (compte, F1 à F3) |
+| US-017 | ECR-011 (tous les états), ECR-010 (premier chargement), indicateur dans tous les écrans |
+| US-018 | ECR-011 B, ECR-008 E, ECR-002 L3, ECR-001 B |
+| US-031 | ECR-011 H et I (PC), pied de la barre latérale |
+| US-001 | ECR-008 (A, B, F), ECR-003 (D, menu C) |
+| US-023 | ECR-008 (A, C, D), ECR-003 E, ECR-011 C (déplacement annulé) |
+| US-002 | ECR-002 (L1, L2, L3), ECR-007 (B, I), ECR-006 |
+| US-024 | ECR-007 (A, I, J, H), ECR-003 D |
+| US-003 | ECR-007 (A, G, H), ECR-002 L4 |
+| US-025 | ECR-007 (C, D, F), ECR-002 (filtre Abandonnées) |
+
 ## 14. Historique
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Steeve | Création : principes, tokens, composants, interactions, états, alertes, accessibilité, responsive, points en attente du DAT (confrontés au DAT v0.1 brouillon), questions ergonomiques, inventaire des écrans. |
+| 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Réponses Q-ERG-02 à 11 intégrées (§12.1). Navigation du lot 1 (§2.1). Principe P11. Composants §4.21 à §4.28. Cas de ConfirmDialog (§4.12). États et messages ajoutés (§6). Créneau déplacé, ordre d'Aujourd'hui, fun fact, bilan (§7.5 à §7.8). Accessibilité et responsive du lot (§9, §10). Statuts DAT-UX mis à jour (§11). Réserves Q-DEM001 levées (§12.2). Nouvelles questions Q-ERG-12 à 15. Maquettes ECR-007, 008, 010, 011 créées ; ECR-001, 002, 003 mises à jour. |

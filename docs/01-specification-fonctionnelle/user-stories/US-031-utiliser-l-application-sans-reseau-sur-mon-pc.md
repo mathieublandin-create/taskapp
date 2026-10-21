@@ -94,6 +94,27 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés (partagés)** : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html), cadres H et I (PC) : session Google expirée, « Reprendre la synchronisation », deux onglets, fuseau.
+- **Écrans modifiés** : pied de la barre latérale de tous les écrans PC (indicateur avec libellé toujours visible) ; [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) et [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) pour la liste et le panneau.
+- **Parcours impactés** : P-10 (reprise de session sur PC), P-09 (hors ligne, identique au smartphone).
+- **Nouveaux composants** : `SyncStatus` état « Session à renouveler » (accent, un clic, sans bandeau) ; mention du verrou entre onglets dans `SyncSheet` (guide §6.4, §6.5, DAT-UX-13, DAT-UX-16).
+- **Décisions d'ergonomie** :
+  - hors ligne sur PC **identique au smartphone** (CA-3, DEC-013) : libellé « Hors ligne · n en attente » dans le pied de la barre latérale, point « en attente » sur les lignes, liste dans la feuille ;
+  - session Google expirée (CA-5, F14) : état routinier (jeton d'une heure), donc **pas de bandeau** ; l'indicateur propose « Reprendre la synchronisation », **un clic**, et le travail continue ; à valider avec le commanditaire si la fréquence s'avère gênante ;
+  - **deux onglets** (cas limite) : les deux restent utilisables et identiques ; seul un onglet synchronise et l'autre le dit dans la feuille, sans message d'interruption ; reprise sans message si l'onglet qui synchronise est fermé ;
+  - **première ouverture sans réseau** : le navigateur ne peut rien afficher, aucun écran n'est concevable ; l'information va dans le guide utilisateur (E17), ainsi que les avertissements « navigation privée » et « effacement des données du navigateur ».
+- **États** :
+  - *vide* : voir US-022 ;
+  - *chargement* : ouverture immédiate sur les données du PC ;
+  - *erreur* : données du navigateur effacées (modifications non envoyées perdues, hors de notre contrôle) ;
+  - *hors ligne* : comme US-018 ;
+  - *synchronisation* : « Session à renouveler » → « Synchronisation… » → « À jour » ;
+  - *conflit* : voir US-017.
+- **Accessibilité et responsive** : le bouton de reprise est focalisable au clavier depuis la barre latérale ; boîte de dialogue de 480 px ou panneau de 400 px ; raccourcis à une touche inchangés.
+- **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`.
 

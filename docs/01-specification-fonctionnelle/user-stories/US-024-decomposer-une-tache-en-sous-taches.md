@@ -76,6 +76,30 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés (partagés)** : [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) (cadres A, H, I, J : tâche parente, incohérence, saisie d'une sous-tâche, détail d'une sous-tâche).
+- **Écrans modifiés** : [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html) (version LOT-001, tâche parente avec compteur et sous-tâches) ; [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) (compteur « 1/3 » sur la ligne).
+- **Parcours impactés** : P-02 (étape 7), P-13 (décomposer, terminer, abandonner).
+- **Nouveaux composants** : `LockedField` (estimation calculée, objectifs hérités), `InconsistencyCard`, variante « sous-tâche » de `QuickAdd`, section « Sous-tâches » de `FieldRow` (guide §4.22, §4.23, §4.3).
+- **Décisions d'ergonomie** :
+  - estimation d'une tâche parente : calculée, affichée avec un cadenas et son origine « Somme des sous-tâches » (CA-4), jamais un stepper ;
+  - **première sous-tâche** : message d'information avant l'enregistrement, « L'estimation de la tâche (3 h) sera remplacée par la somme de ses sous-tâches » (CA-5) ;
+  - objectifs d'une sous-tâche : lecture seule, cadenas, « Hérités de la tâche » (CA-7) ;
+  - tâche parente non terminable tant qu'il reste des sous-tâches : action principale indisponible avec la phrase « Il reste 2 sous-tâches à terminer ou abandonner » (CA-8) ;
+  - alerte quand le délai d'une sous-tâche dépasse celui de la tâche parente, avec la tâche nommée (CA-6) ;
+  - incohérence après fusion (CA-10, RG-049) : carte d'attention sur la tâche, sans correction automatique, trois issues (rouvrir la tâche, terminer ou abandonner la sous-tâche), marqueur dans les listes ;
+  - suppression (CA-9) : confirmation avec le nombre de sous-tâches ; suppression concurrente (CA-11) : feuille de synchronisation.
+- **États** :
+  - *vide* : tâche sans sous-tâche, lien « Ajouter une sous-tâche » ;
+  - *chargement* : sans objet ;
+  - *erreur* : champs obligatoires de la sous-tâche, action de fin refusée ;
+  - *hors ligne* : toutes les actions disponibles ;
+  - *synchronisation* : point « en attente » ;
+  - *conflit* : incohérence (RG-049), sous-tâche supprimée avec sa tâche (RG-047).
+- **Accessibilité et responsive** : le bouton « Terminer la tâche » reste focalisable (`aria-disabled`) et la phrase qui l'explique est annoncée ; sous-tâches en liste sémantique ; sur PC, panneau de 440 px.
+- **Questions et réserves** : aucune nouvelle. Les confirmations (P) d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`.
 

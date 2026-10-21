@@ -9,21 +9,21 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 en cours (Steeve) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; questions Q-ERG-12 à 15 au commanditaire ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
-| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E4 | steeve | Ajoutée par DEC-013 ; impacts architecture renseignés |
-| US-025 | Abandonner une tâche | LOT-001 | En analyse | E4 | steeve | Impacts architecture renseignés |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E5 | pepper | Ajoutée par DEC-013 ; impacts architecture et ergonomie renseignés |
+| US-025 | Abandonner une tâche | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
@@ -61,6 +61,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- Pour Starck (refinement) : état lu / non lu de la liste « Modifications non retenues » (synchronisé ou local).
 - Test technique R1/R2 (`03-architecture/test-technique-R1-R2.md`) : nécessite des actions du commanditaire (projet Google Cloud, compte de test, téléphone Android, compte d'hébergement, 2 séances d'environ 1 h 30). Bloquant avant E9 de LOT-001.
 - Proposition de Starck à valider en E6 : étendre RG-044 aux fichiers Drive modifiés à la main (traités comme illisibles).
 - Socle UX v0.1 rendu (Steeve) : questions ergonomiques Q-ERG-02 à 11 (`02-ux/guide-ergonomie.md` §12.1), non bloquantes pour LOT-001 ; demandes à Starck DAT-UX-09 et 13. E4 de LOT-001 et maquettes ECR-007, 008, 010, 011 à réaliser après validation E2.

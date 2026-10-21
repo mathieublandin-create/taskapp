@@ -67,6 +67,29 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés (partagés)** : [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) (cadres C, D, F : menu, confirmation d'abandon, tâche abandonnée).
+- **Écrans modifiés** : [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) (filtre « Abandonnées »), [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html) (section « Abandonnées » repliée).
+- **Parcours impactés** : P-13 (étapes 6 et 7).
+- **Nouveaux composants** : variante « abandon » de `ConfirmDialog` ; état « Abandonnée » de `TaskRow` (guide §4.2, §4.12).
+- **Décisions d'ergonomie** :
+  - abandon dans le **menu « … » uniquement**, jamais par un geste de balayage (guide §5.2) ;
+  - **confirmation** conforme à CA-1 (proposition de Pepper), avec le nombre de sous-tâches abandonnées avec la tâche (CA-6) et le rappel que la reprise est possible ; bouton normal, non rouge (réversible) ; alternative posée en **Q-ERG-13** ;
+  - tâche abandonnée : plus de case « Terminer », icône cercle barré, date d'abandon à l'heure de Paris (CA-1, RG-053), jamais « en retard » (CA-3) ; visible dans le filtre « Abandonnées » (CA-2) ;
+  - action principale « Reprendre la tâche » (CA-5) ; reprise de la tâche parente = reprise des sous-tâches abandonnées avec elle (CA-7) ; la reprise d'une sous-tâche d'une tâche abandonnée n'est pas proposée (CA-8) ;
+  - abandon d'une sous-tâche seule : estimation de la tâche parente recalculée (CA-9) ;
+  - incohérence après fusion (CA-10) : voir US-024.
+- **États** :
+  - *vide* : filtre « Abandonnées » vide, « Aucune tâche abandonnée. » ;
+  - *chargement* : sans objet ;
+  - *erreur* : sans objet ;
+  - *hors ligne* : disponible ;
+  - *synchronisation* : point « en attente » ;
+  - *conflit* : abandon d'un côté, modification de l'autre : valeur écartée (ECR-011 C) ; incohérence.
+- **Accessibilité et responsive** : dialogue `alertdialog`, « Annuler » focalisé ; abandon accessible au clavier par le menu ; l'état « Abandonnée » est dit en texte et pas seulement par l'icône.
+- **Questions et réserves** : Q-ERG-13 (confirmation toujours, ou seulement avec des sous-tâches).
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-025-abandonner-une-tache.feature`.
 

@@ -107,6 +107,30 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés** :
+  - [ECR-010](../../02-ux/maquettes/ECR-010-connexion.html), connexion Google et premier lancement : invitation unique (CA-1), préparation en étapes, état vide du premier compte (CA-2), connexion annulée ou refusée (CA-4), sans réseau, Drive indisponible, retour après « Se déconnecter » (smartphone, mode sombre, PC) ;
+  - [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html), section « Compte » : adresse, dossier du Drive, « Se déconnecter » (CA-6) et « Supprimer les données de cet appareil » (CA-10), avec leurs confirmations.
+- **Écrans modifiés** : tous les écrans, par l'avatar de l'en-tête (smartphone) et de la barre latérale (PC), qui ouvre la feuille de compte.
+- **Parcours impactés** : P-07 (première connexion), P-08 (se déconnecter, se reconnecter, changer de compte), P-12 (supprimer les données de cet appareil).
+- **Nouveaux composants** : `SignInPanel` (bouton Google et liste de ce qui est demandé), `StepProgress`, `SyncSheet` section Compte, `DangerLink`, variantes de `ConfirmDialog` (guide §4.12, §4.25 à §4.27).
+- **Décisions d'ergonomie** :
+  - **nom du dossier du Drive fixé : « Objectifs et Tâches »** (CA-3) ;
+  - un seul bouton « Continuer avec Google » ; la liste de ce qui est demandé (identité, dossier, pas d'agenda) prépare à l'écran de consentement de Google, qui n'affiche aucun avertissement « application non validée » au lot 1 (CA-8, ENF-08) ;
+  - « Se déconnecter » (secondaire) et « Supprimer les données de cet appareil » (texte rouge isolé) sont deux actions séparées dans la feuille (DEC-015) ; la déconnexion n'est confirmée que s'il y a des modifications en attente, avec leur nombre (CA-6) ;
+  - la suppression suit le déroulement de CA-10 : confirmation toujours, dépôt d'abord, nombre de modifications perdues si le dépôt est impossible, retour à la connexion ;
+  - un autre compte sur l'appareil n'a **aucun indice** des données du premier (CA-9, DEC-016, RG-018).
+- **États** :
+  - *vide* : premier lancement, Drive vide (invitation à créer un premier objectif ou une tâche, CA-2) ;
+  - *chargement* : étapes « Compte identifié », « Dossier trouvé ou créé », « Récupération de vos données » ; au-delà de 10 s, message de patience ;
+  - *erreur* : connexion annulée ou refusée, interrompue, Drive indisponible ; chacune dit ce qui s'est passé, ce qui est préservé et quoi faire ;
+  - *hors ligne* : première connexion ou reconnexion impossible, message et « Réessayer » ; réouverture d'une session existante sans réseau : aucun écran dédié (CA-5) ;
+  - *synchronisation* : accès Google perdu → bandeau non fermable « Se reconnecter », travail possible comme hors ligne (CA-7, voir US-017) ;
+  - *conflit* : sans objet.
+- **Accessibilité et responsive** : aucun test cognitif (WCAG 3.3.8) ; erreurs annoncées `role="alert"` ; dialogues `alertdialog` avec « Annuler » focalisé ; cible 48 px ; connexion en une colonne sur smartphone, bloc centré de 460 px sur PC.
+- **Questions et réserves** : Q-ERG-15 (nom de l'application, provisoire « Objectifs et Tâches »). Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-022-se-connecter-avec-mon-compte-google.feature`.
 

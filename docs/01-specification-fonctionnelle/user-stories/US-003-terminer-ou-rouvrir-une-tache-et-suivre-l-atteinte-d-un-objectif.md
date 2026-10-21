@@ -83,6 +83,30 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés (partagés)** : [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) (cadres A, G, H : terminer, tâche terminée à New York, incohérence).
+- **Écrans modifiés** : [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) (cadre L4, filtre « Terminées » et marqueur d'incohérence) ; [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html) et [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html) (état d'un objectif : « En cours », « Atteint », « À décliner en tâches »).
+- **Parcours impactés** : P-13 (étapes 3 à 5 et 8), P-01 (étape 6, cible).
+- **Nouveaux composants** : `ParisTimeNote` (date de fin à l'heure de Paris), `InconsistencyCard` (guide §4.21, §4.23).
+- **Décisions d'ergonomie** :
+  - terminer : 1 geste (case ronde, liste ou détail), avec toast « Annuler » ; rouvrir de même ; la ligne terminée rejoint « Terminées » après 3 s (CA-1, CA-3) ;
+  - aucune fin automatique, même quand toutes les sous-tâches sont terminées (CA-2) ;
+  - tâche parente non terminable : voir US-024 (CA-8) ;
+  - rouvrir une sous-tâche d'une tâche terminée : dialogue « Rouvrir aussi X ? » (CA-9) ;
+  - état d'un objectif toujours calculé, jamais saisi (CA-4 à CA-7) : l'anneau et le mot d'état se mettent à jour sur l'écran ;
+  - **date de fin à l'heure de Paris** (CA-1) : quand l'appareil est ailleurs, la puce « Heure de Paris » accompagne « Terminée le 11 mars » et l'explique (exemple de New York, cadre G) ;
+  - incohérence (CA-12, RG-049) : voir US-024 ; tant qu'elle existe, les objectifs de la tâche ne sont pas atteints et l'écran de l'objectif ne le montre pas comme atteint.
+- **États** :
+  - *vide* : filtre « Terminées » vide, « Aucune tâche terminée. » ;
+  - *chargement* : sans objet ;
+  - *erreur* : action de fin refusée avec le nombre de sous-tâches restantes ;
+  - *hors ligne* : disponible ; la date de fin reste celle de Paris ;
+  - *synchronisation* : point « en attente » ;
+  - *conflit* : tâche terminée d'un côté et abandonnée de l'autre : valeur écartée (ECR-011 C) ; incohérence.
+- **Accessibilité et responsive** : la case ronde est un `checkbox` au nom explicite (« Terminer X » / « Rouvrir X ») ; la fin est annoncée `role="status"`, jamais seulement par la couleur ; cible 44 px.
+- **Questions et réserves** : aucune nouvelle.
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`.
 

@@ -122,6 +122,31 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés** : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html), feuille « Compte et synchronisation » : huit états de l'indicateur, modifications en attente, modifications non retenues (valeurs écartées, suppression qui l'emporte, déplacement annulé), accès Google perdu, données absentes du Drive (restaurer ou repartir de zéro), Drive plein, horloge déréglée, version trop ancienne, choix « repartir de zéro » fait sur l'autre appareil, session expirée sur PC, verrou entre onglets, fuseau.
+- **Écrans modifiés** : [ECR-001](../../02-ux/maquettes/ECR-001-aujourdhui.html), [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html), [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html), [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html), [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html) : indicateur de synchronisation en en-tête (smartphone) et en pied de barre latérale (PC) ; mention « Heure de Paris ». Le premier chargement des données est porté par [ECR-010](../../02-ux/maquettes/ECR-010-connexion.html).
+- **Parcours impactés** : P-01 (étapes hors ligne), P-07 (premier chargement), P-09 (hors ligne et modifications non retenues), P-10 (reprise de session sur PC), P-11 (restaurer ou repartir de zéro), P-12.
+- **Nouveaux composants** : `SyncStatus` à huit états (dont « informations à lire », point accent), `SyncSheet`, `DiscardedItem`, `OptionCard`, `InconsistencyCard` (côté US-003, 024, 025), `ParisTimeNote` (guide §4.8, §4.21, §4.23 à §4.26).
+- **Décisions d'ergonomie** :
+  - un seul endroit pour la synchronisation et le compte, ouvert par l'indicateur ou l'avatar ;
+  - l'indicateur n'affiche que le plus grave des états ; seul « Action requise » interrompt, et seulement l'accès Google perdu est un bandeau (P8) ;
+  - **valeurs écartées** (CA-8, RG-036, Q-DEM001-23.2) : élément, information, valeur non retenue et valeur conservée, avec « Compris » ; signalées par un point accent, un toast à l'ouverture et la liste de la feuille ; une valeur remplacée en connaissance de cause n'est jamais signalée ;
+  - **RG-047, RG-048** (CA-10) : mêmes éléments `DiscardedItem` pour une suppression qui l'emporte et pour un déplacement annulé ;
+  - **RG-049** : signalée sur l'élément, sans correction (voir US-003, 024, 025) ;
+  - **RG-044** (CA-9) : exception à « alerter sans bloquer », car le choix engage les données ; « Restaurer » est l'action principale, « Repartir de zéro… » est secondaire avec confirmation ; « Décider plus tard » laisse l'application utilisable ; rien n'est effacé ni réécrit avant le choix ;
+  - **mention « Heure de Paris »** (CA-11, RG-054) : forme définie au guide §4.21 (puce, quand le fuseau de l'appareil diffère, explication à l'appui) ;
+  - le délai d'une heure ne se voit pas : l'indicateur affiche l'heure du dernier échange.
+- **États** :
+  - *vide* : section « Modifications non retenues » absente quand il n'y a rien à lire ;
+  - *chargement* : « Synchronisation… » discrète ; les données de l'appareil s'affichent aussitôt (CA-3) ;
+  - *erreur* : Drive plein, horloge, version, données absentes ;
+  - *hors ligne* : voir US-018 et US-031 ;
+  - *synchronisation* : huit états ;
+  - *conflit* : `DiscardedItem` (trois formes).
+- **Accessibilité et responsive** : changements d'état annoncés `role="status"` ; « Synchroniser maintenant » désactivé reste focalisable avec son explication ; feuille haute sur smartphone, boîte de dialogue ou panneau sur PC.
+- **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères (P) de CA-3, CA-9 et CA-11 attendent la validation de E6 ; les maquettes les appliquent.
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`.
 

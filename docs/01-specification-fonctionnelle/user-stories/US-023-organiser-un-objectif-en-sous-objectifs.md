@@ -77,6 +77,28 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans créés (partagés)** : [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html) (sous-objectifs en retrait, « Placer sous… », refus d'un deuxième niveau).
+- **Écrans modifiés** : [ECR-003](../../02-ux/maquettes/ECR-003-detail-objectif.html) (version LOT-001, cadre E : détail d'un sous-objectif ; réserves Q-DEM001-24 et Q-24.4 levées).
+- **Parcours impactés** : P-02 (étape 6), P-09 (déplacement annulé après fusion).
+- **Nouveaux composants** : `ObjectiveRow` en retrait de 28 px, `ParentPicker` (liste à choix unique des parents possibles et de « Aucun, objectif principal ») (guide §4.28).
+- **Décisions d'ergonomie** :
+  - un seul niveau : sur un sous-objectif, « Ajouter un sous-objectif » est **absent** (CA-3), pas désactivé ;
+  - alerte quand le délai du sous-objectif est postérieur à celui du parent, avec le parent nommé, sans blocage (CA-4) ;
+  - déplacement (CA-5, CA-6) : le sélecteur propose les seuls parents possibles ; l'objectif lui-même est indisponible avec sa raison ; un objectif qui a des sous-objectifs ne peut pas être placé sous un autre, et le message l'explique avant tout choix ;
+  - déplacement annulé après fusion (CA-9, RG-048) : `DiscardedItem` « Placement de X annulé » dans la feuille de synchronisation ;
+  - suppression d'un objectif qui a des sous-objectifs (CA-8) : le texte de confirmation nomme les sous-objectifs promus.
+- **États** :
+  - *vide* : sous-objectif sans tâche, « À décliner en tâches » ;
+  - *chargement* : sans objet ;
+  - *erreur* : refus d'un deuxième niveau (message, bouton « Compris ») ;
+  - *hors ligne* : toutes les actions disponibles ;
+  - *synchronisation* : voir US-017 ;
+  - *conflit* : déplacement annulé (RG-048), sous-objectif promu après suppression concurrente (CA-10, RG-047).
+- **Accessibilité et responsive** : sélecteur de parent en boutons radio navigables au clavier ; retrait visible aussi dans le nom accessible (« sous-objectif de … »).
+- **Questions et réserves** : aucune nouvelle.
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`.
 

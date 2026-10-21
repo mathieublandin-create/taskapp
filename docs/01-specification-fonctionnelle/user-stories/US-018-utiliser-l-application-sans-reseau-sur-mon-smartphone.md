@@ -76,6 +76,29 @@ Statut : En analyse
 
 ## Impacts ergonomie
 
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+
+- **Écrans modifiés** : tous les écrans du smartphone (en-tête avec l'indicateur) ; exemples hors ligne dans [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) B, [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html) E, [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) L3, [ECR-001](../../02-ux/maquettes/ECR-001-aujourdhui.html) B.
+- **Écran créé (partagé)** : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) B (modifications en attente).
+- **Parcours impactés** : P-09 (travailler hors ligne, retrouver ses données), P-01 étape 7 (cible), P-07 (première connexion sans réseau).
+- **Nouveaux composants** : `SyncStatus` état « Hors ligne », point « en attente d'envoi » sur `TaskRow`, liste des modifications en attente de `SyncSheet` (guide §4.2, §4.8, §6.4).
+- **Forme de l'indication hors ligne (CA-3, « forme fixée en E4 »)** :
+  1. libellé « Hors ligne · n en attente » à la place de l'icône, dans l'en-tête ;
+  2. point gris « en attente d'envoi » sur chaque ligne modifiée ;
+  3. liste lisible des modifications dans la feuille de synchronisation ;
+  4. un toast unique au passage hors ligne ;
+  5. aucun bandeau, aucun bouton désactivé (sauf « Synchroniser maintenant », avec son explication).
+- **Au retour du réseau (CA-4, CA-7)** : « Synchronisation… » puis « À jour », **sans toast** si tout s'est bien passé ; si des valeurs ont été écartées, point accent sur l'indicateur et toast « Voir » (voir US-017).
+- **États** :
+  - *vide* : l'état vide d'un objectif ou des tâches fonctionne hors ligne ;
+  - *chargement* : aucun écran d'attente à l'ouverture sans réseau (CA-1), données de l'appareil aussitôt ;
+  - *erreur* : première connexion sans réseau (voir US-022) ;
+  - *hors ligne* : décrit ci-dessus, sans durée maximale (CA-6) ;
+  - *synchronisation* : « Hors ligne » → « Synchronisation… » → « À jour » ;
+  - *conflit* : voir US-017.
+- **Accessibilité et responsive** : passage hors ligne et retour annoncés `role="status"`, sans interrompre ; le point « en attente » a un nom accessible ; le libellé hors ligne est visible, pas seulement une icône.
+- **Questions et réserves** : aucune nouvelle. Perte de l'accès Google (CA-8) : bandeau « Se reconnecter » (voir US-022 et ECR-011 D), travail inchangé.
+
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`.
 
