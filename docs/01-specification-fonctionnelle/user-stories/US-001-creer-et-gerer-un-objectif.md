@@ -65,6 +65,34 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§6), ADR-003, ADR-010, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - entité `Objectif` ;
+    - cas d'usage `CreerObjectif`, `ModifierObjectif` et `SupprimerObjectif` ;
+    - services de domaine **dérivés**, calculés et jamais stockés : état (RG-025), « en retard » (RG-045, journée calculée dans Europe/Paris par `Horloge`) et alertes RG-024 ;
+  - présentation : liste et détail.
+- **Données** :
+  - `Objectif` : id en UUID v7, intitulé, description, délai (`DateCalendaire` sans fuseau, RG-053), `parentId`, pierre tombale `supprime` ;
+  - chaque champ porte son HLC ;
+  - journal (RG-050) : `OBJECTIF_CREE`, `DELAI_MODIFIE` et `OBJECTIF_SUPPRIME`, avec l'instant UTC, le jour calculé dans Europe/Paris et les valeurs avant et après.
+- **Suppression (RG-046)** :
+  - pierre tombale ;
+  - les conséquences sont **dérivées à la lecture**, et non écrites en cascade :
+    - un lien tâche–objectif dont l'objectif est supprimé est ignoré ;
+    - un sous-objectif dont le parent est supprimé est affiché comme objectif principal.
+  - Cette dérivation applique **par construction** RG-047 aux éléments rattachés ou créés en même temps sur l'autre appareil (CA-10). Elle ne demande aucune écriture de réparation et converge sur les deux appareils.
+- **Accès Google** : aucun appel direct ; Drive est utilisé à travers US-017.
+- **Sécurité** : intitulés et descriptions affichés avec échappement (pas d'injection HTML) ; aucune donnée métier dans les journaux techniques.
+- **Exigences non fonctionnelles** :
+  - recalcul des états et des alertes en moins de 100 ms pour 500 objectifs et 5 000 tâches ;
+  - calcul en mémoire, à partir d'index locaux.
+- **Risques** :
+  - « en retard » dépend de la journée à Paris : tests multi-fuseaux et changements d'heure (PT-16) ;
+  - si **RG-047 était rejetée**, le comportement par défaut de la fusion par champ ne « ressuscite » pas un élément supprimé ; une règle contraire demanderait une logique de restauration supplémentaire.
+- **ADR applicables** : ADR-003, ADR-010, ADR-011.
+
 ## Impacts ergonomie
 
 ## Tests métiers

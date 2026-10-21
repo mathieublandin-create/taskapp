@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 en cours (Starck) ; questions P1 Q-39, 41, 42 au commanditaire |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 en cours (Starck) ; Q-39/41/42 tranchées (DEC-013 à 016) ; US-031 ajoutée |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -22,11 +22,13 @@
 | US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
 | US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
 | US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E1 | pepper | Ajoutée par DEC-013 |
 | US-025 | Abandonner une tâche | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-21 | E1 | Réponses P1 Q-DEM001-39, 41, 42 | Reçues | Verbatim : « Q39-b; Q41-oui; Q42-1-non, proposer seulement l'option déconnexion et une autre option supprimer les données;Q42-2:a) » → DEC-013 à DEC-016 |
 | 2026-10-20 | E1 | ENF-05 et ENF-06 | Validées | Verbatim « ok pour enf-05 et enf-06 ». Restent à valider : reformulation du besoin et exclusions proposées — à représenter en E6 avec les US de LOT-001 (demande du commanditaire). |
 | 2026-10-20 | Hors étape (socle UX) | Q-ERG-11 précisée | Reçue | « a) » : en cas de refus de la replanification, le créneau est supprimé de Google Calendar et la tâche est déplanifiée. Transmis à Pepper. |
 | 2026-10-20 | Hors étape (socle UX) | Réponses Q-ERG-02 à 11 (guide d'ergonomie §12.1) | Reçues | Verbatim : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Transmis à Pepper (règles métier) ; à transmettre à Steeve en E4. |
@@ -41,6 +43,10 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-013 | 2026-10-21 | Q-DEM001-39 Hors ligne sur PC | b) Le PC est utilisable hors ligne dès LOT-001 : US-031 intégrée au lot |
+| DEC-014 | 2026-10-21 | Q-DEM001-41 Délai d'une heure | Oui : le délai porte uniquement sur les données entre appareils ; la détection d'un créneau déplacé n'y est pas soumise |
+| DEC-015 | 2026-10-21 | Q-DEM001-42.1 Effacement des données | Non à l'action combinée : deux actions distinctes, « Se déconnecter » (données conservées) et « Supprimer les données de cet appareil » |
+| DEC-016 | 2026-10-21 | Q-DEM001-42.2 Autre compte sur l'appareil | a) Les données du premier compte sont conservées à part, invisibles pour l'autre compte |
 | DEC-012 | 2026-10-20 | Fuseau de référence (remplace DEC-011) | Fuseau fixe Europe/Paris (France métropolitaine) pour la journée, les rappels et les créneaux, quel que soit l'appareil ; instants toujours enregistrés en UTC. Verbatim : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain ». Rend sans objet A-F1, A-F2, A-F4 ; restent P-T1, A-F3, A-F5. |
 | DEC-011 | 2026-10-20 | Fuseau de référence de la journée (ADR-011 / RG-008) | **Remplacée par DEC-012.** Fuseau de l'appareil (RG-008 maintenue, proposition ADR-011 rejetée) ; horodatages enregistrés en UTC. Verbatim : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » |
 | DEC-001 | 2026-10-20 | A1 Système du smartphone | Android (pas d'iPhone en v1) |

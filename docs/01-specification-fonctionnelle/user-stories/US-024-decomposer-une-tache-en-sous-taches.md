@@ -51,6 +51,29 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.2, §6), ADR-003.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - champ `parentId` de `Tache` ;
+    - invariant « un seul niveau » ;
+    - éléments dérivés :
+      - estimation calculée de la tâche parente : somme des sous-tâches non abandonnées (CA-4) ;
+      - objectifs d'une sous-tâche = **objectifs de la tâche parente, dérivés à la lecture**. Une sous-tâche n'a pas de lien propre, ce qui satisfait CA-7 sans propagation ;
+      - **incohérence RG-049** : une tâche parente terminée ou abandonnée qui a une sous-tâche à faire est un état **calculé**, signalé tant qu'il existe, sans aucune écriture corrective.
+- **Données** :
+  - CA-5 : l'estimation saisie de la tâche parente est conservée telle quelle, mais elle est ignorée tant que la tâche a des sous-tâches ;
+  - cas limite « suppression de la dernière sous-tâche » : la dernière somme calculée est **écrite** dans `estimationInitiale`, avec l'événement de journal `ESTIMATION_MODIFIEE` ;
+  - une sous-tâche dont la tâche parente est supprimée est considérée comme supprimée à la lecture (RG-046 et RG-047, CA-11), et signalée ;
+  - journal : `TACHE_CREEE` (avec le parent) et `TACHE_SUPPRIMEE`.
+- **Accès Google** : aucun.
+- **Sécurité** : sans objet particulier.
+- **Exigences non fonctionnelles** : agrégations en O(nombre de sous-tâches), négligeables.
+- **Risques** :
+  - **RG-049 et RG-047 sont proposées**. L'architecture retenue, fondée sur la dérivation à la lecture, convient à ces règles. Une correction automatique, à la place de RG-049, demanderait des écritures de réparation, avec le même mécanisme que RG-048 ;
+  - la règle de vélocité « seules les tâches sans sous-tâche comptent » sera appliquée par US-010, à partir du journal (`PARENT_MODIFIE`).
+- **ADR applicables** : ADR-003, ADR-010.
+
 ## Impacts ergonomie
 
 ## Tests métiers

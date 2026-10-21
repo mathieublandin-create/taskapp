@@ -71,6 +71,30 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§6), ADR-003, ADR-010, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - entité `Tache` et entité `LienTacheObjectif` (relation n-n) ;
+    - cas d'usage `CreerTache`, `ModifierTache`, `RattacherTache`, `DetacherTache` et `SupprimerTache` ;
+    - objet-valeur `Duree` : minutes entières, multiples de 30, au moins 30 (RG-028) ;
+    - éléments dérivés : alertes RG-024, « en retard » (RG-045), état des objectifs ;
+  - présentation : liste des tâches, vue « Tâches sans objectif », formulaire sans valeur présélectionnée.
+- **Données** :
+  - `Tache` : intitulé, délai (`DateCalendaire`), `estimationInitiale` (`Duree`), registre « cycle de vie » (voir US-003), `parentId`, pierre tombale ;
+  - `LienTacheObjectif` :
+    - clé déterministe (tacheId, objectifId) ;
+    - un registre `actif` par lien : un rattachement fait sur un appareil et un détachement fait sur l'autre se fusionnent lien par lien ;
+    - un lien vers un objectif supprimé est ignoré à la lecture (RG-047) ;
+  - journal : `TACHE_CREEE` (estimation, délai, objectifs), `DELAI_MODIFIE`, `ESTIMATION_MODIFIEE`, `RATTACHEE`, `DETACHEE` et `TACHE_SUPPRIMEE`.
+- **Accès Google** : aucun appel direct.
+- **Sécurité** : échappement des intitulés.
+- **Exigences non fonctionnelles** : liste de 5 000 tâches triée et filtrée en moins de 100 ms (index locaux, liste virtualisée à l'écran).
+- **Risques** :
+  - RG-029 : l'estimation reste modifiable au lot 1, car aucun temps passé n'existe encore. Le champ doit garder son HLC et son journal, pour que la vélocité utilise plus tard la bonne valeur ;
+  - RG-047 (proposée) : comme US-001.
+- **ADR applicables** : ADR-003, ADR-010, ADR-011.
+
 ## Impacts ergonomie
 
 ## Tests métiers

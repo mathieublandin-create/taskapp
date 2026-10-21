@@ -71,6 +71,55 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-003, ADR-010, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `synchronisation` :
+    - moteur CRDT par champ, avec l'HLC corrigée de l'écart avec l'heure Google ;
+    - cycle de synchronisation : au démarrage, au retour au premier plan, 5 s après une modification, toutes les 2 min, au retour du réseau ;
+    - passe de réparation après fusion ;
+    - journal des valeurs écartées ;
+    - détection et traitement de RG-044 ;
+  - ports `TransportSynchro` (Drive : `files.list`, `files.get`, `files.update`, `changes.list`), `DepotLocal` et `Horloge` (expose `FUSEAU_REFERENCE` = Europe/Paris et, pour l'affichage seulement, le fuseau de l'appareil : RG-054).
+- **Données** :
+  - `appareils/<appareilId>.etat.json.gz` : chaque appareil écrit son seul fichier ;
+  - `manifeste.json`, qui contient `schemaVersion`, `generation` (identifiant de la génération des données, utilisé par RG-044 b) et la date de création ;
+  - **chaque fichier porte une empreinte SHA-256 de son contenu**. Si l'empreinte ne correspond pas, le fichier est considéré comme illisible et traité par RG-044.
+  - **Réponse au cas limite « fichiers du Drive modifiés mais restés lisibles »** : une modification manuelle invalide l'empreinte. Le fichier est alors traité comme illisible (avertissement, puis restaurer ou repartir de zéro), et n'est jamais fusionné. Je recommande d'étendre RG-044 à ce cas.
+  - **Réponse au cas limite « versions différentes »** :
+    - seule une différence de **version de schéma** gêne : l'appareil dont le schéma est le plus ancien passe en lecture seule et invite à mettre l'application à jour ;
+    - deux versions de l'application qui partagent le même schéma coexistent sans restriction ;
+    - le comportement « bloquer la saisie dès que la version de l'application diffère » est déconseillé, car il bloquerait le PC à chaque publication de la PWA avant l'application Android.
+- **RG-044** :
+  - **restaurer** : l'appareil réécrit son fichier et le manifeste ;
+  - **repartir de zéro** (b, proposée) : l'appareil crée un nouveau manifeste avec une nouvelle `generation` ;
+  - l'autre appareil constate que sa `generation` locale est différente de celle du Drive. Il signale alors ses modifications non déposées comme valeurs écartées, efface ses données locales du compte, puis relit le Drive, sans reposer la question ;
+  - une erreur transitoire (réseau, `5xx`, `429`) n'est **jamais** interprétée comme une absence de données. Seuls un dossier ou un fichier mis à la corbeille ou introuvable (`404`), ou un fichier invalide, déclenchent l'avertissement.
+- **Accès Google** : Drive seulement (`drive.file`). Erreurs gérées :
+  - `403 storageQuotaExceeded` (Drive plein) : avertissement, et les données restent sur l'appareil ;
+  - `429` et `5xx` : nouvelle tentative avec attente exponentielle ;
+  - `401` : un renouvellement, puis l'état « accès perdu ».
+- **Sécurité** :
+  - validation de schéma (Zod) et vérification de l'empreinte de chaque fichier lu ;
+  - un fichier invalide n'écrase jamais l'état local ;
+  - aucune donnée hors du Drive et des appareils (CA-4).
+- **Exigences non fonctionnelles** :
+  - CA-2 : moins de 5 min quand les deux appareils sont ouverts ;
+  - CA-3 : intégration à l'ouverture en moins de 10 s, ce qui respecte la limite d'une minute proposée par Pepper ;
+  - état de moins de 5 Mo non compressé ;
+  - convergence garantie : fusion commutative, associative et idempotente, vérifiée par des tests de propriétés.
+- **Risques** :
+  - R1 : visibilité de `drive.file` entre le client Android et le client web (test technique préalable) ;
+  - R4 : horloge déréglée ;
+  - R5 : versions de schéma ;
+  - R6 : modifications manuelles dans le Drive ;
+  - R14 : correction de la fusion et de la réparation ; la parade est une couverture par tests de propriétés et un banc Cucumber à deux appareils.
+- **Règles proposées dont dépend l'architecture** :
+  - RG-044 b : mécanisme de `generation`, inutile si la règle est rejetée ;
+  - RG-047 à RG-049 : la passe de réparation. **Une règle déterministe de réparation des hiérarchies (RG-048) est techniquement indispensable**, quelle que soit sa formulation ;
+  - RG-054 : affichage seulement.
+- **ADR applicables** : ADR-002, ADR-003, ADR-009, ADR-010, ADR-011.
+
 ## Impacts ergonomie
 
 ## Tests métiers

@@ -56,6 +56,40 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-004, ADR-005, ADR-010, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `compte` : cas d'usage `SeConnecter`, `SeDeconnecter` et `ReprendreSession` ; état de session ;
+  - port `FournisseurAuth`, avec deux adaptateurs :
+    - web : Google Identity Services, modèle « jeton », script chargé à la demande ;
+    - Android : Credential Manager et AuthorizationClient ;
+  - `CoffreJetons` : jeton d'accès conservé en mémoire seulement ;
+  - adaptateur Drive dans `infrastructure-google` : création ou recherche du dossier de l'application et de `manifeste.json` ;
+  - `composition/web.ts` et `composition/capacitor.ts`.
+- **Données** :
+  - **base locale cloisonnée par compte** : un espace de stockage par `sub` Google (base IndexedDB, ou fichier SQLite, nommé d'après une empreinte du `sub`). Ce cloisonnement satisfait CA-1 et CA-9 sans rien effacer (RG-043) ;
+  - identité mise en cache localement (`sub`, adresse) : elle permet de rouvrir la session sans réseau (CA-5, US-018) ;
+  - aucun jeton n'est persisté par notre code ;
+  - **première connexion** : le dossier est recherché par `appProperties` avant d'être créé. Si deux dossiers sont créés en même temps sur les deux appareils, l'application conserve le plus ancien (`createdTime`) et y fusionne le contenu de l'autre (DAT §4.2).
+- **Accès Google** :
+  - scopes `openid`, `email` et `drive.file`, tous non sensibles. Aucun accès à l'agenda (CA-8, ENF-05) ;
+  - projet OAuth publié en production, sans logo, pour qu'aucun écran d'avertissement ne s'affiche (ENF-08). À confirmer par le test technique R1/R2 (risque R11) ;
+  - erreurs traduites : refus ou annulation, `PorteeInsuffisante`, `AccesGoogleRevoque` ; Drive désactivé ou indisponible : `403` puis message explicite.
+- **Sécurité** :
+  - clients OAuth publics, restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines autorisées sur le web ;
+  - aucun jeton dans les journaux ni dans le stockage persistant ;
+  - **RG-043** : après une déconnexion, les données restent au repos sur l'appareil, non chiffrées. Elles sont protégées par le bac à sable Android sur le smartphone, et seulement par le profil du navigateur sur PC. C'est une tension avec ENF-05, qui relève de Q-DEM001-42 ;
+  - la déconnexion efface la session et les jetons en mémoire. Sur Android, elle efface aussi l'état d'identification du Credential Manager. Ce n'est pas une révocation.
+- **Exigences non fonctionnelles** :
+  - réouverture d'une session existante sans aucun appel réseau bloquant (ENF-T-01) ;
+  - première connexion jusqu'à l'état vide en moins de 10 s, sur un réseau 4G.
+- **Risques** :
+  - R2 : renouvellement silencieux du jeton sur Android ;
+  - R3 et CA-5 sur PC : la session logique est conservée localement, mais le jeton d'accès doit être obtenu de nouveau. C'est silencieux si la session Google du navigateur est active, et demande un geste sinon (F14) ;
+  - R11 : l'origine de la PWA, sans domaine propre (DEC-006), doit être acceptée par l'écran de consentement en production.
+- **ADR applicables** : ADR-002, ADR-004, ADR-005, ADR-010.
+- **Dépendances fonctionnelles** : Q-DEM001-42 n'est pas bloquante pour l'architecture. Les deux options de 42.2 sont réalisables : a, cloisonnement sans effacement, est le comportement natif du modèle ; b ajoute un effacement après dépôt.
+
 ## Impacts ergonomie
 
 ## Tests métiers

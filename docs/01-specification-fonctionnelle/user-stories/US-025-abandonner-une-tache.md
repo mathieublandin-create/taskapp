@@ -46,6 +46,25 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§6), ADR-003, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - cas d'usage `AbandonnerTache` et `ReprendreTache` ;
+    - cascade vers les sous-tâches dans une **seule transaction** (CA-6) ;
+    - interdiction de reprendre une sous-tâche dont la tâche parente est abandonnée (CA-8) ;
+    - incohérence RG-049, dérivée comme dans US-024.
+- **Données** :
+  - registre « cycle de vie » (voir US-003), avec `dateAbandon` (`DateCalendaire` à Paris) et **`abandonParCascade` = identifiant de l'abandon de la tâche parente**. Ce marqueur permet à CA-7 de ne reprendre que les sous-tâches abandonnées avec la tâche parente, et non celles abandonnées une par une auparavant ;
+  - journal : `ABANDONNEE` et `REPRISE`. La sortie du backlog (RG-027) sera calculée à partir du journal.
+- **Accès Google** : aucun.
+- **Sécurité** : sans objet particulier.
+- **Exigences non fonctionnelles** : comme US-003.
+- **Risques** :
+  - la cascade porte sur plusieurs éléments et peut être en concurrence avec une reprise ou une création de sous-tâche sur l'autre appareil. Ce cas est couvert par RG-049 (proposée), qui le signale sans le corriger ;
+  - CA-7 est proposé : si le marqueur `abandonParCascade` est jugé inutile, on le supprime.
+- **ADR applicables** : ADR-003, ADR-010, ADR-011.
+
 ## Impacts ergonomie
 
 ## Tests métiers

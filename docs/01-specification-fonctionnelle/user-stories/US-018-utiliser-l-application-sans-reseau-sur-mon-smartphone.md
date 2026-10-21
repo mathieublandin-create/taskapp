@@ -46,6 +46,37 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-001, ADR-003, ADR-010.*
+
+- **Composants touchés** :
+  - application Capacitor Android : les ressources de l'application sont embarquées, donc l'ouverture sans réseau est native ;
+  - `@capacitor/network`, pour détecter la connectivité et lancer la synchronisation au retour du réseau ;
+  - adaptateur `DepotLocal` SQLite ;
+  - contexte `synchronisation` : marqueur « déposé jusqu'à HLC x », d'où sont tirés l'indicateur « non synchronisé » (CA-3) et la reprise (CA-4) ;
+  - `compte` : ouverture de la session sans jeton, à partir de l'identité mise en cache ; l'état « hors ligne » est distinct de l'état « accès perdu » (CA-8).
+- **Données** :
+  - aucune donnée nouvelle ;
+  - le volume local hors ligne n'a pas de limite pratique (CA-6) : quelques Mo au maximum.
+- **Garanties (CA-5, PT-13)** :
+  - chaque cas d'usage écrit en **une transaction** SQLite ;
+  - le dépôt dans Drive est idempotent : le fichier entier est réécrit ;
+  - le marqueur n'avance qu'après la confirmation de Drive ;
+  - un arrêt brutal à n'importe quelle étape ne fait que rejouer le dépôt (cas limite « réseau intermittent » : pas de double enregistrement).
+- **Accès Google** : aucun pendant la période hors ligne. Au retour du réseau, renouvellement silencieux du jeton (R2).
+- **Sécurité** : comme US-022 ; données dans le bac à sable de l'application Android.
+- **Exigences non fonctionnelles** :
+  - ouverture à froid hors ligne en moins de 2 s (ENF-T-01) ;
+  - action locale en moins de 100 ms (ENF-T-02) ;
+  - synchronisation lancée au retour du réseau en moins de 10 s.
+- **Risques** :
+  - R13 : maturité et performances du module SQLite pour Capacitor. Parade : adaptateur derrière un port, et repli possible sur l'IndexedDB de la WebView, acceptable sur Android ;
+  - R2 : renouvellement silencieux du jeton.
+- **Q-DEM001-39 (PC)** : si l'option b est retenue, le même périmètre s'applique au PC, avec trois ajouts :
+  - service worker qui met en cache l'application ;
+  - chargement de Google Identity Services **à la demande et non bloquant**, car le script Google ne se charge pas hors ligne ;
+  - `navigator.storage.persist()`.
+- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
+
 ## Impacts ergonomie
 
 ## Tests métiers

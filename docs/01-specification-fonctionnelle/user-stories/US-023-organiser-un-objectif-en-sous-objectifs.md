@@ -50,6 +50,31 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.2, §6), ADR-003.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - champ `parentId` de `Objectif` ;
+    - cas d'usage `CreerSousObjectif` et `DeplacerObjectif` ;
+    - invariants vérifiés à la saisie : un seul niveau, aucun cycle, un objectif qui a des sous-objectifs ne peut pas être placé sous un autre ;
+  - contexte `synchronisation` : **passe de réparation des hiérarchies** (RG-048), exécutée après chaque fusion.
+- **Réparation RG-048** :
+  - elle est déterministe ;
+  - une **création** se reconnaît à ce que le HLC de `parentId` est égal au HLC de création de l'élément ; une création n'est jamais annulée ;
+  - parmi les déplacements en cause, le plus ancien (HLC le plus petit) est annulé : `parentId` reprend sa valeur précédente, lue dans le journal ;
+  - l'annulation est écrite avec un nouvel HLC. Si les deux appareils effectuent la même réparation, ils écrivent la même valeur, et la fusion converge ;
+  - le signalement de la valeur écartée a un identifiant déterministe, qui évite les doublons.
+- **Données** :
+  - journal : `OBJECTIF_CREE` (avec le parent) et `PARENT_MODIFIE` (avant et après). La **valeur précédente du journal est nécessaire à RG-048** ;
+  - si RG-050 était rejetée, le journal resterait techniquement nécessaire à la réparation, sans être présenté comme un « historique » fonctionnel.
+- **Accès Google** : aucun.
+- **Sécurité** : sans objet particulier.
+- **Exigences non fonctionnelles** : la passe de réparation est en O(n) sur les objectifs, négligeable.
+- **Risques** :
+  - R14 : exactitude de la réparation ; parade : tests de propriétés (aucun cycle, au plus un niveau, convergence) ;
+  - **RG-048 est proposée** : si elle est rejetée, il faut une autre règle déterministe, car une hiérarchie invalide ne peut pas être laissée telle quelle.
+- **ADR applicables** : ADR-003, ADR-010.
+
 ## Impacts ergonomie
 
 ## Tests métiers

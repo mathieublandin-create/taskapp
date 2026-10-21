@@ -60,6 +60,27 @@ Statut : En analyse
 
 ## Impacts architecture
 
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.2, §6), ADR-003, ADR-011.*
+
+- **Composants touchés** :
+  - contexte `objectifs-taches` :
+    - cas d'usage `TerminerTache` et `RouvrirTache` ;
+    - CA-9 : la réouverture de la tâche parente se fait dans la **même transaction** ;
+    - calcul dérivé et récursif de l'atteinte : tâches non abandonnées, sous-tâches (CA-5), sous-objectifs, incohérences RG-049.
+- **Données, décision d'architecture** :
+  - l'état et ses dates forment **un seul registre « cycle de vie »** : `{etat, dateFin?, dateAbandon?, abandonParCascade?}`. Ce registre est fusionné comme **une seule information** au sens de RG-036 ;
+  - sans ce regroupement, une fin sur un appareil et un abandon sur l'autre donneraient après fusion une tâche « abandonnée » portant une date de fin. Le regroupement règle ce cas limite (« état le plus récent l'emporte, l'autre est signalé ») et n'a pas d'effet visible pour l'utilisateur ;
+  - `dateFin` est la `DateCalendaire` de la journée à Paris, calculée à partir de l'instant UTC (CA-1, RG-053). L'instant UTC est conservé dans le journal ;
+  - journal : `TERMINEE` et `ROUVERTE`. La date de fin précédente est conservée (CA-3), et elle servira à la vélocité.
+- **Accès Google** : aucun.
+- **Sécurité** : sans objet particulier.
+- **Exigences non fonctionnelles** : recalcul de l'atteinte en moins de 100 ms (5 000 tâches), avec mémoïsation par objectif.
+- **Risques** :
+  - changements d'heure (PT-16 : 25/10/2026 et 28/03/2027) ;
+  - **RG-049 est proposée** (voir US-024) ;
+  - **CA-5 est proposé** : il modifie la récursion de l'atteinte, mais sans effet sur l'architecture.
+- **ADR applicables** : ADR-003, ADR-010, ADR-011.
+
 ## Impacts ergonomie
 
 ## Tests métiers
