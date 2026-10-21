@@ -4,9 +4,12 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-022
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 # « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6).
 # Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive porte le même nom (V-13, DEC-018).
+# Motifs d'échec de la connexion : codes stables CNX-… (GLOSSAIRE-ETAPES.md §9 ; US-022, section « Motifs de connexion »).
+# E7 : les scénarios S09 et S17 sont scindés (S09a/S09b, S17a/S17b) pour éviter les colonnes de texte libre ; S13 est scindé (S13a automatisé, S13b en recette manuelle).
 
 Fonctionnalité: Se connecter avec mon compte Google
   En tant qu'utilisateur,
@@ -44,12 +47,12 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-022 @RG-020 @LOT-001
-  Scénario: S04 — À la toute première connexion, le Drive ne contient rien et l'application présente un état vide qui invite à créer
+  Scénario: S04 — À la toute première connexion, le Drive ne contient rien et l'application présente un état vide qui propose de créer un premier objectif ou d'ajouter une première tâche
     Étant donné que le Drive du compte "A" ne contient aucune donnée de l'application
     Et que l'application n'a jamais été utilisée sur le smartphone
     Quand l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors sur le smartphone, aucun objectif et aucune tâche n'existent
-    Et sur le smartphone, l'application invite à créer un premier objectif ou une première tâche
+    Et sur le smartphone, l'application propose de créer un premier objectif et d'ajouter une première tâche
 
   @US-022 @RG-020 @LOT-001
   Scénario: S05 — Après la première connexion, le dossier de l'application est visible dans le Drive
@@ -63,7 +66,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone et <refus>
     Alors sur le smartphone, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
-    Et sur le smartphone, un message explique qu'une connexion à un compte Google est nécessaire pour utiliser l'application
+    Et sur le smartphone, le message "CNX-COMPTE-REQUIS" explique qu'une connexion à un compte Google est nécessaire pour utiliser l'application
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
 
@@ -98,17 +101,20 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon"
 
   @US-022 @RG-043 @LOT-001
-  Plan du scénario: S09 — Avant la déconnexion, l'application indique le nombre de modifications pas encore enregistrées dans le Drive
+  Scénario: S09a — Avant la déconnexion, l'application indique le nombre de modifications pas encore enregistrées dans le Drive
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et que le smartphone est sans réseau
-    Et que sur le smartphone, <n> modifications ne sont pas encore enregistrées dans le Drive
+    Et que sur le smartphone, 2 modifications ne sont pas encore enregistrées dans le Drive
     Quand sur le smartphone, l'utilisateur demande à se déconnecter
-    Alors <résultat>
+    Alors une confirmation est demandée, qui annonce 2 modifications enregistrées dans le Drive à la prochaine connexion sur cet appareil
 
-    Exemples:
-      | n | résultat                                                                                                              |
-      | 2 | une confirmation est demandée, qui annonce 2 modifications enregistrées dans le Drive à la prochaine connexion sur cet appareil |
-      | 0 | sur le smartphone, l'utilisateur est déconnecté sans confirmation                                                     |
+  @US-022 @RG-043 @LOT-001
+  Scénario: S09b — Sans modification en attente, la déconnexion se fait sans confirmation
+    Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
+    Et que le smartphone est sans réseau
+    Et qu'aucune modification n'est en attente sur le smartphone
+    Quand sur le smartphone, l'utilisateur demande à se déconnecter
+    Alors sur le smartphone, l'utilisateur est déconnecté sans confirmation
 
   @US-022 @RG-043 @RG-055 @LOT-001
   Scénario: S10 — La déconnexion n'efface jamais les données ; aucune action combinée « se déconnecter et effacer » n'existe
@@ -150,12 +156,18 @@ Fonctionnalité: Se connecter avec mon compte Google
   # ---------------------------------------------------------------- Autorisations demandées (CA-8)
 
   @US-022 @RG-019 @RG-020 @LOT-001
-  Scénario: S13 — Au lot 1, seuls l'identification du compte et l'accès aux fichiers de l'application dans le Drive sont demandés
+  Scénario: S13a — Au lot 1, seuls l'identification du compte et l'accès aux fichiers de l'application dans le Drive sont demandés
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Quand l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors les autorisations demandées au compte Google sont exactement : identification du compte, accès aux fichiers de l'application dans le Drive
     Et aucun accès à l'agenda n'est demandé
-    Et aucun avertissement de Google du type « application non validée » n'est présenté
+
+  # S13b se déroule à la main en recette métier : l'écran d'avertissement de Google ne peut pas être simulé par le banc.
+  @US-022 @RG-019 @RG-020 @recette @LOT-001
+  Scénario: S13b — Recette manuelle : aucun avertissement de Google du type « application non validée » à la connexion
+    Étant donné que l'application n'a jamais été utilisée sur le smartphone
+    Quand l'utilisateur se connecte avec le compte "A" sur le smartphone
+    Alors aucun avertissement de Google du type « application non validée » n'est présenté
 
   # ---------------------------------------------------------------- Autre compte sur l'appareil (CA-9)
 
@@ -204,20 +216,26 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-022 @RG-055 @LOT-001
-  Plan du scénario: S17 — Sans réseau, la suppression annonce le nombre de modifications qui seraient perdues et demande une confirmation explicite
+  Scénario: S17a — Sans réseau, la suppression annonce le nombre de modifications qui seraient perdues ; l'utilisateur confirme explicitement
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et que le smartphone est sans réseau
     Et que sur le smartphone, 3 modifications ne sont pas encore enregistrées dans le Drive
     Quand sur le smartphone, l'utilisateur demande la suppression des données de cet appareil
     Et l'utilisateur confirme
     Alors une confirmation explicite est demandée, qui annonce que 3 modifications seraient perdues
-    Quand l'utilisateur <choix>
-    Alors <résultat>
+    Quand l'utilisateur confirme
+    Alors les données du compte "A" ne sont plus présentes sur le smartphone
 
-    Exemples:
-      | choix    | résultat                                                                                   |
-      | confirme | les données du compte "A" ne sont plus présentes sur le smartphone                         |
-      | renonce  | les données du compte "A" sont toujours présentes sur le smartphone, y compris 3 modifications en attente |
+  @US-022 @RG-055 @LOT-001
+  Scénario: S17b — Sans réseau, l'utilisateur renonce à la suppression après l'annonce des modifications qui seraient perdues : rien n'est supprimé
+    Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
+    Et que le smartphone est sans réseau
+    Et que sur le smartphone, 3 modifications ne sont pas encore enregistrées dans le Drive
+    Quand sur le smartphone, l'utilisateur demande la suppression des données de cet appareil
+    Et l'utilisateur confirme
+    Alors une confirmation explicite est demandée, qui annonce que 3 modifications seraient perdues
+    Quand l'utilisateur renonce
+    Alors les données du compte "A" sont toujours présentes sur le smartphone, y compris 3 modifications en attente
 
   @US-022 @RG-055 @LOT-001
   Scénario: S18 — Après la suppression des données de l'appareil, la connexion suivante recharge les données depuis le Drive, réseau nécessaire
@@ -227,7 +245,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et que sur le smartphone, l'utilisateur a supprimé les données de cet appareil
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "réseau nécessaire pour la première connexion"
+    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
     Quand le réseau revient sur le smartphone
     Et l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
@@ -244,25 +262,30 @@ Fonctionnalité: Se connecter avec mon compte Google
   # ---------------------------------------------------------------- Cas limites et cas d'erreur
 
   @US-022 @RG-019 @LOT-001
-  Plan du scénario: S20 — Connexion impossible sans réseau, ou interrompue : message, nouvel essai possible, rien de créé à moitié
+  Scénario: S20a — Connexion impossible sans réseau : message, nouvel essai possible, rien de créé à moitié
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
-    Et que <situation réseau>
+    Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "<motif>"
+    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
     Et sur le smartphone, l'utilisateur peut réessayer
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
 
-    Exemples:
-      | situation réseau                                        | motif                                       |
-      | le smartphone est sans réseau                           | réseau nécessaire pour la première connexion |
-      | le réseau du smartphone est coupé pendant la connexion  | connexion interrompue                       |
+  @US-022 @RG-019 @LOT-001
+  Scénario: S20b — Connexion interrompue par une coupure du réseau : message, nouvel essai possible, rien de créé à moitié
+    Étant donné que l'application n'a jamais été utilisée sur le smartphone
+    Et que le réseau du smartphone est coupé pendant la connexion
+    Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
+    Alors la connexion échoue avec le motif "CNX-INTERROMPUE"
+    Et sur le smartphone, l'utilisateur peut réessayer
+    Et aucune donnée n'est créée sur le smartphone
+    Et aucune donnée n'est créée dans le Drive du compte "A"
 
   @US-022 @RG-019 @RG-020 @LOT-001
   Scénario: S21 — Drive indisponible ou désactivé pour le compte : message explicite et aucun accès aux fonctions
     Étant donné que le Drive est désactivé pour le compte "C"
     Quand l'utilisateur tente de se connecter avec le compte "C" sur le smartphone
-    Alors la connexion échoue avec le motif "Drive indisponible pour ce compte"
+    Alors la connexion échoue avec le motif "CNX-DRIVE-INDISPONIBLE"
     Et sur le smartphone, aucune autre fonction n'est accessible
 
   @US-022 @RG-019 @RG-043 @LOT-001
@@ -271,7 +294,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand sur le smartphone, l'utilisateur se déconnecte
     Et que le smartphone est sans réseau
     Et l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "réseau nécessaire pour se connecter"
+    Alors la connexion échoue avec le motif "CNX-RESEAU-RECONNEXION"
     Et les données du compte "A" sont toujours présentes sur le smartphone
 
   @US-022 @RG-017 @RG-035 @LOT-001

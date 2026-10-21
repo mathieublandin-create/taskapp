@@ -4,8 +4,11 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-017
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
-# Les délais (une heure, une minute) se vérifient avec l'horloge contrôlée du banc à deux appareils (conventions §9.11, PT-04).
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
+# Les délais d'une heure et d'une minute (CA-2, CA-3) se vérifient en faisant avancer l'horloge contrôlée du banc à deux appareils
+# (conventions §9.11, PT-04) : aucun scénario n'attend en temps réel (E7, ANT-3).
+# E7 : S12b (horodatages identiques), S13 scindé en S13a/S13b (seuil de 24 h, CA-13), S17 scindé en S17a/S17b, S30b (RG-058 : aucune écriture, dépôt après mise à jour).
 
 Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   En tant qu'utilisateur,
@@ -49,7 +52,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Scénario: S02 — Les deux appareils ouverts et connectés, une modification est visible sur l'autre au plus tard une heure après, sans action
     Étant donné que l'application est ouverte sur le smartphone et sur le PC, connectés au réseau
     Quand sur le PC, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
-    Et 60 minutes s'écoulent sans aucune action de l'utilisateur
+    Et l'horloge avance de 60 minutes, sans aucune action de l'utilisateur
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-017 @RG-017 @LOT-001
@@ -60,7 +63,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        | Publier le guide |               |
     Et que l'application est ouverte sur le smartphone et sur le PC, connectés au réseau
     Quand sur le smartphone, l'utilisateur <opération>
-    Et 60 minutes s'écoulent sans aucune action de l'utilisateur
+    Et l'horloge avance de 60 minutes, sans aucune action de l'utilisateur
     Alors sur le PC, <résultat>
 
     Exemples:
@@ -77,14 +80,16 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et que nous sommes le 2026-10-23 à 08:00 heure de Europe/Paris
     Et l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
-    Et sur le PC, l'objectif "Publier le guide" existe au plus tard 1 minute après l'ouverture
+    Quand l'horloge avance de 1 minute depuis l'ouverture
+    Alors sur le PC, l'objectif "Publier le guide" existe
 
   @US-017 @RG-017 @LOT-001
   Scénario: S05 — À l'ouverture, les modifications de l'autre appareil sont intégrées en une minute au plus
     Étant donné que l'application est fermée sur le PC
     Et que sur le smartphone, 3 modifications ont été enregistrées dans le Drive depuis la dernière ouverture du PC
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
-    Alors sur le PC, les 3 modifications sont intégrées au plus tard 1 minute après l'ouverture
+    Et l'horloge avance de 1 minute depuis l'ouverture
+    Alors sur le PC, les 3 modifications sont intégrées
 
   @US-017 @RG-017 @RG-035 @LOT-001
   Scénario: S06 — Sur le PC, session Google du navigateur expirée : données du PC affichées et utilisables, mise à jour après le geste de reconnexion
@@ -100,8 +105,9 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Envoyer le devis | 2026-11-15 | 1 h        |           |
     Alors sur le PC, la tâche "Envoyer le devis" existe avec le délai 2026-11-15
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
-    Alors sur le PC, l'objectif "Publier le guide" existe au plus tard 1 minute après la reconnexion
-    Et le Drive contient la tâche "Envoyer le devis"
+    Et l'horloge avance de 1 minute depuis la reconnexion
+    Alors sur le PC, l'objectif "Publier le guide" existe
+    Et le Drive du compte "A" contient la tâche "Envoyer le devis"
 
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
 
@@ -184,11 +190,46 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
 
+  @US-017 @RG-036 @RG-056 @LOT-001
+  Scénario: S12b — Deux modifications de la même information au même instant exact : les deux appareils retiennent la même valeur
+    # RG-036 ne dit pas laquelle des deux l'emporte à l'égalité stricte ; le scénario n'exige que la convergence (E7, ANT-11).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et au même instant exact, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors les deux appareils affichent le même intitulé pour la tâche "Plan", "A" ou "B"
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 1 information
+
+  # Seuil de l'horloge déréglée (CA-13) : l'avertissement n'est émis que si l'écart dépasse 24 h strictement.
   @US-017 @RG-036 @LOT-001
-  Scénario: S13 — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
-    Étant donné que l'horloge du smartphone est en retard de 25 heures
+  Plan du scénario: S13a — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
+    Étant donné que l'horloge du smartphone est <sens> de <écart>
     Quand les deux appareils échangent leurs modifications
     Alors sur le smartphone, l'utilisateur est averti que l'horloge de l'appareil est déréglée
+
+    Exemples:
+      | sens       | écart       |
+      | en retard  | 25 h        |
+      | en avance  | 25 h        |
+      | en retard  | 24 h 1 min  |
+      | en avance  | 24 h 1 min  |
+
+  @US-017 @RG-036 @LOT-001
+  Plan du scénario: S13b — Une horloge d'appareil décalée de 24 h au plus n'est pas signalée
+    Étant donné que l'horloge du smartphone est <sens> de <écart>
+    Quand les deux appareils échangent leurs modifications
+    Alors sur le smartphone, l'utilisateur n'est pas averti que l'horloge de l'appareil est déréglée
+
+    Exemples:
+      | sens       | écart       |
+      | en retard  | 24 h        |
+      | en avance  | 24 h        |
+      | en retard  | 23 h 59 min |
+      | en avance  | 5 min       |
 
   @US-017 @RG-056 @LOT-001
   Scénario: S14 — Une modification non retenue reste listée jusqu'à ce que l'utilisateur la marque comme lue, même après réouverture
@@ -230,20 +271,25 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Sans réseau et perte d'accès (CA-7)
 
-  @US-017 @RG-021 @RG-035 @LOT-001
-  Plan du scénario: S17 — Sans réseau ou sans accès Google, les saisies sont conservées puis enregistrées au retour, sans action
-    Étant donné que le smartphone <situation>
+  @US-017 @RG-021 @LOT-001
+  Scénario: S17a — Sans réseau, les saisies sont conservées puis enregistrées au retour du réseau, sans action
+    Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Alors sur le smartphone, l'objectif "Publier le guide" est signalé comme non synchronisé
-    Quand <retour>
+    Quand le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-    Exemples:
-      | situation                                 | retour                                                |
-      | est sans réseau                           | le réseau revient sur le smartphone                   |
-      | a perdu l'accès au compte Google "A"      | sur le smartphone, l'utilisateur se reconnecte avec le compte "A" |
+  @US-017 @RG-035 @LOT-001
+  Scénario: S17b — Sans accès Google, les saisies sont conservées puis enregistrées après la reconnexion
+    Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
+    Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Alors sur le smartphone, l'objectif "Publier le guide" est signalé comme non synchronisé
+    Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
+    Et les deux appareils échangent leurs modifications
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   # ---------------------------------------------------------------- Données absentes ou illisibles dans le Drive (CA-9, RG-044)
 
@@ -420,6 +466,20 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors sur le smartphone, l'utilisateur est invité à mettre l'application à jour
     Et sur le smartphone, l'application est en consultation seule : la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et sur le smartphone, l'objectif "Publier le guide" existe toujours
+
+  @US-017 @RG-058 @LOT-001
+  Scénario: S30b — En consultation seule, rien n'est écrit dans le Drive ; les modifications en attente sont enregistrées après la mise à jour de l'application
+    Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
+    Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
+    Quand le smartphone échange ses modifications avec le Drive
+    Alors sur le smartphone, l'application est en consultation seule : la saisie n'est pas possible tant que l'application n'est pas mise à jour
+    Et aucune écriture n'a été faite dans le Drive par le smartphone
+    Et le Drive du compte "A" ne contient pas l'objectif "Publier le guide"
+    Et sur le smartphone, l'objectif "Publier le guide" est signalé comme non synchronisé
+    Quand sur le smartphone, l'application est mise à jour et connaît le format plus récent
+    Et le smartphone échange ses modifications avec le Drive
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le smartphone, la saisie n'est plus bloquée
 
   @US-017 @RG-058 @LOT-001
   Scénario: S31 — Deux versions de l'application qui partagent le même format de données coexistent : la saisie n'est pas bloquée

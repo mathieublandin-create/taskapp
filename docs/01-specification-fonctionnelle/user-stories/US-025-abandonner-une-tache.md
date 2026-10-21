@@ -75,7 +75,7 @@ Statut : Validée
 - **Nouveaux composants** : variante « abandon » de `ConfirmDialog` ; état « Abandonnée » de `TaskRow` (guide §4.2, §4.12).
 - **Décisions d'ergonomie** :
   - abandon dans le **menu « … » uniquement**, jamais par un geste de balayage (guide §5.2) ;
-  - **confirmation** conforme à CA-1 (proposition de Pepper), avec le nombre de sous-tâches abandonnées avec la tâche (CA-6) et le rappel que la reprise est possible ; bouton normal, non rouge (réversible) ; alternative posée en **Q-ERG-13** ;
+  - **confirmation** conforme à CA-1, avec le nombre de sous-tâches abandonnées avec la tâche (CA-6) et le rappel que la reprise est possible ; bouton normal, non rouge (réversible) ; toujours demandée, y compris pour une tâche sans sous-tâche (ECR-007 D2, `CNF-ABANDON-TACHE`) ; avec sous-tâches : ECR-007 D (`CNF-ABANDON-TACHE-CASCADE`) ;
   - tâche abandonnée : plus de case « Terminer », icône cercle barré, date d'abandon à l'heure de Paris (CA-1, RG-053), jamais « en retard » (CA-3) ; visible dans le filtre « Abandonnées » (CA-2) ;
   - action principale « Reprendre la tâche » (CA-5) ; reprise de la tâche parente = reprise des sous-tâches abandonnées avec elle (CA-7) ; la reprise d'une sous-tâche d'une tâche abandonnée n'est pas proposée (CA-8) ;
   - abandon d'une sous-tâche seule : estimation de la tâche parente recalculée (CA-9) ;

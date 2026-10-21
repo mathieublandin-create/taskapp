@@ -97,6 +97,7 @@ Statut : Validée
   - *synchronisation* : voir US-017 ;
   - *conflit* : déplacement annulé (RG-048), sous-objectif promu après suppression concurrente (CA-10, RG-047).
 - **Accessibilité et responsive** : sélecteur de parent en boutons radio navigables au clavier ; retrait visible aussi dans le nom accessible (« sous-objectif de … »).
+- **Compteur et état (PEP-10)** : un parent dont toutes les tâches propres sont terminées (3 / 3) reste « En cours » tant que son sous-objectif ne l'est pas atteint : voir ECR-008 A, « Préparer le lancement » (US-023 CA, exemple 1).
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers

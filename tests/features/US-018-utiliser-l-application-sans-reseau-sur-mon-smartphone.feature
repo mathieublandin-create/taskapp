@@ -4,7 +4,8 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-018
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
   En tant qu'utilisateur,
@@ -141,6 +142,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | le smartphone est éteint puis rallumé            |
       | l'application est arrêtée brutalement sur le smartphone |
 
+  # Le 2026-12-21, les délais des données du contexte (tâche « Chapitre 1 » au 2026-11-30, objectif « Publier le guide » au 2026-12-15) sont dépassés :
+  # sans incidence, ce scénario ne vérifie ni retard ni alerte de délai.
   @US-018 @RG-021 @LOT-001
   Scénario: S10 — Il n'y a pas de durée maximale d'utilisation sans réseau
     Étant donné que le smartphone est sans réseau
@@ -176,7 +179,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "réseau nécessaire pour la première connexion"
+    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
     Et aucune donnée n'est créée sur le smartphone
 
   @US-018 @RG-021 @LOT-001

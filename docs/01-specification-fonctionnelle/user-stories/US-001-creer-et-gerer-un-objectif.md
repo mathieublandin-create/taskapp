@@ -114,6 +114,8 @@ Statut : Validée
   - *synchronisation* : point « en attente » sur les lignes modifiées hors ligne ;
   - *conflit* : voir US-017 (ECR-011 C).
 - **Accessibilité et responsive** : anneau de progression avec texte équivalent ; nom accessible complet de la ligne ; création en feuille sur smartphone, panneau de 400 px sur PC (`Maj`+`N`).
+- **Compteur et état (PEP-10)** : le compteur « 3 / 3 tâches » ne décide pas de l'état : un objectif dont toutes les tâches propres sont terminées reste « En cours » tant qu'un sous-objectif ne l'est pas atteint (RG-025). Cas montré dans ECR-008 A (« Préparer le lancement », « 1 sous-objectif en cours », anneau en accent et non vert) et rappelé dans ECR-003 D. Codes `ETA-OBJ-EN-COURS`, `ETA-OBJ-COMPTEUR` (guide §6.6.4).
+- **Heure de Paris (BEN-8)** : la puce figure dans le sous-titre de la liste (ECR-008 A) et dans le détail (ECR-003 D) quand l'appareil n'est pas à l'heure de Paris ; jamais sur un délai.
 - **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est un choix de conception de Steeve (validé avec l'US en E6).
 
 ## Tests métiers

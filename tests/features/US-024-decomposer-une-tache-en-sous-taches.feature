@@ -4,7 +4,8 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-024
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Décomposer une tâche en sous-tâches
   En tant qu'utilisateur,
@@ -238,6 +239,19 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'estimation de la tâche "Chapitre 1" est 0 h
     Quand l'utilisateur termine la tâche "Chapitre 1"
     Alors l'état de la tâche "Chapitre 1" est "terminée"
+
+  @US-024 @RG-023 @RG-028 @LOT-001
+  Scénario: S16b — Une estimation calculée de 0 h n'est pas refusée au nom du minimum de 30 min, qui ne s'applique qu'à la saisie
+    Étant donné les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | à faire    | 2026-11-30 |            |           |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+    Quand l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Alors l'opération est acceptée
+    Et l'estimation de la tâche "Chapitre 1 : contexte" est 0 h
+    Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1 : contexte" en 1 h
+    Alors la modification est refusée avec le motif "estimation calculée à partir des sous-tâches"
+    Et l'estimation de la tâche "Chapitre 1 : contexte" est 0 h
 
   @US-024 @RG-023 @RG-026 @LOT-001
   Scénario: S17 — Ajouter une sous-tâche à une tâche terminée la rouvre, après confirmation

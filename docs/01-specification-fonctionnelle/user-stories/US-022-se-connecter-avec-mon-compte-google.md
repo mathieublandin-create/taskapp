@@ -122,13 +122,14 @@ Statut : Validée
   - la suppression suit le déroulement de CA-10 : confirmation toujours, dépôt d'abord, nombre de modifications perdues si le dépôt est impossible, retour à la connexion ;
   - un autre compte sur l'appareil n'a **aucun indice** des données du premier (CA-9, DEC-016, RG-018).
 - **États** :
-  - *vide* : premier lancement, Drive vide (invitation à créer un premier objectif ou une tâche, CA-2) ;
+  - *vide* : premier lancement, compte neuf (`EVD-BIENVENUE`, CA-2) : affiché tant qu'il n'existe ni objectif ni tâche. **Atterrissage (BEN-6)** : l'utilisateur arrive sur Tâches ; « Créer mon premier objectif » mène à la création (ECR-008 B) puis au détail de l'objectif vide (`EVD-OBJECTIF-SANS-TACHE`, ECR-003 B) ; « Ajouter une tâche sans objectif » mène à la saisie rapide (ECR-006) puis à la liste Tâches (ECR-002 L1) ;
   - *chargement* : étapes « Compte identifié », « Dossier trouvé ou créé », « Récupération de vos données » ; au-delà de 10 s, message de patience ;
   - *erreur* : connexion annulée ou refusée, interrompue, Drive indisponible ; chacune dit ce qui s'est passé, ce qui est préservé et quoi faire ;
   - *hors ligne* : première connexion ou reconnexion impossible, message et « Réessayer » ; réouverture d'une session existante sans réseau : aucun écran dédié (CA-5) ;
   - *synchronisation* : accès Google perdu → bandeau non fermable « Se reconnecter », travail possible comme hors ligne (CA-7, voir US-017) ;
   - *conflit* : sans objet.
 - **Accessibilité et responsive** : aucun test cognitif (WCAG 3.3.8) ; erreurs annoncées `role="alert"` ; dialogues `alertdialog` avec « Annuler » focalisé ; cible 48 px ; connexion en une colonne sur smartphone, bloc centré de 460 px sur PC.
+- **Libellés et codes (ANT-7, ANT-2, ANT-15)** : les six motifs d'échec de connexion ont des codes stables `ERR-001` à `ERR-006` (annulation, autorisations refusées, réseau absent à la première connexion, réseau absent à la reconnexion, connexion interrompue, Drive indisponible), avec titre et texte exacts, au guide §6.6.8. `ERR-001` et `ERR-002` partagent le même texte (CA-4) ; `ERR-003` et `ERR-004` ont deux textes distincts. Le catalogue complet (indicateur, bandeaux, mentions, confirmations) est au guide §6.6.
 - **Questions et réserves** : Q-ERG-15 (nom de l'application) tranchée : « Done Juan » (DEC-017), dossier du Drive identique (V-13) ; guide et maquettes alignés. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers

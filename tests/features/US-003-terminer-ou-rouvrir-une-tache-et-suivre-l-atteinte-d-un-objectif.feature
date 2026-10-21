@@ -4,7 +4,8 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-003
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif
   En tant qu'utilisateur,

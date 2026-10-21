@@ -105,6 +105,7 @@ Statut : Validée
   - *synchronisation* : point « en attente » ;
   - *conflit* : tâche terminée d'un côté et abandonnée de l'autre : valeur écartée (ECR-011 C) ; incohérence.
 - **Accessibilité et responsive** : la case ronde est un `checkbox` au nom explicite (« Terminer X » / « Rouvrir X ») ; la fin est annoncée `role="status"`, jamais seulement par la couleur ; cible 44 px.
+- **Heure de Paris (BEN-8)** : écran du lot 1 portant la puce avec une date de fin : ECR-007 G (liste des écrans au guide §4.21).
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers

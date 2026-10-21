@@ -4,12 +4,15 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-001
 #
 # Conventions d'écriture, communes aux fichiers du lot :
-# - les étapes s'exécutent au niveau des cas d'usage (conventions techniques §9.6 et §9.7), sans détail d'interface ;
+# - les étapes s'exécutent au niveau des cas d'usage (conventions techniques §9.6 et §9.7), sans détail d'interface, sauf les scénarios tagués @ihm ;
 # - dates au format AAAA-MM-JJ, heures HH:MM, durées « 2 h 30 », « 30 min », « 0 h » ;
 # - toute heure est ancrée explicitement dans un fuseau (« heure de Europe/Paris ») ;
 # - « sur le smartphone, » ou « sur le PC, » en tête d'étape désigne l'appareil concerné ; sans mention, l'appareil est le seul en jeu ;
 # - « les deux appareils échangent leurs modifications » : chacun enregistre ses modifications dans le Drive puis intègre celles de l'autre ;
-# - Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# - le vocabulaire des étapes est figé dans GLOSSAIRE-ETAPES.md (appareil, synchronisation, temps, assertions, négations, listes fermées pour les colonnes d'Exemples) ;
+# - le temps ne passe que par l'horloge contrôlée du banc (jamais d'attente réelle) ;
+# - tags : @US-xxx, @RG-xxx et @LOT-001 sur chaque scénario ; @ihm si le scénario exige l'interface réelle ; @recette s'il se déroule à la main ;
+# - Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Créer et gérer un objectif
   En tant qu'utilisateur,

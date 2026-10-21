@@ -4,7 +4,8 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-002
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Créer et gérer mes tâches
   En tant qu'utilisateur,
@@ -61,20 +62,31 @@ Fonctionnalité: Créer et gérer mes tâches
       | composé uniquement d'espaces |
 
   @US-002 @RG-028 @RG-029 @LOT-001
-  Plan du scénario: S05 — Seules les estimations multiples de 30 min, d'au moins 30 min, sont acceptées
+  Plan du scénario: S05a — Les estimations multiples de 30 min, d'au moins 30 min, sont acceptées
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation   | objectifs |
       | Chapitre 1 | 2026-11-30 | <estimation> |           |
-    Alors <résultat>
+    Alors la tâche "Chapitre 1" existe avec l'estimation <estimation>
 
     Exemples:
-      | estimation | résultat                                                       |
-      | 30 min     | la tâche "Chapitre 1" existe avec l'estimation 30 min          |
-      | 1 h        | la tâche "Chapitre 1" existe avec l'estimation 1 h             |
-      | 1 h 30     | la tâche "Chapitre 1" existe avec l'estimation 1 h 30          |
-      | 0 h        | l'enregistrement est refusé avec le motif "estimation invalide" |
-      | 45 min     | l'enregistrement est refusé avec le motif "estimation invalide" |
-      | 1 h 10     | l'enregistrement est refusé avec le motif "estimation invalide" |
+      | estimation |
+      | 30 min     |
+      | 1 h        |
+      | 1 h 30     |
+
+  @US-002 @RG-028 @RG-029 @LOT-001
+  Plan du scénario: S05b — Une estimation de 0 h ou qui n'est pas un multiple de 30 min est refusée
+    # Le minimum de 30 min vaut pour la saisie ; une estimation calculée de 0 h est valide (US-024, S16 et S16b).
+    Quand l'utilisateur crée une tâche :
+      | intitulé   | délai      | estimation   | objectifs |
+      | Chapitre 1 | 2026-11-30 | <estimation> |           |
+    Alors l'enregistrement est refusé avec le motif "estimation invalide"
+
+    Exemples:
+      | estimation |
+      | 0 h        |
+      | 45 min     |
+      | 1 h 10     |
 
   # ---------------------------------------------------------------- Rattachement (CA-5, CA-6)
 

@@ -4,7 +4,8 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-023
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 
 Fonctionnalité: Organiser un objectif en sous-objectifs
   En tant qu'utilisateur,
@@ -235,6 +236,29 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et sur les deux appareils, "Alpha" est un objectif principal
     Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
     Et les deux appareils présentent la même hiérarchie d'objectifs
+    Et la liste des modifications non retenues contient :
+      | élément | information | valeur non retenue | valeur conservée |
+      | Alpha   | parent      | sous Bêta          | placement annulé |
+
+  @US-023 @RG-048 @RG-056 @LOT-001
+  Scénario: S18b — Trois placements concurrents dont deux se cumulent sur un objectif : seul le plus ancien est annulé, les deux autres sont conservés
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et un objectif "Alpha" sans délai
+    Et un objectif "Bêta" sans délai
+    Et un objectif "Gamma" sans délai
+    Et un objectif "Delta" sans délai
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur place l'objectif "Alpha" sous l'objectif "Bêta"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur place l'objectif "Gamma" sous l'objectif "Alpha"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur place l'objectif "Delta" sous l'objectif "Alpha"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, "Alpha" est un objectif principal
+    Et sur les deux appareils, "Gamma" est un sous-objectif de l'objectif "Alpha"
+    Et sur les deux appareils, "Delta" est un sous-objectif de l'objectif "Alpha"
+    Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
+    Et les deux appareils présentent la même hiérarchie d'objectifs
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 1 information
     Et la liste des modifications non retenues contient :
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |

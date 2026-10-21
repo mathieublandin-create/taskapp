@@ -4,9 +4,11 @@
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-031
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
-# Remarque pour Anthony (E9) : les scénarios d'ouverture de l'application (adresse web, application installée,
-# première ouverture sans réseau) peuvent nécessiter une exécution par l'interface (tag @ihm à demander à Pepper).
+# Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
+# Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
+# Tag @ihm (E7, ANT-5, ANT-6) : S01a, S01b, S08, S14, S15, S16 et S17 ne se vérifient que par l'interface réelle
+# (adresse web, application installée, onglets, navigateur, saisie en cours) ; les autres s'exécutent au niveau des cas d'usage.
+# S01 est scindé (S01a adresse web, S01b application installée).
 
 Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   En tant qu'utilisateur,
@@ -24,18 +26,21 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # ---------------------------------------------------------------- Ouverture et opérations sans réseau (CA-1, CA-2)
 
-  @US-031 @RG-021 @LOT-001
-  Plan du scénario: S01 — L'application s'ouvre sans réseau sur le PC, depuis son adresse web ou depuis l'application installée
+  @US-031 @RG-021 @ihm @LOT-001
+  Scénario: S01a — L'application s'ouvre sans réseau sur le PC depuis son adresse web
     Étant donné que l'application est fermée sur le PC
     Et que le PC est sans réseau
-    Quand l'utilisateur ouvre l'application sur le PC depuis <point d'entrée>
+    Quand l'utilisateur ouvre l'application sur le PC depuis son adresse web
     Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
     Et sur le PC, la tâche "Chapitre 1" existe avec le délai 2026-11-30
 
-    Exemples:
-      | point d'entrée            |
-      | son adresse web           |
-      | l'application installée   |
+  @US-031 @RG-021 @ihm @LOT-001
+  Scénario: S01b — L'application s'ouvre sans réseau sur le PC depuis l'application installée
+    Étant donné que l'application est fermée sur le PC
+    Et que le PC est sans réseau
+    Quand l'utilisateur ouvre l'application sur le PC depuis l'application installée
+    Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
+    Et sur le PC, la tâche "Chapitre 1" existe avec le délai 2026-11-30
 
   @US-031 @RG-021 @LOT-001
   Plan du scénario: S02 — Toutes les opérations du lot 1 sont possibles sans réseau sur le PC
@@ -119,7 +124,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # ---------------------------------------------------------------- Aucune perte (CA-6, CA-7)
 
-  @US-031 @RG-021 @LOT-001
+  @US-031 @RG-021 @ihm @LOT-001
   Plan du scénario: S08 — Aucune modification faite sans réseau n'est perdue, même si l'onglet ou le navigateur est fermé, ou le PC éteint
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -136,6 +141,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
       | l'utilisateur ferme le navigateur     |
       | le PC est éteint puis rallumé         |
 
+  # Le 2026-12-21, les délais des données du contexte (tâche « Chapitre 1 » au 2026-11-30, objectif « Publier le guide » au 2026-12-15) sont dépassés :
+  # sans incidence, ce scénario ne vérifie ni retard ni alerte de délai.
   @US-031 @RG-021 @LOT-001
   Scénario: S09 — Il n'y a pas de durée maximale d'utilisation sans réseau sur le PC
     Étant donné que le PC est sans réseau
@@ -199,14 +206,15 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # ---------------------------------------------------------------- Cas limites
 
-  @US-031 @RG-021 @LOT-001
+  @US-031 @RG-021 @ihm @LOT-001
   Scénario: S14 — La première ouverture de l'application dans un navigateur, sans réseau, est impossible
     Étant donné que l'application n'a jamais été ouverte dans le navigateur du PC
     Et que le PC est sans réseau
     Quand l'utilisateur ouvre l'application sur le PC depuis son adresse web
-    Alors l'application ne s'ouvre pas sur le PC
+    Alors sur le PC, aucun écran de Done Juan n'est affiché
+    Et le navigateur du PC affiche son propre message de page inaccessible
 
-  @US-031 @RG-021 @LOT-001
+  @US-031 @RG-021 @ihm @LOT-001
   Scénario: S15 — Données du navigateur effacées : les modifications non enregistrées sont perdues et les données sont rechargées depuis le Drive
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -216,7 +224,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors sur le PC, la tâche "Chapitre 1" existe avec le délai 2026-11-30
     Et sur le PC, la tâche "Chapitre 1 : contexte" n'existe pas
 
-  @US-031 @RG-021 @LOT-001
+  @US-031 @RG-021 @ihm @LOT-001
   Scénario: S16 — Deux onglets ouverts sans réseau affichent les mêmes données et ne perdent aucune modification
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et que le PC est sans réseau
@@ -227,9 +235,10 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" exactement une fois
     Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
 
-  @US-031 @RG-021 @LOT-001
+  @US-031 @RG-021 @ihm @LOT-001
   Scénario: S17 — Le réseau perdu pendant une saisie sur le PC ne laisse aucune donnée enregistrée à moitié
-    Quand sur le PC, l'utilisateur commence la création d'une sous-tâche "Section A" de la tâche "Chapitre 1", de délai 2026-11-20, estimée à 1 h
+    Quand sur le PC, l'utilisateur commence la saisie d'une sous-tâche de la tâche "Chapitre 1"
+    Et sur le PC, l'utilisateur saisit l'intitulé "Section A", le délai 2026-11-20 et l'estimation 1 h
     Et le réseau est coupé sur le PC pendant la saisie
     Et l'utilisateur termine la saisie
     Alors sur le PC, la tâche "Section A" existe avec le délai 2026-11-20
