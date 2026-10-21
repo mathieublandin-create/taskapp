@@ -9,6 +9,7 @@
 |---|---|
 | 2026-10-20 | Création. Option proposée pour la journée : le fuseau de l'agenda Google. |
 | 2026-10-20 | Révision après **DEC-011** : la journée suit le fuseau de l'appareil, et les instants sont stockés en UTC. |
+| 2026-10-21 | Précision (E8, Q-US-017-1, 4, 5 ; DAT v0.9 §4.2.1 et §6.4), sans changement de décision : l'HLC désigne le gagnant ; un **contexte causal par écriture**, analogue à une horloge vectorielle restreinte à une information, détecte la concurrence pour le signalement des valeurs écartées (combinaison des options b et c). Heure corrigée ancrée sur l'horloge monotone d'Android tant que l'appareil n'a pas redémarré ; détection des sauts d'horloge sur PC. `ALR-001` affiché seulement par l'appareil déréglé. Portée exacte de la garantie de CA-13 ; limite résiduelle soumise au commanditaire (A8). |
 | 2026-10-20 | Révision après **DEC-012**, qui remplace DEC-011. Verbatim du commanditaire : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain ». Le fuseau de référence est désormais **fixe : Europe/Paris**. Il vaut pour la journée, les rappels et les créneaux, quel que soit l'appareil. Les instants restent en UTC. |
 
 ## Contexte
@@ -28,7 +29,7 @@ Deux questions de temps se posent :
 ## Options étudiées
 **Ordre des modifications**
 - (a) l'heure murale de l'appareil ;
-- (b) des horloges vectorielles : elles détectent la concurrence, mais ne désignent pas la modification « la plus récente » ;
+- (b) des horloges vectorielles : elles détectent la concurrence, mais ne désignent pas la modification « la plus récente ». **Retenues en complément de (c), v0.9** : sous la forme d'un contexte causal par écriture, elles servent uniquement à décider si une valeur perdue est « écartée » (RG-036) ;
 - (c) **une HLC fondée sur l'heure UTC, corrigée de l'écart mesuré avec l'en-tête `Date` des réponses Google**. **Retenue.**
 
 **Fuseau de la journée**
@@ -43,6 +44,7 @@ Deux questions de temps se posent :
 - (d) **Un fuseau fixe, Europe/Paris** : **retenue par DEC-012**.
 
 ## Décision
+0. **Ordre et concurrence (précisé le 2026-10-21)** : le gagnant d'une information est l'écriture d'HLC le plus grand. Une valeur perdue n'est signalée que si le gagnant a été écrit sans la connaître (contexte causal, DAT §4.2.1). L'heure physique corrigée est `heure murale + écart mesuré avec Google` ; sur Android, tant que l'appareil n'a pas redémarré, elle est `heure Google au dernier échange + temps monotone écoulé`. Garantie et limite résiduelle : DAT §6.4.
 1. **Instants en UTC** : tout horodatage est stocké en UTC, au format ISO 8601 avec `Z` et une précision à la milliseconde. Cela vaut pour l'HLC, la date de création, la date de modification et l'instant d'une fin de tâche. Le composant physique de l'HLC est en millisecondes UTC, corrigé de l'écart avec Google. En cas d'égalité, l'`appareilId` départage.
 2. **Fuseau de référence** : la constante de code `FUSEAU_REFERENCE = "Europe/Paris"`.
    - Ce n'est pas un paramètre utilisateur ni une donnée synchronisée.

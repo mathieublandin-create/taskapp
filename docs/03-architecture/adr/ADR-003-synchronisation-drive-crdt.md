@@ -30,7 +30,8 @@ Option 4.
   - corrige les cycles et les profondeurs illégales ;
   - signale les incohérences d'état ;
   - la suppression l'emporte sur une modification concurrente, avec signalement.
-- Valeurs écartées : consignées quand elles concernent une modification locale non encore déposée.
+- Valeurs écartées : consignées quand l'écriture gagnante a été faite **sans connaissance** de la valeur perdue (RG-036), que celle-ci soit locale ou distante, déposée ou non. Chaque écriture porte un **contexte causal** (par appareil, HLC de la plus récente écriture connue de cette information) ; identifiant déterministe des entrées, signalement unique (DAT §4.2.1, v0.9). *Révision du 2026-10-21 (E8, Q-US-017-1) : remplace le critère « modification locale non encore déposée ».*
+- RG-044 avec des fichiers par appareil : altération traitée fichier par fichier, `ERR-012` affiché par le propriétaire du fichier altéré (ou par tous si le manifeste est atteint) ; `generation` recopiée dans chaque fichier d'appareil ; manifeste à contenu monotone (lire, fusionner, écrire), doublons résolus par le plus ancien ; « repartir de zéro » l'emporte sur une restauration concurrente (DAT §4.2.2, v0.9).
 - Cycle de synchronisation :
   - immédiatement au démarrage et au retour au premier plan ;
   - 5 s après une modification ;
@@ -47,3 +48,5 @@ Option 4.
 - − Les pierres tombales et les métadonnées HLC alourdissent l'état (de l'ordre de +30 %).
 - − Les règles qui portent sur plusieurs champs ne sont pas garanties par la fusion : il faut une passe de réparation, et les règles de réparation doivent être spécifiées (DAT §8, F12).
 - − La « plus récente » repose sur des horloges d'appareils. Le risque est réduit par l'HLC et par la correction d'écart avec l'heure des serveurs Google (ADR-011).
+- − Le contexte causal alourdit l'état d'environ 10 % (omis s'il est vide, `appareilId` indexés) ; en contrepartie, le signalement des valeurs écartées est exact, y compris pour une chaîne de modifications faite en connaissance de cause.
+- − Le manifeste a plusieurs écrivains : son contenu est rendu monotone, et la génération est aussi portée par chaque fichier d'appareil, pour qu'une écriture concurrente perdue reste sans conséquence.
