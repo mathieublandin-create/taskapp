@@ -113,7 +113,7 @@ Cas particuliers dépendant de Q-DEM001-33 : créneau déplacé dans la même jo
 
 | # | Ce que fait Camille | Écran | Ce que fait l'application | Gestes |
 |---|---|---|---|---|
-| 1 | Ouvre l'application (Google Play en test interne sur le smartphone, adresse web sur le PC). | ECR-010 A | Seule l'invitation à se connecter est affichée : un bouton, et ce que l'application demande à Google (identité, dossier « Done Juan », rien d'autre). Aucune donnée, aucune autre fonction (CA-1). | 0 |
+| 1 | Ouvre l'application (application installée directement, APK, DEC-021, sur le smartphone ; adresse web sur le PC). | ECR-010 A | Seule l'invitation à se connecter est affichée : un bouton, et ce que l'application demande à Google (identité, dossier « Done Juan », rien d'autre). Aucune donnée, aucune autre fonction (CA-1). | 0 |
 | 2 | Appuie sur « Continuer avec Google ». | ECR-010 A | Ouvre la connexion Google. | 1 |
 | 3 | Choisit son compte et accepte les accès. | Écran Google (hors maquette) | **Aucun avertissement « application non validée »** au lot 1 (ENF-08). | 1 à 2 |
 | 4 | Attend quelques secondes. | ECR-010 B | Étapes : compte identifié, dossier trouvé ou créé dans le Drive, récupération des données. Annulation possible. Moins de 10 s sur 4G. | 0 |
@@ -429,3 +429,4 @@ Incohérence après synchronisation (RG-049) : une tâche parente « Terminée �
 | 0.1 | 2026-10-20 | Steeve | Création : persona, parcours P-01 à P-06, diagrammes d'enchaînement. |
 | 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Parcours cibles P-01, P-03 à P-06 mis à jour des réponses Q-ERG-04 à 11. P-02 adapté au lot 1. Nouveaux parcours P-07 (première connexion), P-08 (déconnexion et changement de compte), P-09 (hors ligne et modifications non retenues), P-10 (reprise de session sur PC), P-11 (restaurer ou repartir de zéro), P-12 (supprimer les données de l'appareil), P-13 (sous-tâches, fin, abandon). Diagrammes 3.1 bis, 3.4 (v0.2), 3.5, 3.6, 3.7. Points ouverts PO-01 à 04 résolus, PO-05 à 09 ajoutés. |
 | 0.2.1 | 2026-10-21 | Steeve | Nom « Done Juan » (DEC-017) : application et dossier Drive (V-13), validation E6 de LOT-001 (DEC-018). |
+| 0.2.2 | 2026-10-21 | Steeve | Remarque RF-LOT-001-PEP-14 : P-07, étape 1, distribution Android par installation directe de l'APK (DEC-021) à la place de Google Play (DEC-005). |
