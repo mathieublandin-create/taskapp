@@ -9,25 +9,26 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 terminée (211 scénarios, dont 88 proposés ; CdC v0.6) ; E6 en préparation (dossier de validation) ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 terminée (211 scénarios, dont 88 proposés ; CdC v0.6) ; E6 validée (DEC-018) ; E7 en préparation (intégration des décisions par Pepper et Steeve) ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
-| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E6 | jarvis | Ajoutée par DEC-013 ; tests métiers rédigés ; attente validation commanditaire |
-| US-025 | Abandonner une tâche | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-001 | Créer et gérer un objectif | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-002 | Créer et gérer mes tâches | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Validée | E6 → E7 | pepper | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
+| US-025 | Abandonner une tâche | LOT-001 | Validée | E6 → E7 | pepper | Validée le 2026-10-21 (DEC-018) |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
 |---|---|---|---|---|
+| 2026-10-21 | E6 | LOT-001 : 10 US et décisions V-01 à V-23 (`ceremonies/validation-E6-LOT-001.md`) | **Validé** | Verbatim « oui pour tous » : 10 US validées, toutes les recommandations ★ retenues (dont V-06 option 2, V-12 oui, V-13 « Done Juan »), reformulation validée avec la correction « smartphone et PC » proposée par Jarvis, 3 exclusions validées. Confirmé par « reco pour tous ». |
 | 2026-10-21 | E4 | Réponses Q-ERG-12 à 15 | Reçues | Verbatim : « Q-ERG-12 : oui, Q-ERG-13 : toujours, Q-ERG-14 : oui, Q-ERG-15 : propose-moi 3 noms drôles avec des jeux de mots ». LOT-001 s'ouvre sur « Tâches » (2 onglets) ; abandon toujours confirmé ; modifications non retenues listées jusqu'à « Compris » ; nom de l'application : propositions soumises. |
 | 2026-10-21 | E1 | Réponses P1 Q-DEM001-39, 41, 42 | Reçues | Verbatim : « Q39-b; Q41-oui; Q42-1-non, proposer seulement l'option déconnexion et une autre option supprimer les données;Q42-2:a) » → DEC-013 à DEC-016 |
 | 2026-10-20 | E1 | ENF-05 et ENF-06 | Validées | Verbatim « ok pour enf-05 et enf-06 ». Restent à valider : reformulation du besoin et exclusions proposées — à représenter en E6 avec les US de LOT-001 (demande du commanditaire). |
@@ -44,6 +45,7 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-018 | 2026-10-21 | Validation E6 de LOT-001 | Les 10 US sont validées ; les règles proposées RG-044 b, RG-047 à 050, RG-054, les garde-fous de RG-055 et RG-056 a à c sont établies ; l'extension de RG-044 aux fichiers Drive modifiés à la main est retenue ; blocage seulement si le format des données diffère ; bandeau au-delà de 24 h hors ligne ; dossier Drive « Done Juan » ; les critères (P) sont retenus ; la reformulation est validée (hors ligne smartphone et PC) ; les exclusions sont validées. |
 | DEC-017 | 2026-10-21 | Q-ERG-15 Nom de l'application | « Done Juan » (verbatim : « option 2 ») |
 | DEC-013 | 2026-10-21 | Q-DEM001-39 Hors ligne sur PC | b) Le PC est utilisable hors ligne dès LOT-001 : US-031 intégrée au lot |
 | DEC-014 | 2026-10-21 | Q-DEM001-41 Délai d'une heure | Oui : le délai porte uniquement sur les données entre appareils ; la détection d'un créneau déplacé n'y est pas soumise |
@@ -63,7 +65,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
-- Nom « Done Juan » (DEC-017) à répercuter : maquettes et guides (Steeve), cahier des charges et US (Pepper), DAT (Starck), README. Nom du dossier Drive (« Objectifs et Tâches ») à revoir par Steeve en E7.
+- Nom « Done Juan » (DEC-017) à répercuter : maquettes et guides (Steeve), cahier des charges et US (Pepper), DAT (Starck), README. Dossier Drive « Done Juan » (DEC-018, V-13).
 - Pour Starck (refinement) : état lu / non lu de la liste « Modifications non retenues » (synchronisé ou local).
 - Test technique R1/R2 (`03-architecture/test-technique-R1-R2.md`) : nécessite des actions du commanditaire (projet Google Cloud, compte de test, téléphone Android, compte d'hébergement, 2 séances d'environ 1 h 30). Bloquant avant E9 de LOT-001.
 - Proposition de Starck à valider en E6 : étendre RG-044 aux fichiers Drive modifiés à la main (traités comme illisibles).
