@@ -101,7 +101,7 @@ Statut : Validée
 
 ## Impacts ergonomie
 
-*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2.5](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
 
 - **Écrans créés (partagés)** : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html), cadres H et I (PC) : session Google expirée, « Reprendre la synchronisation », deux onglets, fuseau.
 - **Écrans modifiés** : pied de la barre latérale de tous les écrans PC (indicateur avec libellé toujours visible) ; [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) et [ECR-007](../../02-ux/maquettes/ECR-007-detail-tache.html) pour la liste et le panneau.
@@ -112,7 +112,7 @@ Statut : Validée
   - session Google expirée (CA-5, F14) : état routinier (jeton d'une heure), donc **pas de bandeau** ; l'indicateur propose « Reprendre la synchronisation », **un clic**, et le travail continue ; fréquence à observer en recette E16 ;
   - **deux onglets** (cas limite) : les deux restent utilisables et identiques ; seul un onglet synchronise et l'autre le dit dans la feuille, sans message d'interruption ; reprise sans message si l'onglet qui synchronise est fermé ;
   - **première ouverture sans réseau** : le navigateur ne peut rien afficher, aucun écran n'est concevable ; l'information va dans le guide utilisateur (E17), ainsi que les avertissements « navigation privée » et « effacement des données du navigateur ».
-- **Rappel après 24 h (CA-10, RG-057, V-12)** : même bandeau que sur smartphone (US-018), placé en tête de la colonne de contenu, avec « ce PC » ; fermable, non bloquant. Mêmes propositions 1 et 2 que US-018 (point de départ : plus ancienne modification en attente ; accès Google perdu : un seul bandeau, celui de « Se reconnecter »), soumises au commanditaire. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J et L (déclinaison PC identique, non redessinée).
+- **Rappel après 24 h (CA-10, RG-057, V-12)** : même bandeau que sur smartphone (US-018), placé en tête de la colonne de contenu, avec « ce PC » ; fermable, non bloquant. Mêmes décisions que US-018 (DEC-025 : point de départ des 24 h, plus ancienne modification en attente ; accès Google perdu : un seul bandeau, celui de « Se reconnecter » ; « Masquer le rappel » réapparaît à la prochaine ouverture, Q-ERG-18 a). Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J et L (déclinaison PC identique, non redessinée).
   - **Distinction à tenir** : la session Google expirée sur PC (CA-5) reste sans bandeau, seul le rappel de 24 h et la perte d'accès en ont un.
 - **États** :
   - *vide* : voir US-022 ;

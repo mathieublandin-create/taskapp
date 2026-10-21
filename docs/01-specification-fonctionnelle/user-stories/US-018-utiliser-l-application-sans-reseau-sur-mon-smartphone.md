@@ -82,7 +82,7 @@ Statut : Validée
 
 ## Impacts ergonomie
 
-*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
+*Rédigé par Steeve (E4, 2026-10-21). Référentiel : [guide d'ergonomie v0.2.5](../../02-ux/guide-ergonomie.md), [parcours v0.2](../../02-ux/parcours-utilisateurs.md), maquettes ci-dessous. Synthèse du lot : `docs/lots/LOT-001.md`.*
 
 - **Écrans modifiés** : tous les écrans du smartphone (en-tête avec l'indicateur) ; exemples hors ligne dans [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) B, [ECR-008](../../02-ux/maquettes/ECR-008-liste-objectifs.html) E, [ECR-002](../../02-ux/maquettes/ECR-002-taches-priorisees.html) L3, [ECR-001](../../02-ux/maquettes/ECR-001-aujourdhui.html) B.
 - **Écran créé (partagé)** : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) B (modifications en attente).
@@ -95,10 +95,9 @@ Statut : Validée
   4. un toast unique au passage hors ligne ;
   5. aucun bandeau avant 24 h (rappel RG-057 ensuite, voir ci-dessous), aucun bouton désactivé (sauf « Synchroniser maintenant », avec son explication).
 - **Au retour du réseau (CA-4, CA-7)** : « Synchronisation… » puis « À jour », **sans toast** si tout s'est bien passé ; si des valeurs ont été écartées, point accent sur l'indicateur et toast « Voir » (voir US-017).
-- **Rappel après 24 h (CA-9, RG-057, V-12)** : bandeau d'attention (`Banner`, guide §4.9), non bloquant, fermable, sans action ; « Hors ligne depuis plus de 24 h · n modifications ne sont encore que sur ce smartphone. » Absent si aucune modification n'est en attente ; disparaît à l'enregistrement dans le Drive. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J.
-  - **Proposition 1 (point de départ des 24 h)** : *plus ancienne modification en attente*. Recommandée : le risque porte sur l'âge des données non enregistrées, et le bandeau ne sonne pas pour une modification de la veille au soir. Variante : début du hors ligne, plus simple à expliquer mais qui alerte aussitôt après une première modification faite tard dans une longue coupure.
-  - **Proposition 2 (accès Google perdu depuis plus de 24 h, bandeau « Se reconnecter » déjà affiché)** : *un seul bandeau*, celui de « Se reconnecter » (non fermable), complété de la phrase « n modifications ne sont encore que sur ce smartphone » ; pas de second bandeau empilé (ECR-011 L). Le rappel RG-057 est ainsi tenu sans doubler l'alerte.
-  - Ces deux points relèvent de RG-057 (règle métier non tranchée sur ces détails) : **questions pour le commanditaire**, via Pepper.
+- **Rappel après 24 h (CA-9, RG-057, V-12)** : bandeau d'attention (`Banner`, guide §4.9, `BAN-RAPPEL-24H`), non bloquant, fermable, sans action ; « Modifications en attente depuis plus de 24 h · n modifications ne sont encore que sur ce smartphone. » Absent si aucune modification n'est en attente ; disparaît à l'enregistrement dans le Drive. Fermé (« Masquer le rappel »), il réapparaît à la prochaine ouverture de l'application tant que des modifications sont en attente. Maquette : [ECR-011](../../02-ux/maquettes/ECR-011-synchronisation-et-compte.html) J.
+  - **Point de départ des 24 h (décision DEC-025, Q-ERG-16 b)** : la plus ancienne modification en attente. Le bandeau ne sonne donc pas pour une modification faite la veille au soir.
+  - **Accès Google perdu et modification en attente depuis plus de 24 h (décision DEC-025, Q-ERG-17 a)** : un seul bandeau, celui de « Se reconnecter » (non fermable), complété de la phrase « n modifications ne sont encore que sur ce smartphone » ; pas de second bandeau empilé (ECR-011 L). Le rappel RG-057 est ainsi tenu sans doubler l'alerte.
 - **États** :
   - *vide* : l'état vide d'un objectif ou des tâches fonctionne hors ligne ;
   - *chargement* : aucun écran d'attente à l'ouverture sans réseau (CA-1), données de l'appareil aussitôt ;
