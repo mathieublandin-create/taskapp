@@ -257,8 +257,7 @@ Fonctionnalité: Créer et gérer un objectif
       | élément          | information | valeur non retenue | valeur conservée   |
       | Publier le guide | délai       | 2027-01-31         | objectif supprimé  |
 
-  # Q-US-001-1 (E8) : la présence, dans la liste des modifications non retenues, d'une ligne pour le rattachement de « Annexe »
-  # et pour la création de « Version imprimable » sous l'objectif supprimé est soumise au commanditaire. S20 n'est pas modifié avant sa réponse.
+  # DEC-030 (Q-US-001-1 a) : le rattachement de « Annexe » et le placement de « Version imprimable » sous l'objectif supprimé sont signalés.
   @US-001 @RG-047 @RG-046 @LOT-001
   Scénario: S20 — Ce qui a été rattaché ou créé entre-temps sous l'objectif supprimé subit les conséquences de la suppression
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
@@ -275,6 +274,10 @@ Fonctionnalité: Créer et gérer un objectif
     Alors sur les deux appareils, l'objectif "Publier le guide" n'existe plus
     Et sur les deux appareils, la tâche "Annexe" existe sans objectif
     Et sur les deux appareils, "Version imprimable" est un objectif principal
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
+      | élément            | information | valeur non retenue    | valeur conservée  |
+      | Annexe             | objectifs   | Publier le guide      | objectif supprimé |
+      | Version imprimable | parent      | sous Publier le guide | objectif supprimé |
 
   # ---------------------------------------------------------------- Historique (CA-11, RG-050)
 

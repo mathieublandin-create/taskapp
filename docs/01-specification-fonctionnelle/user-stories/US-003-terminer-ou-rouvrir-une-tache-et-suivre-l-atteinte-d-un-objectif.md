@@ -51,7 +51,6 @@ Statut : Validée
 - Tâche terminée sur un appareil et abandonnée sur l'autre, avant échange : l'état le plus récent l'emporte (RG-036), et l'autre est signalé comme valeur écartée.
 - Objectif sans délai : son atteinte se calcule de la même façon.
 - Passage à l'heure d'été ou d'hiver : la journée reste celle de Paris, de minuit à minuit ; aucune date de fin n'est décalée.
-
 - Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée : l'action « rouvrir » n'est pas proposée ; il faut d'abord reprendre la tâche parente (US-025, CA-12 ; Q-US-025-2 a, DEC-030 ; US-025 S12b).
 
 ## Hors périmètre

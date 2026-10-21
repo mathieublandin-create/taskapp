@@ -225,6 +225,24 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | B       | intitulé    | A                  | B                |
     Et sur le smartphone, l'alerte "ALR-001" est affichée
 
+  @US-017 @RG-036 @LOT-001
+  Scénario: S12d — Heure changée pendant que l'appareil est sans réseau et l'application fermée : la modification non retenue est signalée
+    # DEC-030 (A8, Q-US-017-4) : limite acceptée de CA-13 (DAT §6.4, point 4). Rien n'est perdu sans avertissement (ENF-06).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Et que l'application est fermée sur le smartphone
+    Et que l'heure du smartphone est changée en retard de 25 h
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "A" existe avec le délai 2026-11-30
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
+      | élément | information | valeur non retenue | valeur conservée |
+      | A       | intitulé    | B                  | A                |
+
   # Seuil de l'horloge déréglée (CA-13) : l'avertissement n'est émis que si l'écart dépasse 24 h strictement.
   @US-017 @RG-036 @LOT-001
   Plan du scénario: S13a — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
@@ -431,6 +449,42 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Quand le réseau revient sur le smartphone
     Alors sur le smartphone, l'action "repartir de zéro" est disponible
+
+  @US-017 @RG-044 @LOT-001
+  Scénario: S22c — « Repartir de zéro » l'emporte sur « Restaurer » choisi en même temps sur l'autre appareil
+    # DEC-030 (Q-US-017-3 a) : complète RG-044. Les modifications non déposées de l'appareil qui avait choisi « restaurer » sont signalées.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
+    Et que le PC est sans réseau
+    Et que sur le PC, l'utilisateur a renommé l'objectif "Publier le guide" en "Publier le guide pratique"
+    Et que sur le PC, le message d'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
+    Quand sur le PC, l'utilisateur choisit de restaurer ses données
+    Et sur le smartphone, l'utilisateur choisit de repartir de zéro
+    Et l'utilisateur confirme
+    Et le réseau revient sur le PC
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, aucun objectif n'existe
+    Et le Drive du compte "A" ne contient pas l'objectif "Publier le guide"
+    Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
+    Et sur le PC, la liste des modifications non retenues contient :
+      | élément          | information | valeur non retenue        | valeur conservée                    |
+      | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+
+  @US-017 @RG-044 @LOT-001
+  Scénario: S22d — La question laissée en attente sur l'autre appareil disparaît d'elle-même après « Repartir de zéro »
+    # DEC-030 (Q-US-017-3 a) : « Décider plus tard » ne laisse pas de question orpheline.
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
+    Et que sur le PC, le message d'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
+    Quand sur le PC, l'utilisateur décide plus tard
+    Et sur le smartphone, l'utilisateur choisit de repartir de zéro
+    Et l'utilisateur confirme
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, aucun objectif n'existe
+    Et sur le PC, le message d'erreur "ERR-012" n'est pas affiché
+    Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
 
   @US-017 @RG-044 @LOT-001
   Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données

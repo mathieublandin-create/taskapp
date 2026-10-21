@@ -294,8 +294,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Alpha   | parent      | sous Bêta          | placement annulé |
       | Gamma   | parent      | sous Alpha         | placement annulé |
 
-  # Q-US-001-1 (E8) : la présence d'une ligne dans la liste des modifications non retenues pour la création de « Version imprimable »
-  # sous l'objectif supprimé est soumise au commanditaire. S19 n'est pas modifié avant sa réponse.
+  # DEC-030 (Q-US-001-1 a) : le placement de « Version imprimable » sous l'objectif supprimé est signalé.
   @US-023 @RG-047 @LOT-001
   Scénario: S19 — Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
@@ -307,6 +306,9 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'objectif "Publier le guide" n'existe plus
     Et sur les deux appareils, "Version imprimable" est un objectif principal
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient :
+      | élément            | information | valeur non retenue    | valeur conservée  |
+      | Version imprimable | parent      | sous Publier le guide | objectif supprimé |
 
   # ---------------------------------------------------------------- Historique (CA-11, RG-050)
 

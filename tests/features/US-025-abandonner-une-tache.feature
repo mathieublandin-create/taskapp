@@ -164,8 +164,6 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section B" est "à faire"
     Et l'état de la tâche "Section C" est "abandonnée"
 
-  # Q-US-025-2 (E8) : la réouverture d'une sous-tâche terminée dont la tâche parente est abandonnée est soumise au commanditaire.
-  # Aucun scénario n'est écrit pour ce cas avant sa réponse.
   @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S12 — La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée
     Étant donné les tâches suivantes :
@@ -173,6 +171,17 @@ Fonctionnalité: Abandonner une tâche
       | Chapitre 1 | abandonnée | 2026-11-30 |            |           |               |
       | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
     Alors l'action "reprendre" n'est pas proposée pour la tâche "Section A"
+
+  # DEC-030 (Q-US-025-2 a) : pas de réouverture directe ; il faut d'abord reprendre la tâche parente.
+  @US-025 @RG-027 @RG-023 @LOT-001
+  Scénario: S12b — La réouverture d'une sous-tâche terminée dont la tâche parente est abandonnée n'est pas proposée
+    Étant donné les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | abandonnée | 2026-11-30 |            |           |               |
+      | Section A  | terminée   | 2026-11-20 | 1 h        |           | Chapitre 1    |
+    Alors l'action "rouvrir" n'est pas proposée pour la tâche "Section A"
+    Quand l'utilisateur reprend la tâche "Chapitre 1"
+    Alors l'action "rouvrir" est proposée pour la tâche "Section A"
 
   @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S13 — Abandonner une sous-tâche seule recalcule l'estimation de la tâche parente et peut la rendre terminable
