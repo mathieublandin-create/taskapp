@@ -304,7 +304,7 @@ Aucune fonctionnalité livrée. L'existant documentaire se limite à la version 
 | Exclusions au statut « Proposé, à valider » | §4.3 | En attente |
 | Réponses aux questions résiduelles P1 Q-DEM001-21 à 29 | `questions-ouvertes.md` | **Reçues** le 2026-10-20, reportées en v0.4 |
 | Nouvelles questions P1 : Q-DEM001-41 (sens du délai d'une heure), Q-DEM001-42 (données conservées après déconnexion), Q-DEM001-39 (hors ligne sur le PC, passée en P1 par DEC-002) | `questions-ouvertes.md` | En attente |
-| Questions résiduelles P2 et P3 : Q-DEM001-30 à 38 et 40 | `questions-ouvertes.md` | En attente (lots ultérieurs) |
+| Questions résiduelles P2 et P3 : Q-DEM001-30 à 36, 38 et 40 (Q-DEM001-37 tranchée par DEC-012) | `questions-ouvertes.md` | En attente (lots ultérieurs) |
 | Règles proposées RG-047 à RG-050 et RG-054 (mention « heure de Paris ») ; partie proposée de RG-044 (« repartir de zéro », choix valable pour les deux appareils) ; précision « modifications concurrentes » de RG-036 | §7 | En attente (E6) |
 | Formulation des délais tenant compte des limites signalées par l'architecte : RG-017, ENF-02 (F1, F14) et RG-037 (F2) | §7, §8 | En attente (E6) |
 | ENF-05 et ENF-06 | §8 | **Validées** le 2026-10-20 |

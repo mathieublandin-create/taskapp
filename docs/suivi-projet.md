@@ -9,20 +9,20 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E2 validé ; E3 à lancer après intégration v0.4 par Pepper |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 en cours (Starck) ; questions P1 Q-39, 41, 42 au commanditaire |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E2 | pepper | Ajoutée par DEC-002 |
-| US-025 | Abandonner une tâche | LOT-001 | En analyse | E2 | — | Questions P1 ouvertes |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
+| US-025 | Abandonner une tâche | LOT-001 | En analyse | E3 | starck | CdC v0.4 intégré |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
@@ -56,7 +56,7 @@
 
 ## Points bloquants
 - Socle UX v0.1 rendu (Steeve) : questions ergonomiques Q-ERG-02 à 11 (`02-ux/guide-ergonomie.md` §12.1), non bloquantes pour LOT-001 ; demandes à Starck DAT-UX-09 et 13. E4 de LOT-001 et maquettes ECR-007, 008, 010, 011 à réaliser après validation E2.
-- Points F1 à F14 de Starck (DAT §8) à transmettre à Pepper avec les réponses P1 (impacts : RG-008, CA-7 de US-017, règles de réparation après fusion).
+- Points F1 à F14 de Starck : intégrés par Pepper (CdC v0.4). DAT à aligner sur RG-043 (données conservées à la déconnexion).
 - Socle technique : DAT v0.1 rendu, DS-01 à DS-20 tranchées au §11 (statut « Proposé », à valider). Anthony attendait de Starck les décisions DS-01 à DS-20 (`04-specification-technique/conventions.md` §15). Celles qui bloquent la conception de LOT-001 : DS-01, 02, 03, 05, 07, 10, 11, 14, 15, 16 et 19.
 - Points de testabilité PT-01 à PT-15 (`conventions.md` §14) : questions complémentaires pour Pepper et Starck, à traiter au refinement du lot concerné.
-- DEM-001 : réponses du commanditaire reçues le 2026-10-20 (reformulation et exclusions non explicitement validées) ; 20 questions ouvertes transmises le 2026-10-20 (`01-specification-fonctionnelle/questions-ouvertes.md`). Validation attendue aussi pour la reformulation du besoin (§2 du cahier des charges) et les exclusions (§4.2).
+- LOT-001 : questions P1 Q-DEM001-39, 41, 42 transmises au commanditaire ; règles proposées RG-044 b), 047 à 050, 054 et critères (P) à valider en E6, avec la reformulation et les exclusions.
