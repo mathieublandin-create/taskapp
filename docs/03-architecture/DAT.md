@@ -355,6 +355,7 @@ Done Juan/
   - « Repartir de zéro » crée une nouvelle génération.
   - Un appareil qui détient une génération différente signale ses modifications non déposées comme valeurs écartées, efface ses données locales du compte, puis relit le Drive.
   - Une erreur transitoire (`5xx`, `429`, réseau) n'est jamais interprétée comme une absence de données.
+  - Les valeurs écartées par ce changement de génération (modifications non déposées de l'appareil) sont réinscrites dans la liste « Modifications non retenues » **après** l'effacement local, afin de survivre à celui-ci (RG-044 b, RG-056).
 - **Sauvegarde** : Drive conserve l'historique des révisions de chaque fichier. Chaque appareil possède en outre une copie complète. Si les fichiers sont supprimés ou modifiés hors de l'application (Q-22.4), l'appareil le détecte (fichier absent ou invalide), avertit l'utilisateur et propose de **réécrire son état local**. C'est faisable sans coût particulier.
 - **Appareils obsolètes** : le fichier d'un appareil inactif depuis plus de 90 jours, par exemple une ancienne installation, est fusionné puis archivé. Les pierres tombales sont conservées en v1, car leur volume est négligeable.
 
