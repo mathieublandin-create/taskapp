@@ -50,11 +50,11 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et la tâche "Chapitre 1" n'a aucune sous-tâche
 
     Exemples:
-      | délai      | estimation | motif                |
-      |            | 1 h        | délai manquant       |
-      | 2026-11-20 |            | estimation manquante |
-      | 2026-11-20 | 0 h        | estimation invalide  |
-      | 2026-11-20 | 45 min     | estimation invalide  |
+      | délai      | estimation | motif   |
+      |            | 1 h        | ERR-021 |
+      | 2026-11-20 |            | ERR-022 |
+      | 2026-11-20 | 0 h        | ERR-023 |
+      | 2026-11-20 | 45 min     | ERR-023 |
 
   @US-024 @RG-003 @RG-029 @LOT-001
   Scénario: S04 — Aucun délai ni aucune estimation ne sont présélectionnés à la saisie d'une sous-tâche
@@ -96,7 +96,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | Section B  | à faire | 2026-11-25 | 1 h 30     |           | Chapitre 1    |
     Alors l'estimation de la tâche "Chapitre 1" est 2 h 30
     Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1" en 4 h
-    Alors la modification est refusée avec le motif "estimation calculée à partir des sous-tâches"
+    Alors la modification est refusée avec le motif "ERR-033"
     Et l'estimation de la tâche "Chapitre 1" est 2 h 30
 
   @US-024 @RG-023 @LOT-001
@@ -207,7 +207,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | Section A  | à faire | 2026-11-20 | 1 h        |                  | Chapitre 1    |
     Alors la tâche "Section A" est rattachée au seul objectif "Publier le guide"
     Quand l'utilisateur rattache la tâche "Section A" à l'objectif "Écrire"
-    Alors la modification est refusée avec le motif "objectifs hérités de la tâche parente"
+    Alors la modification est refusée avec le motif "ERR-034"
     Quand l'utilisateur rattache la tâche "Chapitre 1" à l'objectif "Écrire"
     Alors la tâche "Section A" est rattachée aux objectifs "Publier le guide" et "Écrire"
     Quand l'utilisateur détache la tâche "Chapitre 1" de l'objectif "Publier le guide"
@@ -223,7 +223,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | Section A  | à faire | 2026-11-20 | 1 h        |           | Chapitre 1    |
       | Section B  | à faire | 2026-11-25 | 1 h        |           | Chapitre 1    |
     Quand l'utilisateur termine la tâche "Chapitre 1"
-    Alors l'action est refusée avec le motif "2 sous-tâches restantes"
+    Alors l'action est refusée avec le motif "ERR-035"
     Quand l'utilisateur termine la tâche "Section A"
     Et l'utilisateur abandonne la tâche "Section B" et confirme
     Alors l'état de la tâche "Chapitre 1" est "à faire"
@@ -250,7 +250,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'opération est acceptée
     Et l'estimation de la tâche "Chapitre 1 : contexte" est 0 h
     Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1 : contexte" en 1 h
-    Alors la modification est refusée avec le motif "estimation calculée à partir des sous-tâches"
+    Alors la modification est refusée avec le motif "ERR-033"
     Et l'estimation de la tâche "Chapitre 1 : contexte" est 0 h
 
   @US-024 @RG-023 @RG-026 @LOT-001
@@ -274,7 +274,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Quand l'utilisateur crée une sous-tâche de la tâche "Chapitre 1" :
       | intitulé  | délai      | estimation |
       | Section A | 2026-11-20 | 1 h        |
-    Alors l'action est refusée avec le motif "tâche abandonnée"
+    Alors l'action est refusée avec le motif "ERR-032"
     Et la tâche "Chapitre 1" n'a aucune sous-tâche
 
   # ---------------------------------------------------------------- Suppression (CA-9)

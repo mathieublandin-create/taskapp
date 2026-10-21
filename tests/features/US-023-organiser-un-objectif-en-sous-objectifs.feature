@@ -121,7 +121,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et un objectif "Développer mon activité" sans délai
     Quand l'utilisateur place l'objectif "Publier le guide" sous l'objectif "Développer mon activité"
-    Alors l'action est refusée avec le motif "un seul niveau de sous-objectifs"
+    Alors l'action est refusée avec le motif "ERR-030 variante objectif-a-des-sous-objectifs"
     Et "Publier le guide" est un objectif principal
 
   @US-023 @RG-022 @LOT-001
@@ -133,9 +133,9 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Alors l'action est refusée avec le motif "<motif>"
 
     Exemples:
-      | objectif déplacé    | parent visé         | motif                            |
-      | Apprendre l'italien | Apprendre l'italien | objectif placé sous lui-même     |
-      | Apprendre l'italien | Version imprimable  | un seul niveau de sous-objectifs |
+      | objectif déplacé    | parent visé         | motif                                    |
+      | Apprendre l'italien | Apprendre l'italien | ERR-031                                  |
+      | Apprendre l'italien | Version imprimable  | ERR-030 variante cible-est-sous-objectif |
 
   @US-023 @RG-022 @LOT-001
   Scénario: S12 — Déplacer un sous-objectif sous son parent actuel est sans effet

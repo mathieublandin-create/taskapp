@@ -90,3 +90,12 @@ Tour 1 terminé. Un tour 2 sera mené après les corrections et les réponses du
   - Starck : ANT-17 `fuseauAppareil()` au port `Horloge`, ANT-19 conservation des champs inconnus (RG-058), ANT-20 exécution de `@ihm`, ANT-18 (pour information) ;
   - Steeve puis Pepper : ANT-21, codes de motif de refus ;
   - Jarvis : protection des branches GitHub (à proposer au commanditaire) et test technique R1, R2, R11.
+- **Tour 2, fait** :
+  - Starck : DAT v0.7 et ADR-009 (ANT-17 à 20) ;
+  - Steeve : catalogue v0.2.4 (codes ERR-023 et ERR-030 à 035, forme de MEN-HEURE-PARIS) ;
+  - Pepper : 20 motifs de refus remplacés par leurs codes, glossaire v1.1, 231 scénarios, 0 erreur de syntaxe.
+- **Reste à faire, mineur (Steeve)** :
+  - table §6.6.10 : US-001 S04 au lieu de S03 ;
+  - ajouter US-024 S16b ;
+  - documenter le format `"ERR-030 variante …"` utilisé dans les scénarios.
+- **Reste à faire, en attente du commanditaire** : RG-057 (Q-ERG-16 à 18), Q-LOT-1, Q-REF-1, Q-REF-2.

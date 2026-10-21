@@ -50,7 +50,7 @@ Fonctionnalité: Créer et gérer un objectif
   @US-001 @RG-002 @LOT-001
   Plan du scénario: S04 — Un intitulé vide est refusé
     Quand l'utilisateur crée un objectif sans délai dont l'intitulé est <intitulé>
-    Alors l'enregistrement est refusé avec le motif "intitulé manquant"
+    Alors l'enregistrement est refusé avec le motif "ERR-020"
     Et aucun objectif n'existe
 
     Exemples:

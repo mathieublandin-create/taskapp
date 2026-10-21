@@ -177,7 +177,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | Section C  | à faire    | 2026-11-25 | 1 h        |           | Chapitre 1    |
       | Section D  | abandonnée | 2026-11-25 | 1 h        |           | Chapitre 1    |
     Quand l'utilisateur termine la tâche "Chapitre 1"
-    Alors l'action est refusée avec le motif "2 sous-tâches restantes"
+    Alors l'action est refusée avec le motif "ERR-035"
     Et l'état de la tâche "Chapitre 1" est "à faire"
 
   @US-003 @RG-026 @RG-023 @LOT-001

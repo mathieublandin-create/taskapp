@@ -1,6 +1,6 @@
 # Glossaire d'étapes figé — tests métiers de LOT-001
 
-Version 1.0 — 2026-10-21 — Pepper (E7, remarques ANT-9, ANT-10, PEP-7, ANT-2, ANT-15). Ce fichier n'est pas lu par Cucumber (extension `.md`). Il fige le vocabulaire des étapes des dix fichiers `.feature` du lot : une étape qui n'y figure pas ne doit pas être écrite sans que Pepper ait mis ce glossaire à jour. Anthony en tire les définitions d'étapes (E9) ; Benjamin n'en crée pas d'autres.
+Version 1.1 — 2026-10-21 — Pepper (E7, remarques ANT-9, ANT-10, PEP-7, ANT-2, ANT-15 ; ANT-21 : motifs de refus rattachés aux codes du catalogue). Ce fichier n'est pas lu par Cucumber (extension `.md`). Il fige le vocabulaire des étapes des dix fichiers `.feature` du lot : une étape qui n'y figure pas ne doit pas être écrite sans que Pepper ait mis ce glossaire à jour. Anthony en tire les définitions d'étapes (E9) ; Benjamin n'en crée pas d'autres.
 
 Conventions :
 - `"…"` : texte entre guillemets (intitulé, nom de compte, libellé) ; `AAAA-MM-JJ` : date ; `HH:MM` : heure ; `durée` : « 30 min », « 1 h », « 2 h 30 », « 0 h » ; `n` : entier.
@@ -101,7 +101,7 @@ Les colonnes `opération` des `Exemples` ne prennent que ces formes. Les colonne
 - Alertes : `la tâche "X" porte une alerte de délai qui nomme l'objectif "X"` ; `l'objectif "X" porte une alerte de délai qui nomme l'objectif "X"`.
 - Drive : `le Drive du compte "X" contient l'objectif "X"` ; `… la tâche "X"` ; `… la tâche "X" à l'état "X"` ; `… exactement une fois` ; `le Drive contient la tâche "X"` ; `le Drive du compte "X" contient un dossier visible nommé "X"`.
 - Synchronisation : `sur le <appareil>, la tâche "X" porte la mention "MEN-ATTENTE"` ; `… l'objectif "X" porte la mention "MEN-ATTENTE"` ; `sur le <appareil>, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec n modification(s) en attente` ; `la liste des modifications non retenues contient :` + tableau (élément, information, valeur non retenue, valeur conservée) ; `la liste des modifications non retenues est vide` ; `l'indicateur de synchronisation est "SYN-INFO"`.
-- Refus et messages : `l'enregistrement est refusé avec le motif "X"` ; `la modification est refusée avec le motif "X"` ; `l'action est refusée avec le motif "X"` ; `la connexion échoue avec le motif "ERR-…"` (codes du §9) ; `une confirmation est demandée` suivi, si besoin, de `, qui annonce …` ou `, qui précise …`.
+- Refus et messages : `l'enregistrement est refusé avec le motif "ERR-…"` ; `la modification est refusée avec le motif "ERR-…"` ; `l'action est refusée avec le motif "ERR-…"` ; `la connexion échoue avec le motif "ERR-…"` (codes du §9). **Le motif d'un refus est toujours un code du §9, jamais un libellé en texte libre.** Plusieurs codes cumulés s'écrivent dans une même chaîne, séparés par `, ` et dans l'ordre du catalogue (`"ERR-021, ERR-022"`) ; la variante d'un code s'écrit `"ERR-030 variante <variante>"` ; `une confirmation est demandée` suivi, si besoin, de `, qui annonce …` ou `, qui précise …`.
 - Opération acceptée : `sur le <appareil>, l'opération est acceptée` ; `sur le <appareil>, la saisie n'est plus bloquée`.
 - Connexion : `sur le smartphone, l'application propose de créer un premier objectif et d'ajouter une première tâche` ; `sur le smartphone, le message d'erreur "ERR-001" ou "ERR-002" explique qu'une connexion à un compte Google est nécessaire pour utiliser l'application` ; `sur le smartphone, l'utilisateur est déconnecté sans confirmation` ; `sur le smartphone, l'utilisateur peut réessayer`.
 - Versions et Drive : `sur le <appareil>, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour` ; `l'action "Mettre à jour" est proposée` ; `aucune écriture n'a été faite dans le Drive par le smartphone` ; `le Drive du compte "X" ne contient pas l'objectif "X"` ; `les deux appareils affichent le même intitulé pour la tâche "X", "A" ou "B"` (convergence, sans préjuger de la valeur retenue).
@@ -140,14 +140,15 @@ Les colonnes `opération` des `Exemples` ne prennent que ces formes. Les colonne
 | `altération` | supprimées ; rendues illisibles |
 | `point d'entrée` | son adresse web ; l'application installée |
 | `écart d'horloge` | en retard ; en avance |
+| `motif` (colonne de refus : `l'enregistrement est refusé`, `la modification est refusée`, `l'action est refusée`) | uniquement les codes du §9 : un code seul, plusieurs codes séparés par `, `, ou `ERR-030 variante <variante>` (table de correspondance, guide §6.6.10) |
 | `écart` (horloge) et `sens` | `sens` : en retard ; en avance. `écart` : 24 h ; 24 h 1 min ; 25 h ; 23 h 59 min ; 5 min |
 | `opération`, `modification`, `action`, `changement`, `événement` (colonnes qui complètent « l'utilisateur … ») | uniquement les formes du §5 |
 | `résultat`, `alerte`, `présence`, `mention`, `état`, `état attendu` (colonnes qui complètent une assertion) | uniquement les formes du §6 (l'étape fixe le sujet ; la colonne ne donne que la fin de la phrase) |
 | `situation` (US-018 S16, US-031 S20) | une précondition du §1 ; ces deux scénarios restent à revoir après la réponse à Q-ERG-16 à 18 (RG-057) |
 
-## 9. Codes de motif de connexion
+## 9. Codes de motif (connexion et refus)
 
-Les codes sont ceux du catalogue de Steeve (guide d'ergonomie §6.6.8), qui fait foi pour les codes et les libellés. Un libellé peut évoluer, pas le code. Détail : US-022, section « Motifs de connexion ».
+Les codes sont ceux du catalogue de Steeve (guide d'ergonomie §6.6, qui fait foi pour les codes et les libellés) : `ERR-001` à `ERR-006` pour la connexion (§6.6.8), `ERR-020` à `ERR-035` pour les refus de saisie et de modification (§6.6). La correspondance « motif → code » des scénarios est au §6.6.10. Un libellé peut évoluer, pas le code. Détail des connexions : US-022, section « Motifs de connexion ».
 
 | Code | Situation |
 |---|---|
@@ -157,6 +158,16 @@ Les codes sont ceux du catalogue de Steeve (guide d'ergonomie §6.6.8), qui fait
 | `ERR-004` | Reconnexion après une déconnexion, sans réseau. |
 | `ERR-005` | Réseau coupé pendant la connexion. |
 | `ERR-006` | Drive désactivé ou indisponible pour le compte. |
+| `ERR-020` | Intitulé vide (objectif ou tâche). |
+| `ERR-021` | Délai non choisi à la saisie d'une tâche ou d'une sous-tâche. |
+| `ERR-022` | Estimation non choisie à la saisie d'une tâche ou d'une sous-tâche. |
+| `ERR-023` | Estimation de 0 h, ou non multiple de 30 min, saisie directement. |
+| `ERR-030` | Deuxième niveau de sous-objectifs. Variantes : `objectif-a-des-sous-objectifs` (l'objectif déplacé en a déjà) ; `cible-est-sous-objectif` (la cible est déjà un sous-objectif). |
+| `ERR-031` | Objectif placé sous lui-même. |
+| `ERR-032` | Ajout d'une sous-tâche à une tâche abandonnée. |
+| `ERR-033` | Modification de l'estimation d'une tâche qui a des sous-tâches (estimation calculée). |
+| `ERR-034` | Modification des objectifs d'une sous-tâche (objectifs hérités). |
+| `ERR-035` | Terminer une tâche qui a des sous-tâches restantes (n variable). |
 
 ## 10. Tags
 

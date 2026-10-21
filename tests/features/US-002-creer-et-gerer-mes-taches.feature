@@ -45,15 +45,15 @@ Fonctionnalité: Créer et gérer mes tâches
     Et aucune tâche n'existe
 
     Exemples:
-      | délai      | estimation | motif                            |
-      |            | 2 h        | délai manquant                   |
-      | 2026-11-30 |            | estimation manquante             |
-      |            |            | délai manquant, estimation manquante |
+      | délai      | estimation | motif            |
+      |            | 2 h        | ERR-021          |
+      | 2026-11-30 |            | ERR-022          |
+      |            |            | ERR-021, ERR-022 |
 
   @US-002 @RG-003 @LOT-001
   Plan du scénario: S04 — Une tâche à l'intitulé vide est refusée
     Quand l'utilisateur crée une tâche de délai 2026-11-30, estimée à 1 h, dont l'intitulé est <intitulé>
-    Alors l'enregistrement est refusé avec le motif "intitulé manquant"
+    Alors l'enregistrement est refusé avec le motif "ERR-020"
     Et aucune tâche n'existe
 
     Exemples:
@@ -80,7 +80,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation   | objectifs |
       | Chapitre 1 | 2026-11-30 | <estimation> |           |
-    Alors l'enregistrement est refusé avec le motif "estimation invalide"
+    Alors l'enregistrement est refusé avec le motif "ERR-023"
 
     Exemples:
       | estimation |
@@ -195,7 +195,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
       | Section A  | à faire | 2026-11-20 | 1 h        |           | Chapitre 1    |
     Quand l'utilisateur modifie l'estimation de la tâche "Chapitre 1" en 3 h
-    Alors la modification est refusée avec le motif "estimation calculée à partir des sous-tâches"
+    Alors la modification est refusée avec le motif "ERR-033"
     Et l'estimation de la tâche "Chapitre 1" est 1 h
 
   # ---------------------------------------------------------------- Retard (CA-10), délai sans heure, heure de Paris
