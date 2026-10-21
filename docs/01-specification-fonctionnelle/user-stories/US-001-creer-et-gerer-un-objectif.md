@@ -117,7 +117,28 @@ Statut : En analyse
 - **Questions et réserves** : l'importance (US-030) est hors lot ; le regroupement « Atteints » replié est une proposition de Steeve (E6).
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-001-creer-et-gerer-un-objectif.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-001-creer-et-gerer-un-objectif.feature`](../../../tests/features/US-001-creer-et-gerer-un-objectif.feature) — **21 scénarios, dont 9 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-001`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S02 (P), S04 (P) |
+| CA-2 | S03 (P) |
+| CA-3 | S06 (P) |
+| CA-4 | S07 |
+| CA-5 | S08, S09 |
+| CA-6 | S10 |
+| CA-7 | S11, S12, S13, S14 |
+| CA-8 | S15 |
+| CA-9 | S16, S17 (P), S18 |
+| CA-10 (RG-047) | S19 (P), S20 (P) |
+| CA-11 (RG-050) | S21 (P) |
+| Cas limite : intitulé vide ou blanc | S04 (P) |
+| Cas limite : intitulé en double | S05 (P) |
+| Cas limite : délai égal à la journée en cours ; changement d'heure du 25/10/2026 | S13 |
+| Cas limite : toutes les tâches abandonnées | S15 |
+| Cas limite : suppression du seul objectif d'une tâche | S16 |
+| Cas limite : voyage hors du fuseau de Paris | S14 |
+| Cas limite : modification sur deux appareils (RG-036) | US-017 S09, S10 |
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10, CA-11) sont soumis à la validation du commanditaire en E6.

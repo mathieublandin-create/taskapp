@@ -91,7 +91,28 @@ Statut : En analyse
 - **Questions et réserves** : Q-ERG-13 (confirmation toujours, ou seulement avec des sous-tâches).
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-025-abandonner-une-tache.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-025-abandonner-une-tache.feature`](../../../tests/features/US-025-abandonner-une-tache.feature) — **17 scénarios, dont 9 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-025`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S02, S03 (P) |
+| CA-2 | S04 (P) |
+| CA-3 | S05 |
+| CA-4 | S07 |
+| CA-5 | S08 |
+| CA-6 | S09, S10 (P) |
+| CA-7 | S11 (P) |
+| CA-8 | S12 (P) |
+| CA-9 | S13 |
+| CA-10 (RG-049) | S15 (P), S16 (P) |
+| CA-11 (RG-050) | S17 (P) |
+| Cas limite : abandonner une tâche terminée | S06 (P) |
+| Cas limite : dernière tâche non abandonnée d'un objectif | S07 |
+| Cas limite : abandon sur un appareil, modification sur l'autre | S14 |
+| Cas limite : sous-tâche ajoutée à une tâche abandonnée | US-024 S18 |
+| Changement d'heure du 25/10/2026, voyage | S03 (P) |
+
+Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée ; S01 et S02 ne sont pas tagués `@propose`. La date d'abandon (CA-1) et le contenu de la confirmation (CA-6) restent des propositions (S03, S10).
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10, CA-11) sont soumis à la validation du commanditaire en E6.

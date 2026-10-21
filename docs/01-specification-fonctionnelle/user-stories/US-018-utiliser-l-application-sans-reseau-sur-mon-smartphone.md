@@ -100,7 +100,25 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. Perte de l'accès Google (CA-8) : bandeau « Se reconnecter » (voir US-022 et ECR-011 D), travail inchangé.
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`](../../../tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature) — **14 scénarios, dont 4 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-018`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01 |
+| CA-2 | S02, S03, S04 |
+| CA-3 | S05 (P) |
+| CA-4 | S06 |
+| CA-5 | S09 |
+| CA-6 | S10 (P) |
+| CA-7 | S07, S08 (P) |
+| CA-8 | S11 |
+| Cas limite : première connexion sans réseau | S12 |
+| Cas limite : réseau perdu pendant une saisie | S13 (P) |
+| Cas limite : réseau intermittent | S14 |
+| Cas limite : suppression sur le PC pendant une modification hors ligne | S08 (P) |
+| Cas limite : Drive plein au retour du réseau | US-017 S29 |
+| Cas limite : mise à jour application fermée | US-017 S04 |
+| Heure de Paris hors ligne | S04 |
 
 ## Questions ouvertes
 Aucune. Q-DEM001-39 a été répondue le 2026-10-21 (b, DEC-013) : le PC fait l'objet de US-031, dans le même lot. Les critères (P) sont soumis à la validation du commanditaire en E6.

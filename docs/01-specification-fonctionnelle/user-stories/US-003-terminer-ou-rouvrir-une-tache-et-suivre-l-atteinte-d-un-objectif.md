@@ -108,7 +108,30 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature`](../../../tests/features/US-003-terminer-ou-rouvrir-une-tache-et-suivre-l-atteinte-d-un-objectif.feature) — **21 scénarios, dont 9 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-003`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S02, S03 |
+| CA-2 | S04 |
+| CA-3 | S06, S20 (P) |
+| CA-4 | S07 |
+| CA-5 | S08 (P) |
+| CA-6 | S09, S10 |
+| CA-7 | S11 |
+| CA-8 | S12 |
+| CA-9 | S13 (P), S14 (P) |
+| CA-10 | S15 |
+| CA-11 | S16 (P) |
+| CA-12 (RG-049) | S18 (P), S19 (P) |
+| CA-13 (RG-050) | S20 (P) |
+| Cas limite : terminer une tâche déjà terminée | S05 |
+| Cas limite : terminée sur un appareil, abandonnée sur l'autre | S17 (P) |
+| Cas limite : objectif sans délai | S11 |
+| Cas limite : changement d'heure du 25/10/2026 | S03 |
+| RG-054 (mention « heure de Paris » sur la date de fin) | S21 (P) |
+
+Remarque : l'exemple de CA-1 (10 mars, 23 h à New York, soit 4 h à Paris) n'est exact qu'en 2026 ; en 2027, l'écart est de 6 h ce jour-là (5 h à Paris). Les scénarios S02 et S03 utilisent des dates vérifiées (2026-11-10 et 2026-10-25). Il faudra préciser l'année de l'exemple au prochain passage en E1.
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-12, CA-13) sont soumis à la validation du commanditaire en E6.

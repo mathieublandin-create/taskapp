@@ -132,7 +132,30 @@ Statut : En analyse
 - **Questions et réserves** : Q-ERG-15 (nom de l'application) : tranchée par DEC-017, l'application s'appelle « Done Juan » ; le nom du dossier du Drive (« Objectifs et Tâches ») est à revoir par Steeve en E7. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-022-se-connecter-avec-mon-compte-google.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature) — **23 scénarios, dont 10 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-022`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S02 |
+| CA-2 | S03, S04 (P) |
+| CA-3 | S05 |
+| CA-4 | S06 |
+| CA-5 | S07 (P) |
+| CA-6 | S08, S09 (P), S10 |
+| CA-7 | S11 |
+| CA-8 | S13 |
+| CA-9 | S14 |
+| CA-10 (RG-055) | S10, S15 (P), S16 (P), S17 (P), S18 (P), S19 (P) |
+| Cas limite : première connexion sans réseau ; réseau interrompu | S20 (P) |
+| Cas limite : Drive indisponible ou désactivé | S21 |
+| Cas limite : accès retiré pendant l'utilisation | S12 |
+| Cas limite : session Google expirée sur PC | S23 |
+| Cas limite : reconnexion sans réseau | S22 (P) |
+| Cas limite : données du compte A supprimables seulement par A | S19 (P) |
+| Cas limite : suppression sur un appareil pas encore entièrement chargé | S15 (P) (le Drive n'est jamais touché) |
+| Cas limite : distinction avec « repartir de zéro » | S15 (P) ; US-017 S21 (P) |
+
+Nom de l'application : « Done Juan » (DEC-017), utilisé dans les scénarios. Le dossier du Drive garde le nom « Objectifs et Tâches » (S05), à revoir par Steeve en E7.
 
 ## Questions ouvertes
 Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déroulement proposé de CA-10 et les autres critères (P) sont soumis à la validation du commanditaire en E6.

@@ -100,7 +100,24 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle.
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature`](../../../tests/features/US-023-organiser-un-objectif-en-sous-objectifs.feature) — **20 scénarios, dont 8 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-023`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01 |
+| CA-2 | S02, S03 (P) |
+| CA-3 | S04 |
+| CA-4 | S05, S06 |
+| CA-5 | S07, S08 |
+| CA-6 | S09, S10 (P), S11 |
+| CA-7 | S13, S14 |
+| CA-8 | S15 |
+| CA-9 (RG-048) | S16 (P), S17 (P), S18 (P) |
+| CA-10 (RG-047) | S19 (P) |
+| CA-11 (RG-050) | S20 (P) |
+| Cas limite : un des délais absent ; délais égaux | S05 |
+| Cas limite : déplacement sous le parent actuel | S12 (P) |
+| Cas limite : sous-objectif atteint, parent avec tâches à faire | S13 |
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-9 à CA-11) sont soumis à la validation du commanditaire en E6.

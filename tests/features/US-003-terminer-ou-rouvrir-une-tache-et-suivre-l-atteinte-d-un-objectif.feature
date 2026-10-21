@@ -18,7 +18,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Terminer (CA-1, CA-2)
 
   @US-003 @RG-026 @RG-008 @RG-053 @LOT-001
-  Scénario: Terminer une tâche conserve la journée de Paris comme date de fin
+  Scénario: S01 — Terminer une tâche conserve la journée de Paris comme date de fin
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -26,7 +26,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors la tâche "Chapitre 1" est "terminée" avec la date de fin 2026-10-21
 
   @US-003 @RG-026 @RG-008 @RG-053 @LOT-001
-  Scénario: En voyage, la date de fin est la journée de Paris
+  Scénario: S02 — En voyage, la date de fin est la journée de Paris
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -36,7 +36,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors la tâche "Chapitre 1" est "terminée" avec la date de fin 2026-11-11
 
   @US-003 @RG-026 @RG-008 @RG-053 @LOT-001
-  Plan du scénario: La date de fin reste juste la nuit du passage à l'heure d'hiver (25/10/2026)
+  Plan du scénario: S03 — La date de fin reste juste la nuit du passage à l'heure d'hiver (25/10/2026)
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -57,7 +57,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | UTC                  | 2026-10-25 | 23:30 | 2026-10-26  |
 
   @US-003 @RG-026 @RG-023 @LOT-001
-  Scénario: Aucune tâche n'est terminée automatiquement, même quand toutes ses sous-tâches le sont
+  Scénario: S04 — Aucune tâche n'est terminée automatiquement, même quand toutes ses sous-tâches le sont
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -70,7 +70,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors la tâche "Chapitre 1" est "terminée" avec la date de fin 2026-10-21
 
   @US-003 @RG-026 @LOT-001
-  Scénario: Terminer une tâche déjà terminée n'est pas proposé
+  Scénario: S05 — Terminer une tâche déjà terminée n'est pas proposé
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 | 2 h        |           |               |
@@ -79,7 +79,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Rouvrir (CA-3)
 
   @US-003 @RG-026 @LOT-001
-  Scénario: Rouvrir une tâche terminée
+  Scénario: S06 — Rouvrir une tâche terminée
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 | 2 h        |           |               |
@@ -90,7 +90,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Atteinte d'un objectif (CA-4 à CA-7)
 
   @US-003 @RG-025 @LOT-001
-  Plan du scénario: Un objectif est atteint quand ses tâches non abandonnées sont terminées et ses sous-objectifs atteints
+  Plan du scénario: S07 — Un objectif est atteint quand ses tâches non abandonnées sont terminées et ses sous-objectifs atteints
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et l'objectif "Publier le guide" a <a> tâche(s) à faire, <t> tâche(s) terminée(s) et <ab> tâche(s) abandonnée(s)
     Et l'objectif "Publier le guide" a un sous-objectif <sous-objectif>
@@ -107,7 +107,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | 0 | 0 | 0  | à décliner en tâches    | en cours             |
 
   @US-003 @RG-025 @RG-023 @LOT-001 @propose
-  Scénario: Une sous-tâche à faire empêche l'atteinte de l'objectif de sa tâche parente
+  Scénario: S08 — Une sous-tâche à faire empêche l'atteinte de l'objectif de sa tâche parente
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
@@ -121,7 +121,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors l'état de l'objectif "Publier le guide" est "atteint"
 
   @US-003 @RG-025 @LOT-001
-  Plan du scénario: L'état d'un objectif est recalculé à chaque événement de ses tâches
+  Plan du scénario: S09 — L'état d'un objectif est recalculé à chaque événement de ses tâches
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
@@ -142,7 +142,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | à faire    | supprime la tâche "Chapitre 1" et confirme                    | atteint      |
 
   @US-003 @RG-025 @RG-022 @LOT-001
-  Scénario: L'état d'un objectif est recalculé quand un de ses sous-objectifs change d'état
+  Scénario: S10 — L'état d'un objectif est recalculé quand un de ses sous-objectifs change d'état
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et les tâches suivantes :
@@ -154,7 +154,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et l'état de l'objectif "Publier le guide" est "atteint"
 
   @US-003 @RG-025 @RG-001 @LOT-001
-  Scénario: Une tâche rattachée à plusieurs objectifs compte comme terminée pour chacun d'eux
+  Scénario: S11 — Une tâche rattachée à plusieurs objectifs compte comme terminée pour chacun d'eux
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Développer mon activité" sans délai
     Et les tâches suivantes :
@@ -167,7 +167,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Tâche parente (CA-8, CA-9)
 
   @US-003 @RG-023 @LOT-001
-  Scénario: Une tâche parente qui a des sous-tâches restantes ne peut pas être terminée
+  Scénario: S12 — Une tâche parente qui a des sous-tâches restantes ne peut pas être terminée
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire    | 2026-11-30 |            |           |               |
@@ -180,7 +180,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et l'état de la tâche "Chapitre 1" est "à faire"
 
   @US-003 @RG-026 @RG-023 @LOT-001 @propose
-  Scénario: Rouvrir une sous-tâche d'une tâche parente terminée rouvre aussi la tâche parente, après confirmation
+  Scénario: S13 — Rouvrir une sous-tâche d'une tâche parente terminée rouvre aussi la tâche parente, après confirmation
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 |            |           |               |
@@ -192,7 +192,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et l'état de la tâche "Chapitre 1" est "à faire"
 
   @US-003 @RG-026 @RG-023 @LOT-001 @propose
-  Scénario: Renoncer à la réouverture d'une sous-tâche d'une tâche parente terminée ne change rien
+  Scénario: S14 — Renoncer à la réouverture d'une sous-tâche d'une tâche parente terminée ne change rien
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 |            |           |               |
@@ -204,7 +204,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Retard (CA-10) et filtres (CA-11)
 
   @US-003 @RG-045 @RG-026 @LOT-001
-  Scénario: Une tâche terminée après son délai n'est pas en retard, mais le redevient une fois rouverte
+  Scénario: S15 — Une tâche terminée après son délai n'est pas en retard, mais le redevient une fois rouverte
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-10-19 | 30 min     |           |               |
@@ -215,7 +215,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors la tâche "Payer la facture" est en retard
 
   @US-003 @RG-026 @LOT-001 @propose
-  Plan du scénario: Les tâches peuvent être filtrées selon qu'elles sont à faire ou terminées
+  Plan du scénario: S16 — Les tâches peuvent être filtrées selon qu'elles sont à faire ou terminées
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Plan       | terminée | 2026-11-01 | 1 h        |           |               |
@@ -231,7 +231,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Deux appareils : conflits et incohérence (CA-12, RG-049 proposée)
 
   @US-003 @RG-036 @RG-056 @LOT-001 @propose
-  Scénario: Tâche terminée sur un appareil et abandonnée sur l'autre : l'état le plus récent l'emporte et l'autre est signalé
+  Scénario: S17 — Tâche terminée sur un appareil et abandonnée sur l'autre : l'état le plus récent l'emporte et l'autre est signalé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
@@ -248,7 +248,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | Chapitre 1 | état        | terminée           | abandonnée       |
 
   @US-003 @RG-049 @RG-025 @LOT-001 @propose
-  Scénario: Une tâche parente terminée alors qu'une sous-tâche a été rouverte sur l'autre appareil est signalée, sans correction automatique
+  Scénario: S18 — Une tâche parente terminée alors qu'une sous-tâche a été rouverte sur l'autre appareil est signalée, sans correction automatique
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
@@ -266,7 +266,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et l'état de l'objectif "Publier le guide" est "en cours"
 
   @US-003 @RG-049 @LOT-001 @propose
-  Plan du scénario: L'incohérence d'une tâche parente terminée est résolue par l'utilisateur
+  Plan du scénario: S19 — L'incohérence d'une tâche parente terminée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", terminée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
     Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
@@ -280,7 +280,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
   # ---------------------------------------------------------------- Historique (CA-3, CA-13, RG-050 proposée)
 
   @US-003 @RG-050 @RG-026 @LOT-001 @propose
-  Scénario: La fin et la réouverture d'une tâche sont conservées dans l'historique, avec la date de fin précédente
+  Scénario: S20 — La fin et la réouverture d'une tâche sont conservées dans l'historique, avec la date de fin précédente
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -291,3 +291,20 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | événement   | journée    | avant      | après      |
       | fin         | 2026-10-21 | à faire    | terminée, date de fin 2026-10-21 |
       | réouverture | 2026-10-23 | terminée, date de fin 2026-10-21 | à faire |
+
+  # ---------------------------------------------------------------- Mention « heure de Paris » (RG-054 proposée)
+
+  @US-003 @RG-054 @RG-053 @LOT-001 @propose
+  Plan du scénario: S21 — La date de fin est accompagnée de la mention « heure de Paris » seulement si l'appareil est dans un autre fuseau
+    Étant donné les tâches suivantes :
+      | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
+    Et que le smartphone est réglé sur le fuseau "<fuseau>"
+    Quand l'utilisateur termine la tâche "Chapitre 1"
+    Alors la date de fin de la tâche "Chapitre 1" <mention> de la mention "heure de Paris"
+    Et le délai de la tâche "Chapitre 1" n'est jamais accompagné de la mention "heure de Paris"
+
+    Exemples:
+      | fuseau           | mention              |
+      | Europe/Paris     | n'est pas accompagnée |
+      | America/New_York | est accompagnée      |

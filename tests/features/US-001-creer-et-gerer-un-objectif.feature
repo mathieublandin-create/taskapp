@@ -23,28 +23,28 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Création (CA-1, CA-2)
 
   @US-001 @RG-002 @LOT-001
-  Scénario: Créer un objectif avec un délai
+  Scénario: S01 — Créer un objectif avec un délai
     Quand l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Alors l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et l'état de l'objectif "Publier le guide" est "à décliner en tâches"
     Et l'objectif "Publier le guide" n'est pas en retard
 
   @US-001 @RG-002 @LOT-001 @propose
-  Scénario: La description d'un objectif est facultative
+  Scénario: S02 — La description d'un objectif est facultative
     Quand l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15 avec la description "Version imprimable comprise"
     Et l'utilisateur crée un objectif "Courir un semi-marathon" de délai 2027-04-30 sans description
     Alors l'objectif "Publier le guide" a la description "Version imprimable comprise"
     Et l'objectif "Courir un semi-marathon" existe sans description
 
   @US-001 @RG-002 @LOT-001 @propose
-  Scénario: Un objectif sans délai est accepté et affiché « sans délai »
+  Scénario: S03 — Un objectif sans délai est accepté et affiché « sans délai »
     Quand l'utilisateur crée un objectif "Apprendre l'italien" sans délai
     Alors l'objectif "Apprendre l'italien" existe sans délai
     Et l'objectif "Apprendre l'italien" est affiché avec la mention "sans délai"
     Et l'objectif "Apprendre l'italien" n'est pas en retard
 
   @US-001 @RG-002 @LOT-001 @propose
-  Plan du scénario: Un intitulé vide est refusé
+  Plan du scénario: S04 — Un intitulé vide est refusé
     Quand l'utilisateur crée un objectif sans délai dont l'intitulé est <intitulé>
     Alors l'enregistrement est refusé avec le motif "intitulé manquant"
     Et aucun objectif n'existe
@@ -55,7 +55,7 @@ Fonctionnalité: Créer et gérer un objectif
       | composé uniquement d'espaces |
 
   @US-001 @RG-002 @LOT-001 @propose
-  Scénario: Deux objectifs peuvent porter le même intitulé
+  Scénario: S05 — Deux objectifs peuvent porter le même intitulé
     Étant donné un objectif "Santé" sans délai
     Quand l'utilisateur crée un objectif "Santé" de délai 2027-06-30
     Alors il existe 2 objectifs d'intitulé "Santé"
@@ -63,7 +63,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Consultation (CA-3, CA-4)
 
   @US-001 @RG-025 @RG-045 @LOT-001 @propose
-  Scénario: La liste des objectifs affiche l'état, le délai, le retard et la progression en tâches directes
+  Scénario: S06 — La liste des objectifs affiche l'état, le délai, le retard et la progression en tâches directes
     Étant donné un objectif "Publier le guide" de délai 2026-10-15
     Et un objectif "Apprendre l'italien" sans délai
     Et les tâches suivantes :
@@ -79,7 +79,7 @@ Fonctionnalité: Créer et gérer un objectif
       | Apprendre l'italien | sans délai | à décliner en tâches | non       | 0                | 0                      |
 
   @US-001 @RG-001 @RG-022 @LOT-001
-  Scénario: Le détail d'un objectif présente ses informations, ses tâches et ses sous-objectifs
+  Scénario: S07 — Le détail d'un objectif présente ses informations, ses tâches et ses sous-objectifs
     Étant donné un objectif "Publier le guide" de délai 2026-12-15 avec la description "Version imprimable comprise"
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et les tâches suivantes :
@@ -94,7 +94,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Modification (CA-5, CA-6)
 
   @US-001 @RG-004 @RG-002 @LOT-001
-  Plan du scénario: Modifier un objectif à tout moment
+  Plan du scénario: S08 — Modifier un objectif à tout moment
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Quand l'utilisateur <modification>
     Alors l'objectif <résultat>
@@ -107,13 +107,13 @@ Fonctionnalité: Créer et gérer un objectif
       | retire le délai de l'objectif "Publier le guide"                       | "Publier le guide" existe sans délai                      |
 
   @US-001 @RG-004 @RG-002 @LOT-001
-  Scénario: Ajouter un délai à un objectif qui n'en avait pas
+  Scénario: S09 — Ajouter un délai à un objectif qui n'en avait pas
     Étant donné un objectif "Apprendre l'italien" sans délai
     Quand l'utilisateur modifie le délai de l'objectif "Apprendre l'italien" en 2027-06-30
     Alors l'objectif "Apprendre l'italien" existe avec le délai 2027-06-30
 
   @US-001 @RG-024 @LOT-001
-  Plan du scénario: Les alertes de délai des tâches sont recalculées quand le délai de l'objectif change
+  Plan du scénario: S10 — Les alertes de délai des tâches sont recalculées quand le délai de l'objectif change
     Étant donné un objectif "Publier le guide" <délai initial de l'objectif>
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs        | tâche parente |
@@ -132,13 +132,13 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Retard (CA-7) et heure de Paris
 
   @US-001 @RG-002 @RG-045 @LOT-001
-  Scénario: Un délai déjà dépassé est accepté et l'objectif est aussitôt en retard
+  Scénario: S11 — Un délai déjà dépassé est accepté et l'objectif est aussitôt en retard
     Quand l'utilisateur crée un objectif "Déclarer les impôts" de délai 2026-10-20
     Alors l'objectif "Déclarer les impôts" existe avec le délai 2026-10-20
     Et l'objectif "Déclarer les impôts" est en retard
 
   @US-001 @RG-045 @RG-025 @LOT-001
-  Plan du scénario: Un objectif cesse d'être en retard
+  Plan du scénario: S12 — Un objectif cesse d'être en retard
     Étant donné un objectif "Déclarer les impôts" de délai 2026-10-20
     Et les tâches suivantes :
       | intitulé           | état    | délai      | estimation | objectifs           | tâche parente |
@@ -155,7 +155,7 @@ Fonctionnalité: Créer et gérer un objectif
       | modifie le délai de l'objectif "Déclarer les impôts" en 2026-11-05    |
 
   @US-001 @RG-045 @RG-008 @RG-053 @LOT-001
-  Plan du scénario: Le retard d'un objectif bascule à minuit heure de Paris, y compris la nuit du passage à l'heure d'hiver
+  Plan du scénario: S13 — Le retard d'un objectif bascule à minuit heure de Paris, y compris la nuit du passage à l'heure d'hiver
     Étant donné un objectif "Déclarer les impôts" de délai 2026-10-25
     Et que nous sommes le <date> à <heure> heure de Europe/Paris
     Alors l'objectif "Déclarer les impôts" <résultat>
@@ -167,7 +167,7 @@ Fonctionnalité: Créer et gérer un objectif
       | 2026-10-26 | 00:00 | est en retard       |
 
   @US-001 @RG-045 @RG-008 @RG-053 @LOT-001
-  Plan du scénario: En voyage, le retard suit la journée de Paris et non celle du lieu
+  Plan du scénario: S14 — En voyage, le retard suit la journée de Paris et non celle du lieu
     Étant donné un objectif "Déclarer les impôts" de délai 2026-11-10
     Et que le smartphone est réglé sur le fuseau "America/New_York"
     Et que nous sommes le 2026-11-10 à <heure locale> heure de America/New_York
@@ -182,7 +182,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- État calculé (CA-8)
 
   @US-001 @RG-025 @LOT-001
-  Plan du scénario: L'état d'un objectif sans sous-objectif est calculé, jamais saisi
+  Plan du scénario: S15 — L'état d'un objectif sans sous-objectif est calculé, jamais saisi
     Étant donné un objectif "Santé" sans délai
     Et l'objectif "Santé" a <a> tâche(s) à faire, <t> tâche(s) terminée(s) et <ab> tâche(s) abandonnée(s)
     Alors l'état de l'objectif "Santé" est "<état>"
@@ -198,7 +198,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Suppression (CA-9)
 
   @US-001 @RG-046 @LOT-001
-  Scénario: Supprimer un objectif détache ses tâches et promeut ses sous-objectifs
+  Scénario: S16 — Supprimer un objectif détache ses tâches et promeut ses sous-objectifs
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Écrire" sans délai
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -214,7 +214,7 @@ Fonctionnalité: Créer et gérer un objectif
     Et "Version imprimable" est un objectif principal
 
   @US-001 @RG-046 @LOT-001 @propose
-  Scénario: La confirmation de suppression annonce le nombre de tâches détachées et de sous-objectifs concernés
+  Scénario: S17 — La confirmation de suppression annonce le nombre de tâches détachées et de sous-objectifs concernés
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et l'objectif "Publier le guide" a 2 tâche(s) à faire, 1 tâche(s) terminée(s) et 0 tâche(s) abandonnée(s)
@@ -222,7 +222,7 @@ Fonctionnalité: Créer et gérer un objectif
     Alors une confirmation est demandée, qui annonce 3 tâches détachées et 1 sous-objectif devenu objectif principal
 
   @US-001 @RG-046 @LOT-001
-  Scénario: Renoncer à la suppression d'un objectif ne change rien
+  Scénario: S18 — Renoncer à la suppression d'un objectif ne change rien
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et l'objectif "Publier le guide" a 1 tâche(s) à faire, 0 tâche(s) terminée(s) et 0 tâche(s) abandonnée(s)
     Quand l'utilisateur supprime l'objectif "Publier le guide" et renonce
@@ -232,7 +232,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Suppression concurrente (CA-10, RG-047 proposée)
 
   @US-001 @RG-047 @RG-056 @LOT-001 @propose
-  Scénario: La suppression d'un objectif l'emporte sur une modification plus récente faite sur l'autre appareil
+  Scénario: S19 — La suppression d'un objectif l'emporte sur une modification plus récente faite sur l'autre appareil
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que le smartphone est sans réseau
@@ -246,7 +246,7 @@ Fonctionnalité: Créer et gérer un objectif
       | Publier le guide | délai       | 2027-01-31         | objectif supprimé  |
 
   @US-001 @RG-047 @RG-046 @LOT-001 @propose
-  Scénario: Ce qui a été rattaché ou créé entre-temps sous l'objectif supprimé subit les conséquences de la suppression
+  Scénario: S20 — Ce qui a été rattaché ou créé entre-temps sous l'objectif supprimé subit les conséquences de la suppression
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
@@ -265,7 +265,7 @@ Fonctionnalité: Créer et gérer un objectif
   # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
 
   @US-001 @RG-050 @LOT-001 @propose
-  Scénario: La création, le changement de délai et la suppression d'un objectif sont conservés dans l'historique
+  Scénario: S21 — La création, le changement de délai et la suppression d'un objectif sont conservés dans l'historique
     Quand l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
     Et l'utilisateur modifie le délai de l'objectif "Publier le guide" en 2027-01-31

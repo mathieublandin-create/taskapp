@@ -116,7 +116,26 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **18 scénarios, dont 8 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01 |
+| CA-2 | S02, S03 |
+| CA-3 | S04 (P) |
+| CA-4 | S05 |
+| CA-5 | S06, S07 |
+| CA-6 | S08 |
+| CA-7 | S09 (P) |
+| CA-8 | S10, S11 (P), S12 (P) |
+| CA-9 | S13 |
+| Cas limite : première ouverture sans réseau | S14 (P) |
+| Cas limite : données du navigateur effacées | S15 (P) |
+| Cas limite : deux onglets | S16 (P) |
+| Cas limite : navigation privée | **Non scénarisé** : le critère n'énonce qu'une absence de garantie, sans comportement vérifiable ; information portée par le guide utilisateur |
+| Cas limite : réseau perdu pendant une saisie | S17 (P) |
+| Cas limite : réseau intermittent | S18 |
+| Cas limite : mise à jour application fermée | US-017 S04 |
 
 ## Questions ouvertes
 Aucune. Les critères (P) sont soumis à la validation du commanditaire en E6.

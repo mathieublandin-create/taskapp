@@ -148,7 +148,32 @@ Statut : En analyse
 - **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères (P) de CA-3, CA-9 et CA-11 attendent la validation de E6 ; les maquettes les appliquent.
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **30 scénarios, dont 15 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01 (P) |
+| CA-2 | S02, S03, S04 |
+| CA-3 | S04, S05 (P), S06 |
+| CA-4 | S07 |
+| CA-5 | S08 |
+| CA-6 | S09, S10 |
+| CA-7 | S17 ; détail : US-018, US-031 |
+| CA-8 | S10, S11 |
+| CA-9 (RG-044) | S18 (P), S19 (P), S20, S21 (P), S22 (P), S23 |
+| CA-10 (RG-047 à RG-049) | S24 (P), S25 (P), S26 (P) ; détail (tous P) : US-001 S19-S20, US-002 S23, US-023 S16-S19, US-024 S20-S22, US-003 S18-S19, US-025 S15-S16 |
+| CA-11 (RG-054) | S27 (P) ; US-003 S21 (P) |
+| RG-056 (modifications non retenues, point « à lire ») | S14, S15 (P), S16 (P) |
+| Cas limite : Drive plein | S29 (P) |
+| Cas limite : fuseaux différents sur les deux appareils, voyage | S28 |
+| Cas limite : horloge déréglée (quelques minutes ; plus de 24 h) | S12, S13 (P) |
+| Cas limite : versions différentes | S30 (voir point d'arbitrage ci-dessous) |
+| Cas limite : fichiers du Drive modifiés mais restés lisibles | **Non couvert** : en attente d'arbitrage (voir ci-dessous) |
+| Session Google expirée sur PC (F14) | S06 ; US-031 S06, S07 ; US-022 S23 |
+
+**Points d'arbitrage relevés en E5** :
+- *Versions différentes* : le cas limite (P) de l'US prévoit de bloquer la saisie dès que la version de l'application diffère ; l'architecte (E3) recommande de ne bloquer que si le format des données diffère. S30 ne couvre que le terrain commun (format plus récent illisible : invitation à mettre à jour, sans perte). La formulation du cas limite est à trancher en E6.
+- *Fichiers du Drive modifiés mais restés lisibles* : l'architecte recommande d'étendre RG-044 à ce cas. Cela modifierait une règle établie : à soumettre au commanditaire en E6. Aucun scénario n'est rédigé tant que la décision n'est pas prise.
 
 ## Questions ouvertes
 Aucune. Q-DEM001-41 (DEC-014) et Q-DEM001-39 (DEC-013) ont été répondues le 2026-10-21. Les critères (P) et ceux qui appliquent une règle proposée sont soumis à la validation du commanditaire en E6.

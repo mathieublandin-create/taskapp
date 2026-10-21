@@ -20,7 +20,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Abandonner (CA-1 à CA-3)
 
   @US-025 @RG-027 @LOT-001
-  Scénario: Abandonner une tâche sans sous-tâche demande toujours une confirmation
+  Scénario: S01 — Abandonner une tâche sans sous-tâche demande toujours une confirmation
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
       | Refaire le logo | à faire | 2026-11-30 | 2 h        |           |               |
@@ -30,7 +30,7 @@ Fonctionnalité: Abandonner une tâche
     Alors l'état de la tâche "Refaire le logo" est "abandonnée"
 
   @US-025 @RG-027 @LOT-001
-  Scénario: Renoncer à l'abandon laisse la tâche à faire
+  Scénario: S02 — Renoncer à l'abandon laisse la tâche à faire
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
       | Refaire le logo | à faire | 2026-11-30 | 2 h        |           |               |
@@ -38,7 +38,7 @@ Fonctionnalité: Abandonner une tâche
     Alors l'état de la tâche "Refaire le logo" est "à faire"
 
   @US-025 @RG-027 @RG-008 @RG-053 @LOT-001 @propose
-  Plan du scénario: La date d'abandon est la journée de Paris, y compris en voyage et la nuit du changement d'heure
+  Plan du scénario: S03 — La date d'abandon est la journée de Paris, y compris en voyage et la nuit du changement d'heure
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
       | Refaire le logo | à faire | 2026-11-30 | 2 h        |           |               |
@@ -56,7 +56,7 @@ Fonctionnalité: Abandonner une tâche
       | UTC                  | 2026-10-25 | 23:30 | 2026-10-26     |
 
   @US-025 @RG-027 @LOT-001 @propose
-  Scénario: Une tâche abandonnée quitte les tâches à faire et reste consultable parmi les tâches abandonnées
+  Scénario: S04 — Une tâche abandonnée quitte les tâches à faire et reste consultable parmi les tâches abandonnées
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
       | Refaire le logo | à faire | 2026-11-30 | 2 h        |           |               |
@@ -68,7 +68,7 @@ Fonctionnalité: Abandonner une tâche
     Alors la liste des tâches contient exactement "Refaire le logo"
 
   @US-025 @RG-027 @RG-045 @LOT-001
-  Scénario: Une tâche abandonnée n'a pas de date de fin et n'est pas en retard
+  Scénario: S05 — Une tâche abandonnée n'a pas de date de fin et n'est pas en retard
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-10-19 | 30 min     |           |               |
@@ -79,7 +79,7 @@ Fonctionnalité: Abandonner une tâche
     Et la tâche "Payer la facture" n'est pas en retard
 
   @US-025 @RG-027 @LOT-001 @propose
-  Scénario: Abandonner une tâche terminée n'est pas proposé
+  Scénario: S06 — Abandonner une tâche terminée n'est pas proposé
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 | 2 h        |           |               |
@@ -88,7 +88,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Objectifs (CA-4)
 
   @US-025 @RG-025 @RG-027 @LOT-001
-  Plan du scénario: L'état des objectifs ignore la tâche abandonnée
+  Plan du scénario: S07 — L'état des objectifs ignore la tâche abandonnée
     Étant donné un objectif "Nouvelle identité visuelle" sans délai
     Et les tâches suivantes :
       | intitulé        | état     | délai      | estimation | objectifs                  | tâche parente |
@@ -106,7 +106,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Reprendre (CA-5)
 
   @US-025 @RG-027 @RG-025 @RG-045 @LOT-001
-  Scénario: Reprendre une tâche abandonnée la remet à faire et recalcule ses objectifs
+  Scénario: S08 — Reprendre une tâche abandonnée la remet à faire et recalcule ses objectifs
     Étant donné un objectif "Nouvelle identité visuelle" sans délai
     Et les tâches suivantes :
       | intitulé         | état       | délai      | estimation | objectifs                  | tâche parente |
@@ -122,7 +122,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Tâche parente et sous-tâches (CA-6 à CA-9)
 
   @US-025 @RG-027 @RG-023 @LOT-001
-  Scénario: Abandonner une tâche parente abandonne ses sous-tâches à faire, pas ses sous-tâches terminées
+  Scénario: S09 — Abandonner une tâche parente abandonne ses sous-tâches à faire, pas ses sous-tâches terminées
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -136,7 +136,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section C" est "abandonnée"
 
   @US-025 @RG-027 @RG-023 @LOT-001 @propose
-  Scénario: La confirmation de l'abandon d'une tâche parente indique le nombre de sous-tâches abandonnées avec elle
+  Scénario: S10 — La confirmation de l'abandon d'une tâche parente indique le nombre de sous-tâches abandonnées avec elle
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -147,7 +147,7 @@ Fonctionnalité: Abandonner une tâche
     Alors une confirmation est demandée, qui annonce 2 sous-tâches abandonnées avec la tâche
 
   @US-025 @RG-027 @RG-023 @LOT-001 @propose
-  Scénario: Reprendre une tâche parente reprend les sous-tâches abandonnées avec elle, pas celles abandonnées auparavant
+  Scénario: S11 — Reprendre une tâche parente reprend les sous-tâches abandonnées avec elle, pas celles abandonnées auparavant
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -163,7 +163,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section C" est "abandonnée"
 
   @US-025 @RG-027 @RG-023 @LOT-001 @propose
-  Scénario: La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée
+  Scénario: S12 — La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | abandonnée | 2026-11-30 |            |           |               |
@@ -171,7 +171,7 @@ Fonctionnalité: Abandonner une tâche
     Alors l'action "reprendre" n'est pas proposée pour la tâche "Section A"
 
   @US-025 @RG-027 @RG-023 @LOT-001
-  Scénario: Abandonner une sous-tâche seule recalcule l'estimation de la tâche parente et peut la rendre terminable
+  Scénario: S13 — Abandonner une sous-tâche seule recalcule l'estimation de la tâche parente et peut la rendre terminable
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -186,7 +186,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Deux appareils (cas limite RG-036, CA-10 RG-049)
 
   @US-025 @RG-036 @LOT-001
-  Scénario: Abandon sur un appareil et modification d'une autre information sur l'autre : les deux sont conservés
+  Scénario: S14 — Abandon sur un appareil et modification d'une autre information sur l'autre : les deux sont conservés
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
@@ -201,7 +201,7 @@ Fonctionnalité: Abandonner une tâche
     Et la liste des modifications non retenues est vide
 
   @US-025 @RG-049 @LOT-001 @propose
-  Scénario: Tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise sur le smartphone : incohérence signalée
+  Scénario: S15 — Tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise sur le smartphone : incohérence signalée
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
@@ -217,7 +217,7 @@ Fonctionnalité: Abandonner une tâche
     Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
 
   @US-025 @RG-049 @LOT-001 @propose
-  Plan du scénario: L'incohérence d'une tâche parente abandonnée est résolue par l'utilisateur
+  Plan du scénario: S16 — L'incohérence d'une tâche parente abandonnée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", abandonnée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
     Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
@@ -231,7 +231,7 @@ Fonctionnalité: Abandonner une tâche
   # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
 
   @US-025 @RG-050 @LOT-001 @propose
-  Scénario: L'abandon et la reprise d'une tâche sont conservés dans l'historique
+  Scénario: S17 — L'abandon et la reprise d'une tâche sont conservés dans l'historique
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
       | Refaire le logo | à faire | 2026-11-30 | 2 h        |           |               |

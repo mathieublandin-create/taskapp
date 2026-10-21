@@ -18,7 +18,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Création (CA-1, CA-2)
 
   @US-024 @RG-023 @LOT-001
-  Scénario: Créer une sous-tâche depuis une tâche
+  Scénario: S01 — Créer une sous-tâche depuis une tâche
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -30,7 +30,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | à faire | 2026-11-20 | 1 h        | Chapitre 1    |
 
   @US-024 @RG-023 @LOT-001
-  Scénario: Une sous-tâche ne peut pas avoir de sous-tâche
+  Scénario: S02 — Une sous-tâche ne peut pas avoir de sous-tâche
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -38,7 +38,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'action "créer une sous-tâche" n'est pas proposée pour la tâche "Section A"
 
   @US-024 @RG-003 @RG-028 @RG-029 @LOT-001
-  Plan du scénario: Une sous-tâche se saisit comme une tâche : délai et estimation obligatoires, au pas de 30 min
+  Plan du scénario: S03 — Une sous-tâche se saisit comme une tâche : délai et estimation obligatoires, au pas de 30 min
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -56,7 +56,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | 2026-11-20 | 45 min     | estimation invalide  |
 
   @US-024 @RG-003 @RG-029 @LOT-001
-  Scénario: Aucun délai ni aucune estimation ne sont présélectionnés à la saisie d'une sous-tâche
+  Scénario: S04 — Aucun délai ni aucune estimation ne sont présélectionnés à la saisie d'une sous-tâche
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -67,7 +67,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Affichage (CA-3)
 
   @US-024 @RG-023 @RG-045 @LOT-001 @propose
-  Scénario: Le détail d'une tâche présente ses sous-tâches et le nombre de sous-tâches terminées
+  Scénario: S05 — Le détail d'une tâche présente ses sous-tâches et le nombre de sous-tâches terminées
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire    | 2026-11-30 |            |           |               |
@@ -87,7 +87,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Estimation calculée (CA-4, CA-5)
 
   @US-024 @RG-023 @RG-029 @LOT-001
-  Scénario: L'estimation d'une tâche parente est la somme des estimations de ses sous-tâches et n'est pas saisissable
+  Scénario: S06 — L'estimation d'une tâche parente est la somme des estimations de ses sous-tâches et n'est pas saisissable
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -99,7 +99,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et l'estimation de la tâche "Chapitre 1" est 2 h 30
 
   @US-024 @RG-023 @LOT-001
-  Plan du scénario: L'estimation de la tâche parente se met à jour à chaque changement de ses sous-tâches
+  Plan du scénario: S07 — L'estimation de la tâche parente se met à jour à chaque changement de ses sous-tâches
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -116,7 +116,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | termine la tâche "Section A"                                               | 2 h 30     |
 
   @US-024 @RG-023 @LOT-001 @propose
-  Scénario: Les sous-tâches abandonnées ne comptent pas dans l'estimation de la tâche parente
+  Scénario: S08 — Les sous-tâches abandonnées ne comptent pas dans l'estimation de la tâche parente
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -128,7 +128,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'estimation de la tâche "Chapitre 1" est 2 h 30
 
   @US-024 @RG-023 @RG-029 @LOT-001 @propose
-  Scénario: La première sous-tâche remplace l'estimation saisie de la tâche, après information de l'utilisateur
+  Scénario: S09 — La première sous-tâche remplace l'estimation saisie de la tâche, après information de l'utilisateur
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -140,7 +140,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'estimation de la tâche "Chapitre 1" est 1 h
 
   @US-024 @RG-023 @RG-029 @LOT-001 @propose
-  Scénario: Après suppression de sa dernière sous-tâche, la tâche redevient simple avec la dernière somme, de nouveau modifiable
+  Scénario: S10 — Après suppression de sa dernière sous-tâche, la tâche redevient simple avec la dernière somme, de nouveau modifiable
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -154,7 +154,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Délai (CA-6) et objectifs hérités (CA-7)
 
   @US-024 @RG-023 @LOT-001
-  Plan du scénario: Une alerte nomme la tâche parente quand le délai d'une sous-tâche lui est postérieur
+  Plan du scénario: S11 — Une alerte nomme la tâche parente quand le délai d'une sous-tâche lui est postérieur
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -171,7 +171,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | 2026-11-20 | ne porte aucune alerte de délai                               |
 
   @US-024 @RG-023 @LOT-001
-  Plan du scénario: L'alerte de délai d'une sous-tâche est recalculée quand l'un des deux délais change
+  Plan du scénario: S12 — L'alerte de délai d'une sous-tâche est recalculée quand l'un des deux délais change
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -186,7 +186,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | modifie le délai de la tâche "Section A" en 2026-11-29  | ne porte aucune alerte de délai                               |
 
   @US-024 @RG-023 @RG-045 @LOT-001
-  Scénario: Une sous-tâche au délai déjà dépassé est acceptée et signalée en retard
+  Scénario: S13 — Une sous-tâche au délai déjà dépassé est acceptée et signalée en retard
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |
@@ -197,7 +197,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et la tâche "Section A" est en retard
 
   @US-024 @RG-023 @RG-001 @LOT-001
-  Scénario: Une sous-tâche hérite des objectifs de sa tâche parente, sans pouvoir en changer
+  Scénario: S14 — Une sous-tâche hérite des objectifs de sa tâche parente, sans pouvoir en changer
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Écrire" sans délai
     Et les tâches suivantes :
@@ -215,7 +215,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Fin de la tâche parente (CA-8)
 
   @US-024 @RG-023 @RG-026 @LOT-001
-  Scénario: La tâche parente ne peut être terminée qu'une fois toutes ses sous-tâches terminées ou abandonnées, puis reste à faire
+  Scénario: S15 — La tâche parente ne peut être terminée qu'une fois toutes ses sous-tâches terminées ou abandonnées, puis reste à faire
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -230,7 +230,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'état de la tâche "Chapitre 1" est "terminée"
 
   @US-024 @RG-023 @LOT-001 @propose
-  Scénario: Quand toutes les sous-tâches sont abandonnées, l'estimation est de 0 h et la tâche parente peut être terminée
+  Scénario: S16 — Quand toutes les sous-tâches sont abandonnées, l'estimation est de 0 h et la tâche parente peut être terminée
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire    | 2026-11-30 |            |           |               |
@@ -240,7 +240,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Alors l'état de la tâche "Chapitre 1" est "terminée"
 
   @US-024 @RG-023 @RG-026 @LOT-001 @propose
-  Scénario: Ajouter une sous-tâche à une tâche terminée la rouvre, après confirmation
+  Scénario: S17 — Ajouter une sous-tâche à une tâche terminée la rouvre, après confirmation
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | terminée | 2026-11-30 | 3 h        |           |               |
@@ -253,7 +253,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et la tâche "Section A" existe avec le délai 2026-11-20
 
   @US-024 @RG-023 @RG-027 @LOT-001 @propose
-  Scénario: Ajouter une sous-tâche à une tâche abandonnée est refusé tant qu'elle n'est pas reprise
+  Scénario: S18 — Ajouter une sous-tâche à une tâche abandonnée est refusé tant qu'elle n'est pas reprise
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | abandonnée | 2026-11-30 | 3 h        |           |               |
@@ -266,7 +266,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Suppression (CA-9)
 
   @US-024 @RG-046 @RG-023 @LOT-001
-  Scénario: Supprimer une tâche parente supprime ses sous-tâches, après une confirmation qui en indique le nombre
+  Scénario: S19 — Supprimer une tâche parente supprime ses sous-tâches, après une confirmation qui en indique le nombre
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -281,7 +281,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Deux appareils (CA-10 RG-049, CA-11 RG-047)
 
   @US-024 @RG-049 @LOT-001 @propose
-  Scénario: Tâche parente terminée sur le PC pendant qu'une sous-tâche est créée sur le smartphone : incohérence signalée, rien n'est corrigé
+  Scénario: S20 — Tâche parente terminée sur le PC pendant qu'une sous-tâche est créée sur le smartphone : incohérence signalée, rien n'est corrigé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -299,7 +299,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section B"
 
   @US-024 @RG-049 @LOT-001 @propose
-  Plan du scénario: L'incohérence est signalée jusqu'à ce que l'utilisateur la résolve
+  Plan du scénario: S21 — L'incohérence est signalée jusqu'à ce que l'utilisateur la résolve
     Étant donné que la tâche "Chapitre 1", terminée, est signalée en incohérence avec sa sous-tâche à faire "Section B"
     Quand l'utilisateur <action>
     Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
@@ -311,7 +311,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
       | rouvre la tâche "Chapitre 1"               |
 
   @US-024 @RG-047 @RG-046 @RG-056 @LOT-001 @propose
-  Scénario: Une sous-tâche ajoutée à une tâche supprimée sur l'autre appareil est supprimée, et l'utilisateur en est informé
+  Scénario: S22 — Une sous-tâche ajoutée à une tâche supprimée sur l'autre appareil est supprimée, et l'utilisateur en est informé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
@@ -331,7 +331,7 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
   # ---------------------------------------------------------------- Historique (CA-12, RG-050 proposée)
 
   @US-024 @RG-050 @LOT-001 @propose
-  Scénario: La création d'une sous-tâche, avec sa tâche parente, et sa suppression sont conservées dans l'historique
+  Scénario: S23 — La création d'une sous-tâche, avec sa tâche parente, et sa suppression sont conservées dans l'historique
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 3 h        |           |               |

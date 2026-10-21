@@ -19,7 +19,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Création (CA-1 à CA-4)
 
   @US-002 @RG-001 @RG-003 @RG-028 @RG-029 @LOT-001
-  Scénario: Créer une tâche avec son délai, son estimation et un objectif
+  Scénario: S01 — Créer une tâche avec son délai, son estimation et un objectif
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation | objectifs        |
@@ -30,13 +30,13 @@ Fonctionnalité: Créer et gérer mes tâches
     Et l'estimation initiale de la tâche "Chapitre 1" est 2 h 30
 
   @US-002 @RG-003 @RG-029 @LOT-001
-  Scénario: Aucun délai ni aucune estimation ne sont présélectionnés à la saisie d'une tâche
+  Scénario: S02 — Aucun délai ni aucune estimation ne sont présélectionnés à la saisie d'une tâche
     Quand l'utilisateur commence la saisie d'une nouvelle tâche
     Alors aucun délai n'est présélectionné
     Et aucune estimation n'est présélectionnée
 
   @US-002 @RG-003 @RG-029 @LOT-001
-  Plan du scénario: Une tâche sans délai ou sans estimation est refusée, avec l'information manquante
+  Plan du scénario: S03 — Une tâche sans délai ou sans estimation est refusée, avec l'information manquante
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai   | estimation   | objectifs |
       | Chapitre 1 | <délai> | <estimation> |           |
@@ -50,7 +50,7 @@ Fonctionnalité: Créer et gérer mes tâches
       |            |            | délai manquant, estimation manquante |
 
   @US-002 @RG-003 @LOT-001 @propose
-  Plan du scénario: Une tâche à l'intitulé vide est refusée
+  Plan du scénario: S04 — Une tâche à l'intitulé vide est refusée
     Quand l'utilisateur crée une tâche de délai 2026-11-30, estimée à 1 h, dont l'intitulé est <intitulé>
     Alors l'enregistrement est refusé avec le motif "intitulé manquant"
     Et aucune tâche n'existe
@@ -61,7 +61,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | composé uniquement d'espaces |
 
   @US-002 @RG-028 @RG-029 @LOT-001
-  Plan du scénario: Seules les estimations multiples de 30 min, d'au moins 30 min, sont acceptées
+  Plan du scénario: S05 — Seules les estimations multiples de 30 min, d'au moins 30 min, sont acceptées
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation   | objectifs |
       | Chapitre 1 | 2026-11-30 | <estimation> |           |
@@ -79,7 +79,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Rattachement (CA-5, CA-6)
 
   @US-002 @RG-001 @LOT-001 @propose
-  Scénario: Une tâche sans objectif figure dans la vue « Tâches sans objectif »
+  Scénario: S06 — Une tâche sans objectif figure dans la vue « Tâches sans objectif »
     Quand l'utilisateur crée une tâche :
       | intitulé        | délai      | estimation | objectifs |
       | Changer la roue | 2026-10-25 | 1 h        |           |
@@ -87,7 +87,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et la tâche "Changer la roue" figure parmi les tâches sans objectif
 
   @US-002 @RG-001 @LOT-001
-  Scénario: Une tâche rattachée à plusieurs objectifs apparaît dans le détail de chacun
+  Scénario: S07 — Une tâche rattachée à plusieurs objectifs apparaît dans le détail de chacun
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Développer mon activité" sans délai
     Quand l'utilisateur crée une tâche :
@@ -99,7 +99,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Alerte de délai (CA-7)
 
   @US-002 @RG-024 @LOT-001
-  Plan du scénario: Une alerte nomme les objectifs dont le délai est antérieur à celui de la tâche, sans bloquer
+  Plan du scénario: S08 — Une alerte nomme les objectifs dont le délai est antérieur à celui de la tâche, sans bloquer
     Étant donné un objectif "Publier le guide" de délai 2026-11-20
     Et un objectif "Développer mon activité" <délai du second objectif>
     Quand l'utilisateur crée une tâche :
@@ -119,7 +119,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Modification et recalculs (CA-8)
 
   @US-002 @RG-004 @LOT-001
-  Plan du scénario: Modifier une tâche à tout moment
+  Plan du scénario: S09 — Modifier une tâche à tout moment
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Écrire" sans délai
     Et les tâches suivantes :
@@ -136,7 +136,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | détache la tâche "Chapitre 1" de l'objectif "Publier le guide"      | "Chapitre 1" existe sans objectif                              |
 
   @US-002 @RG-024 @RG-045 @LOT-001
-  Scénario: Modifier le délai d'une tâche recalcule l'alerte de délai et le retard
+  Scénario: S10 — Modifier le délai d'une tâche recalcule l'alerte de délai et le retard
     Étant donné un objectif "Publier le guide" de délai 2026-11-20
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs        | tâche parente |
@@ -148,7 +148,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et la tâche "Chapitre 1" est en retard
 
   @US-002 @RG-001 @RG-025 @LOT-001
-  Plan du scénario: Rattacher ou détacher une tâche recalcule l'état des objectifs concernés
+  Plan du scénario: S11 — Rattacher ou détacher une tâche recalcule l'état des objectifs concernés
     Étant donné un objectif "Santé" sans délai
     Et l'objectif "Santé" a 0 tâche(s) à faire, <terminées> tâche(s) terminée(s) et 0 tâche(s) abandonnée(s)
     Et les tâches suivantes :
@@ -169,7 +169,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Estimation (CA-9)
 
   @US-002 @RG-029 @LOT-001
-  Scénario: Au lot 1, l'estimation d'une tâche reste modifiable et devient l'estimation initiale
+  Scénario: S12 — Au lot 1, l'estimation d'une tâche reste modifiable et devient l'estimation initiale
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -177,7 +177,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Alors l'estimation initiale de la tâche "Chapitre 1" est 3 h 30
 
   @US-002 @RG-029 @RG-023 @LOT-001
-  Scénario: L'estimation d'une tâche qui a des sous-tâches ne peut pas être modifiée
+  Scénario: S13 — L'estimation d'une tâche qui a des sous-tâches ne peut pas être modifiée
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 |            |           |               |
@@ -189,7 +189,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Retard (CA-10), délai sans heure, heure de Paris
 
   @US-002 @RG-003 @RG-045 @LOT-001
-  Scénario: Un délai déjà dépassé est accepté et la tâche est aussitôt en retard
+  Scénario: S14 — Un délai déjà dépassé est accepté et la tâche est aussitôt en retard
     Quand l'utilisateur crée une tâche :
       | intitulé       | délai      | estimation | objectifs |
       | Payer la facture | 2026-10-19 | 30 min     |           |
@@ -197,7 +197,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et la tâche "Payer la facture" est en retard
 
   @US-002 @RG-045 @LOT-001
-  Plan du scénario: Une tâche cesse d'être en retard
+  Plan du scénario: S15 — Une tâche cesse d'être en retard
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-10-19 | 30 min     |           |               |
@@ -212,7 +212,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | abandonne la tâche "Payer la facture" et confirme             |
 
   @US-002 @RG-045 @RG-008 @RG-053 @LOT-001
-  Plan du scénario: Un délai égal à la journée en cours n'est pas en retard ; le retard commence à minuit heure de Paris, y compris le jour du passage à l'heure d'hiver
+  Plan du scénario: S16 — Un délai égal à la journée en cours n'est pas en retard ; le retard commence à minuit heure de Paris, y compris le jour du passage à l'heure d'hiver
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-10-25 | 30 min     |           |               |
@@ -227,7 +227,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | 2026-10-26 | 00:00 | est en retard       |
 
   @US-002 @RG-045 @RG-053 @LOT-001
-  Plan du scénario: Le jour du changement d'heure, un appareil réglé sur un autre fuseau applique la journée de Paris
+  Plan du scénario: S17 — Le jour du changement d'heure, un appareil réglé sur un autre fuseau applique la journée de Paris
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-10-25 | 30 min     |           |               |
@@ -242,7 +242,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | 23:30     | est en retard       |
 
   @US-002 @RG-003 @RG-053 @RG-017 @LOT-001
-  Scénario: Un délai est une date sans heure, identique sur les deux appareils quel que soit leur fuseau
+  Scénario: S18 — Un délai est une date sans heure, identique sur les deux appareils quel que soit leur fuseau
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et que le smartphone est réglé sur le fuseau "America/New_York"
     Et que le PC est réglé sur le fuseau "Europe/Paris"
@@ -256,7 +256,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et sur les deux appareils, la tâche "Envoyer le devis" n'est pas en retard
 
   @US-002 @RG-045 @RG-008 @RG-053 @LOT-001
-  Plan du scénario: En voyage, le retard d'une tâche suit la journée de Paris
+  Plan du scénario: S19 — En voyage, le retard d'une tâche suit la journée de Paris
     Étant donné les tâches suivantes :
       | intitulé         | état    | délai      | estimation | objectifs | tâche parente |
       | Payer la facture | à faire | 2026-11-10 | 30 min     |           |               |
@@ -272,7 +272,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Liste (CA-11)
 
   @US-002 @RG-045 @RG-001 @LOT-001 @propose
-  Scénario: La liste des tâches est triée par délai croissant et présente les informations de chaque tâche
+  Scénario: S20 — La liste des tâches est triée par délai croissant et présente les informations de chaque tâche
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé         | état     | délai      | estimation | objectifs        | tâche parente |
@@ -289,7 +289,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Suppression (CA-12)
 
   @US-002 @RG-046 @RG-025 @LOT-001
-  Scénario: Supprimer une tâche qui a des sous-tâches, après une confirmation qui en indique le nombre
+  Scénario: S21 — Supprimer une tâche qui a des sous-tâches, après une confirmation qui en indique le nombre
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
@@ -304,7 +304,7 @@ Fonctionnalité: Créer et gérer mes tâches
     Et l'état de l'objectif "Publier le guide" est "atteint"
 
   @US-002 @RG-046 @LOT-001
-  Scénario: Renoncer à la suppression d'une tâche ne change rien
+  Scénario: S22 — Renoncer à la suppression d'une tâche ne change rien
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -314,7 +314,7 @@ Fonctionnalité: Créer et gérer mes tâches
   # ---------------------------------------------------------------- Suppression concurrente (CA-13) et historique (CA-14)
 
   @US-002 @RG-047 @RG-056 @LOT-001 @propose
-  Scénario: La suppression d'une tâche l'emporte sur une modification plus récente faite sur l'autre appareil
+  Scénario: S23 — La suppression d'une tâche l'emporte sur une modification plus récente faite sur l'autre appareil
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
@@ -331,7 +331,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | Chapitre 1 | intitulé    | Chapitre 1 revu    | tâche supprimée  |
 
   @US-002 @RG-050 @LOT-001 @propose
-  Scénario: La vie d'une tâche est conservée dans l'historique
+  Scénario: S24 — La vie d'une tâche est conservée dans l'historique
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Quand l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation | objectifs        |

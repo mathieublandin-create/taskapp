@@ -18,7 +18,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Création et affichage (CA-1 à CA-3)
 
   @US-023 @RG-022 @LOT-001
-  Scénario: Créer un sous-objectif depuis un objectif principal
+  Scénario: S01 — Créer un sous-objectif depuis un objectif principal
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Quand l'utilisateur crée un sous-objectif "Version imprimable" de l'objectif "Publier le guide", de délai 2026-12-01
     Alors l'objectif "Version imprimable" existe avec le délai 2026-12-01
@@ -26,7 +26,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et l'état de l'objectif "Version imprimable" est "à décliner en tâches"
 
   @US-023 @RG-022 @RG-045 @LOT-001
-  Scénario: Le détail d'un objectif présente ses sous-objectifs avec leur délai, leur état et leur retard
+  Scénario: S02 — Le détail d'un objectif présente ses sous-objectifs avec leur délai, leur état et leur retard
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide", de délai 2026-10-20
     Et un sous-objectif "Version en ligne" de l'objectif "Publier le guide", sans délai
@@ -37,7 +37,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Version en ligne   | sans délai | à décliner en tâches | non       |
 
   @US-023 @RG-022 @LOT-001 @propose
-  Scénario: La liste des objectifs distingue les objectifs principaux de leurs sous-objectifs
+  Scénario: S03 — La liste des objectifs distingue les objectifs principaux de leurs sous-objectifs
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Quand l'utilisateur consulte la liste des objectifs
@@ -45,7 +45,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et la liste présente "Version imprimable" comme sous-objectif de "Publier le guide"
 
   @US-023 @RG-022 @LOT-001
-  Scénario: Un sous-objectif ne peut pas avoir de sous-objectif
+  Scénario: S04 — Un sous-objectif ne peut pas avoir de sous-objectif
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Alors l'action "créer un sous-objectif" n'est pas proposée pour l'objectif "Version imprimable"
@@ -53,7 +53,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Alerte de délai (CA-4)
 
   @US-023 @RG-022 @RG-024 @LOT-001
-  Plan du scénario: Une alerte nomme le parent quand le délai d'un sous-objectif lui est postérieur
+  Plan du scénario: S05 — Une alerte nomme le parent quand le délai d'un sous-objectif lui est postérieur
     Étant donné un objectif "Publier le guide" <délai du parent>
     Quand l'utilisateur crée un sous-objectif "Version imprimable" de l'objectif "Publier le guide", <délai du sous-objectif>
     Alors l'objectif "Version imprimable" existe
@@ -68,7 +68,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | sans délai          | de délai 2027-01-15    | ne porte aucune alerte de délai                                 |
 
   @US-023 @RG-022 @LOT-001
-  Plan du scénario: L'alerte de délai d'un sous-objectif est recalculée quand l'un des deux délais change
+  Plan du scénario: S06 — L'alerte de délai d'un sous-objectif est recalculée quand l'un des deux délais change
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide", de délai 2026-12-01
     Quand l'utilisateur <modification>
@@ -83,7 +83,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Déplacements (CA-5, CA-6)
 
   @US-023 @RG-022 @RG-025 @LOT-001
-  Scénario: Déplacer un sous-objectif sous un autre objectif principal recalcule les états et l'alerte
+  Scénario: S07 — Déplacer un sous-objectif sous un autre objectif principal recalcule les états et l'alerte
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Développer mon activité" de délai 2026-11-01
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide", de délai 2026-12-01
@@ -98,7 +98,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et l'objectif "Version imprimable" porte une alerte de délai qui nomme l'objectif "Développer mon activité"
 
   @US-023 @RG-022 @RG-025 @LOT-001
-  Scénario: Faire d'un sous-objectif un objectif principal
+  Scénario: S08 — Faire d'un sous-objectif un objectif principal
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide", de délai 2027-01-15
     Et l'objectif "Version imprimable" porte une alerte de délai qui nomme l'objectif "Publier le guide"
@@ -108,14 +108,14 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et l'état de l'objectif "Publier le guide" est "à décliner en tâches"
 
   @US-023 @RG-022 @LOT-001
-  Scénario: Placer un objectif principal sans sous-objectif sous un autre objectif principal
+  Scénario: S09 — Placer un objectif principal sans sous-objectif sous un autre objectif principal
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Version imprimable" sans délai
     Quand l'utilisateur place l'objectif "Version imprimable" sous l'objectif "Publier le guide"
     Alors "Version imprimable" est un sous-objectif de l'objectif "Publier le guide"
 
   @US-023 @RG-022 @LOT-001 @propose
-  Scénario: Un objectif qui a des sous-objectifs ne peut pas être placé sous un autre objectif
+  Scénario: S10 — Un objectif qui a des sous-objectifs ne peut pas être placé sous un autre objectif
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et un objectif "Développer mon activité" sans délai
@@ -124,7 +124,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Et "Publier le guide" est un objectif principal
 
   @US-023 @RG-022 @LOT-001
-  Plan du scénario: Un objectif ne peut jamais être placé sous lui-même ni sous un sous-objectif
+  Plan du scénario: S11 — Un objectif ne peut jamais être placé sous lui-même ni sous un sous-objectif
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Apprendre l'italien" sans délai
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -137,7 +137,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Apprendre l'italien | Version imprimable  | un seul niveau de sous-objectifs |
 
   @US-023 @RG-022 @LOT-001 @propose
-  Scénario: Déplacer un sous-objectif sous son parent actuel est sans effet
+  Scénario: S12 — Déplacer un sous-objectif sous son parent actuel est sans effet
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Quand l'utilisateur place l'objectif "Version imprimable" sous l'objectif "Publier le guide"
@@ -147,7 +147,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Atteinte (CA-7)
 
   @US-023 @RG-025 @LOT-001
-  Plan du scénario: Un objectif est atteint quand ses tâches non abandonnées sont terminées et ses sous-objectifs atteints
+  Plan du scénario: S13 — Un objectif est atteint quand ses tâches non abandonnées sont terminées et ses sous-objectifs atteints
     Étant donné un objectif "O" sans délai
     Et l'objectif "O" a <a> tâche(s) à faire, <t> tâche(s) terminée(s) et 0 tâche(s) abandonnée(s)
     Et un sous-objectif "S" de l'objectif "O"
@@ -163,7 +163,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | 1 | 0 | 0  | 1  | atteint              | en cours  |
 
   @US-023 @RG-025 @LOT-001
-  Scénario: L'objectif parent est mis à jour dès qu'un sous-objectif change d'état
+  Scénario: S14 — L'objectif parent est mis à jour dès qu'un sous-objectif change d'état
     Étant donné un objectif "O" sans délai
     Et un sous-objectif "S" de l'objectif "O"
     Et les tâches suivantes :
@@ -177,7 +177,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Suppression (CA-8)
 
   @US-023 @RG-046 @LOT-001
-  Scénario: Supprimer un objectif qui a des sous-objectifs les transforme en objectifs principaux
+  Scénario: S15 — Supprimer un objectif qui a des sous-objectifs les transforme en objectifs principaux
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
     Et un sous-objectif "Version en ligne" de l'objectif "Publier le guide"
@@ -189,7 +189,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Deux appareils (CA-9 RG-048, CA-10 RG-047)
 
   @US-023 @RG-048 @RG-056 @LOT-001 @propose
-  Scénario: Placements croisés sur les deux appareils : le placement le plus ancien est annulé et signalé
+  Scénario: S16 — Placements croisés sur les deux appareils : le placement le plus ancien est annulé et signalé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Alpha" sans délai
     Et un objectif "Bêta" sans délai
@@ -205,7 +205,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Alpha   | parent      | sous Bêta          | placement annulé     |
 
   @US-023 @RG-048 @RG-056 @LOT-001 @propose
-  Scénario: Un placement qui créerait un deuxième niveau est annulé, la création concurrente est conservée
+  Scénario: S17 — Un placement qui créerait un deuxième niveau est annulé, la création concurrente est conservée
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "O" sans délai
     Et un objectif "P" sans délai
@@ -221,7 +221,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | O       | parent      | sous P             | placement annulé |
 
   @US-023 @RG-048 @RG-056 @LOT-001 @propose
-  Scénario: Deux placements concurrents qui produiraient un deuxième niveau : le plus ancien est annulé, la hiérarchie est identique sur les deux appareils
+  Scénario: S18 — Deux placements concurrents qui produiraient un deuxième niveau : le plus ancien est annulé, la hiérarchie est identique sur les deux appareils
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Alpha" sans délai
     Et un objectif "Bêta" sans délai
@@ -240,7 +240,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
   @US-023 @RG-047 @LOT-001 @propose
-  Scénario: Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
+  Scénario: S19 — Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que le smartphone est sans réseau
@@ -254,7 +254,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
   # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
 
   @US-023 @RG-050 @LOT-001 @propose
-  Scénario: La création d'un sous-objectif et ses changements de parent sont conservés dans l'historique
+  Scénario: S20 — La création d'un sous-objectif et ses changements de parent sont conservés dans l'historique
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Développer mon activité" sans délai
     Quand l'utilisateur crée un sous-objectif "Version imprimable" de l'objectif "Publier le guide", sans délai

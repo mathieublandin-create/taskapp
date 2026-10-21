@@ -20,7 +20,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Deux appareils (CA-1)
 
   @US-017 @RG-017 @LOT-001 @propose
-  Plan du scénario: Les fonctions du lot 1 sont disponibles sur chacun des deux appareils
+  Plan du scénario: S01 — Les fonctions du lot 1 sont disponibles sur chacun des deux appareils
     Quand sur le <appareil>, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et sur le <appareil>, l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation | objectifs        |
@@ -46,14 +46,14 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Délai entre appareils (CA-2, CA-3)
 
   @US-017 @RG-017 @LOT-001
-  Scénario: Les deux appareils ouverts et connectés, une modification est visible sur l'autre au plus tard une heure après, sans action
+  Scénario: S02 — Les deux appareils ouverts et connectés, une modification est visible sur l'autre au plus tard une heure après, sans action
     Étant donné que l'application est ouverte sur le smartphone et sur le PC, connectés au réseau
     Quand sur le PC, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et 60 minutes s'écoulent sans aucune action de l'utilisateur
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-017 @RG-017 @LOT-001
-  Plan du scénario: Créations, modifications et suppressions sont toutes visibles sur l'autre appareil dans l'heure
+  Plan du scénario: S03 — Créations, modifications et suppressions sont toutes visibles sur l'autre appareil dans l'heure
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs        | tâche parente |
@@ -70,7 +70,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | supprime la tâche "Chapitre 1" et confirme                      | la tâche "Chapitre 1" n'existe plus                    |
 
   @US-017 @RG-017 @LOT-001
-  Scénario: L'appareil fermé reçoit la modification dès son ouverture, sans attendre le délai d'une heure
+  Scénario: S04 — L'appareil fermé reçoit la modification dès son ouverture, sans attendre le délai d'une heure
     Étant donné que l'application est fermée sur le PC
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et le smartphone enregistre ses modifications dans le Drive
@@ -80,14 +80,14 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le PC, l'objectif "Publier le guide" existe au plus tard 1 minute après l'ouverture
 
   @US-017 @RG-017 @LOT-001 @propose
-  Scénario: À l'ouverture, les modifications de l'autre appareil sont intégrées en une minute au plus
+  Scénario: S05 — À l'ouverture, les modifications de l'autre appareil sont intégrées en une minute au plus
     Étant donné que l'application est fermée sur le PC
     Et que sur le smartphone, 3 modifications ont été enregistrées dans le Drive depuis la dernière ouverture du PC
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, les 3 modifications sont intégrées au plus tard 1 minute après l'ouverture
 
   @US-017 @RG-017 @RG-035 @LOT-001
-  Scénario: Sur le PC, session Google du navigateur expirée : données du PC affichées et utilisables, mise à jour après le geste de reconnexion
+  Scénario: S06 — Sur le PC, session Google du navigateur expirée : données du PC affichées et utilisables, mise à jour après le geste de reconnexion
     Étant donné que l'application est fermée sur le PC
     Et que la session Google du navigateur du PC a expiré
     Et que sur le smartphone, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
@@ -106,14 +106,14 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
 
   @US-017 @RG-020 @RG-018 @LOT-001
-  Scénario: Les données sont conservées dans le Drive de l'utilisateur et nulle part ailleurs que sur ses appareils
+  Scénario: S07 — Les données sont conservées dans le Drive de l'utilisateur et nulle part ailleurs que sur ses appareils
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et le smartphone enregistre ses modifications dans le Drive
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
     Et aucune donnée de l'application n'a été transmise ailleurs que dans le Drive du compte "A"
 
   @US-017 @RG-017 @RG-020 @LOT-001
-  Plan du scénario: Après fermeture et réouverture, sur le même appareil ou sur l'autre, les données sont identiques
+  Plan du scénario: S08 — Après fermeture et réouverture, sur le même appareil ou sur l'autre, les données sont identiques
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
@@ -132,7 +132,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Conflits (CA-6, CA-8) et RG-056
 
   @US-017 @RG-036 @LOT-001
-  Scénario: Des informations différentes du même élément modifiées sur les deux appareils sont toutes conservées
+  Scénario: S09 — Des informations différentes du même élément modifiées sur les deux appareils sont toutes conservées
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -145,7 +145,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et la liste des modifications non retenues est vide
 
   @US-017 @RG-036 @RG-056 @LOT-001
-  Scénario: La même information modifiée sur les deux appareils : la plus récente l'emporte et la valeur écartée est signalée
+  Scénario: S10 — La même information modifiée sur les deux appareils : la plus récente l'emporte et la valeur écartée est signalée
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -160,7 +160,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | B       | intitulé    | A                  | B                |
 
   @US-017 @RG-036 @LOT-001
-  Scénario: Une valeur remplacée en connaissance de cause n'est pas signalée
+  Scénario: S11 — Une valeur remplacée en connaissance de cause n'est pas signalée
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -172,7 +172,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et la liste des modifications non retenues est vide
 
   @US-017 @RG-036 @LOT-001
-  Scénario: Avec l'horloge d'un appareil décalée de quelques minutes, la modification réellement la plus récente l'emporte
+  Scénario: S12 — Avec l'horloge d'un appareil décalée de quelques minutes, la modification réellement la plus récente l'emporte
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -185,13 +185,13 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
 
   @US-017 @RG-036 @LOT-001 @propose
-  Scénario: Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
+  Scénario: S13 — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
     Étant donné que l'horloge du smartphone est en retard de 25 heures
     Quand les deux appareils échangent leurs modifications
     Alors sur le smartphone, l'utilisateur est averti que l'horloge de l'appareil est déréglée
 
   @US-017 @RG-056 @LOT-001
-  Scénario: Une modification non retenue reste listée jusqu'à ce que l'utilisateur la marque comme lue, même après réouverture
+  Scénario: S14 — Une modification non retenue reste listée jusqu'à ce que l'utilisateur la marque comme lue, même après réouverture
     Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
     Quand l'utilisateur ferme l'application sur le smartphone
     Et que nous sommes le 2026-11-21 à 10:00 heure de Europe/Paris
@@ -201,7 +201,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors la liste des modifications non retenues est vide
 
   @US-017 @RG-056 @LOT-001 @propose
-  Scénario: Tant qu'une modification non retenue n'est pas lue, l'application le signale sans bloquer
+  Scénario: S15 — Tant qu'une modification non retenue n'est pas lue, l'application le signale sans bloquer
     Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
     Et que la liste des modifications non retenues contient une valeur écartée pour le délai de la tâche "Chapitre 1"
     Alors l'indicateur de synchronisation signale des informations à lire
@@ -212,7 +212,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors l'indicateur de synchronisation ne signale aucune information à lire
 
   @US-017 @RG-056 @LOT-001 @propose
-  Scénario: Une modification non retenue lue sur un appareil l'est aussi sur l'autre, et n'est signalée qu'une fois
+  Scénario: S16 — Une modification non retenue lue sur un appareil l'est aussi sur l'autre, et n'est signalée qu'une fois
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -231,7 +231,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Sans réseau et perte d'accès (CA-7)
 
   @US-017 @RG-021 @RG-035 @LOT-001
-  Plan du scénario: Sans réseau ou sans accès Google, les saisies sont conservées puis enregistrées au retour, sans action
+  Plan du scénario: S17 — Sans réseau ou sans accès Google, les saisies sont conservées puis enregistrées au retour, sans action
     Étant donné que le smartphone <situation>
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Alors sur le smartphone, l'objectif "Publier le guide" est signalé comme non synchronisé
@@ -248,7 +248,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Données absentes ou illisibles dans le Drive (CA-9, RG-044)
 
   @US-017 @RG-044 @LOT-001 @propose
-  Plan du scénario: Données de l'application supprimées ou illisibles dans le Drive : avertissement, et rien n'est effacé ni réécrit avant le choix
+  Plan du scénario: S18 — Données de l'application supprimées ou illisibles dans le Drive : avertissement, et rien n'est effacé ni réécrit avant le choix
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été <altération> dans le Drive, en dehors de l'application
     Quand le smartphone échange ses modifications avec le Drive
@@ -263,7 +263,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | rendues illisibles             |
 
   @US-017 @RG-044 @LOT-001 @propose
-  Scénario: Décider plus tard laisse l'application utilisable, sans rien effacer
+  Scénario: S19 — Décider plus tard laisse l'application utilisable, sans rien effacer
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
     Et que sur le smartphone, l'utilisateur est averti que ses données sont absentes ou illisibles dans le Drive
@@ -276,7 +276,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et rien n'a été réécrit dans le Drive
 
   @US-017 @RG-044 @LOT-001
-  Scénario: Restaurer les données à partir de la copie de l'appareil
+  Scénario: S20 — Restaurer les données à partir de la copie de l'appareil
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
     Et que sur le smartphone, l'utilisateur est averti que ses données sont absentes ou illisibles dans le Drive
@@ -286,7 +286,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   @US-017 @RG-044 @LOT-001 @propose
-  Scénario: Repartir de zéro efface les données des deux appareils ; l'autre appareil ne repose pas la question
+  Scénario: S21 — Repartir de zéro efface les données des deux appareils ; l'autre appareil ne repose pas la question
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
     Et que le PC est sans réseau
@@ -305,7 +305,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
 
   @US-017 @RG-044 @LOT-001 @propose
-  Scénario: Renoncer à repartir de zéro ne change rien
+  Scénario: S22 — Renoncer à repartir de zéro ne change rien
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
     Et que sur le smartphone, l'utilisateur est averti que ses données sont absentes ou illisibles dans le Drive
@@ -314,7 +314,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et rien n'a été réécrit dans le Drive
 
   @US-017 @RG-044 @LOT-001
-  Scénario: Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
+  Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et que le Drive est momentanément indisponible
     Quand le smartphone échange ses modifications avec le Drive
@@ -327,7 +327,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Réparations après fusion (CA-10 ; détail dans US-001, 002, 003, 023, 024, 025)
 
   @US-017 @RG-047 @RG-056 @LOT-001 @propose
-  Scénario: Réparation après fusion : la suppression l'emporte sur une modification concurrente
+  Scénario: S24 — Réparation après fusion : la suppression l'emporte sur une modification concurrente
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
@@ -342,7 +342,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Chapitre 1 | délai       | 2026-12-10         | tâche supprimée  |
 
   @US-017 @RG-048 @RG-056 @LOT-001 @propose
-  Scénario: Réparation après fusion : une hiérarchie d'objectifs invalide est rétablie en annulant le placement le plus ancien
+  Scénario: S25 — Réparation après fusion : une hiérarchie d'objectifs invalide est rétablie en annulant le placement le plus ancien
     Étant donné un objectif "Alpha" sans délai
     Et un objectif "Bêta" sans délai
     Et que le smartphone est sans réseau
@@ -356,7 +356,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
   @US-017 @RG-049 @LOT-001 @propose
-  Scénario: Réparation après fusion : une incohérence d'état est signalée, sans correction automatique
+  Scénario: S26 — Réparation après fusion : une incohérence d'état est signalée, sans correction automatique
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
       | Chapitre 1 | à faire  | 2026-11-30 |            |           |               |
@@ -372,7 +372,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Heure de Paris (CA-11, RG-054 ; cas limite des fuseaux)
 
   @US-017 @RG-054 @RG-053 @LOT-001 @propose
-  Plan du scénario: La mention « heure de Paris » n'apparaît que si l'appareil est réglé sur un autre fuseau
+  Plan du scénario: S27 — La mention « heure de Paris » n'apparaît que si l'appareil est réglé sur un autre fuseau
     Étant donné que le smartphone est réglé sur le fuseau "<fuseau>"
     Alors sur le smartphone, la mention "heure de Paris" <présence>
 
@@ -384,7 +384,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | Pacific/Auckland | apparaît          |
 
   @US-017 @RG-053 @RG-008 @RG-045 @LOT-001
-  Scénario: Avec les deux appareils dans des fuseaux différents, dates de fin et retards sont identiques, et les délais ne changent pas de jour
+  Scénario: S28 — Avec les deux appareils dans des fuseaux différents, dates de fin et retards sont identiques, et les délais ne changent pas de jour
     Étant donné que le smartphone est réglé sur le fuseau "America/New_York"
     Et que le PC est réglé sur le fuseau "Europe/Paris"
     Et les tâches suivantes :
@@ -401,7 +401,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   # ---------------------------------------------------------------- Autres cas limites
 
   @US-017 @RG-020 @LOT-001 @propose
-  Scénario: Drive plein : l'utilisateur est averti et ses modifications restent sur l'appareil
+  Scénario: S29 — Drive plein : l'utilisateur est averti et ses modifications restent sur l'appareil
     Étant donné que le Drive du compte "A" est plein
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et le smartphone échange ses modifications avec le Drive
@@ -413,7 +413,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
 
   @US-017 @RG-017 @LOT-001 @propose
-  Scénario: Un appareil qui ne sait pas lire les données enregistrées par une version plus récente invite à se mettre à jour, sans rien perdre
+  Scénario: S30 — Un appareil qui ne sait pas lire les données enregistrées par une version plus récente invite à se mettre à jour, sans rien perdre
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive

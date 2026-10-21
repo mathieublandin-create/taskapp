@@ -9,21 +9,21 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 terminée (211 scénarios, dont 88 proposés ; CdC v0.6) ; E6 en préparation (dossier de validation) ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
-| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E5 | pepper | Ajoutée par DEC-013 ; impacts architecture et ergonomie renseignés |
-| US-025 | Abandonner une tâche | LOT-001 | En analyse | E5 | pepper | Impacts architecture et ergonomie renseignés |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-001 | Créer et gérer un objectif | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-002 | Créer et gérer mes tâches | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | En analyse | E6 | jarvis | Ajoutée par DEC-013 ; tests métiers rédigés ; attente validation commanditaire |
+| US-025 | Abandonner une tâche | LOT-001 | En analyse | E6 | jarvis | Tests métiers rédigés ; attente validation commanditaire |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |

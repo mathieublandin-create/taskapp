@@ -121,7 +121,32 @@ Statut : En analyse
 - **Questions et réserves** : Q-ERG-12 (écran d'accueil du lot 1 : la liste est l'accueil).
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-002-creer-et-gerer-mes-taches.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-002-creer-et-gerer-mes-taches.feature`](../../../tests/features/US-002-creer-et-gerer-mes-taches.feature) — **24 scénarios, dont 5 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-002`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S04 (P), S05 |
+| CA-2 | S02 |
+| CA-3 | S03 |
+| CA-4 | S05 |
+| CA-5 | S06 (P) |
+| CA-6 | S07 |
+| CA-7 | S08 |
+| CA-8 | S09, S10, S11 |
+| CA-9 | S12, S13 |
+| CA-10 | S14, S15 |
+| CA-11 | S20 (P) |
+| CA-12 | S21, S22 |
+| CA-13 (RG-047) | S23 (P) |
+| CA-14 (RG-050) | S24 (P) |
+| Cas limite : délai égal à la journée en cours ; changement d'heure du 25/10/2026 | S16, S17 |
+| Cas limite : délai égal à celui de l'objectif | S08 |
+| Cas limite : estimation de 0 h ou non multiple de 30 min | S05 |
+| Cas limite : rattachement à un objectif atteint ou « à décliner en tâches » | S11 |
+| Cas limite : retrait du dernier objectif | S09, S11 |
+| Cas limite : délai sans heure, identique sur les deux appareils | S18 |
+| Cas limite : voyage hors du fuseau de Paris | S19 |
+| Cas limite : modification sur deux appareils (RG-036) | US-017 S09, S10 |
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-13, CA-14) sont soumis à la validation du commanditaire en E6.

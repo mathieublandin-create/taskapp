@@ -101,7 +101,27 @@ Statut : En analyse
 - **Questions et réserves** : aucune nouvelle. Les confirmations (P) d'ajout à une tâche terminée ou abandonnée suivent le guide §4.12.
 
 ## Tests métiers
-À rédiger en E5 : `tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature) — **23 scénarios, dont 11 tagués `@propose`** (règle ou critère proposé, à valider en E6), notés (P) ci-dessous. Chaque scénario porte les tags `@US-024`, `@RG-xxx` et `@LOT-001`.
+
+| Critère ou cas | Scénario(s) |
+|---|---|
+| CA-1 | S01, S02 |
+| CA-2 | S03, S04 |
+| CA-3 | S05 (P) |
+| CA-4 | S06, S07, S08 (P) |
+| CA-5 | S09 (P) |
+| CA-6 | S11, S12 |
+| CA-7 | S14 |
+| CA-8 | S15 |
+| CA-9 | S19, S07 |
+| CA-10 (RG-049) | S20 (P), S21 (P) |
+| CA-11 (RG-047) | S22 (P) |
+| CA-12 (RG-050) | S23 (P) |
+| Cas limite : suppression de la dernière sous-tâche | S10 (P) |
+| Cas limite : ajout à une tâche terminée | S17 (P) |
+| Cas limite : ajout à une tâche abandonnée | S18 (P) |
+| Cas limite : toutes les sous-tâches abandonnées | S16 (P) |
+| Cas limite : délai de sous-tâche dépassé | S13 |
 
 ## Questions ouvertes
 Aucune. Les critères (P) et ceux qui appliquent une règle proposée (CA-10 à CA-12) sont soumis à la validation du commanditaire en E6.
