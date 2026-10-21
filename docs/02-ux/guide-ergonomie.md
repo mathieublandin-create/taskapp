@@ -1,6 +1,6 @@
 # Guide d'ergonomie
 
-> **Version 0.2.3, 2026-10-21 (Steeve).** E7 de LOT-001, tour 1 : catalogue des libellés et des codes d'état observables (§6.6, ANT-7), écran d'atterrissage (BEN-6), mention « Heure de Paris » par écran (BEN-8), compteur 3/3 « En cours » (PEP-10), confirmation d'abandon sans sous-tâche (ECR-007 D2), question Q-ERG-18. Version précédente : 0.2.1. Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
+> **Version 0.2.4, 2026-10-21 (Steeve).** Tour 2 du refinement (ANT-21) : motifs de refus des scénarios rattachés à des codes (`ERR-023`, `ERR-032` à `ERR-035` créés, variantes d'`ERR-030`), table de correspondance (§6.6.10), forme de `MEN-HEURE-PARIS` avec une date de fin. **Version 0.2.3 :** E7 de LOT-001, tour 1 : catalogue des libellés et des codes d'état observables (§6.6, ANT-7), écran d'atterrissage (BEN-6), mention « Heure de Paris » par écran (BEN-8), compteur 3/3 « En cours » (PEP-10), confirmation d'abandon sans sous-tâche (ECR-007 D2), question Q-ERG-18. Version précédente : 0.2.1. Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
 >
 > **Entrées de la v0.2** : LOT-001 et ses 10 US (US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025), cahier des charges v0.5 (RG-043 à RG-055), DAT v0.4 et synthèse d'architecture du lot, décisions DEC-001 à DEC-016 (`suivi-projet.md`), réponses du commanditaire aux questions Q-ERG-02 à Q-ERG-11.
 >
@@ -734,10 +734,15 @@ Remarque pour Pepper et Anthony : `ERR-003` et `ERR-004` sont deux textes distin
 | `ERR-020` | Intitulé vide à « Ajouter » / « Créer l'objectif » (US-001 CA-5, US-002) | « Indiquez un intitulé. » | Sous le champ, `color.danger` + icône, focus sur le champ, saisie conservée |
 | `ERR-021` | Délai non choisi à la saisie d'une tâche (RG-003, US-002 CA-3) | « Indiquez un délai. » | Sous les puces de délai, focus sur la première erreur |
 | `ERR-022` | Estimation non choisie (RG-029, US-002 CA-3) | « Indiquez une estimation. » | Sous les puces d'estimation |
-| `ERR-030` | Deuxième niveau de sous-objectif (US-023 CA-6) | Titre « Déplacement impossible » ; « « {élément} » a déjà {n} sous-objectif(s). Un seul niveau de sous-objectifs est autorisé. Déplacez ou supprimez d'abord son sous-objectif, ou placez celui-ci ailleurs. » | Boîte avec « Compris » |
+| `ERR-023` | Estimation de 0 ou qui n'est pas un multiple de 30 min, saisie directement (stepper hors bornes, saisie « 45 min » sur PC) (RG-028, RG-029, US-002 S05b, US-024 S03). Une estimation **calculée** de 0 h reste valide (US-024) | « Indiquez une estimation de 30 min au minimum, par pas de 30 min. » | Sous le champ d'estimation, valeur saisie conservée, focus sur le champ |
+| `ERR-030` | Deuxième niveau de sous-objectif (US-023 CA-6, S11) | Titre « Déplacement impossible » ; **variante `objectif-a-des-sous-objectifs`** : « « {élément} » a déjà {n} sous-objectif(s). Un seul niveau de sous-objectifs est autorisé. Déplacez ou supprimez d'abord son sous-objectif, ou placez celui-ci ailleurs. » ; **variante `cible-est-sous-objectif`** : « « {élément} » est déjà un sous-objectif. Un seul niveau de sous-objectifs est autorisé. Placez l'objectif sous un objectif principal. » | Boîte avec « Compris » (le même code pour les deux variantes ; `data-variante` les distingue) |
 | `ERR-031` | Objectif placé sous lui-même (US-023 CA-5) | « Un objectif ne peut pas être placé sous lui-même » | Ligne indisponible dans `ParentPicker`, raison écrite |
+| `ERR-032` | Ajout d'une sous-tâche à une tâche **abandonnée** (US-024 CA, S18) | « Cette tâche est abandonnée. Reprenez-la pour y ajouter une sous-tâche. » | Action « Ajouter une sous-tâche » proposée mais refusée avec ce texte (`role="alert"`) ; action « Reprendre la tâche » proposée dans le message. Aucune sous-tâche créée |
+| `ERR-033` | Modification de l'estimation d'une tâche qui a des sous-tâches (RG-023, US-002 CA, US-002 S13) | « L'estimation de cette tâche est la somme de ses sous-tâches. Modifiez celle d'une sous-tâche. » | `LockedField` (`MEN-ESTIMATION-CALCULEE`) : le champ n'est pas modifiable ; le texte est lié par `aria-describedby` et annoncé si l'utilisateur tente d'agir (saisie clavier directe) |
+| `ERR-034` | Modification des objectifs d'une sous-tâche (US-024 CA-7) | « Les objectifs d'une sous-tâche sont ceux de sa tâche parente. Modifiez-les sur la tâche parente. » | `LockedField` (`MEN-OBJECTIFS-HERITES`), même mécanisme |
+| `ERR-035` | « Terminer la tâche » alors qu'il reste des sous-tâches à faire (US-003 CA-8, US-024 CA-8, US-024 S15) | « Il reste {n} sous-tâche(s) à terminer ou abandonner. » (**même texte que `ALR-013`**, qui en est l'affichage permanent au-dessus du bouton ; `ERR-035` est le refus de l'action) | Bouton `aria-disabled="true"` ; au toucher ou à Entrée, le texte est annoncé (`role="alert"`) ; aucun changement d'état |
 
-Les trois erreurs de champ (`ERR-020` à `ERR-022`) sont **cumulables** : toutes les informations manquantes sont nommées en même temps, dans l'ordre intitulé, délai, estimation.
+Les erreurs de champ (`ERR-020` à `ERR-023`) sont **cumulables** : toutes les informations manquantes sont nommées en même temps, dans l'ordre intitulé, délai, estimation.
 
 #### 6.6.9 Alertes et informations (`ALR-`)
 
@@ -756,6 +761,35 @@ Les trois erreurs de champ (`ERR-020` à `ERR-022`) sont **cumulables** : toutes
 | `ALR-011` | Information | Déplacement annulé (RG-048) | « Placement de « {élément} » annulé » / « Un déplacement plus récent, fait sur votre {appareil}, place « {élément} » sous « {élément} ». Les deux ne peuvent pas coexister : le plus ancien a été annulé. » | `DiscardedItem` ; « Voir l'objectif » et « Compris » |
 | `ALR-012` | Information | Première sous-tâche ajoutée à une tâche qui a une estimation (US-024 CA-5) | « L'estimation de la tâche ({durée}) sera remplacée par la somme de ses sous-tâches. » | Message avant l'enregistrement, dans la saisie rapide |
 | `ALR-013` | Information | « Terminer la tâche » indisponible tant qu'il reste des sous-tâches à faire (US-003 CA-8, US-024 CA-8) | « Il reste {n} sous-tâche(s) à terminer ou abandonner. » | Au-dessus du bouton, `role="status"`, lié par `aria-describedby` ; bouton `aria-disabled="true"` |
+
+#### 6.6.10 Table de correspondance « motif des scénarios → code » (ANT-21)
+
+Liste exhaustive des motifs en texte libre relevés dans `tests/features/*.feature` (formulations « est refusé(e) avec le motif », « échoue avec le motif »). Pepper remplace chaque motif par le code ; un test vérifie `data-message` (et, si utile, le texte exact du catalogue).
+
+| Motif utilisé dans les scénarios | Code | Observé | Scénarios |
+|---|---|---|---|
+| « intitulé manquant » | `ERR-020` | Texte « Indiquez un intitulé. » | US-001 S03, US-002 S04 |
+| « délai manquant » | `ERR-021` | « Indiquez un délai. » | US-002 S03, US-024 S03 |
+| « estimation manquante » | `ERR-022` | « Indiquez une estimation. » | US-002 S03, US-024 S03 |
+| « délai manquant, estimation manquante » | `ERR-021` **et** `ERR-022` (cumulés, dans cet ordre) | Les deux textes affichés ensemble | US-002 S03 |
+| « estimation invalide » (0 h, ou non multiple de 30 min) | `ERR-023` (**nouveau**) | « Indiquez une estimation de 30 min au minimum, par pas de 30 min. » | US-002 S05b, US-024 S03 |
+| « estimation calculée à partir des sous-tâches » | `ERR-033` (**nouveau**) | texte d'`ERR-033` | US-002 S13, US-024 S06 |
+| « objectifs hérités de la tâche parente » | `ERR-034` (**nouveau**) | texte d'`ERR-034` | US-024 S14 |
+| « 2 sous-tâches restantes » (n variable) | `ERR-035` (**nouveau**) ; texte identique à `ALR-013` | « Il reste 2 sous-tâches à terminer ou abandonner. » | US-003 S12, US-024 S15 |
+| « tâche abandonnée » | `ERR-032` (**nouveau**) | texte d'`ERR-032` | US-024 S18 |
+| « un seul niveau de sous-objectifs » | `ERR-030` (variante `cible-est-sous-objectif` pour S11 ; `objectif-a-des-sous-objectifs` pour S10, objectif déplacé qui a déjà des sous-objectifs) | texte d'`ERR-030` | US-023 S10 et S11 |
+| « objectif placé sous lui-même » | `ERR-031` | « Un objectif ne peut pas être placé sous lui-même » | US-023 S11 |
+| « réseau nécessaire pour la première connexion » / « connexion interrompue » / « Drive indisponible pour ce compte » / « réseau nécessaire pour se connecter » | `ERR-003` / `ERR-005` / `ERR-006` / `ERR-004` | voir §6.6.8 | US-022 S18, S20 à S22, US-018 |
+| « annule la connexion » / « refuse les autorisations demandées » | `ERR-001` / `ERR-002` | voir §6.6.8 | US-022 S06 |
+
+Les scénarios qui citent déjà `ERR-011`, `ERR-012`, `ERR-003` à `ERR-006` et `ALR-001` (US-017, US-018, US-022) sont conformes au catalogue. Un refus nouveau qui n'est pas dans cette table reçoit un code du catalogue **avant** d'être écrit dans un scénario.
+
+**Forme de `MEN-HEURE-PARIS` accompagnant une date de fin (US-003 S21).**
+- *Élément* : la puce est un élément distinct (`data-etat="MEN-HEURE-PARIS"`), placé **immédiatement après** la date de fin sur la même ligne, dans le détail de la tâche (« Terminée le 11 nov. » puis la puce « Heure de Paris »). Idem pour « Abandonnée le {date} ». La date porte `aria-describedby` vers la puce.
+- *Présence* : l'élément existe dans le DOM si et seulement si le fuseau de l'appareil diffère d'`Europe/Paris` ; avec `Europe/Paris`, il est absent (pas masqué). Le fuseau « America/New_York » du scénario donne donc « est accompagnée ».
+- *Date affichée* : toujours le jour de Paris (RG-053), jamais le jour de l'appareil.
+- *Jamais sur un délai* : aucun élément `MEN-HEURE-PARIS` dans la ligne « Délai », ni dans les puces de délai de la liste (S21, 2e assertion).
+- *Dans les listes* : la liste affiche « Terminée » sans date ; la puce n'y accompagne donc pas la date de fin ; elle reste dans le sous-titre de la vue (§4.21).
 
 **Réserves de ce catalogue.**
 - Q-ERG-16 (point de départ des 24 h), Q-ERG-17 (accès perdu depuis plus de 24 h : un ou deux bandeaux) et Q-ERG-18 (réapparition d'un bandeau fermé) attendent le commanditaire : ni le déclencheur de `BAN-RAPPEL-24H`, ni la variante `BAN-ACCES-GOOGLE`/`24H`, ni la règle de réapparition ne sont fixés. Les libellés ne dépendent pas de la réponse, sauf la ligne « {n} modification(s) ne sont encore que sur ce {appareil}. » de la variante.
@@ -1055,4 +1089,5 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Réponses Q-ERG-02 à 11 intégrées (§12.1). Navigation du lot 1 (§2.1). Principe P11. Composants §4.21 à §4.28. Cas de ConfirmDialog (§4.12). États et messages ajoutés (§6). Créneau déplacé, ordre d'Aujourd'hui, fun fact, bilan (§7.5 à §7.8). Accessibilité et responsive du lot (§9, §10). Statuts DAT-UX mis à jour (§11). Réserves Q-DEM001 levées (§12.2). Nouvelles questions Q-ERG-12 à 15. Maquettes ECR-007, 008, 010, 011 créées ; ECR-001, 002, 003 mises à jour. |
 | 0.2.2 | 2026-10-21 | Steeve | E7 de LOT-001 : bandeau RG-057 (§4.9, ECR-011 J et L) et consultation seule RG-058 (ECR-011 K) ; questions Q-ERG-16 et 17 ; réserves caduques retirées (Q-ERG-13 répondue). |
 | 0.2.1 | 2026-10-21 | Steeve | Nom « Done Juan » (DEC-017) : application et dossier Drive (V-13), validation E6 de LOT-001 (DEC-018). |
-| 0.2.3 | 2026-10-21 | Steeve | E7 de LOT-001, corrections du tour 1. **Catalogue des libellés et codes d'état observables (§6.6, ANT-7)** : indicateur `SYN-`, bandeaux `BAN-`, mentions `MEN-`, états `ETA-`, vides `EVD-`, toasts `TST-`, confirmations `CNF-`, erreurs `ERR-001` à `ERR-031` (dont les 6 motifs de connexion d'US-022), alertes `ALR-001` à `ALR-013`. Écran d'atterrissage après la première connexion (BEN-6). Écrans portant « Heure de Paris » (§4.21, BEN-8). Compteur 3/3 « En cours » (PEP-10). Textes de §6.3 alignés sur le catalogue. Q-ERG-16 à 18 reformulées, non tranchées. |
+| 0.2.3 | 2026-10-21 | Steeve | E7 de LOT-001, corrections du tour 1. **Catalogue des libellés et codes d'état observables (§6.6, ANT-7)** : indicateur `SYN-`, bandeaux `BAN-`, mentions `MEN-`, états `ETA-`, vides `EVD-`, toasts `TST-`, confirmations `CNF-`, erreurs `ERR-001` à `ERR-035` (dont les 6 motifs de connexion d'US-022), alertes `ALR-001` à `ALR-013`. Écran d'atterrissage après la première connexion (BEN-6). Écrans portant « Heure de Paris » (§4.21, BEN-8). Compteur 3/3 « En cours » (PEP-10). Textes de §6.3 alignés sur le catalogue. Q-ERG-16 à 18 reformulées, non tranchées. |
+| 0.2.4 | 2026-10-21 | Steeve | Tour 2 du refinement de LOT-001 (ANT-21) : catalogue complété (`ERR-023`, `ERR-032` à `ERR-035`, variantes `ERR-030`), table « motif des scénarios → code » (§6.6.10), forme de `MEN-HEURE-PARIS` avec une date de fin (US-003 S21). |
