@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** (refinement en 2 tours, `ceremonies/refinement-LOT-001.md`) ; E8 à lancer (Anthony) ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8** : 40 demandes de précision (11 bloquantes), réponses en cours ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -41,6 +41,7 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
+| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | Réponses en cours | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
 | Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)

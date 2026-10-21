@@ -1,0 +1,397 @@
+# Contrôle d'explicitation LOT-001 (E8)
+
+> Anthony, responsable technique, le 2026-10-21. Étape E8 de `docs/workflow.md`. Le lot est Ready et le refinement est clos (`refinement-LOT-001.md`).
+>
+> **Référentiel lu intégralement :**
+> - les 10 US, sections métier, « Impacts architecture » et « Impacts ergonomie » comprises ;
+> - les 10 fichiers `.feature` (243 scénarios ; décomptes conformes aux US) et `GLOSSAIRE-ETAPES.md` v1.1 ;
+> - le cahier des charges v0.9.1 (§6 glossaire, §7 RG-001 à RG-058, §8 ENF) ;
+> - le DAT v0.8 en entier ;
+> - le guide d'ergonomie v0.2.6 (§4.2 à §4.28, §5, §6 dont le catalogue §6.6) et la maquette ECR-002 (cadres L1 à L4) ;
+> - `LOT-001.md` et les décisions DEC-001 à DEC-029 de `suivi-projet.md`.
+>
+> Aucun autre fichier n'a été modifié. Les décisions DEC-001 à DEC-029 ne sont pas rouvertes. Quand une précision peut toucher une règle validée, je l'indique : elle repassera alors par le commanditaire (E6).
+
+## 1. Définitions utilisées
+
+| Terme | Sens dans ce document |
+|---|---|
+| **Explicite** | Aucune question bloquante n'est ouverte : l'US peut être conçue (E9) et testée (E10) sans interprétation. |
+| **Non explicite** | Au moins une question bloquante est ouverte, propre à l'US ou transverse et qui la concerne. |
+| **Bloquante E9** | Je ne peux pas arrêter la conception : interface, modèle de données ou format Drive. Une hypothèse prise maintenant coûterait une migration ou une reprise. |
+| **Bloquante E10** | La conception peut avancer, mais je ne peux pas écrire les tests ni les *step definitions* des scénarios cités. |
+| **Non bloquante** | Une hypothèse par défaut est proposée. Elle sera appliquée dans la ST si le propriétaire ne répond pas autrement avant E11. Il s'agit souvent d'une régularisation documentaire. |
+| **Règle validée touchée** | « Oui » : selon la réponse, la précision modifie une RG ou un CA validé (DEC-018, DEC-025). Pepper le signale et l'US repasse en E6. |
+
+Chaque question `Q-US-xxx-n` est un échange soumis à la règle anti-boucle (itération 1/2). Les questions transverses sont numérotées sous l'US la plus concernée. Les autres US y renvoient (« concernée par »).
+
+## 2. Synthèse
+
+| US | Verdict | Q-US propres | Dont bloquantes | Q-US transverses qui la concernent |
+|---|---|---|---|---|
+| US-022 Connexion | **Non explicite** | 4 | 0 | Q-US-018-1 (B-E9), Q-US-031-1 (B-E9) |
+| US-017 Synchronisation | **Non explicite** | 12 | 5 | Q-US-018-1 (B-E9) |
+| US-018 Hors ligne smartphone | **Non explicite** | 3 | 1 | Q-US-017-1 (B-E9), Q-US-017-12 |
+| US-031 Hors ligne PC | **Non explicite** | 4 | 1 | Q-US-018-1 (B-E9), Q-US-017-1 (B-E9) |
+| US-001 Objectif | **Non explicite** | 5 | 2 | Q-US-017-1 (B-E9, S19), Q-US-024-1 |
+| US-023 Sous-objectifs | **Non explicite** | 2 | 0 | Q-US-001-1 (B-E10), Q-US-001-2 (B-E9), Q-US-017-1 (B-E9) |
+| US-002 Tâches | **Non explicite** | 3 | 1 | Q-US-001-2 (B-E9), Q-US-024-1 |
+| US-024 Sous-tâches | **Non explicite** | 3 | 0 | Q-US-001-2 (B-E9) |
+| US-003 Terminer / rouvrir | **Non explicite** | 2 | 0 | Q-US-001-2 (B-E9), Q-US-002-1 (B-E10), Q-US-017-1 (B-E9, S17) |
+| US-025 Abandonner | **Non explicite** | 2 | 1 | Q-US-001-2 (B-E9), Q-US-002-1 (B-E10) |
+| **Total** | 0 / 10 explicites | **40** | **11** | — |
+
+**Lecture.** Les dix US sont bien rédigées et cohérentes avec le catalogue. Les verdicts « Non explicite » tiennent surtout à quatre points transverses, auxquels on peut répondre rapidement :
+- **Q-US-001-2** : format et contenu de l'historique (RG-050). Les six scénarios d'historique utilisent des rendus incompatibles entre eux.
+- **Q-US-017-1** : critère de « valeur écartée ». Le DAT §4.2 contredit US-017 S10 et quatre autres scénarios.
+- **Q-US-018-1** : unité de décompte d'une « modification en attente ».
+- **Q-US-031-1** : sur PC, distinction entre « accès retiré » et « session expirée ».
+
+Les autres questions bloquantes sont circonscrites : un incrément d'US-017, une vue, un cas d'usage.
+
+### 2.1 Liste des questions bloquantes
+
+| Id | Propriétaire | Niveau | Objet | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-001-1 | Pepper | E10 | RG-047 : signalement d'un rattachement ou d'une création sous un objectif supprimé (US-001 S20, US-023 S19) | Possible (RG-047) |
+| Q-US-001-2 | Pepper, avis Starck | E9 | Historique RG-050 : contenu, rendu, conséquences indirectes (6 scénarios, format Drive) | Non (précision) |
+| Q-US-002-1 | Pepper et Steeve | E10 | Contenu, filtres et tri de la liste « Tâches » (S20 contre ECR-002 L1 et L4) | Non |
+| Q-US-017-1 | Starck | E9 (incr. 2) | Critère de concurrence d'une valeur écartée (DAT §4.2 contre S10) | Non |
+| Q-US-017-2 | Starck | E9 (incr. 3) | Granularité de RG-044 avec un fichier par appareil et un manifeste | Non |
+| Q-US-017-3 | Pepper et Starck | E9 (incr. 3) | Choix RG-044 concurrents sur les deux appareils | **Oui** (complète RG-044) |
+| Q-US-017-4 | Starck | E9 (incr. 2 et 4) | Faisabilité de la garantie de CA-13 avec une horloge déréglée hors ligne | **Oui** si limitation |
+| Q-US-017-6 | Steeve et Pepper | E10 (incr. 2) | Point « à lire » hors de `SYN-OK` (RG-056 a contre catalogue §6.6.2) | **Oui** si option b |
+| Q-US-018-1 | Pepper et Steeve, avis Starck | E9 | Unité de décompte d'une « modification en attente » | Non (précision d'affichage) |
+| Q-US-025-2 | Pepper | E10 (cas d'usage `RouvrirTache`) | Rouvrir une sous-tâche terminée dont la tâche parente est abandonnée | Possible (cas non couvert par RG-023 et RG-027) |
+| Q-US-031-1 | Starck | E9 | PC : distinguer la révocation (`BAN-ACCES-GOOGLE`) de la session expirée (`SYN-SESSION`) | Non |
+
+Les questions Q-US-017-1 à 4 et 6 ne bloquent que l'incrément d'US-017 indiqué. L'incrément 1 (synchronisation de base) peut être conçu sans elles.
+
+---
+
+## 3. US-022 — Se connecter avec mon compte Google
+
+**Verdict : Non explicite** (par Q-US-018-1 et Q-US-031-1).
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui. CA-8 (avertissement Google) est en recette manuelle (S13b, `@recette`). |
+| RG référencées | RG-018, 019, 020, 035, 043, 055, ENF-05, 06, 08 : conformes au CdC v0.9.1. |
+| Cas limites et cas d'erreur | Couverts ; motifs `ERR-001` à `ERR-006` conformes au §6.6.8. |
+| Maquettes | ECR-010, ECR-011 (section Compte). |
+| `.feature` et CA | Matrice complète (27 scénarios). En-tête « CdC v0.8 » (ANT-24). |
+| Codes du catalogue | `ERR-001` à `006`, `BAN-ACCES-GOOGLE`, `SYN-SESSION`, `MEN-ATTENTE`. |
+| Contradictions | Aucune dans l'US. La déconnexion avec réseau est précisée par le DAT seul (Q-US-022-4). |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-022-1 | **Glossaire.** Ces formes d'étapes sont utilisées mais absentes du glossaire v1.1 : « sur le smartphone, aucune autre fonction n'est accessible » ; « … aucune donnée n'est affichée » ; « aucun objectif et aucune tâche n'existent » ; « que sur le smartphone, l'utilisateur a créé un objectif "X" sans délai[, pas encore enregistré dans le Drive] » ; « … aucune connexion n'est demandée[ avant d'afficher les données] » ; « les actions de compte proposées sur le smartphone sont exactement "X" et "X" » ; « le bandeau "X" est affiché, avec l'action "X" » (avec virgule ; US-018 et US-031 emploient aussi la forme sans virgule : une seule forme) ; « l'indicateur de synchronisation est "X", avec l'action "X" » ; « les autorisations demandées au compte Google sont exactement : … » ; « aucun accès à l'agenda n'est demandé » ; « aucun avertissement de Google … n'est présenté » ; « aucune donnée du compte "X" n'est accessible » ; « le Drive du compte "X" ne contient aucune donnée du compte "X" » ; « le Drive du compte "X" contient l'objectif "X" avec le délai AAAA-MM-JJ » ; « une confirmation explicite est demandée, qui annonce que n modifications seraient perdues » ; « que … l'utilisateur a supprimé les données de cet appareil » ; « que les données du compte "X" sont conservées sur le smartphone, avec n modification en attente ». **Sens à fixer** pour « que l'accès au compte Google "X" a été retiré / a expiré sur le <appareil> » (US-022 S11, US-018 S11, S17c, US-031 S13, S22) : a) l'accès est retiré côté Google **et déjà constaté** par l'application ; b) il est seulement retiré côté Google et sera constaté au prochain appel. Hypothèse : a). Sans cela, US-018 S11 et S17c n'ont pas d'étape qui déclenche la détection. | Pepper | Non bloquante | Non |
+| Q-US-022-2 | Première connexion, ou reconnexion, avec le réseau présent mais un Drive **momentanément** indisponible (5xx ou 429 persistants après les nouvelles tentatives) : quel motif ? a) `ERR-005` ; b) `ERR-006`. Hypothèse : a). `ERR-006` reste réservé au Drive désactivé ou refusé pour le compte (403 permanent), puisque son texte invite à « essayer avec un autre compte ». | Steeve et Pepper | Non bloquante | Non |
+| Q-US-022-3 | Consultation seule (RG-058, aucune écriture dans le Drive) et compte : confirmez-vous les deux points suivants ? (1) « Supprimer les données de cet appareil » considère le dépôt comme impossible et passe directement à `CNF-SUPPR-DONNEES-PERTE`. (2) « Se déconnecter » ne tente aucun dépôt. Oui ou non. | Starck et Pepper | Non bloquante | Non |
+| Q-US-022-4 | Déconnexion **avec réseau** et modifications en attente. Le DAT §4.1.5 prévoit un dernier dépôt ; CA-6 n'en parle pas. Confirmez-vous ce déroulement : l'application tente le dépôt ; `CNF-DECONNEXION` n'apparaît que si des modifications restent en attente après le dépôt, avec leur nombre. Oui ou non. | Pepper et Steeve | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-018-1 (unité de décompte : CA-6, CA-10, S08, S09a, S14, S17a, S17b, S19) ;
+- Q-US-031-1 (CA-7 sur le PC ; S23).
+
+**Préalable inchangé** : le test technique R1, R2 et R11 doit avoir lieu avant E9 (R11 conditionne CA-8 sur le PC).
+
+---
+
+## 4. US-017 — Retrouver mes données sur smartphone et PC
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui, avec l'horloge contrôlée (délais d'une heure et d'une minute). La dernière phrase de CA-13 n'est pas testée (Q-US-017-4). |
+| RG référencées | RG-017, 018, 020, 021, 035, 036, 044, 047 à 049, 053, 054, 056, 058 : conformes. |
+| Cas limites et cas d'erreur | Couverts, sauf deux trous : choix RG-044 concurrents (Q-US-017-3) et horloge déréglée hors ligne (Q-US-017-4). |
+| Maquettes | ECR-011 (cadres A à L), ECR-010. |
+| `.feature` et CA | 37 scénarios ; matrice complète ; en-tête « CdC v0.8 ». |
+| Codes du catalogue | `ERR-011`, `ERR-012`, `ALR-001`, `SYN-INFO`, `SYN-SESSION`, `MEN-ATTENTE`, `MEN-INCOHERENCE`, `MEN-HEURE-PARIS`, `BAN-CONSULTATION-SEULE`. |
+| Contradictions | DAT §4.2 contre S10 (Q-US-017-1) ; RG-056 a contre catalogue §6.6.2 (Q-US-017-6) ; DAT §6.4 contre CA-13 (Q-US-017-5) ; version de schéma affichée : DAT contre catalogue (Q-US-017-10). |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-017-1 | **Critère de « valeur écartée ».** Le DAT §4.2 consigne une valeur perdue « quand une valeur distante l'emporte sur une valeur locale **pas encore déposée** ». Dans S10, le PC, en ligne, saisit « A », qui est donc déposé. Le smartphone, hors ligne, saisit « B » dix minutes plus tard. Avec le critère du DAT, rien n'est consigné, alors que S10, US-018 S07, US-031 S10, US-003 S17 et US-001 S19 attendent l'entrée. Le critère est-il celui-ci : « une valeur est écartée si l'écriture gagnante a été faite sans connaissance d'elle, c'est-à-dire si la valeur que l'écriture gagnante a remplacée n'est pas la valeur perdue » ? Sa mise en œuvre conserve, avec chaque écriture de champ, l'HLC de la valeur remplacée. Oui ou non ; si non, quel critère ? Le DAT §4.2 est à aligner. | Starck | **Bloquante E9** (incr. 2) | Non |
+| Q-US-017-2 | **Granularité de RG-044**, avec un fichier d'état par appareil et un `manifeste.json`. (a) Si seul le fichier d'**un** appareil est supprimé, illisible ou modifié à la main, quels appareils affichent `ERR-012` : seulement son propriétaire, ou les deux ? (b) « Restaurer » réécrit-il seulement le fichier de l'appareil qui restaure et le manifeste, le fichier altéré de l'autre appareil étant ignoré jusqu'à ce que son propriétaire le réécrive ? (c) Le fichier d'un autre appareil supprimé à la main est indiscernable d'un appareil jamais vu, donc ne déclenche aucun avertissement : confirmez-vous ? (d) Le manifeste a plusieurs écrivains (première connexion, restauration, repartir de zéro) : quelle règle en cas d'écritures concurrentes ? Scénarios concernés : S18, S20, S21, S32 et S33. L'étape « un fichier de données de l'application » de S32 ne dit pas lequel. | Starck | **Bloquante E9** (incr. 3) | Non |
+| Q-US-017-3 | **Choix RG-044 concurrents.** Les deux appareils constatent l'absence des données. Avant tout échange, le PC choisit « Restaurer » et le smartphone « Repartir de zéro ». Quel choix s'applique ? a) « repartir de zéro » l'emporte toujours (nouvelle `generation`) ; b) le choix le plus récent ; c) le premier déposé. Et si l'autre appareil a déjà restauré, la question restée en attente (« Décider plus tard ») disparaît-elle d'elle-même ? Oui ou non. | Pepper et Starck | **Bloquante E9** (incr. 3) | **Oui** : complète RG-044, à soumettre au commanditaire |
+| Q-US-017-4 | **CA-13, « quel que soit l'écart, la modification réellement la plus récente l'emporte ».** La correction d'horloge (DAT §6.4) n'est mesurée qu'à un échange avec Google ; hors ligne, l'appareil applique le dernier écart connu. Si l'horloge est déréglée pendant que l'appareil est hors ligne, ou après un redémarrage hors ligne, ses modifications sont mal horodatées et peuvent l'emporter sur des modifications réellement plus récentes. Deux options : a) la garantie est tenue dans tous les cas, et vous précisez le mécanisme (par exemple une horloge monotone depuis le dernier échange, avec son comportement après un redémarrage) ; b) la garantie ne vaut que pour les modifications faites après la dernière mesure de l'écart. Dans le cas b), CA-13 est à reformuler et à revalider par le commanditaire. Par ailleurs, aucun scénario ne vérifie cette phrase avec un écart de plus de 24 h : Pepper en ajoute-t-il un ? Oui ou non. | Starck, puis Pepper | **Bloquante E9** (incr. 2 et 4) | **Oui** si b) |
+| Q-US-017-5 | Le DAT §6.4 indique qu'« une valeur reçue datée de plus de 24 h dans le futur déclenche un avertissement », donc sur l'appareil **à l'heure**. CA-13 et S13a affichent `ALR-001` sur l'appareil **déréglé**. Confirmez-vous ceci : `ALR-001` ne s'affiche que sur l'appareil dont l'horloge diffère de plus de 24 h de l'en-tête `Date` de Google ; l'autre appareil n'affiche rien ? Le DAT est à aligner. | Starck | Non bloquante | Non |
+| Q-US-017-6 | **Point « à lire » hors de `SYN-OK`.** RG-056 a demande un signalement « discret et permanent » tant qu'une information n'est pas lue. Le catalogue §6.6.2 en fait un modificateur de `SYN-OK` seulement, « jamais d'un autre état ». Hors ligne (`SYN-HORS-LIGNE`), ou avec des modifications à envoyer (`SYN-ATTENTE`), une information non lue est-elle signalée ? a) oui : le point s'ajoute à tout état, et le catalogue est à corriger ; b) non : RG-056 a est à reformuler et revalider. | Steeve et Pepper | **Bloquante E10** (incr. 2) | **Oui** si b) |
+| Q-US-017-7 | **Préfixe d'appareil des assertions dans un scénario à deux appareils.** Exemples : « la liste des modifications non retenues contient : » (S10, S24, S25 ; US-001 S19 ; US-002 S23 ; US-018 S07 et S08 ; US-023 S16 à S18c ; US-024 S22 ; US-031 S10 et S11) ; « l'état de l'objectif … » (US-003 S18). Le glossaire dit : « sans préfixe, l'appareil est le seul en jeu ». Hypothèse : sans préfixe dans un scénario à deux appareils, l'assertion vaut « sur chacun des deux appareils ». À confirmer, ou ajouter les préfixes. | Pepper | Non bloquante | Non |
+| Q-US-017-8 | **Valeurs fermées du tableau « modifications non retenues ».** Colonne `information` : intitulé, délai, parent, état, création, et éventuellement description, estimation, objectifs ? Valeurs spéciales des colonnes `valeur non retenue` et `valeur conservée` : « tâche supprimée », « objectif supprimé », « placement annulé », « sous <objectif> », « sous-tâche de <tâche> », « supprimée avec la tâche <tâche> », « données effacées (repartir de zéro) ». Elles sont à inscrire au glossaire §8, avec leur correspondance avec `ALR-008` à `ALR-011`. Pour S21 : les modifications perdues par « repartir de zéro » figurent-elles a) dans la liste (une ligne `DiscardedItem` par modification), en plus de la carte `ALR-008` ; b) seulement dans la carte `ALR-008` ? Hypothèse : a), conforme au DAT §4.2. Le catalogue n'a aucun code pour cette forme : Steeve en crée-t-il un ? | Pepper et Steeve | Non bloquante | Non |
+| Q-US-017-9 | **Sens observable et liste fermée.** Hypothèses proposées : « les données présentes sur le <appareil> s'affichent aussitôt » : le modèle de vue de la liste est produit depuis `DepotLocal` avant toute réponse du faux Drive ; « toutes les fonctions restent utilisables » (S15) : aucune action de saisie n'est désactivée ni refusée ; « les données sont identiques à celles enregistrées » (S08) : l'état métier lu est égal à celui du Drive ; « 3 modifications ont été enregistrées … » et « les 3 modifications sont intégrées » (S05) : trois opérations fixées par la step (création, renommage, changement de délai) ; « aucune donnée … transmise ailleurs que dans le Drive » (S07) : le banc n'observe aucune requête sortante hors du faux Google. Liste fermée des valeurs d'état à ajouter au glossaire §8 : tâche (« à faire », « terminée », « abandonnée »), objectif (« en cours », « atteint », « à décliner en tâches »). Formes absentes du glossaire : « toutes ces opérations ont été acceptées » (S01), « les deux appareils affichent le même intitulé pour la tâche "X", "A" ou "B" », « la liste … contient exactement n information(s) », « la liste … contient [toujours] une valeur écartée pour <information> de la tâche "X" », « l'indicateur de synchronisation est toujours / n'est pas "X" », « que sur le smartphone, le message d'erreur "X" est affiché », « l'utilisateur se voit proposer "restaurer" et "repartir de zéro" », « aucun choix entre restaurer et repartir de zéro n'est demandé », « que … le délai de l'objectif "X" a été changé à la main en …, le fichier restant lisible », « l'objectif "X" a été créé et n'est pas encore synchronisé », « l'objectif "X" existe toujours », « la tâche "X" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "X" ». | Pepper | Non bloquante | Non |
+| Q-US-017-10 | RG-058 : (a) sur le PC, que fait « Mettre à jour » ? Hypothèse : activation du service worker en attente, puis rechargement, sans perte des modifications en attente. (b) Le message de consultation seule affiche-t-il la version de schéma attendue, comme le prévoient le DAT §4.2 et les impacts d'US-017, alors que le texte de `BAN-CONSULTATION-SEULE`, qui fait foi, ne la contient pas ? Oui ou non. | Starck et Steeve | Non bloquante | Non |
+| Q-US-017-11 | RG-044 : (a) après « Décider plus tard », le choix est-il reproposé à chaque ouverture, ou seulement disponible dans la feuille (`SYN-ACTION`, `ERR-012`) ? Hypothèse : feuille seulement. (b) « Restaurer » choisi sans réseau : a) refusé, avec un message ; b) mémorisé et exécuté au retour du réseau ? Hypothèse : b). | Steeve | Non bloquante | Non |
+| Q-US-017-12 | Échec persistant de synchronisation (§6.3 ; `SYN-RETENTATIVE`, 3 tentatives au plus avant `SYN-ACTION`) : (a) quel code `ERR-` pour un échec réseau ou 5xx persistant ? Aucun code de `ERR-010` à `ERR-015` ne le couvre. (b) Les tentatives continuent-elles après `SYN-ACTION` (DAT §4.4.5 : attente exponentielle jusqu'à 5 min) ? Oui ou non. US-018 S14 et US-031 S18 (3 interruptions, puis succès) passent par cet état. | Steeve et Starck | Non bloquante | Non |
+
+**Concernée aussi par** Q-US-018-1 (décompte des modifications en attente dans la feuille et dans `SYN-ATTENTE`).
+
+---
+
+## 5. US-018 — Utiliser l'application sans réseau sur mon smartphone
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui ; RG-057 est entièrement scénarisée (S15 à S17d), avec un seuil strict. |
+| RG référencées | RG-019, 021, 035, 036, 047 à 049, 057 : conformes (CdC v0.9.1, DEC-025, DEC-026). |
+| Cas limites et cas d'erreur | Couverts. Les scénarios système (arrêt brutal, coupure pendant la saisie) n'ont pas de niveau d'exécution fixé (Q-US-018-3). |
+| Maquettes | ECR-011 B, J, L ; ECR-002 L3 ; ECR-008 E. |
+| `.feature` et CA | 22 scénarios, matrice complète. |
+| Codes du catalogue | `SYN-HORS-LIGNE`, `MEN-ATTENTE`, `BAN-RAPPEL-24H`, `BAN-ACCES-GOOGLE` variante `24H`, `ERR-003`. |
+| Contradictions | Aucune. Le glossaire §6 porte encore « interprétation de Starck, à confirmer » (caduc depuis DEC-026), et le §8 « situation … à revoir » (caduc depuis DEC-025) : à nettoyer avec ANT-24. |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-018-1 | **Unité de décompte d'une « modification en attente ».** Elle vaut pour `SYN-HORS-LIGNE`, `SYN-ATTENTE`, `BAN-RAPPEL-24H`, la variante `24H`, `CNF-DECONNEXION`, `CNF-SUPPR-DONNEES-PERTE`, `SYN-FEUILLE-EN-ATTENTE` et l'étape « … y compris n modifications en attente ». Exemple : hors ligne, l'utilisateur crée l'objectif X, puis le renomme, puis change deux fois le délai de la tâche T. Que vaut n ? a) 2 : éléments distincts portant `MEN-ATTENTE` ; b) 4 : opérations de l'utilisateur ; c) autre. Les scénarios actuels ne départagent pas ces options, mais la conception en dépend. En b), il faut un journal local des opérations : DS-11 n'a pas de file, et le journal métier (RG-050) n'enregistre pas les renommages. Avis de Starck attendu sur ce point. Confirmez aussi l'instant retenu pour « la plus ancienne modification en attente » (RG-057) : celui de la première écriture locale non déposée, quel que soit l'élément. | Pepper et Steeve, avis Starck | **Bloquante E9** | Non (précision d'affichage), sauf si Pepper en juge autrement |
+| Q-US-018-2 | **Glossaire.** S13 emploie « commence la création d'une sous-tâche "X" de la tâche "X", de délai …, estimée à … ». Cette forme est absente du glossaire, qui prévoit la séquence d'US-031 S17 : « commence la saisie d'une sous-tâche … », « saisit l'intitulé … », « termine la saisie ». Alignez-vous S13 sur cette séquence ? Oui ou non. Autres formes absentes : « crée une sous-tâche "X" de la tâche "X", de délai …, estimée à … » (S02 ; aussi US-024 S07 et US-031 S02) ; « sur le PC, après échange, il existe n objectif d'intitulé "X" » (S14) ; « le bandeau "X" est affiché avec l'action "X" », sans virgule (voir Q-US-022-1) ; « le bandeau "X" est affiché avec n modification(s) en attente » (le glossaire a la forme, mais le pluriel est à fixer en une seule définition). | Pepper | Non bloquante | Non |
+| Q-US-018-3 | **Niveau d'exécution des scénarios qui relèvent du système** sur smartphone : S09 (« éteint puis rallumé », « arrêt brutal ») et S13 (« réseau coupé pendant la saisie »). DS-14 exclut tout bout-en-bout automatisé sur Android en v1. Proposition : exécution au niveau des cas d'usage, avec un `DepotLocal` persistant simulé (un arrêt est un abandon de l'instance sans fermeture propre), complétée par une vérification manuelle sur appareil en recette technique (E14, Starck). Faut-il en plus une variante `@recette` de S09 ? Oui ou non. | Pepper et Starck | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-017-1 (S07 et S08 : valeurs écartées) ;
+- Q-US-017-12 (S14) ;
+- Q-US-022-1 (sens de « l'accès a été retiré »).
+
+---
+
+## 6. US-031 — Utiliser l'application sans réseau sur mon PC
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui. Sept scénarios `@ihm` sont exécutés par cucumber-js et Playwright (DAT §3.3). |
+| RG référencées | RG-017, 019, 021, 035, 036, 047 à 049, 057 : conformes. |
+| Cas limites et cas d'erreur | Couverts. La navigation privée n'est pas scénarisée, ce qui est justifié. |
+| Maquettes | ECR-011 H, I, J, L (déclinaison PC identique) ; ECR-002 ; ECR-007. |
+| `.feature` et CA | 27 scénarios, matrice complète. |
+| Codes du catalogue | `SYN-SESSION`, `SYN-HORS-LIGNE`, `MEN-ATTENTE`, `MEN-INCOHERENCE`, `BAN-RAPPEL-24H`, `BAN-ACCES-GOOGLE`. |
+| Contradictions | CA-10 c renvoie à « CA-8 » au lieu de CA-9 (Q-US-031-3). |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-031-1 | **PC : retrait de l'accès ou session expirée ?** Avec Google Identity Services (modèle « jeton », sans jeton de rafraîchissement), une demande silencieuse de jeton échoue-t-elle de la même façon quand la session Google du navigateur a expiré et quand l'accès a été retiré ? (a) Comment l'application distingue-t-elle `SYN-SESSION` et `ERR-015`, sans bandeau, de `BAN-ACCES-GOOGLE` et `ERR-010` ? (b) Si ce n'est pas possible avant un geste de l'utilisateur, quel état afficher ? Proposition : `SYN-SESSION`, puis `BAN-ACCES-GOOGLE` si le geste de reconnexion aboutit à un refus ou à `invalid_grant`. (c) Sur le PC, « accès expiré » (RG-035, US-022 CA-7, US-031 CA-9) équivaut-il à « session Google du navigateur expirée », donc jamais de bandeau ? Point à vérifier pendant le test technique R2 et R11. Scénarios : US-031 S13, S22, S22b ; US-022 S23. | Starck | **Bloquante E9** (adaptateur `FournisseurAuth` web) | Non |
+| Q-US-031-2 | PC en `SYN-SESSION`, avec une modification en attente depuis plus de 24 h : `BAN-RAPPEL-24H` s'affiche-t-il ? a) oui : RG-057 porte sur l'âge de la modification, quel que soit l'état ; b) non. Le catalogue (« aucun bandeau pour `SYN-SESSION` ») et la phrase de l'US (« la session expirée reste sans bandeau ») se lisent dans les deux sens. Hypothèse : a). | Steeve et Pepper | Non bloquante | Non |
+| Q-US-031-3 | Correction rédactionnelle : CA-10 c renvoie à « CA-8, RG-035 », alors que la perte d'accès est le CA-9 d'US-031 (copie d'US-018). | Pepper | Non bloquante | Non |
+| Q-US-031-4 | **Glossaire et ANT-23.** Formes absentes : « le Drive du compte "X" ne contient pas encore la tâche "X" » ; « aucun élément ne porte la mention "X" » ; « les deux onglets affichent la tâche "X" et l'objectif "X" » ; « que la session Google du navigateur du PC est active » (présente au §1, à garder telle quelle). Sens proposé pour S14 (ANT-23) : « aucun écran de Done Juan n'est affiché » signifie que la navigation Playwright hors ligne échoue (`net::ERR_INTERNET_DISCONNECTED`) et qu'aucun élément portant un `data-etat` de l'application n'existe ; « le navigateur du PC affiche son propre message de page inaccessible » signifie que la page courante est la page d'erreur du navigateur. À confirmer. | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-018-1 (décompte : S04, S19 à S22) ;
+- Q-US-017-1 (S10, S11) ;
+- Q-US-022-1 (sens de « l'accès a été retiré »).
+
+---
+
+## 7. US-001 — Créer et gérer un objectif
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui. |
+| RG référencées | RG-001, 002, 004, 024, 025, 045, 046, 047, 050, 053, 054 : conformes. |
+| Cas limites et cas d'erreur | Couverts : intitulé vide ou blanc, doublon, changement d'heure, voyage. |
+| Maquettes | ECR-008, ECR-003. |
+| `.feature` et CA | 21 scénarios, matrice complète. |
+| Codes du catalogue | `ERR-020`, `MEN-SANS-DELAI`. |
+| Contradictions | Rendu de l'historique S21 incompatible avec US-023 S20, US-002 S24 et US-024 S23 (Q-US-001-2). |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-001-1 | **RG-047, ce qui est signalé.** CA-10 prévoit que l'utilisateur est « informé des modifications écartées ». Dans S20 (et dans US-023 S19), après fusion, la liste des modifications non retenues contient-elle une entrée : (a) pour le rattachement de « Annexe » à l'objectif supprimé ? Oui ou non. (b) pour la création de « Version imprimable » sous l'objectif supprimé, devenue objectif principal ? Oui ou non. Si oui, ajouter l'assertion et la forme (information, valeur non retenue, valeur conservée) à S20 et à US-023 S19. | Pepper | **Bloquante E10** (US-001 S20, US-023 S19) | Possible (RG-047) |
+| Q-US-001-2 | **Historique (RG-050) : contenu et rendu.** Le journal est persisté dans le Drive : son format engage le schéma. Concerne US-001 S21, US-023 S20, US-002 S24, US-024 S23, US-003 S20 et US-025 S17. (a) **Rendu des valeurs avant et après.** Pour une création, il diffère d'un fichier à l'autre : « 2026-12-15 » (objectif, US-001), « parent Publier le guide » (sous-objectif), « délai …, estimation …, objectifs … » (tâche), « tâche parente …, délai …, estimation … » (sous-tâche). Règle proposée : pour une création, « après » énumère, dans l'ordre (tâche parente ou parent, délai, estimation, objectifs), les seules valeurs renseignées, chacune préfixée de son nom. Pour la modification d'un seul champ, les valeurs brutes sans préfixe. Pour un changement d'état, la forme d'US-003 S20 et d'US-025 S17. Conséquence : la ligne « création » d'US-001 S21 devient « délai 2026-12-15 ». Validez-vous cette règle ? Oui ou non. (b) **Libellés d'événement**, liste fermée proposée : création, modification délai, modification estimation, rattachement, détachement, changement parent, fin, réouverture, abandon, reprise, suppression. À compléter ? (c) **Conséquences indirectes.** Écrivent-elles des entrées ? Cas à trancher : suppression d'un objectif (une entrée « détachement » par tâche, « changement parent » par sous-objectif promu ?) ; abandon en cascade (une entrée « abandon » par sous-tâche ?) ; suppression d'une tâche parente (une entrée « suppression » par sous-tâche ?) ; réouverture de la tâche parente par US-003 CA-9 ou par l'ajout d'une sous-tâche à une tâche terminée (une entrée « réouverture » ?) ; estimation recopiée à la suppression de la dernière sous-tâche (une entrée « modification estimation » ; le DAT dit oui). La vélocité et le backlog des lots suivants en dépendent, et le DAT dérive ces conséquences à la lecture, sans écriture. (d) Ni l'intitulé ni la description ne sont historisés, puisque RG-050 ne les cite pas : confirmez-vous ? | Pepper, avis Starck | **Bloquante E9** (schéma du journal) et **E10** (6 scénarios) | Non (précision de RG-050) |
+| Q-US-001-3 | Intitulé d'un objectif ou d'une tâche : les espaces de début et de fin sont-ils retirés à l'enregistrement ? Oui ou non. Longueur maximale : aucune, ou N caractères ? Hypothèse : espaces retirés ; aucune longueur maximale fonctionnelle. | Pepper | Non bloquante | Non |
+| Q-US-001-4 | **Heure locale ambiguë dans l'étape « nous sommes le … à HH:MM heure de Europe/Paris ».** Le 2026-10-25 à 02:30 existe deux fois (US-001 S13, US-002 S16, US-003 S03, US-025 S03). Règle proposée pour le banc : première occurrence (heure d'été, UTC+2) ; une heure inexistante, comme le 2027-03-28 à 02:30, fait échouer l'étape. Validation et inscription au glossaire §4. | Pepper | Non bloquante | Non |
+| Q-US-001-5 | **Glossaire.** Formes absentes : « l'objectif "X" a n tâche(s) à faire, n tâche(s) terminée(s) et n tâche(s) abandonnée(s) » ; « il existe n objectifs d'intitulé "X" » ; « la liste des objectifs présente : » (valeurs « oui » et « non », « sans délai ») ; « le détail présente l'intitulé …, la description … et le délai … » ; « le détail présente les tâches "X" et "X" » ; « le détail présente le sous-objectif "X" » ; « la tâche "X" figure parmi les tâches sans objectif » ; « l'objectif "X" a toujours n tâche rattachée » ; « l'historique contient, pour l'objectif ou la tâche "X" : » ; « l'historique n'est affiché nulle part dans l'application » (sens proposé : aucun modèle de vue n'expose le journal) ; « aucune action ne permet à l'utilisateur de saisir l'état de l'objectif "X" » (sens proposé : aucun modèle de vue n'expose cette action et aucun cas d'usage ne l'accepte) ; « crée un objectif sans délai dont l'intitulé est <vide \| composé uniquement d'espaces> » (liste fermée). | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-017-1 (S19) ;
+- Q-US-017-7 (S19, préfixe) ;
+- Q-US-024-1 (tableaux de contexte, S06).
+
+---
+
+## 8. US-023 — Organiser un objectif en sous-objectifs
+
+**Verdict : Non explicite** (par Q-US-001-1, Q-US-001-2 et Q-US-017-1).
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui ; RG-048 itérative (DEC-025) est couverte par S16 à S18c. S18c est conforme à l'exemple en chaîne de RG-048 (CdC v0.9.1). |
+| RG référencées | RG-002, 004, 022, 024, 025, 045, 046 à 048, 050 : conformes. |
+| Cas limites et cas d'erreur | Couverts. |
+| Maquettes | ECR-008, ECR-003 E. |
+| `.feature` et CA | 22 scénarios, matrice complète. |
+| Codes du catalogue | `ERR-030` et ses deux variantes, `ERR-031`. |
+| Contradictions | Les impacts architecture décrivent encore l'annulation d'un seul déplacement (DAT v0.4). Le DAT v0.8 §4.2 fait foi et en fait un cas particulier : pas de contradiction de fond. |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-023-1 | **Refus cumulés.** Exemple : « Publier le guide », qui a des sous-objectifs, est placé sous « Version imprimable », son propre sous-objectif. C'est à la fois un cycle, un objectif qui a des sous-objectifs et une cible qui est un sous-objectif. Quel code unique ? Ordre proposé : `ERR-031` (sous lui-même), puis `ERR-030 variante objectif-a-des-sous-objectifs`, puis `ERR-030 variante cible-est-sous-objectif`. Le placement d'un objectif sous son propre sous-objectif donne `ERR-030 objectif-a-des-sous-objectifs`, et non `ERR-031`. Validez-vous ? | Steeve et Pepper | Non bloquante | Non |
+| Q-US-023-2 | **Glossaire.** Formes absentes : « la liste présente "X" comme objectif principal » ; « … comme sous-objectif de "X" » ; « aucun sous-objectif n'a de sous-objectif » ; « les deux appareils présentent la même hiérarchie d'objectifs » ; « aucun changement de parent n'est enregistré pour l'objectif "X" » (sens proposé : aucune entrée « changement parent » dans l'historique) ; « le détail présente les sous-objectifs : » ; « l'objectif "X" porte une alerte de délai qui nomme l'objectif "X" » (le glossaire n'a que la forme pour une tâche) ; « l'action "créer un sous-objectif" n'est pas proposée pour l'objectif "X" » ; colonnes d'Exemples « délai du parent » et « délai du sous-objectif » (« de délai AAAA-MM-JJ » ou « sans délai »). Valeur « aucun (objectif principal) » de S20 : voir Q-US-001-2. | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-001-1 (S19) ;
+- Q-US-001-2 (S20) ;
+- Q-US-017-1 (S16 à S18c) ;
+- Q-US-017-7 et Q-US-017-8 (tableau des modifications non retenues).
+
+---
+
+## 9. US-002 — Créer et gérer mes tâches
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui, sauf CA-11 (contenu et tri de la liste), ambigu (Q-US-002-1). |
+| RG référencées | RG-001, 003, 004, 024, 028, 029, 045, 046, 047, 050, 053, 054 : conformes. |
+| Cas limites et cas d'erreur | Couverts. |
+| Maquettes | ECR-002 (L1 à L4), ECR-007, ECR-006 (guide §4.3). |
+| `.feature` et CA | 25 scénarios, matrice complète. |
+| Codes du catalogue | `ERR-020` à `ERR-023` (cumul « ERR-021, ERR-022 » conforme), `ERR-033`. |
+| Contradictions | S20 contre ECR-002 L1 et L4 et contre le guide §4.2 (Q-US-002-1). |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-002-1 | **Contenu de la liste « Tâches » (CA-11).** S20 mêle une tâche terminée aux tâches à faire, triées par délai, sans filtre. Or la maquette ECR-002 prévoit un filtre d'état par défaut « À faire » (L1) et un filtre « Terminées » trié par date de fin (L4). Les tâches abandonnées n'y sont visibles que dans leur filtre. Le guide §4.2 ne liste pas les sous-tâches une à une : la tâche parente porte un compteur « 1/3 ». Questions : (a) quel est le filtre par défaut à l'ouverture : « À faire » ou « Tous » ? (b) S20 se lit-il avec le filtre « Tous » ? Si oui, ajouter l'étape de filtre. (c) Dans « Tous », toutes les tâches sont-elles triées par délai croissant, ou les terminées sont-elles dans une section séparée ? (d) Les sous-tâches sont-elles absentes, comme lignes, de la liste « Tâches » dans tous les filtres, « Sans objectif » compris ? (e) À délai égal, quel départage : date de création croissante, ou intitulé ? (f) Quelles valeurs fermées pour l'étape « filtre les tâches sur l'état "X" » : « à faire », « terminée », « abandonnée », « tous » ? Concerne aussi US-003 S16 et US-025 S04. | Pepper et Steeve | **Bloquante E10** (modèle de vue de la liste) | Non |
+| Q-US-002-2 | « porte une alerte de délai qui nomme l'objectif "X" » (US-001 S10, US-018 S04, US-031 S02) et « … qui nomme le seul objectif "X" » (US-002) : la première forme signifie-t-elle « au moins X » ou « exactement X » ? Hypothèse : exactement X. Une seule forme au glossaire, plus « nomme les objectifs "X" et "X" ». | Pepper | Non bloquante | Non |
+| Q-US-002-3 | **Glossaire.** Formes absentes : « la tâche "X" existe avec : » suivi d'un tableau ; « crée une tâche de délai …, estimée à …, dont l'intitulé est <…> » ; « commence la saisie d'une nouvelle tâche » ; « aucun délai n'est présélectionné » ; « aucune estimation n'est présélectionnée » ; « le détail de l'objectif "X" présente la tâche "X" » ; « la liste des tâches présente, dans cet ordre : » ; « les tâches "X", "X" et "X" n'existent plus » ; « une confirmation est demandée, qui annonce n sous-tâches supprimées avec la tâche ». **Convention à inscrire** : une assertion tabulaire sans « dans cet ordre » ne vérifie pas l'ordre. Oui ou non. | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-001-2 (S24) ;
+- Q-US-017-1 (S23) ;
+- Q-US-024-1 (contexte, S13 et S21 : tâche parente sans estimation).
+
+---
+
+## 10. US-024 — Décomposer une tâche en sous-tâches
+
+**Verdict : Non explicite** (par Q-US-001-2).
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui ; l'estimation calculée de 0 h est explicitée (S16, S16b). |
+| RG référencées | RG-003, 023, 026, 028, 029, 045 à 047, 049, 050 : conformes. |
+| Cas limites et cas d'erreur | Couverts, sauf la somme nulle lors de la suppression de la dernière sous-tâche (Q-US-024-2). |
+| Maquettes | ECR-007 (A, H, I, J), ECR-003, ECR-002. |
+| `.feature` et CA | 24 scénarios, matrice complète. |
+| Codes du catalogue | `ERR-021` à `023`, `ERR-032` à `035`, `MEN-INCOHERENCE`. |
+| Contradictions | Aucune. |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-024-1 | **Convention des tableaux « les tâches suivantes : »** (glossaire §1, ANT-16), créés par les cas d'usage. Concerne aussi US-001, 002, 003, 017, 025 et 031. (a) Une tâche parente sans estimation dans le tableau (US-024 S02, S05… ; US-002 S13, S21 ; US-017 S26) serait refusée par `CreerTache` (`ERR-022`). Proposition : toutes les lignes sont d'abord créées « à faire », dans l'ordre du tableau ; une tâche parente sans estimation reçoit une estimation technique de 30 min, aussitôt remplacée par la somme de ses sous-tâches. (b) Les états « terminée » et « abandonnée » sont ensuite appliqués, d'abord aux sous-tâches, puis aux tâches parentes. L'abandon d'une sous-tâche est alors individuel, sans cascade. Sans cette règle, US-003 S13 (ajout d'une sous-tâche à une tâche terminée, d'où une confirmation) et US-025 S12 (ajout à une tâche abandonnée, d'où `ERR-032`) échouent dès le contexte. (c) Une tâche parente « abandonnée » dont des sous-tâches sont « à faire » dans le tableau : la cascade s'applique-t-elle ? Oui ou non. Validation de (a) à (c). | Pepper | Non bloquante | Non |
+| Q-US-024-2 | Cas limite « suppression de la dernière sous-tâche » quand la dernière somme calculée vaut 0 h : la seule sous-tâche restante est abandonnée, puis supprimée. Quelle estimation prend la tâche redevenue simple ? a) 0 h, modifiable ensuite ; c'est une exception au minimum de RG-028 jusqu'à la prochaine saisie ; b) l'estimation saisie avant la première sous-tâche, que le DAT conserve ; c) 30 min. | Pepper | Non bloquante (hypothèse a) | Possible (RG-028, RG-029) |
+| Q-US-024-3 | **Glossaire.** Formes absentes : « la tâche "X" n'a aucune sous-tâche » ; « le détail présente les sous-tâches : » ; « le détail indique n sous-tâche terminée sur n sous-tâches non abandonnées » ; « l'utilisateur est informé que l'estimation de … de la tâche "X" sera remplacée par la somme de ses sous-tâches » ; « porte une alerte de délai qui nomme la tâche parente "X" » ; « porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "X" » ; « que la tâche "X", terminée [ou abandonnée], est signalée en incohérence avec sa sous-tâche à faire "X" » (construction proposée : banc à deux appareils, fin ou abandon de la tâche parente sur le PC, création de la sous-tâche sur le smartphone hors ligne, puis échange) ; « une confirmation est demandée, qui annonce la réouverture de la tâche "X" » ; « les tâches "X" et "X" n'existent plus » ; « l'action "créer une sous-tâche" n'est pas proposée pour la tâche "X" ». | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-001-2 (S23) ;
+- Q-US-017-7 et Q-US-017-8 (S22).
+
+---
+
+## 11. US-003 — Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif
+
+**Verdict : Non explicite** (par Q-US-001-2, Q-US-002-1 et Q-US-017-1).
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui ; dates de fin conformes à DEC-012 (S02, S03, PT-16). |
+| RG référencées | RG-001, 008, 023, 025, 026, 045, 049, 050, 053, 054 : conformes. |
+| Cas limites et cas d'erreur | Couverts. |
+| Maquettes | ECR-007 (A, G, H), ECR-002 L4, ECR-003, ECR-008. |
+| `.feature` et CA | 21 scénarios, matrice complète. |
+| Codes du catalogue | `ERR-035`, `MEN-INCOHERENCE`, `MEN-HEURE-PARIS` (forme définie au §6.6.10). |
+| Contradictions | Aucune dans l'US. CA-11 dépend de Q-US-002-1. |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-003-1 | « Annuler » dans le toast qui suit « Terminer » (guide §4.2, §4.10, §5.5 ; `TST-TERMINEE`) : est-ce a) une réouverture, avec dans l'historique une entrée « fin » puis une entrée « réouverture » ; b) une annulation pure, sans aucune entrée, la fin n'étant écrite qu'à l'expiration du toast ? Hypothèse : a). L'option b) retarde l'écriture locale, ce qui touche ENF-T-07 et la saisie hors ligne. | Steeve et Pepper | Non bloquante | Non |
+| Q-US-003-2 | **Glossaire.** Formes absentes : « l'action "terminer" n'est pas proposée pour la tâche "X" », avec une liste fermée des actions : terminer, rouvrir, abandonner, reprendre, créer une sous-tâche, créer un sous-objectif ; « l'objectif "X" a un sous-objectif <absent \| atteint \| en cours \| à décliner en tâches> » (construction proposée : un sous-objectif avec respectivement aucune tâche, 1 tâche terminée, 1 tâche à faire, ou rien) ; « l'utilisateur rouvre la tâche "X" et renonce » ; « la liste des tâches contient exactement "X" » (forme pour plusieurs tâches ?) ; « la date de fin de la tâche "X" est [n'est pas] accompagnée de la mention "X" » ; « le délai de la tâche "X" n'est jamais accompagné de la mention "X" ». | Pepper | Non bloquante | Non |
+
+**Concernée aussi par :**
+- Q-US-001-2 (S20) ;
+- Q-US-002-1 (CA-11, S16) ;
+- Q-US-017-1 (S17) ;
+- Q-US-017-7 (S18) ;
+- Q-US-024-1 (contexte de S13 et S14).
+
+---
+
+## 12. US-025 — Abandonner une tâche
+
+**Verdict : Non explicite.**
+
+| Contrôle | Résultat |
+|---|---|
+| CA testables | Oui ; confirmation toujours demandée (Q-ERG-13). |
+| RG référencées | RG-008, 023, 025, 027, 045, 049, 050, 053, 054 : conformes. |
+| Cas limites et cas d'erreur | Un cas manque : la réouverture d'une sous-tâche terminée sous une tâche parente abandonnée (Q-US-025-2). |
+| Maquettes | ECR-007 (C, D, D2, F), ECR-002, ECR-003. |
+| `.feature` et CA | 17 scénarios, matrice complète. |
+| Codes du catalogue | `CNF-ABANDON-TACHE` et `CNF-ABANDON-TACHE-CASCADE` (implicites), `MEN-INCOHERENCE`. |
+| Contradictions | Aucune. |
+
+| Id | Question | Propriétaire | Niveau | Règle validée touchée |
+|---|---|---|---|---|
+| Q-US-025-1 | **Glossaire.** Formes absentes : « l'utilisateur demande l'abandon de la tâche "X" » (présente au §5) ; « une confirmation est demandée, qui rappelle que la tâche pourra être reprise » ; « … qui annonce n sous-tâches abandonnées avec la tâche » ; « la tâche "X" n'a pas de date d'abandon affichée » (à aligner sur « n'a pas de date de fin ») ; « l'action "abandonner" / "reprendre" n'est pas proposée pour la tâche "X" » ; « que la tâche "X", abandonnée, est signalée en incohérence … » (voir Q-US-024-3). | Pepper | Non bloquante | Non |
+| Q-US-025-2 | **Cas non couvert.** Une tâche parente est abandonnée ; l'une de ses sous-tâches avait été terminée avant l'abandon (`ETA-SOUS-TACHE-TERMINEE-AVANT`). L'utilisateur peut-il rouvrir cette sous-tâche ? Sinon, on produirait localement l'incohérence de RG-049, qu'« aucun appareil n'aurait acceptée seul ». Options : a) action non proposée, comme pour la reprise (CA-8) ; b) action proposée, avec confirmation, qui reprend aussi la tâche parente, par symétrie avec US-003 CA-9 ; c) autre. | Pepper | **Bloquante E10** (cas d'usage `RouvrirTache`) | Possible (cas non couvert par RG-023 et RG-027) |
+
+**Concernée aussi par :**
+- Q-US-001-2 (S17) ;
+- Q-US-002-1 (S04, filtres) ;
+- Q-US-024-1 (contexte de S12).
+
+---
+
+## Annexe A — Suivis non bloquants reportés en E9
+
+| Id | Objet | Traitement prévu en E9 | Porteur |
+|---|---|---|---|
+| ANT-22 | `conventions.md` v0.3 | Aligner sur le DAT v0.8 et l'ADR-012 : distribution par APK ; signature dans la CI sur étiquette ; `versionCode` croissant ; publication `android/` ; hébergement GitHub Pages ou Cloudflare Pages ; décisions DEC-026 à DEC-029. Mettre à jour les entrées : CdC v0.9.1, glossaire v1.1, catalogue v0.2.6, 243 scénarios. Intégrer les réponses aux Q-US de ce document : unité de décompte, critère de valeur écartée, conventions des tableaux de contexte et des heures ambiguës. | Anthony |
+| ANT-23 | Résultat observable d'US-031 S14 | Sens proposé dans Q-US-031-4 : échec de navigation hors ligne (`net::ERR_INTERNET_DISCONNECTED`), aucun élément `data-etat` de l'application, page d'erreur du navigateur. Une fois confirmé, il est écrit dans ST-US-031 (profil `ihm`). | Anthony (sens à confirmer par Pepper) |
+| ANT-24 | En-têtes des `.feature` | Les dix fichiers citent « cahier des charges v0.8 » : passer à la v0.9.1. Nettoyer le glossaire : §6, « interprétation de Starck, à confirmer » (caduc, DEC-026) ; §8, colonne `situation`, « à revoir après Q-ERG-16 à 18 » (caduc, DEC-025). | Pepper |
+| BEN-13 | APK et clé de signature | Socle (ST d'US-022) : créer `.gitignore` **avant** la clé (point bloquant du suivi). Clé conservée dans les secrets chiffrés de GitHub Actions, avec une sauvegarde hors ligne chez le commanditaire (DEC-027). Compte gratuit « distribution limitée » (DEC-028). Flux de signature, `apksigner verify` et contrôle du `versionCode` sur étiquette de `main` (ADR-012, DAT §7.4). APK de recette `<paquet>.recette` avec une clé de recette. Protection de `main` dès que la CI existe (DEC-029). Construction Android dans ST-US-018. | Anthony (ST), Benjamin (E12) |
+| BEN-14 | Rattachement des scénarios d'US-017 à ses 4 incréments (Q-LOT-1 b, DEC-025) | Voir le tableau ci-dessous. | Anthony |
+| ANT-14, BEN-2 | Ordre de réalisation | Voir A.2. Il est arrêté en E9 dans `LOT-001.md`. | Anthony |
+
+### A.1 Incréments d'US-017 (proposition BEN-14)
+
+| Incrément | Contenu | Scénarios US-017 | Scénarios des autres US livrés avec lui | Q-US à lever avant E9 de l'incrément |
+|---|---|---|---|---|
+| 1. Synchronisation de base | CRDT par champ, HLC, cycle de synchronisation, marqueur « déposé jusqu'à », `MEN-ATTENTE`, erreurs de dépôt | S02 à S08, S17a, S17b, S29 | — | Q-US-018-1 (décompte, s'il est affiché dans cet incrément) |
+| 2. Conflits et modifications non retenues | Valeurs écartées, RG-056, passe de réparation RG-047 à RG-049 | S09 à S12b, S14 à S16, S24 à S26 | US-001 S19, S20 ; US-002 S23 ; US-023 S16 à S19 ; US-024 S20 à S22 ; US-003 S17 à S19 ; US-025 S14 à S16 | Q-US-017-1, Q-US-017-4, Q-US-017-6, Q-US-001-1 |
+| 3. Restauration | RG-044, empreinte, `generation` | S18 à S23, S32, S33 | — | Q-US-017-2, Q-US-017-3 |
+| 4. Versions, horloge et fuseau | RG-058, `ALR-001`, RG-054, couverture complète | S01, S13a, S13b, S27, S28, S30, S30b, S31 | — | Q-US-017-4 (volet `ALR-001`), Q-US-017-5 |
+
+Chaque incrément a sa revue de code E13 (DEC-025).
+
+### A.2 Ordre de réalisation proposé (ANT-14, BEN-2)
+
+**Préalables :**
+- le test technique R1, R2 et R11 (actions du commanditaire), avant E9 d'US-022 et d'US-017 ;
+- les réponses aux questions bloquantes E9.
+
+| Rang | Élément | Périmètre | Justification |
+|---|---|---|---|
+| 0 | Socle technique, dans la ST d'US-022 | Dépôt, outillage, CI, `.gitignore`, banc de test (horloge, faux Google, réseau, deux appareils, `appareilId` fixes), ports, composition web et Capacitor, `DepotLocal` cloisonné par compte | Tout en dépend |
+| 1 | US-022 | Tous les scénarios | Point d'entrée ; R2 et R11 ; conforme à la condition 2 de l'architecte (`LOT-001.md` §7.1 : US-022, puis US-017, en premier) |
+| 2 | US-001 | Scénarios à un appareil (S01 à S18, S21) | Premier objet métier, nécessaire pour éprouver le CRDT. **Écart à la recommandation §7.3 de l'architecte** (US-017 juste après US-022) : l'incrément 1 d'US-017 a besoin d'un objet métier pour être testé (S02 à S08 créent des objectifs). À confirmer par Starck en E9. |
+| 3 | US-017, incrément 1 | Voir A.1 | Synchronisation de base, éprouvée sur les objectifs |
+| 4 | US-023 | S01 à S15, S20 | Hiérarchie ; prérequis de RG-048 |
+| 5 | US-002 | S01 à S22, S24 | |
+| 6 | US-024 | S01 à S19, S23 | |
+| 7 | US-003 | S01 à S16, S20, S21 | |
+| 8 | US-025 | S01 à S13, S17 | |
+| 9 | US-017, incrément 2 | Voir A.1, scénarios à deux appareils des US métier compris | Les réparations ont besoin de tous les objets métier |
+| 10 | US-017, incrément 3 | Voir A.1 | |
+| 11 | US-017, incrément 4 | Voir A.1 (S01 en dernier : il exige toutes les opérations du lot) | |
+| 12 | US-018 | Tous les scénarios ; adaptateur SQLite, `@capacitor/network`, RG-057, APK (BEN-13) | Le smartphone est prioritaire, mais il repose sur le noyau |
+| 13 | US-031 | Tous les scénarios ; service worker, Web Locks, `storage.persist()`, profil `@ihm` | Spécificités du PC |
+
+**Point à faire valider par Jarvis et Pepper (DoD par US).** Selon cet ordre, la revue E13 d'une US métier porte sur ses scénarios à un appareil. Ses scénarios à deux appareils sont livrés et revus avec l'incrément 2 d'US-017, comme le prévoit déjà le CA-10 d'US-017 (« détail dans US-001, … »). L'US métier n'est pas déclarée « En recette » avant l'approbation de l'incrément 2.
