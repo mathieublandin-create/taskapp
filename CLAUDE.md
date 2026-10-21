@@ -16,5 +16,6 @@ Projet piloté par une ferme d'agents (définis dans `.claude/agents/`), coordon
 - Tests métiers Gherkin (Cucumber) : `tests/features/`
 - Cérémonies (refinement, lancement, arbitrages) : `docs/ceremonies/`
 - Registre des anomalies : `docs/anomalies.md`
+- État des lieux synthétique (tenu par Jarvis) : `docs/etat-des-lieux.html`, publié à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187
 - Langue de travail : français.
 - Lancer la session avec Jarvis comme agent principal : `claude --agent jarvis`

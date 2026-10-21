@@ -1,0 +1,271 @@
+<title>Avancement Done Juan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : un tableau de bord vertical — résumé, piste du workflow, socle par agent, feuille de route, décisions à venir */
+:root{
+  --bg:#F6F6F8; --surface:#FFFFFF; --ink:#1B1A22; --muted:#5E5C6B; --line:#DFDDE6;
+  --accent:#A3213A; --accent-soft:#F6E3E7;
+  --done:#2F7A55; --done-soft:#E2F1E8;
+  --doing:#B7650B; --doing-soft:#FBEBD5;
+  --todo:#8A8897; --todo-soft:#EEEDF2;
+  --risk:#B42318; --risk-soft:#FDE6E3;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141319; --surface:#1D1C24; --ink:#EDECF2; --muted:#A3A1B2; --line:#33313D;
+  --accent:#E8667E; --accent-soft:#3A1E26;
+  --done:#5CC490; --done-soft:#17321F;
+  --doing:#F0A54A; --doing-soft:#3A2810;
+  --todo:#8C8A9C; --todo-soft:#26252E;
+  --risk:#F27D70; --risk-soft:#3B1A17; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#141319; --surface:#1D1C24; --ink:#EDECF2; --muted:#A3A1B2; --line:#33313D;
+  --accent:#E8667E; --accent-soft:#3A1E26;
+  --done:#5CC490; --done-soft:#17321F;
+  --doing:#F0A54A; --doing-soft:#3A2810;
+  --todo:#8C8A9C; --todo-soft:#26252E;
+  --risk:#F27D70; --risk-soft:#3B1A17; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 56px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(28px,4.5vw,40px);font-weight:800;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+h2{font-size:20px;font-weight:600}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.lede{max-width:65ch;color:var(--muted);margin:10px 0 0}
+section{display:flex;flex-direction:column;gap:14px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+
+/* Chiffres clés */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi b{display:block;font-family:var(--f-display);font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi small{color:var(--muted);font-size:13px}
+
+/* Légende */
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* Piste du workflow */
+.track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.phase h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.step{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:var(--todo-soft);border-left:4px solid var(--todo)}
+.step .id{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.step .lbl{min-width:0;font-size:14px}
+.step .who{font-size:12px;color:var(--muted);white-space:nowrap}
+.step.done{background:var(--done-soft);border-left-color:var(--done)}
+.step.doing{background:var(--doing-soft);border-left-color:var(--doing);font-weight:600}
+.step.next{background:var(--accent-soft);border-left-color:var(--accent)}
+.step.risk{border-left-color:var(--risk)}
+.star{color:var(--accent);font-weight:700}
+.flag{display:block;font-size:12px;color:var(--risk);font-weight:500}
+.here{display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--doing);margin-left:6px}
+
+/* Socle par agent */
+.agents{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.agent{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.agent header{display:flex;flex-direction:column;gap:2px}
+.agent header b{font-family:var(--f-display);font-size:17px}
+.agent header small{color:var(--muted);font-size:12.5px}
+.agent ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.agent li{display:flex;gap:8px;align-items:flex-start;min-width:0}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--todo)}
+.dot.done{background:var(--done)} .dot.doing{background:var(--doing)} .dot.risk{background:var(--risk)}
+.agent.idle{opacity:.85;border-style:dashed}
+
+/* Feuille de route */
+.road{display:flex;gap:0;overflow-x:auto;padding-bottom:6px}
+.lot{flex:1 0 150px;position:relative;padding:12px 18px 12px 14px;background:var(--surface);border:1px solid var(--line);margin-right:-1px;min-width:150px}
+.lot:first-child{border-radius:10px 0 0 10px}
+.lot:last-child{border-radius:0 10px 10px 0}
+.lot.cur{background:var(--doing-soft);border-color:var(--doing);z-index:1}
+.lot .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.lot b{display:block;font-size:14px;margin:2px 0}
+.lot small{color:var(--muted);font-size:12.5px;display:block}
+.lot.cur .n{color:var(--doing)}
+
+/* À venir */
+.todo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.prio{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.card h3{margin:0;font-size:15px;font-family:var(--f-display);font-weight:600}
+.card ul{margin:0;padding-left:18px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+.tag{align-self:flex-start;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.tag.risk{background:var(--risk-soft);color:var(--risk)}
+.tag.later{background:var(--todo-soft);color:var(--muted)}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:900px){.agents{grid-template-columns:repeat(2,minmax(0,1fr))}.todo-grid{grid-template-columns:1fr}.track{grid-template-columns:1fr}}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.agents{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">État des lieux · 21 octobre 2026 · rapport de Jarvis</div>
+    <h1>Done <span>Juan</span>, lot 1 en préparation</h1>
+    <p class="lede">Le socle documentaire est posé et le premier lot (socle, objectifs et tâches) a franchi 5 étapes sur 18. Pepper rédige les tests métiers. Prochain rendez-vous pour vous : la validation des US (E6). Aucune ligne de code n'est encore écrite.</p>
+    <div class="kpis">
+      <div class="kpi"><b>10</b><small>US dans le lot 1, sur 36 au backlog</small></div>
+      <div class="kpi"><b>17</b><small>décisions du commanditaire (DEC-001 à 017)</small></div>
+      <div class="kpi"><b>0</b><small>question bloquante ouverte pour le lot 1</small></div>
+      <div class="kpi"><b>9</b><small>maquettes d'écrans · 11 ADR proposés</small></div>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-track">
+    <div class="sec-head">
+      <h2 id="t-track">Où en est le lot 1 dans le workflow</h2>
+      <div class="legend">
+        <span><i style="background:var(--done)"></i>Fait</span>
+        <span><i style="background:var(--doing)"></i>En cours</span>
+        <span><i style="background:var(--accent)"></i>Prochaine étape</span>
+        <span><i style="background:var(--todo)"></i>À venir</span>
+        <span><span class="star">★</span> Votre validation</span>
+      </div>
+    </div>
+    <div class="track">
+      <div class="phase">
+        <h3><span>Préparation</span><span>E0 – E7</span></h3>
+        <ol class="steps">
+          <li class="step done"><span class="id">E0</span><span class="lbl">Réception des demandes</span><span class="who">Jarvis</span></li>
+          <li class="step done"><span class="id">E1</span><span class="lbl">Analyse d'écart et US</span><span class="who">Pepper</span></li>
+          <li class="step done"><span class="id">E2</span><span class="lbl"><span class="star">★</span> Lot validé</span><span class="who">Vous</span></li>
+          <li class="step done"><span class="id">E3</span><span class="lbl">Impacts architecture</span><span class="who">Starck</span></li>
+          <li class="step done"><span class="id">E4</span><span class="lbl">Analyse ergonomique</span><span class="who">Steeve</span></li>
+          <li class="step doing"><span class="id">E5</span><span class="lbl">Tests métiers Gherkin<span class="here">ici</span></span><span class="who">Pepper</span></li>
+          <li class="step next"><span class="id">E6</span><span class="lbl"><span class="star">★</span> Validation des US</span><span class="who">Vous</span></li>
+          <li class="step"><span class="id">E7</span><span class="lbl">Refinement du lot</span><span class="who">Tous</span></li>
+        </ol>
+      </div>
+      <div class="phase">
+        <h3><span>Réalisation</span><span>E8 – E13</span></h3>
+        <ol class="steps">
+          <li class="step"><span class="id">E8</span><span class="lbl">Contrôle d'explicitation</span><span class="who">Anthony</span></li>
+          <li class="step risk"><span class="id">E9</span><span class="lbl">Conception détaillée<span class="flag">Requiert le test technique R1/R2</span></span><span class="who">Anthony</span></li>
+          <li class="step"><span class="id">E10</span><span class="lbl">Tests unitaires (TDD)</span><span class="who">Anthony</span></li>
+          <li class="step"><span class="id">E11</span><span class="lbl">Revue de lancement</span><span class="who">Anthony, Benjamin</span></li>
+          <li class="step"><span class="id">E12</span><span class="lbl">Développement</span><span class="who">Benjamin</span></li>
+          <li class="step"><span class="id">E13</span><span class="lbl">Revue de code</span><span class="who">Anthony</span></li>
+        </ol>
+      </div>
+      <div class="phase">
+        <h3><span>Recette et clôture</span><span>E14 – E17</span></h3>
+        <ol class="steps">
+          <li class="step"><span class="id">E14</span><span class="lbl">Recette des agents</span><span class="who">Pepper, Steeve, Starck</span></li>
+          <li class="step"><span class="id">E15</span><span class="lbl">Traitement des anomalies</span><span class="who">Benjamin</span></li>
+          <li class="step"><span class="id">E16</span><span class="lbl"><span class="star">★</span> Votre recette (itération majeure)</span><span class="who">Vous</span></li>
+          <li class="step"><span class="id">E17</span><span class="lbl">Clôture du lot</span><span class="who">Jarvis</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-agents">
+    <div class="sec-head"><h2 id="t-agents">Le socle de chaque agent</h2><span class="mono">dépôt mathieublandin-create/taskapp</span></div>
+    <div class="agents">
+      <article class="agent">
+        <header><b>Pepper</b><small>Business analyste · opus</small></header>
+        <ul>
+          <li><span class="dot done"></span><span>Cahier des charges v0.5 (RG-001 à 055)</span></li>
+          <li><span class="dot done"></span><span>Backlog v0.5 : 36 US, 6 lots indicatifs</span></li>
+          <li><span class="dot done"></span><span>10 US détaillées du lot 1</span></li>
+          <li><span class="dot doing"></span><span>Tests métiers <span class="mono">.feature</span> (E5)</span></li>
+        </ul>
+      </article>
+      <article class="agent">
+        <header><b>Steeve</b><small>UX / UI · sonnet</small></header>
+        <ul>
+          <li><span class="dot done"></span><span>Guide d'ergonomie v0.2</span></li>
+          <li><span class="dot done"></span><span>Parcours utilisateurs v0.2 (P-01 à P-13)</span></li>
+          <li><span class="dot done"></span><span>9 maquettes, dont 4 du lot 1</span></li>
+          <li><span class="dot"></span><span>Guide utilisateur : plan seulement</span></li>
+        </ul>
+      </article>
+      <article class="agent">
+        <header><b>Starck</b><small>Architecte · opus</small></header>
+        <ul>
+          <li><span class="dot done"></span><span>DAT v0.4 : sans serveur, synchronisation par Drive</span></li>
+          <li><span class="dot done"></span><span>11 ADR au statut « Proposé »</span></li>
+          <li><span class="dot done"></span><span>Impacts architecture du lot 1</span></li>
+          <li><span class="dot risk"></span><span>Test technique R1/R2 : protocole prêt, non exécuté</span></li>
+        </ul>
+      </article>
+      <article class="agent">
+        <header><b>Anthony</b><small>Responsable technique · opus</small></header>
+        <ul>
+          <li><span class="dot done"></span><span>Conventions v0.1, TDD, couverture 85 %</span></li>
+          <li><span class="dot done"></span><span>Grille de revue, registre de dette, modèle de ST</span></li>
+          <li><span class="dot"></span><span>Conventions à aligner sur la stack du DAT</span></li>
+        </ul>
+      </article>
+      <article class="agent idle">
+        <header><b>Benjamin</b><small>Développeur · sonnet</small></header>
+        <ul>
+          <li><span class="dot"></span><span>Pas encore sollicité</span></li>
+          <li><span class="dot"></span><span>Intervient en E7, puis E11 à E15</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-road">
+    <div class="sec-head"><h2 id="t-road">Feuille de route des lots</h2><span class="legend">Au-delà du lot 1, découpage indicatif, à valider à chaque E2</span></div>
+    <div class="road" role="list">
+      <div class="lot cur" role="listitem"><span class="n">LOT-001 · en préparation</span><b>Socle, objectifs et tâches</b><small>Compte Google, Drive, smartphone + PC, hors ligne · 10 US</small></div>
+      <div class="lot" role="listitem"><span class="n">Lot 2</span><b>Priorisation et planification</b><small>Capacité, planning proposé, report · 6 US</small></div>
+      <div class="lot" role="listitem"><span class="n">Lot 3</span><b>Suivi du temps</b><small>Temps passé, reste à faire · 2 US</small></div>
+      <div class="lot" role="listitem"><span class="n">Lot 4</span><b>Rappels</b><small>8 h et 21 h, bilan du soir, fun facts (DEM-002)</small></div>
+      <div class="lot" role="listitem"><span class="n">Lot 5</span><b>Agenda</b><small>Événements, créneaux, déplacements · 3 US</small></div>
+      <div class="lot" role="listitem"><span class="n">Lot 6</span><b>Vélocité et pilotage</b><small>Délais tenables, courbes sur 12 semaines · 6 US</small></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-next">
+    <div class="sec-head"><h2 id="t-next">Ce qui vous attend</h2></div>
+    <div class="todo-grid">
+      <article class="card prio">
+        <span class="tag">Prochaine étape · E6</span>
+        <h3>Valider les US du lot 1</h3>
+        <ul>
+          <li>Les 10 US et leurs critères marqués (P)</li>
+          <li>Règles proposées : RG-044 b, RG-047 à 050, RG-054, garde-fous de RG-055</li>
+          <li>Extension de RG-044 aux fichiers Drive modifiés à la main</li>
+          <li>Reformulation du besoin et exclusions</li>
+        </ul>
+      </article>
+      <article class="card">
+        <span class="tag risk">Avant E9</span>
+        <h3>Test technique sur vrais appareils</h3>
+        <ul>
+          <li>Créer le projet Google Cloud (environ 30 min, guidé)</li>
+          <li>Compte Google de test, téléphone Android 10 ou plus</li>
+          <li>Compte d'hébergement gratuit</li>
+          <li>Deux séances d'environ 1 h 30, J et J+1</li>
+        </ul>
+      </article>
+      <article class="card">
+        <span class="tag later">Lots suivants</span>
+        <h3>Questions qui peuvent attendre</h3>
+        <ul>
+          <li>Q-DEM001-30 à 38 et 40 : vélocité, priorité, plages de travail, backlog</li>
+          <li>Q-DEM002-1 à 7 : bilan du soir, fun facts</li>
+          <li>A-F3 : réponse au bilan donnée après minuit</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <footer>Vue tenue par Jarvis dans le dépôt (<span class="mono">docs/etat-des-lieux.html</span>), mise à jour à chaque changement d'étape. Sources : <span class="mono">docs/suivi-projet.md</span>, <span class="mono">docs/lots/LOT-001.md</span>, <span class="mono">docs/workflow.md</span> et les livrables des agents, au 21 octobre 2026.</footer>
+</div>

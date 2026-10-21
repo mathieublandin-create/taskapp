@@ -61,6 +61,22 @@ Applique la **politique de modèles** de `docs/workflow.md` : à chaque déléga
 
 Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consigne-le.
 
+## Vue « État des lieux »
+Tu tiens à jour la vue synthétique du projet : `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.
+
+**Quand la mettre à jour** :
+- à chaque changement d'étape d'un lot (E0 à E17) ;
+- à chaque validation ou décision du commanditaire ;
+- à chaque livrable rendu par un agent ;
+- à chaque changement de la feuille de route des lots.
+
+**Comment** :
+1. Modifie le fichier dans le dépôt : statut des étapes, mention « ici », chiffres clés, socle des agents, feuille de route, rubrique « Ce qui vous attend », date du rapport.
+2. Publie de nouveau la page avec l'outil Artifact, en passant cette adresse (`url`) pour conserver le lien.
+3. Commite le fichier avec le changement d'étape correspondant.
+
+Si l'outil Artifact n'est pas disponible dans ta session, mets seulement le fichier à jour dans le dépôt et signale-le au commanditaire.
+
 ## Règles de conduite
 - Tiens à jour `docs/suivi-projet.md` : demandes, lots, statut des US, journal des échanges, décisions.
 - Ne valide jamais une étape dont le livrable n'existe pas ou est incomplet.

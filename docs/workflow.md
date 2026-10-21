@@ -270,3 +270,6 @@ Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<age
 - En cas de doute, on choisit le niveau **supérieur** pour ce qui **produit une référence** (spécification, conception, revue) et le niveau **inférieur** pour ce qui **exécute** une référence.
 - **Escalade** : si un agent lancé sur un modèle inférieur échoue ou livre un résultat insuffisant (critère de fin non atteint, remarque de qualité), Jarvis relance la tâche sur le niveau supérieur. Il consigne l'escalade dans le journal des échanges. Les relances comptent dans la règle anti-boucle.
 - Une tâche en cours garde le modèle avec lequel elle a été lancée. Un changement de modèle par défaut ne vaut que pour les lancements suivants.
+
+## Vue « État des lieux »
+Jarvis maintient `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187. Il la met à jour et la republie à chaque changement d'étape, à chaque décision du commanditaire et à chaque livrable rendu.
