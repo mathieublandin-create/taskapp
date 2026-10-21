@@ -8,7 +8,7 @@
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 # « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6).
 # Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive porte le même nom (V-13, DEC-018).
-# Motifs d'échec de la connexion : codes stables CNX-… (GLOSSAIRE-ETAPES.md §9 ; US-022, section « Motifs de connexion »).
+# Motifs d'échec de la connexion : codes ERR-001 à ERR-006 du catalogue de Steeve (guide d'ergonomie §6.6.8), qui fait foi pour les libellés et les codes ; voir US-022, section « Motifs de connexion ».
 # E7 : les scénarios S09 et S17 sont scindés (S09a/S09b, S17a/S17b) pour éviter les colonnes de texte libre ; S13 est scindé (S13a automatisé, S13b en recette manuelle).
 
 Fonctionnalité: Se connecter avec mon compte Google
@@ -66,14 +66,14 @@ Fonctionnalité: Se connecter avec mon compte Google
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone et <refus>
     Alors sur le smartphone, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
-    Et sur le smartphone, le message "CNX-COMPTE-REQUIS" explique qu'une connexion à un compte Google est nécessaire pour utiliser l'application
+    Et sur le smartphone, le message d'erreur "<code>" explique qu'une connexion à un compte Google est nécessaire pour utiliser l'application
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
 
     Exemples:
-      | refus                                   |
-      | annule la connexion                     |
-      | refuse les autorisations demandées      |
+      | refus                                   | code    |
+      | annule la connexion                     | ERR-001 |
+      | refuse les autorisations demandées      | ERR-002 |
 
   @US-022 @RG-019 @LOT-001
   Scénario: S07 — À la réouverture, l'utilisateur n'a pas à se reconnecter tant que son accès est valide
@@ -132,7 +132,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que l'accès au compte Google "A" <cause> sur le smartphone
     Quand l'utilisateur ouvre l'application sur le smartphone
-    Alors sur le smartphone, l'application indique que l'accès au compte Google doit être renouvelé et propose de se reconnecter
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
     Quand sur le smartphone, l'utilisateur modifie le délai de l'objectif "Publier le guide" en 2027-01-31
     Alors sur le smartphone, l'opération est acceptée
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
@@ -150,8 +150,8 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand l'accès au compte Google "A" est retiré depuis le compte Google
     Et sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Et le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, l'application propose de se reconnecter
-    Et sur le smartphone, l'objectif "Courir un semi-marathon" est signalé comme non synchronisé
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Et sur le smartphone, l'objectif "Courir un semi-marathon" porte la mention "MEN-ATTENTE"
 
   # ---------------------------------------------------------------- Autorisations demandées (CA-8)
 
@@ -245,7 +245,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et que sur le smartphone, l'utilisateur a supprimé les données de cet appareil
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
+    Alors la connexion échoue avec le motif "ERR-003"
     Quand le réseau revient sur le smartphone
     Et l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
@@ -266,7 +266,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
+    Alors la connexion échoue avec le motif "ERR-003"
     Et sur le smartphone, l'utilisateur peut réessayer
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
@@ -276,7 +276,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que le réseau du smartphone est coupé pendant la connexion
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-INTERROMPUE"
+    Alors la connexion échoue avec le motif "ERR-005"
     Et sur le smartphone, l'utilisateur peut réessayer
     Et aucune donnée n'est créée sur le smartphone
     Et aucune donnée n'est créée dans le Drive du compte "A"
@@ -285,7 +285,7 @@ Fonctionnalité: Se connecter avec mon compte Google
   Scénario: S21 — Drive indisponible ou désactivé pour le compte : message explicite et aucun accès aux fonctions
     Étant donné que le Drive est désactivé pour le compte "C"
     Quand l'utilisateur tente de se connecter avec le compte "C" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-DRIVE-INDISPONIBLE"
+    Alors la connexion échoue avec le motif "ERR-006"
     Et sur le smartphone, aucune autre fonction n'est accessible
 
   @US-022 @RG-019 @RG-043 @LOT-001
@@ -294,7 +294,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand sur le smartphone, l'utilisateur se déconnecte
     Et que le smartphone est sans réseau
     Et l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-RESEAU-RECONNEXION"
+    Alors la connexion échoue avec le motif "ERR-004"
     Et les données du compte "A" sont toujours présentes sur le smartphone
 
   @US-022 @RG-017 @RG-035 @LOT-001
@@ -305,4 +305,4 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, aucune connexion n'est demandée avant d'afficher les données
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
-    Et sur le PC, l'application indique qu'une reconnexion est nécessaire pour la mise à jour avec l'autre appareil
+    Et sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"

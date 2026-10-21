@@ -77,3 +77,11 @@ Pendant le tour, Starck (DAT v0.5) et Steeve (guide v0.2.2, ECR-011 cadres J, K,
 
 ## Règle anti-boucle
 Tour 1 terminé. Un tour 2 sera mené après les corrections et les réponses du commanditaire. Si une US reste Non Ready après le tour 2, Jarvis demandera un arbitrage.
+
+## Suivi des corrections du tour 1 (2026-10-21)
+- **Starck** : DAT v0.6 ; RG-057 présentée comme hypothèse en attente de Q-ERG-16 et 17. Fait.
+- **Steeve** : catalogue §6.6 (codes SYN-, BAN-, MEN-, ETA-, ERR-, ALR-), guide v0.2.3, maquettes ECR-003, 007, 008, 010. Fait.
+- **Pepper** : 231 scénarios, `GLOSSAIRE-ETAPES.md`, tags `@ihm` (7) et `@recette` (1), CdC v0.8 ; ANT-16 (convention de date des tâches de contexte) ; codes alignés sur le catalogue de Steeve. Fait.
+- **Anthony** : conventions v0.2. En cours.
+- **Pour le tour 2 (Steeve)** : codes manquants dans le catalogue pour les motifs de refus « estimation invalide », « tâche abandonnée », « objectifs hérités de la tâche parente », « n sous-tâches restantes », « estimation calculée » ; forme de `MEN-HEURE-PARIS` sur une date de fin (US-003 S21).
+- **Nouvelles questions pour le commanditaire** : Q-REF-1 (RG-048 avec une chaîne de déplacements) et Q-REF-2 (aucune écriture dans le Drive en consultation seule).

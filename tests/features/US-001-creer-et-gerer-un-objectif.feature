@@ -10,6 +10,7 @@
 # - « sur le smartphone, » ou « sur le PC, » en tête d'étape désigne l'appareil concerné ; sans mention, l'appareil est le seul en jeu ;
 # - « les deux appareils échangent leurs modifications » : chacun enregistre ses modifications dans le Drive puis intègre celles de l'autre ;
 # - le vocabulaire des étapes est figé dans GLOSSAIRE-ETAPES.md (appareil, synchronisation, temps, assertions, négations, listes fermées pour les colonnes d'Exemples) ;
+# - date des tâches de contexte : une tâche de contexte « terminée » ou « abandonnée » a pour date de fin ou d'abandon la date du contexte, sauf mention contraire (GLOSSAIRE-ETAPES.md §1) ;
 # - le temps ne passe que par l'horloge contrôlée du banc (jamais d'attente réelle) ;
 # - tags : @US-xxx, @RG-xxx et @LOT-001 sur chaque scénario ; @ihm si le scénario exige l'interface réelle ; @recette s'il se déroule à la main ;
 # - Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
@@ -43,7 +44,7 @@ Fonctionnalité: Créer et gérer un objectif
   Scénario: S03 — Un objectif sans délai est accepté et affiché « sans délai »
     Quand l'utilisateur crée un objectif "Apprendre l'italien" sans délai
     Alors l'objectif "Apprendre l'italien" existe sans délai
-    Et l'objectif "Apprendre l'italien" est affiché avec la mention "sans délai"
+    Et l'objectif "Apprendre l'italien" porte la mention "MEN-SANS-DELAI"
     Et l'objectif "Apprendre l'italien" n'est pas en retard
 
   @US-001 @RG-002 @LOT-001

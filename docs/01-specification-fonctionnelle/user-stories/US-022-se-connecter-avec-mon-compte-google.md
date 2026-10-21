@@ -49,27 +49,28 @@ Statut : Validée
    - les données d'un autre compte conservées sur l'appareil (CA-9) ne sont pas touchées.
 
 ## Cas limites et cas d'erreur
-- Première connexion sans réseau : l'application indique qu'une connexion réseau est nécessaire pour se connecter la première fois (motif `CNX-RESEAU-PREMIERE`).
-- Réseau interrompu pendant la connexion : message d'erreur et possibilité de réessayer, sans donnée créée à moitié (motif `CNX-INTERROMPUE`).
-- Drive indisponible ou désactivé pour ce compte (par exemple, un compte d'organisation sans accès au Drive) : message explicite, et pas d'accès aux fonctions (RG-019, RG-020 ; motif `CNX-DRIVE-INDISPONIBLE`).
+- Première connexion sans réseau : l'application indique qu'une connexion réseau est nécessaire pour se connecter la première fois (motif `ERR-003`).
+- Réseau interrompu pendant la connexion : message d'erreur et possibilité de réessayer, sans donnée créée à moitié (motif `ERR-005`).
+- Drive indisponible ou désactivé pour ce compte (par exemple, un compte d'organisation sans accès au Drive) : message explicite, et pas d'accès aux fonctions (RG-019, RG-020 ; motif `ERR-006`).
 - Accès retiré pendant que l'application est ouverte : traité comme CA-7 dès l'action suivante qui nécessite l'accès.
 - Sur PC, session Google du navigateur expirée : l'application reste utilisable avec les données présentes sur le PC ; la mise à jour avec l'autre appareil reprend après un geste de reconnexion (US-017, CA-3).
-- Déconnexion puis reconnexion avec le même compte, sans réseau : la reconnexion n'est pas possible sans réseau ; l'application l'indique (motif `CNX-RESEAU-RECONNEXION`).
+- Déconnexion puis reconnexion avec le même compte, sans réseau : la reconnexion n'est pas possible sans réseau ; l'application l'indique (motif `ERR-004`).
 - Changement de compte : voir CA-9.
 - Les données du compte A, restées sur l'appareil, ne peuvent être supprimées qu'en se connectant avec le compte A, puis en utilisant « Supprimer les données de cet appareil » (CA-10).
 - « Supprimer les données de cet appareil » sur un appareil où les données ne sont pas encore toutes chargées depuis le Drive : sans perte, puisque seules les données de l'appareil sont retirées.
 - À ne pas confondre avec le choix « repartir de zéro » de RG-044 (US-017, CA-9), qui efface les données sur les deux appareils.
 
-### Motifs de connexion (codes stables)
-Chaque échec ou refus de connexion porte un **code stable**, que les tests vérifient. Le libellé affiché à l'utilisateur peut évoluer (catalogue des messages de Steeve) sans changer le code. Les libellés ci-dessous sont les libellés de référence actuels (ANT-2, ANT-15).
+### Motifs de connexion (codes du catalogue)
+Chaque échec ou refus de connexion porte un code, que les tests vérifient. **Le catalogue des messages de Steeve (guide d'ergonomie §6.6.8) fait foi** pour les codes et les libellés ; le libellé peut évoluer sans changer le code (ANT-2, ANT-15).
 
-| Code | Situation | Libellé de référence | Scénarios |
-|---|---|---|---|
-| `CNX-COMPTE-REQUIS` | Connexion annulée ou autorisations refusées (CA-4) | Une connexion à un compte Google est nécessaire pour utiliser l'application | S06 |
-| `CNX-RESEAU-PREMIERE` | Première connexion sur l'appareil, ou connexion après suppression des données de l'appareil, sans réseau | Réseau nécessaire pour la première connexion | S18, S20a ; US-018 S12 |
-| `CNX-RESEAU-RECONNEXION` | Reconnexion après une déconnexion, sans réseau | Réseau nécessaire pour se connecter | S22 |
-| `CNX-INTERROMPUE` | Réseau coupé pendant la connexion | Connexion interrompue | S20b |
-| `CNX-DRIVE-INDISPONIBLE` | Drive désactivé ou indisponible pour le compte | Drive indisponible pour ce compte | S21 |
+| Code | Situation | Scénarios |
+|---|---|---|
+| `ERR-001` | Connexion annulée (CA-4) | S06 |
+| `ERR-002` | Autorisations refusées (CA-4) ; même texte que `ERR-001`, seul le code diffère | S06 |
+| `ERR-003` | Première connexion sur l'appareil, ou connexion après suppression des données de l'appareil, sans réseau | S18, S20a ; US-018 S12 |
+| `ERR-004` | Reconnexion après une déconnexion, sans réseau | S22 |
+| `ERR-005` | Réseau coupé pendant la connexion | S20b |
+| `ERR-006` | Drive désactivé ou indisponible pour le compte | S21 |
 
 ## Hors périmètre
 - Autorisation d'accès à l'agenda Google, et écran d'avertissement de Google qui l'accompagne (US-014, ENF-08).
@@ -178,4 +179,4 @@ Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déro
 | 2026-10-21 | v0.5 (Pepper) : réponses Q-DEM001-42 intégrées (DEC-015, DEC-016) : CA-6 complété, CA-9 réécrit, nouveau CA-10 « Supprimer les données de cet appareil » (déroulement proposé). |
 | 2026-10-21 | Nom du dossier du Drive : « Done Juan » (V-13, DEC-018), CA-3 précisé. |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
-| 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-1 (S13 scindé, avertissement Google en recette manuelle, tag `@recette`), BEN-6 (CA-2 précisé : les deux actions sont proposées), ANT-2 et ANT-15 (codes stables des motifs de connexion), PEP-7 et ANT-9 (S09, S17 et S20 scindés pour supprimer les colonnes de texte libre), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère validé n'est modifié dans son sens. |
+| 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-1 (S13 scindé, avertissement Google en recette manuelle, tag `@recette`), BEN-6 (CA-2 précisé : les deux actions sont proposées), ANT-2 et ANT-15 (motifs de connexion identifiés par les codes `ERR-001` à `ERR-006` du catalogue de Steeve), PEP-7 et ANT-9 (S09, S17 et S20 scindés pour supprimer les colonnes de texte libre), PEP-8 (mentions caduques retirées). Aucune règle ni aucun critère validé n'est modifié dans son sens. |

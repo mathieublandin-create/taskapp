@@ -310,13 +310,13 @@ Fonctionnalité: Décomposer une tâche en sous-tâches
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'état de la tâche "Chapitre 1" est "terminée"
     Et sur les deux appareils, l'état de la tâche "Section B" est "à faire"
-    Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section B"
+    Et sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section B"
 
   @US-024 @RG-049 @LOT-001
   Plan du scénario: S21 — L'incohérence est signalée jusqu'à ce que l'utilisateur la résolve
     Étant donné que la tâche "Chapitre 1", terminée, est signalée en incohérence avec sa sous-tâche à faire "Section B"
     Quand l'utilisateur <action>
-    Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
+    Alors la tâche "Chapitre 1" ne porte plus la mention "MEN-INCOHERENCE"
 
     Exemples:
       | action                                     |

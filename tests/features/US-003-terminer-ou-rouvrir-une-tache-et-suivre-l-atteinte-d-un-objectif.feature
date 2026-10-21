@@ -263,14 +263,14 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'état de la tâche "Chapitre 1" est "terminée"
     Et sur les deux appareils, l'état de la tâche "Section A" est "à faire"
-    Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
+    Et sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
     Et l'état de l'objectif "Publier le guide" est "en cours"
 
   @US-003 @RG-049 @LOT-001
   Plan du scénario: S19 — L'incohérence d'une tâche parente terminée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", terminée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
-    Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
+    Alors la tâche "Chapitre 1" ne porte plus la mention "MEN-INCOHERENCE"
 
     Exemples:
       | action                                         |
@@ -302,8 +302,8 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | Chapitre 1 | à faire | 2026-11-30 | 2 h        |           |               |
     Et que le smartphone est réglé sur le fuseau "<fuseau>"
     Quand l'utilisateur termine la tâche "Chapitre 1"
-    Alors la date de fin de la tâche "Chapitre 1" <mention> de la mention "heure de Paris"
-    Et le délai de la tâche "Chapitre 1" n'est jamais accompagné de la mention "heure de Paris"
+    Alors la date de fin de la tâche "Chapitre 1" <mention> de la mention "MEN-HEURE-PARIS"
+    Et le délai de la tâche "Chapitre 1" n'est jamais accompagné de la mention "MEN-HEURE-PARIS"
 
     Exemples:
       | fuseau           | mention              |

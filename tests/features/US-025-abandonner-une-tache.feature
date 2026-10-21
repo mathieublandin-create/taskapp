@@ -215,13 +215,13 @@ Fonctionnalité: Abandonner une tâche
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, l'état de la tâche "Chapitre 1" est "abandonnée"
     Et sur les deux appareils, l'état de la tâche "Section A" est "à faire"
-    Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
+    Et sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
 
   @US-025 @RG-049 @LOT-001
   Plan du scénario: S16 — L'incohérence d'une tâche parente abandonnée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", abandonnée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
-    Alors la tâche "Chapitre 1" n'est plus signalée en incohérence
+    Alors la tâche "Chapitre 1" ne porte plus la mention "MEN-INCOHERENCE"
 
     Exemples:
       | action                                     |

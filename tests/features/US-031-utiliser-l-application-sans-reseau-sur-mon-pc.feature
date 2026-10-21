@@ -75,8 +75,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   Scénario: S04 — Sans réseau, le PC indique qu'il est hors ligne et combien de modifications attendent, comme le smartphone
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
-    Alors sur le PC, l'application indique qu'elle est hors ligne avec 1 modification en attente
-    Et sur le PC, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
+    Alors sur le PC, l\'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
+    Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
 
   # ---------------------------------------------------------------- Retour du réseau (CA-4) et session expirée (CA-5)
 
@@ -91,8 +91,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et le réseau revient sur le PC, sans aucune action de l'utilisateur
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
     Et sur le PC, l'objectif "Courir un semi-marathon" existe sans délai
-    Et sur le PC, la tâche "Chapitre 1 : contexte" n'est plus signalée comme non synchronisée
-    Et sur le PC, l'application n'indique plus être hors ligne
+    Et sur le PC, la tâche "Chapitre 1 : contexte" ne porte plus la mention "MEN-ATTENTE"
+    Et sur le PC, l\'indicateur de synchronisation n\'est plus "SYN-HORS-LIGNE"
 
   @US-031 @RG-017 @RG-021 @LOT-001
   Scénario: S06 — Session Google du navigateur expirée : le travail continue, puis tout est mis à jour après le geste de reconnexion
@@ -102,14 +102,14 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et sur le smartphone, l'utilisateur enregistre ses modifications dans le Drive
     Et la session Google du navigateur du PC expire
     Et le réseau revient sur le PC
-    Alors sur le PC, l'application indique qu'une reconnexion est nécessaire pour la mise à jour avec l'autre appareil
+    Alors sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
     Et le Drive du compte "A" ne contient pas encore la tâche "Chapitre 1 : contexte"
     Quand sur le PC, l'utilisateur termine la tâche "Chapitre 1 : contexte"
     Alors sur le PC, l'opération est acceptée
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" à l'état "terminée"
     Et sur le PC, l'objectif "Courir un semi-marathon" existe sans délai
-    Et sur le PC, aucune modification n'est signalée comme non synchronisée
+    Et sur le PC, aucun élément ne porte la mention "MEN-ATTENTE"
 
   @US-031 @RG-017 @LOT-001
   Scénario: S07 — Session Google expirée alors que le PC est connecté au réseau : même comportement
@@ -117,7 +117,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et que la session Google du navigateur du PC a expiré
     Quand sur le PC, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
     Alors sur le PC, l'opération est acceptée
-    Et sur le PC, l'application indique qu'une reconnexion est nécessaire pour la mise à jour avec l'autre appareil
+    Et sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
     Alors sur le smartphone, la tâche "Chapitre 1" existe avec le délai 2026-12-05
@@ -131,7 +131,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et <interruption>
     Et l'utilisateur ouvre l'application sur le PC depuis son adresse web
     Alors sur le PC, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
-    Et sur le PC, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
+    Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le PC
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
@@ -141,8 +141,6 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
       | l'utilisateur ferme le navigateur     |
       | le PC est éteint puis rallumé         |
 
-  # Le 2026-12-21, les délais des données du contexte (tâche « Chapitre 1 » au 2026-11-30, objectif « Publier le guide » au 2026-12-15) sont dépassés :
-  # sans incidence, ce scénario ne vérifie ni retard ni alerte de délai.
   @US-031 @RG-021 @LOT-001
   Scénario: S09 — Il n'y a pas de durée maximale d'utilisation sans réseau sur le PC
     Étant donné que le PC est sans réseau
@@ -190,7 +188,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et sur le PC, l'utilisateur rouvre la tâche "Section A"
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
-    Alors sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
+    Alors sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
 
   # ---------------------------------------------------------------- Perte de l'accès Google (CA-9)
 
@@ -199,8 +197,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Étant donné que l'accès au compte Google "A" a été retiré sur le PC
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Alors sur le PC, l'opération est acceptée
-    Et sur le PC, l'application propose de se reconnecter
-    Et sur le PC, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
+    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand sur le PC, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 

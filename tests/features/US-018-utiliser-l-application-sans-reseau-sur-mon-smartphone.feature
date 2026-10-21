@@ -79,10 +79,10 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Et sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
-    Alors sur le smartphone, l'application indique qu'elle est hors ligne avec 2 modifications en attente
-    Et sur le smartphone, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
-    Et sur le smartphone, l'objectif "Courir un semi-marathon" est signalé comme non synchronisé
-    Et sur le smartphone, l'objectif "Publier le guide" n'est pas signalé comme non synchronisé
+    Alors sur le smartphone, l\'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 2 modification(s) en attente
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, l'objectif "Courir un semi-marathon" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, l'objectif "Publier le guide" ne porte pas la mention "MEN-ATTENTE"
 
   # ---------------------------------------------------------------- Retour du réseau (CA-4, CA-7)
 
@@ -96,8 +96,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et le réseau revient sur le smartphone, sans aucune action de l'utilisateur
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
     Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
-    Et sur le smartphone, la tâche "Chapitre 1 : contexte" n'est plus signalée comme non synchronisée
-    Et sur le smartphone, l'application n'indique plus être hors ligne
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" ne porte plus la mention "MEN-ATTENTE"
+    Et sur le smartphone, l\'indicateur de synchronisation n\'est plus "SYN-HORS-LIGNE"
 
   @US-018 @RG-021 @RG-036 @RG-056 @LOT-001
   Scénario: S07 — Au retour du réseau, la règle de conflit s'applique et la valeur écartée est signalée
@@ -132,7 +132,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et <interruption>
     Et l'utilisateur ouvre l'application sur le smartphone
     Alors sur le smartphone, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
-    Et sur le smartphone, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le smartphone
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
@@ -142,8 +142,6 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | le smartphone est éteint puis rallumé            |
       | l'application est arrêtée brutalement sur le smartphone |
 
-  # Le 2026-12-21, les délais des données du contexte (tâche « Chapitre 1 » au 2026-11-30, objectif « Publier le guide » au 2026-12-15) sont dépassés :
-  # sans incidence, ce scénario ne vérifie ni retard ni alerte de délai.
   @US-018 @RG-021 @LOT-001
   Scénario: S10 — Il n'y a pas de durée maximale d'utilisation sans réseau
     Étant donné que le smartphone est sans réseau
@@ -162,8 +160,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'accès au compte Google "A" <cause> sur le smartphone
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Alors sur le smartphone, l'opération est acceptée
-    Et sur le smartphone, l'application propose de se reconnecter
-    Et sur le smartphone, la tâche "Chapitre 1 : contexte" est signalée comme non synchronisée
+    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
@@ -179,7 +177,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
-    Alors la connexion échoue avec le motif "CNX-RESEAU-PREMIERE"
+    Alors la connexion échoue avec le motif "ERR-003"
     Et aucune donnée n'est créée sur le smartphone
 
   @US-018 @RG-021 @LOT-001
