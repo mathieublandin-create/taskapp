@@ -129,7 +129,7 @@ Statut : En analyse
   - *synchronisation* : accès Google perdu → bandeau non fermable « Se reconnecter », travail possible comme hors ligne (CA-7, voir US-017) ;
   - *conflit* : sans objet.
 - **Accessibilité et responsive** : aucun test cognitif (WCAG 3.3.8) ; erreurs annoncées `role="alert"` ; dialogues `alertdialog` avec « Annuler » focalisé ; cible 48 px ; connexion en une colonne sur smartphone, bloc centré de 460 px sur PC.
-- **Questions et réserves** : Q-ERG-15 (nom de l'application, provisoire « Objectifs et Tâches »). Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
+- **Questions et réserves** : Q-ERG-15 (nom de l'application) : tranchée par DEC-017, l'application s'appelle « Done Juan » ; le nom du dossier du Drive (« Objectifs et Tâches ») est à revoir par Steeve en E7. Le bouton officiel de Google doit respecter ses consignes de marque (à voir avec Anthony en E9).
 
 ## Tests métiers
 À rédiger en E5 : `tests/features/US-022-se-connecter-avec-mon-compte-google.feature`.
