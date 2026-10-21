@@ -46,6 +46,12 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-019 | 2026-10-21 | QC-1 Motivation de l'étude sans cloud | c) coût et indépendance vis-à-vis des services en ligne (« Qc-2 : C) » lu comme QC-1, la réponse QC-2 étant donnée ensuite) — Verbatim : « Qc-2 : C), qc-2 : oui, qc-3 : installation moi même, qc-5 : calendrier, qc-7 : oui. On étudiera dans un second temps une installation sur un radpbrry pi( que j'ai déjà) » |
+| DEC-020 | 2026-10-21 | QC-2 Données dans Google Drive | Oui : option A maintenue (données dans le Google Drive du commanditaire) |
+| DEC-021 | 2026-10-21 | QC-3 Distribution Android (remplace DEC-005) | Installation directe de l'APK par le commanditaire, sans Google Play |
+| DEC-022 | 2026-10-21 | QC-5 Rappels | Via Google Calendar (confirmé) |
+| DEC-023 | 2026-10-21 | QC-7 Code public | Le code peut être public (hébergement gratuit GitHub Pages possible) ; passage du dépôt en public à faire par le commanditaire |
+| DEC-024 | 2026-10-21 | Auto-hébergement | Étude d'une installation sur le Raspberry Pi du commanditaire reportée à un second temps (ETU-001) |
 | DEC-018 | 2026-10-21 | Validation E6 de LOT-001 | Les 10 US sont validées ; les règles proposées RG-044 b, RG-047 à 050, RG-054, les garde-fous de RG-055 et RG-056 a à c sont établies ; l'extension de RG-044 aux fichiers Drive modifiés à la main est retenue ; blocage seulement si le format des données diffère ; bandeau au-delà de 24 h hors ligne ; dossier Drive « Done Juan » ; les critères (P) sont retenus ; la reformulation est validée (hors ligne smartphone et PC) ; les exclusions sont validées. |
 | DEC-017 | 2026-10-21 | Q-ERG-15 Nom de l'application | « Done Juan » (verbatim : « option 2 ») |
 | DEC-013 | 2026-10-21 | Q-DEM001-39 Hors ligne sur PC | b) Le PC est utilisable hors ligne dès LOT-001 : US-031 intégrée au lot |
@@ -58,7 +64,7 @@
 | DEC-002 | 2026-10-20 | D1 Hors ligne | US-018 (hors ligne smartphone) intégrée au LOT-001 |
 | DEC-003 | 2026-10-20 | D2 Composition LOT-001 | Composition complète (8 US + US-018) |
 | DEC-004 | 2026-10-20 | D3 Typologie LOT-001 | Itération majeure (recette commanditaire E16) |
-| DEC-005 | 2026-10-20 | A2 Distribution Android | Google Play, piste de test interne |
+| DEC-005 | 2026-10-20 | A2 Distribution Android | **Remplacée par DEC-021.** Google Play, piste de test interne |
 | DEC-006 | 2026-10-20 | A3 Hébergement PC | Hébergement statique gratuit, sans domaine en v1 |
 | DEC-007 | 2026-10-20 | A4 Serveur | Aucun serveur applicatif |
 | DEC-008 | 2026-10-20 | A5 Vérification Google | Publication en production sans vérification (écran « application non vérifiée » accepté) |
@@ -66,6 +72,8 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- ETU-001 (plus tard) : étude d'auto-hébergement sur le Raspberry Pi du commanditaire (option C de `03-architecture/etude-sans-cloud-ou-gratuit.md`).
+- DEC-023 : le dépôt GitHub est actuellement privé ; le passage en public est une action du commanditaire (paramètres du dépôt).
 - Nom « Done Juan » (DEC-017) à répercuter : maquettes et guides (Steeve), cahier des charges et US (Pepper), DAT (Starck), README. Dossier Drive « Done Juan » (DEC-018, V-13).
 - Pour Starck (refinement) : état lu / non lu de la liste « Modifications non retenues » (synchronisé ou local).
 - Test technique R1/R2 (`03-architecture/test-technique-R1-R2.md`) : nécessite des actions du commanditaire (projet Google Cloud, compte de test, téléphone Android, compte d'hébergement, 2 séances d'environ 1 h 30). Bloquant avant E9 de LOT-001.
