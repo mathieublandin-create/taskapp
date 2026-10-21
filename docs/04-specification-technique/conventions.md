@@ -244,8 +244,8 @@ Règles :
 | Consultation seule | `ModeSaisie` = `'NORMAL' \| 'CONSULTATION_SEULE'` | RG-058 |
 | Génération des données | `generation` | RG-044 b |
 | Modification en attente | `ModificationEnAttente`, marqueur `deposeJusquA: Hlc` | DS-11 |
-| Plus ancienne modification en attente | `plusAncienneModificationEnAttente?: Instant` | RG-057 ; local, non synchronisé ; hypothèse du DAT v0.6 §4.1.5 bis, en attente de Q-ERG-16 (alternative : `dernierContactDrive: Instant`) |
-| Bandeau de rappel hors ligne | `doitAfficherRappelHorsLigne(…)` | RG-057 ; calculé dans un modèle de vue ; code `BAN-RAPPEL-24H` |
+| Plus ancienne modification en attente | `plusAncienneModificationEnAttente?: Instant` | RG-057, DEC-025 ; donnée locale non synchronisée ; les 24 h courent depuis cette date |
+| Bandeau d'accès Google perdu | `doitAfficherBandeauAccesGoogle(…)` | RG-057, DEC-025, DEC-026 ; un seul bandeau `BAN-ACCES-GOOGLE`, avec une mention ; calculé dans un modèle de vue ; un bandeau fermé réapparaît à la prochaine ouverture (lancement de l'application ou rechargement de la PWA, non un simple retour au premier plan) |
 | Planification, créneau, horaire suggéré | `Planification`, `CreneauAgenda`, `HoraireSuggere` | RG-006, RG-034 ; lots ultérieurs |
 | Capacité | `CapaciteHebdo`, `ExceptionCapacite` | RG-011 ; lots ultérieurs |
 | Rappels, bilan, fun facts | `Parametres`, `BilanSoir`, `RotationFunFacts`, `FunFact` | RG-012 à RG-014, RG-038 à RG-042 ; lots ultérieurs |
@@ -490,7 +490,7 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 
 ### 10.2 Cycle de synchronisation
 - Constantes nommées, regroupées dans `src/synchronisation/domaine/parametres-synchronisation.ts`, chacune avec sa référence : `TEMPORISATION_DEPOT` = 5 s, `PERIODE_SYNCHRONISATION_PREMIER_PLAN` = 2 min (DAT §4.3) ; `SEUIL_RAPPEL_HORS_LIGNE` = 24 h, `PERIODE_EVALUATION_RAPPEL_HORS_LIGNE` = 1 min (RG-057, DAT §4.1.5 bis) ; `SEUIL_HORLOGE_DEREGLEE` = 24 h, avertissement si l'écart est **strictement supérieur** (US-017 CA-13). Toutes sont des `EcartTemps`.
-- **Bandeau RG-057** : le point de départ des 24 h suit l'hypothèse du DAT v0.6 §4.1.5 bis (plus ancienne modification en attente), **en attente de la réponse du commanditaire à Q-ERG-16** ; Q-ERG-17 et Q-ERG-18 conditionnent aussi le modèle de vue. Le calcul est isolé dans une seule fonction pure, pour que le changement d'option ne touche qu'elle et ses tests.
+- **Bandeau RG-057** (DEC-025, DEC-026) : les 24 h courent depuis la plus ancienne modification en attente, donnée locale non synchronisée. Si l'accès Google est perdu, un seul bandeau `BAN-ACCES-GOOGLE` s'affiche, avec une mention ; un bandeau fermé réapparaît à la prochaine ouverture, c'est-à-dire au lancement de l'application ou au rechargement de la PWA, et non à un simple retour au premier plan. Le calcul est isolé dans une seule fonction pure, testée unitairement.
 - Tous les déclenchements différés ou périodiques passent par le `Planificateur` : `setTimeout`, `setInterval` et `requestIdleCallback` sont interdits hors `PlanificateurNavigateur`.
 - La fusion est une fonction **pure** du domaine `synchronisation` : commutative, associative, idempotente (propriétés vérifiées par fast-check, §11.4). La passe de réparation (RG-047 à RG-049) est pure et déterministe.
 - `dernierContactDrive` et les jetons de pagination (`pageToken`) sont des données **locales non synchronisées** (DAT §6.1).

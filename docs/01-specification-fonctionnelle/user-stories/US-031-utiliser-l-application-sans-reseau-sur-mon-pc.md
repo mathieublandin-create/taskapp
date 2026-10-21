@@ -94,8 +94,8 @@ Statut : Validée
   - comportement réel de `storage.persist()` pour une PWA installée, à observer pendant le test technique (§3.4) ;
   - deux onglets : traités par le verrou.
 - **RG-057 (rappel après 24 h hors ligne, établie, V-12)** :
-  - calcul **purement local**, sans réseau ni donnée synchronisée : la condition est « modifications en attente (marqueur « déposé jusqu'à HLC x » en retard) ET dernier contact réussi avec Drive vieux de plus de 24 h » ;
-  - la référence est un instant local `dernierContactDrive`, persisté dans le dépôt local à chaque lecture ou dépôt réussi. Il est évalué à l'ouverture, au retour au premier plan et par une temporisation d'une minute pendant que l'application est ouverte ; il est comparé à l'horloge de l'appareil (écart d'horloge sans conséquence grave : bandeau non bloquant) ;
+  - calcul **purement local**, sans réseau ni donnée synchronisée : le bandeau est affiché si la **plus ancienne modification en attente** (marqueur « déposé jusqu'à HLC x » en retard) date de plus de 24 h (DEC-025) ; ce sont les 24 h de la donnée présente seulement sur l'appareil qui comptent ;
+  - l'instant de cette modification est déduit du journal local des modifications non déposées ; il est remis à zéro par un dépôt confirmé. Il n'est pas synchronisé et ne change pas le format Drive. Il est évalué à l'ouverture, au retour au premier plan et chaque minute tant que l'application est ouverte ; il est comparé à l'horloge de l'appareil (écart d'horloge sans conséquence grave : bandeau non bloquant) ;
   - le bandeau disparaît dès que le marqueur rejoint la dernière modification, c'est-à-dire après un dépôt confirmé par Drive ;
   - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007) ;
   - impact : un champ local de plus, un sélecteur dans `synchronisation`, aucune migration du format Drive.
