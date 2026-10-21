@@ -1,7 +1,7 @@
 # language: fr
 #
 # Tests métiers — US-001 — Créer et gérer un objectif
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-001
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.8, US-001
 #
 # Conventions d'écriture, communes aux fichiers du lot :
 # - les étapes s'exécutent au niveau des cas d'usage (conventions techniques §9.6 et §9.7), sans détail d'interface, sauf les scénarios tagués @ihm ;
