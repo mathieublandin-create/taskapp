@@ -6,11 +6,35 @@
 | Préparé par | Pepper (business analyste), le 2026-10-21, pour Jarvis |
 | Référentiel | Cahier des charges v0.6 · [LOT-001](../lots/LOT-001.md) · 10 user stories · 211 scénarios de test |
 | Lecture | Environ 10 minutes |
-| État | **En attente de la réponse du commanditaire** |
+| État | **Validé par le commanditaire le 2026-10-21 (DEC-018)** : voir la section « Résultat » ci-dessous. Le reste du document est conservé tel que présenté. |
 
 ---
 
-## 1. Comment répondre
+## Résultat
+
+| Élément | Valeur |
+|---|---|
+| Date de la réponse | 2026-10-21 |
+| Verbatim du commanditaire | « oui pour tous » (confirmé par « reco pour tous ») |
+| Décision consignée | **DEC-018** dans [`suivi-projet.md`](../suivi-projet.md) |
+
+**Ce qui est validé :**
+- les **10 user stories** du lot (US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025) : statut « Validée » ;
+- **toutes les recommandations ★**, V-01 à V-23, dont V-06 option 2 (blocage de la saisie seulement si le format des données diffère), V-12 (rappel après 24 h hors ligne) et V-13 (dossier du Drive « Done Juan ») ;
+- la **reformulation du besoin** (V-22), avec la correction proposée par Jarvis : le travail sans réseau vaut pour le smartphone **et le PC** (DEC-013) ;
+- les **3 exclusions** proposées (V-23) : autres agendas que Google Calendar, import depuis d'autres outils, facturation ou suivi financier du temps passé.
+
+**Suites données par Pepper (2026-10-21) :**
+- cahier des charges **v0.7** : RG-044 b et extension aux fichiers modifiés à la main, RG-047 à RG-050, RG-054, garde-fous de RG-055, RG-056 a à c passent à « Établie » ; nouvelles RG-057 (V-12) et RG-058 (V-06) ; exclusions « Décidées » ; validations attendues vidées ;
+- 10 US : statut « Validée », marqueurs (P) retirés, corrections de forme faites (US-025 CA-1, exemple de date de US-003 CA-1) ;
+- tests métiers : **219 scénarios, aucun tag de proposition restant** ; nouveaux scénarios pour V-06, V-02 et V-12 ;
+- `backlog-initial.md` v0.7 et [`LOT-001.md`](../lots/LOT-001.md) §9.2 mis à jour.
+
+**Prochaine étape :** refinement (E7).
+
+---
+
+## 1. Comment répondre (document soumis le 2026-10-21)
 
 Vous avez deux choses à faire :
 

@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-003 — Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-003
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-003
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 
 Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif
   En tant qu'utilisateur,
@@ -106,7 +106,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | 0 | 0 | 0  | atteint                 | atteint              |
       | 0 | 0 | 0  | à décliner en tâches    | en cours             |
 
-  @US-003 @RG-025 @RG-023 @LOT-001 @propose
+  @US-003 @RG-025 @RG-023 @LOT-001
   Scénario: S08 — Une sous-tâche à faire empêche l'atteinte de l'objectif de sa tâche parente
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
@@ -179,7 +179,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors l'action est refusée avec le motif "2 sous-tâches restantes"
     Et l'état de la tâche "Chapitre 1" est "à faire"
 
-  @US-003 @RG-026 @RG-023 @LOT-001 @propose
+  @US-003 @RG-026 @RG-023 @LOT-001
   Scénario: S13 — Rouvrir une sous-tâche d'une tâche parente terminée rouvre aussi la tâche parente, après confirmation
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -191,7 +191,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Alors l'état de la tâche "Section A" est "à faire"
     Et l'état de la tâche "Chapitre 1" est "à faire"
 
-  @US-003 @RG-026 @RG-023 @LOT-001 @propose
+  @US-003 @RG-026 @RG-023 @LOT-001
   Scénario: S14 — Renoncer à la réouverture d'une sous-tâche d'une tâche parente terminée ne change rien
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -214,7 +214,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Quand l'utilisateur rouvre la tâche "Payer la facture"
     Alors la tâche "Payer la facture" est en retard
 
-  @US-003 @RG-026 @LOT-001 @propose
+  @US-003 @RG-026 @LOT-001
   Plan du scénario: S16 — Les tâches peuvent être filtrées selon qu'elles sont à faire ou terminées
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -228,9 +228,9 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | à faire  | Chapitre 1 |
       | terminée | Plan       |
 
-  # ---------------------------------------------------------------- Deux appareils : conflits et incohérence (CA-12, RG-049 proposée)
+  # ---------------------------------------------------------------- Deux appareils : conflits et incohérence (CA-12, RG-049)
 
-  @US-003 @RG-036 @RG-056 @LOT-001 @propose
+  @US-003 @RG-036 @RG-056 @LOT-001
   Scénario: S17 — Tâche terminée sur un appareil et abandonnée sur l'autre : l'état le plus récent l'emporte et l'autre est signalé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
@@ -247,7 +247,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | état        | terminée           | abandonnée       |
 
-  @US-003 @RG-049 @RG-025 @LOT-001 @propose
+  @US-003 @RG-049 @RG-025 @LOT-001
   Scénario: S18 — Une tâche parente terminée alors qu'une sous-tâche a été rouverte sur l'autre appareil est signalée, sans correction automatique
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -265,7 +265,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
     Et l'état de l'objectif "Publier le guide" est "en cours"
 
-  @US-003 @RG-049 @LOT-001 @propose
+  @US-003 @RG-049 @LOT-001
   Plan du scénario: S19 — L'incohérence d'une tâche parente terminée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", terminée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
@@ -277,9 +277,9 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | abandonne la tâche "Section A" et confirme     |
       | rouvre la tâche "Chapitre 1"                   |
 
-  # ---------------------------------------------------------------- Historique (CA-3, CA-13, RG-050 proposée)
+  # ---------------------------------------------------------------- Historique (CA-3, CA-13, RG-050)
 
-  @US-003 @RG-050 @RG-026 @LOT-001 @propose
+  @US-003 @RG-050 @RG-026 @LOT-001
   Scénario: S20 — La fin et la réouverture d'une tâche sont conservées dans l'historique, avec la date de fin précédente
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
@@ -292,9 +292,9 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
       | fin         | 2026-10-21 | à faire    | terminée, date de fin 2026-10-21 |
       | réouverture | 2026-10-23 | terminée, date de fin 2026-10-21 | à faire |
 
-  # ---------------------------------------------------------------- Mention « heure de Paris » (RG-054 proposée)
+  # ---------------------------------------------------------------- Mention « heure de Paris » (RG-054)
 
-  @US-003 @RG-054 @RG-053 @LOT-001 @propose
+  @US-003 @RG-054 @RG-053 @LOT-001
   Plan du scénario: S21 — La date de fin est accompagnée de la mention « heure de Paris » seulement si l'appareil est dans un autre fuseau
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |

@@ -27,7 +27,7 @@ Statut : Validée
 ## Critères d'acceptation
 1. **CA-1** — Sur un appareil où aucune session n'est ouverte, l'application n'affiche que l'invitation à se connecter avec un compte Google. Aucune autre fonction n'est accessible, et aucune donnée n'est affichée, même si des données sont restées sur l'appareil après une déconnexion (RG-019, RG-043).
 2. **CA-2** — Après une connexion réussie, l'utilisateur accède à ses objectifs et à ses tâches, conservés dans le Google Drive du compte avec lequel il s'est connecté (RG-020). Lors de la toute première connexion, le Drive ne contient aucune donnée de l'application, et celle-ci affiche un état vide invitant à créer un premier objectif ou une première tâche.
-3. **CA-3** — Après la première connexion, un dossier de l'application est visible dans le Drive de l'utilisateur (RG-020, DEC-009). Son nom est fixé en E4.
+3. **CA-3** — Après la première connexion, un dossier de l'application est visible dans le Drive de l'utilisateur (RG-020, DEC-009). Ce dossier s'appelle **« Done Juan »**, comme l'application (V-13, DEC-017, DEC-018).
 4. **CA-4** — Si l'utilisateur annule la connexion ou refuse les autorisations demandées, il reste sur l'écran de connexion. Un message lui explique que la connexion à un compte Google est nécessaire pour utiliser l'application. Aucune donnée n'est créée.
 5. **CA-5** — À la réouverture de l'application sur le même appareil, l'utilisateur n'a pas à se reconnecter tant que son accès est valide.
 6. **CA-6** — L'utilisateur peut se déconnecter à tout moment depuis l'application. Il revient alors à l'écran de connexion (RG-043) :
@@ -155,7 +155,7 @@ Statut : Validée
 | Cas limite : suppression sur un appareil pas encore entièrement chargé | S15 (le Drive n'est jamais touché) |
 | Cas limite : distinction avec « repartir de zéro » | S15 ; US-017 S21 |
 
-Nom de l'application : « Done Juan » (DEC-017), utilisé dans les scénarios. Le dossier du Drive garde le nom « Objectifs et Tâches » (S05), à revoir par Steeve en E7.
+Nom de l'application : « Done Juan » (DEC-017), utilisé dans les scénarios. Le dossier du Drive s'appelle « Done Juan » (V-13, DEC-018), comme l'application (S05). Le DAT, qui porte encore « Objectifs et Tâches », est à aligner (Starck) au refinement.
 
 ## Questions ouvertes
 Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déroulement de CA-10 et les autres critères sont validés par le commanditaire (DEC-018).
@@ -168,4 +168,5 @@ Aucune. Q-DEM001-42 a été répondue le 2026-10-21 (DEC-015, DEC-016). Le déro
 | 2026-10-20 | Création (Pepper, E1), à partir des réponses Q-DEM001-3 b), 19.2 et 19.3 et des compléments du commanditaire. |
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-22 intégrées (CA-2, CA-3, CA-6, CA-7) ; décisions DEC-001 (Android), DEC-008 (avertissement Google, hors lot 1) et DEC-009 (dossier visible) ; nouvelle question Q-DEM001-42. |
 | 2026-10-21 | v0.5 (Pepper) : réponses Q-DEM001-42 intégrées (DEC-015, DEC-016) : CA-6 complété, CA-9 réécrit, nouveau CA-10 « Supprimer les données de cet appareil » (déroulement proposé). |
+| 2026-10-21 | Nom du dossier du Drive : « Done Juan » (V-13, DEC-018), CA-3 précisé. |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |

@@ -15,7 +15,7 @@ Statut : Validée
 - **Limites signalées par l'architecte** (DAT §8), conséquences de la décision « aucun serveur » (DEC-007) :
   - F1 : un appareil éteint ou fermé ne peut rien afficher ; le délai d'une heure ne vaut que si l'appareil destinataire est ouvert et connecté ;
   - F14 : sur PC, si la session Google du navigateur a expiré, un geste de reconnexion précède la mise à jour.
-- **Nouveau en v0.4** : restauration ou remise à zéro si les données sont supprimées hors de l'application (RG-044) ; règles de réparation après fusion (RG-047 à RG-049, proposées, F12).
+- **Nouveau en v0.4** : restauration ou remise à zéro si les données sont supprimées hors de l'application (RG-044) ; règles de réparation après fusion (RG-047 à RG-049, F12) ; fichiers du Drive modifiés à la main, traités comme illisibles (extension de RG-044, V-02) ; compatibilité entre versions de l'application (RG-058, V-06 option 2).
 - **Décisions D1 (DEC-002) et Q-39 b) (DEC-013)** : le hors ligne du smartphone (US-018) et celui du PC (US-031) entrent dans LOT-001. Le CA-7 retient la variante « hors ligne inclus » (F13).
 - **Existant.** Aucune fonctionnalité livrée.
 
@@ -25,7 +25,9 @@ Statut : Validée
 - RG-020 : données conservées dans le Google Drive du compte de connexion.
 - RG-021, RG-035 : sans réseau ou sans accès Google, saisies conservées puis enregistrées (CA-7).
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
-- RG-044 : données supprimées ou illisibles dans le Drive : restaurer ou repartir de zéro.
+- RG-044 : données supprimées, illisibles ou modifiées à la main dans le Drive : restaurer ou repartir de zéro.
+- RG-058 : versions différentes de l'application ; saisie bloquée seulement si le format des données diffère.
+- RG-056 : liste « Modifications non retenues » (signalement « à lire », lecture partagée, signalement unique).
 - RG-047, RG-048, RG-049 : réparations après fusion.
 - RG-008, RG-053 : journée et horaires dans le fuseau de référence, Europe/Paris ; RG-054 : mention « heure de Paris ».
 - ENF-01, ENF-02, ENF-04, ENF-06 (validée), ENF-07.
@@ -35,7 +37,7 @@ Statut : Validée
 2. **CA-2** — Les deux appareils étant ouverts et connectés au réseau, un objectif ou une tâche créé, modifié ou supprimé sur l'un est visible sur l'autre **au plus tard une heure après**, sans action de l'utilisateur (RG-017 ; DEC-014). Ce délai ne porte que sur les données : il ne s'applique pas à la détection d'un créneau déplacé dans Google Calendar (lot « Agenda », RG-037). Si l'autre appareil est fermé ou éteint, la modification y est visible dès son ouverture (CA-3).
 3. **CA-3** — À l'ouverture de l'application sur un appareil connecté :
    - les données présentes sur l'appareil s'affichent aussitôt ;
-   - les modifications faites sur l'autre appareil et déjà enregistrées dans le Drive y sont intégrées **sans attendre le délai d'une heure**, au plus tard **une minute** après l'ouverture **(P : valeur à valider)** ;
+   - les modifications faites sur l'autre appareil et déjà enregistrées dans le Drive y sont intégrées **sans attendre le délai d'une heure**, au plus tard **une minute** après l'ouverture ;
    - **exception sur PC** : si la session Google du navigateur a expiré, l'application affiche les données présentes sur le PC, reste utilisable et indique qu'une reconnexion est nécessaire pour la mise à jour. L'intégration a lieu après le geste de reconnexion de l'utilisateur (F14).
 4. **CA-4** — Toutes les données de l'application sont conservées dans le Drive de l'utilisateur (RG-020). L'application n'en conserve aucune copie ailleurs que dans ce Drive et sur les appareils de l'utilisateur (DEC-007).
 5. **CA-5** — Après fermeture et réouverture de l'application, sur le même appareil ou sur l'autre, les données sont identiques à celles enregistrées.
@@ -45,22 +47,24 @@ Statut : Validée
 8. **CA-8** — Quand une valeur saisie sur un appareil est écartée par une modification concurrente faite sur l'autre (CA-6), l'utilisateur en est informé : élément concerné, information, valeur non retenue (RG-036). Une valeur remplacée plus tard, en connaissance de cause, n'est pas signalée.
    - Exemple signalé : intitulé « A » saisi sur le PC, puis intitulé « B » saisi sur le smartphone sans réseau, avant d'avoir reçu « A » ; « B » l'emporte, et « A » est signalé comme valeur écartée.
    - Exemple non signalé : le smartphone reçoit « A », puis l'utilisateur le remplace par « B ».
-9. **CA-9** — Si les données de l'application sont absentes ou illisibles dans le Drive alors que l'appareil en détient une copie, l'application avertit l'utilisateur et lui propose (RG-044) :
+9. **CA-9** — Si les données de l'application sont absentes ou illisibles dans le Drive, ou si leurs fichiers ont été modifiés à la main dans le Drive (même s'ils restent lisibles), alors que l'appareil en détient une copie, l'application avertit l'utilisateur et lui propose (RG-044) :
    - **restaurer** ses données à partir de la copie de l'appareil : elles sont de nouveau présentes dans le Drive et sur les deux appareils ;
-   - **repartir de zéro** *(proposé, à valider en E6)* : après une confirmation, les données sont effacées de l'appareil ; à sa prochaine synchronisation, l'autre appareil efface aussi les siennes, sans reposer la question. S'il détenait des modifications pas encore enregistrées, l'utilisateur en est informé (valeurs écartées).
+   - **repartir de zéro** : après une confirmation, les données sont effacées de l'appareil ; à sa prochaine synchronisation, l'autre appareil efface aussi les siennes, sans reposer la question. S'il détenait des modifications pas encore enregistrées, l'utilisateur en est informé (valeurs écartées).
+   - Un fichier modifié à la main est traité comme un fichier illisible : son contenu n'est jamais fusionné avec les données de l'application (V-02, extension de RG-044).
    - Tant que l'utilisateur n'a pas choisi, rien n'est effacé et rien n'est réécrit dans le Drive.
-10. **CA-10** — *(règles proposées, à valider en E6)* Après l'échange des modifications des deux appareils, l'application applique les règles de réparation :
+10. **CA-10** — *(RG-047 à RG-049)* Après l'échange des modifications des deux appareils, l'application applique les règles de réparation :
     - suppression d'un côté, modification de l'autre : la suppression l'emporte, et les modifications écartées sont signalées (RG-047 ; détail dans US-001, US-002, US-024) ;
     - hiérarchie d'objectifs invalide : le déplacement le plus ancien est annulé et signalé (RG-048 ; détail dans US-023) ;
     - incohérence d'état entre une tâche et ses sous-tâches : elle est signalée, sans correction automatique (RG-049 ; détail dans US-003, US-024, US-025).
 11. **CA-11** — *(RG-054)* Quand l'appareil est réglé sur un autre fuseau horaire que celui de Paris, l'application signale que les horaires et la journée « aujourd'hui » qu'elle affiche sont à l'heure de Paris (mention « heure de Paris »). Quand l'appareil est à l'heure de Paris, cette mention n'apparaît pas.
+12. **CA-12** — *(RG-058, V-06 option 2)* Deux appareils qui n'ont pas la même version de l'application continuent de travailler normalement, saisie comprise, tant que les données qu'ils échangent ont le même format. La saisie n'est bloquée que si un appareil rencontre des données enregistrées dans un format plus récent que celui qu'il connaît : cet appareil passe alors en consultation seule et invite l'utilisateur à mettre l'application à jour. Les données présentes sur l'appareil, y compris ses modifications en attente, restent consultables et ne sont pas perdues (ENF-06) ; la saisie reprend après la mise à jour.
 
 ## Cas limites et cas d'erreur
 - Drive plein : l'utilisateur est averti que ses modifications ne peuvent pas être enregistrées dans son Drive ; elles restent conservées sur l'appareil et rien n'est perdu sans avertissement.
 - Les deux appareils dans des fuseaux horaires différents, ou l'utilisateur en voyage : la date de fin, la date d'abandon et l'indication « en retard » sont déterminées dans le fuseau de Paris (RG-008, RG-053, DEC-012) ; elles sont donc identiques sur les deux appareils, mais peuvent ne pas correspondre à la date locale du lieu où se trouve l'utilisateur. Les délais, dates sans heure, ne changent jamais de jour (RG-053).
 - Horloge de l'un des appareils déréglée de plusieurs minutes : la modification réellement la plus récente l'emporte quand même. Si l'écart dépasse 24 h, l'application avertit l'utilisateur.
-- Les deux appareils n'ont pas la même version de l'application : l'appareil dont la version est la plus ancienne invite l'utilisateur à la mettre à jour avant de permettre la saisie **(P, comportement à confirmer par l'architecte en E3)**.
-- Modification faite directement dans les fichiers du Drive, qui les laisse lisibles : *point à préciser par l'architecte en E3* (cas non couvert par RG-044, qui ne vise que les données absentes ou illisibles).
+- Les deux appareils n'ont pas la même version de l'application : voir CA-12 (blocage de la saisie seulement si le format des données diffère).
+- Modification faite directement dans les fichiers du Drive, qui les laisse lisibles : traitée comme des données illisibles (CA-9, extension de RG-044) ; le contenu modifié à la main n'est jamais fusionné.
 
 ## Hors périmètre
 - Fonctionnement détaillé sans réseau sur le smartphone (US-018) et sur le PC (US-031).
@@ -148,7 +152,7 @@ Statut : Validée
 - **Questions et réserves** : Q-ERG-14 (durée de conservation des modifications non retenues ; proposition : jusqu'à « Compris »). Les critères (P) de CA-3, CA-9 et CA-11 attendent la validation de E6 ; les maquettes les appliquent.
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **30 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`.
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature) — **33 scénarios, dont 0 tagué `@propose`** (les règles et critères proposés ont été validés le 2026-10-21, DEC-018 ; le tag est retiré). Chaque scénario porte les tags `@US-017`, `@RG-xxx` et `@LOT-001`.
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -160,20 +164,20 @@ Statut : Validée
 | CA-6 | S09, S10 |
 | CA-7 | S17 ; détail : US-018, US-031 |
 | CA-8 | S10, S11 |
-| CA-9 (RG-044) | S18, S19, S20, S21, S22, S23 |
-| CA-10 (RG-047 à RG-049) | S24, S25, S26 ; détail (tous P) : US-001 S19-S20, US-002 S23, US-023 S16-S19, US-024 S20-S22, US-003 S18-S19, US-025 S15-S16 |
+| CA-9 (RG-044) | S18, S19, S20, S21, S22, S23, S32, S33 |
+| CA-10 (RG-047 à RG-049) | S24, S25, S26 ; détail : US-001 S19-S20, US-002 S23, US-023 S16-S19, US-024 S20-S22, US-003 S18-S19, US-025 S15-S16 |
 | CA-11 (RG-054) | S27 ; US-003 S21 |
 | RG-056 (modifications non retenues, point « à lire ») | S14, S15, S16 |
 | Cas limite : Drive plein | S29 |
 | Cas limite : fuseaux différents sur les deux appareils, voyage | S28 |
 | Cas limite : horloge déréglée (quelques minutes ; plus de 24 h) | S12, S13 |
-| Cas limite : versions différentes | S30 (voir point d'arbitrage ci-dessous) |
-| Cas limite : fichiers du Drive modifiés mais restés lisibles | **Non couvert** : en attente d'arbitrage (voir ci-dessous) |
+| CA-12 (RG-058) ; cas limite : versions différentes | S30, S31 |
+| Cas limite : fichiers du Drive modifiés à la main mais restés lisibles | S32, S33 |
 | Session Google expirée sur PC (F14) | S06 ; US-031 S06, S07 ; US-022 S23 |
 
-**Points d'arbitrage relevés en E5** :
-- *Versions différentes* : le cas limite (P) de l'US prévoit de bloquer la saisie dès que la version de l'application diffère ; l'architecte (E3) recommande de ne bloquer que si le format des données diffère. S30 ne couvre que le terrain commun (format plus récent illisible : invitation à mettre à jour, sans perte). La formulation du cas limite est à trancher en E6.
-- *Fichiers du Drive modifiés mais restés lisibles* : l'architecte recommande d'étendre RG-044 à ce cas. Cela modifierait une règle établie : à soumettre au commanditaire en E6. Aucun scénario n'est rédigé tant que la décision n'est pas prise.
+**Décisions du commanditaire intégrées (DEC-018)** :
+- *Versions différentes* (V-06, option 2) : la saisie n'est bloquée que si le format des données diffère (CA-12, RG-058). S30 couvre le format plus récent (consultation seule, invitation à mettre à jour, rien de perdu) ; S31 couvre deux versions de même format qui coexistent.
+- *Fichiers du Drive modifiés à la main mais restés lisibles* (V-02) : traités comme des données illisibles (CA-9, RG-044 étendue). S32 couvre l'avertissement et le choix ; S33 vérifie que le contenu modifié à la main n'est jamais fusionné.
 
 ## Questions ouvertes
 Aucune. Q-DEM001-41 (DEC-014) et Q-DEM001-39 (DEC-013) ont été répondues le 2026-10-21. Tous les critères sont validés par le commanditaire (DEC-018).
@@ -186,3 +190,4 @@ Aucune. Q-DEM001-41 (DEC-014) et Q-DEM001-39 (DEC-013) ont été répondues le 2
 | 2026-10-20 | v0.4 (Pepper, fin de E1) : réponses Q-DEM001-21, 22 et 23 intégrées (CA-2, CA-3, CA-6, CA-8, CA-9) ; limites F1 et F14 de l'architecte (CA-2, CA-3) ; règles de réparation proposées F12 (CA-10) ; CA-7 remplacé par la variante « hors ligne inclus » (F13, DEC-002) ; mention « heure de Paris » proposée (RG-054, CA-11) ; DEC-001 (Android), DEC-007 (aucun serveur), DEC-009 (dossier visible), DEC-012 (fuseau de référence Europe/Paris). |
 | 2026-10-21 | v0.5 (Pepper) : Q-DEM001-41 confirmée (DEC-014, CA-2) ; hors ligne du PC dans le lot (DEC-013, CA-7 renvoie à US-031). |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
+| 2026-10-21 | v0.7 (Pepper) : V-06 option 2 mise en œuvre (CA-12, RG-058 ; scénarios S30 et S31) ; V-02 : fichiers du Drive modifiés à la main traités comme illisibles (CA-9, cas limites ; scénarios S32 et S33). Les deux cas qui étaient en attente d'arbitrage sont tranchés. |

@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-018 — Utiliser l'application sans réseau sur mon smartphone
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-018
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-018
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 
 Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
   En tant qu'utilisateur,
@@ -73,7 +73,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
 
   # ---------------------------------------------------------------- Indication hors ligne (CA-3)
 
-  @US-018 @RG-021 @LOT-001 @propose
+  @US-018 @RG-021 @LOT-001
   Scénario: S05 — Sans réseau, l'application indique qu'elle est hors ligne et combien de modifications attendent
     Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -110,7 +110,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-01         | 2026-12-05       |
 
-  @US-018 @RG-021 @RG-047 @RG-056 @LOT-001 @propose
+  @US-018 @RG-021 @RG-047 @RG-056 @LOT-001
   Scénario: S08 — Au retour du réseau, une suppression faite sur le PC l'emporte sur une modification faite sans réseau
     Étant donné que le smartphone est sans réseau
     Quand sur le PC, l'utilisateur supprime la tâche "Chapitre 1" et confirme
@@ -141,7 +141,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | le smartphone est éteint puis rallumé            |
       | l'application est arrêtée brutalement sur le smartphone |
 
-  @US-018 @RG-021 @LOT-001 @propose
+  @US-018 @RG-021 @LOT-001
   Scénario: S10 — Il n'y a pas de durée maximale d'utilisation sans réseau
     Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -179,7 +179,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors la connexion échoue avec le motif "réseau nécessaire pour la première connexion"
     Et aucune donnée n'est créée sur le smartphone
 
-  @US-018 @RG-021 @LOT-001 @propose
+  @US-018 @RG-021 @LOT-001
   Scénario: S13 — Le réseau perdu pendant une saisie ne laisse aucune donnée enregistrée à moitié
     Quand sur le smartphone, l'utilisateur commence la création d'une sous-tâche "Section A" de la tâche "Chapitre 1", de délai 2026-11-20, estimée à 1 h
     Et le réseau est coupé sur le smartphone pendant la saisie
@@ -196,3 +196,37 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et l'envoi au Drive est interrompu 3 fois avant d'aboutir
     Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
     Et sur le PC, après échange, il existe 1 objectif d'intitulé "Courir un semi-marathon"
+
+  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-9, RG-057)
+
+  @US-018 @RG-057 @RG-021 @LOT-001
+  Scénario: S15 — Hors ligne depuis plus de 24 h avec des modifications en attente, un bandeau de rappel s'affiche sans rien bloquer
+    Étant donné que le smartphone est sans réseau
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le smartphone, un bandeau de rappel signale que des modifications ne sont pas encore enregistrées dans le Drive
+    Et sur le smartphone, le bandeau de rappel est non bloquant
+    Quand sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Alors sur le smartphone, l'opération est acceptée
+
+  @US-018 @RG-057 @LOT-001
+  Plan du scénario: S16 — Pas de bandeau de rappel avant 24 h hors ligne, ni sans modification en attente
+    Étant donné que le smartphone est sans réseau
+    Et que <situation>
+    Quand nous sommes le <moment> heure de Europe/Paris
+    Alors sur le smartphone, aucun bandeau de rappel n'est affiché
+
+    Exemples:
+      | situation                                                                                                   | moment              |
+      | sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"                 | 2026-10-22 à 09:59  |
+      | aucune modification n'est en attente sur le smartphone                                                      | 2026-10-22 à 10:01  |
+
+  @US-018 @RG-057 @RG-021 @LOT-001
+  Scénario: S17 — Le bandeau de rappel disparaît quand les modifications sont enregistrées dans le Drive
+    Étant donné que le smartphone est sans réseau
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Et que sur le smartphone, un bandeau de rappel est affiché
+    Quand le réseau revient sur le smartphone
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le smartphone, aucun bandeau de rappel n'est affiché

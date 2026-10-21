@@ -1,7 +1,7 @@
 # language: fr
 #
 # Tests métiers — US-001 — Créer et gérer un objectif
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-001
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-001
 #
 # Conventions d'écriture, communes aux fichiers du lot :
 # - les étapes s'exécutent au niveau des cas d'usage (conventions techniques §9.6 et §9.7), sans détail d'interface ;
@@ -9,7 +9,7 @@
 # - toute heure est ancrée explicitement dans un fuseau (« heure de Europe/Paris ») ;
 # - « sur le smartphone, » ou « sur le PC, » en tête d'étape désigne l'appareil concerné ; sans mention, l'appareil est le seul en jeu ;
 # - « les deux appareils échangent leurs modifications » : chacun enregistre ses modifications dans le Drive puis intègre celles de l'autre ;
-# - @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# - Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 
 Fonctionnalité: Créer et gérer un objectif
   En tant qu'utilisateur,
@@ -29,21 +29,21 @@ Fonctionnalité: Créer et gérer un objectif
     Et l'état de l'objectif "Publier le guide" est "à décliner en tâches"
     Et l'objectif "Publier le guide" n'est pas en retard
 
-  @US-001 @RG-002 @LOT-001 @propose
+  @US-001 @RG-002 @LOT-001
   Scénario: S02 — La description d'un objectif est facultative
     Quand l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15 avec la description "Version imprimable comprise"
     Et l'utilisateur crée un objectif "Courir un semi-marathon" de délai 2027-04-30 sans description
     Alors l'objectif "Publier le guide" a la description "Version imprimable comprise"
     Et l'objectif "Courir un semi-marathon" existe sans description
 
-  @US-001 @RG-002 @LOT-001 @propose
+  @US-001 @RG-002 @LOT-001
   Scénario: S03 — Un objectif sans délai est accepté et affiché « sans délai »
     Quand l'utilisateur crée un objectif "Apprendre l'italien" sans délai
     Alors l'objectif "Apprendre l'italien" existe sans délai
     Et l'objectif "Apprendre l'italien" est affiché avec la mention "sans délai"
     Et l'objectif "Apprendre l'italien" n'est pas en retard
 
-  @US-001 @RG-002 @LOT-001 @propose
+  @US-001 @RG-002 @LOT-001
   Plan du scénario: S04 — Un intitulé vide est refusé
     Quand l'utilisateur crée un objectif sans délai dont l'intitulé est <intitulé>
     Alors l'enregistrement est refusé avec le motif "intitulé manquant"
@@ -54,7 +54,7 @@ Fonctionnalité: Créer et gérer un objectif
       | vide                         |
       | composé uniquement d'espaces |
 
-  @US-001 @RG-002 @LOT-001 @propose
+  @US-001 @RG-002 @LOT-001
   Scénario: S05 — Deux objectifs peuvent porter le même intitulé
     Étant donné un objectif "Santé" sans délai
     Quand l'utilisateur crée un objectif "Santé" de délai 2027-06-30
@@ -62,7 +62,7 @@ Fonctionnalité: Créer et gérer un objectif
 
   # ---------------------------------------------------------------- Consultation (CA-3, CA-4)
 
-  @US-001 @RG-025 @RG-045 @LOT-001 @propose
+  @US-001 @RG-025 @RG-045 @LOT-001
   Scénario: S06 — La liste des objectifs affiche l'état, le délai, le retard et la progression en tâches directes
     Étant donné un objectif "Publier le guide" de délai 2026-10-15
     Et un objectif "Apprendre l'italien" sans délai
@@ -213,7 +213,7 @@ Fonctionnalité: Créer et gérer un objectif
     Et la tâche "Chapitre 1" est rattachée au seul objectif "Écrire"
     Et "Version imprimable" est un objectif principal
 
-  @US-001 @RG-046 @LOT-001 @propose
+  @US-001 @RG-046 @LOT-001
   Scénario: S17 — La confirmation de suppression annonce le nombre de tâches détachées et de sous-objectifs concernés
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -229,9 +229,9 @@ Fonctionnalité: Créer et gérer un objectif
     Alors l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et l'objectif "Publier le guide" a toujours 1 tâche rattachée
 
-  # ---------------------------------------------------------------- Suppression concurrente (CA-10, RG-047 proposée)
+  # ---------------------------------------------------------------- Suppression concurrente (CA-10, RG-047)
 
-  @US-001 @RG-047 @RG-056 @LOT-001 @propose
+  @US-001 @RG-047 @RG-056 @LOT-001
   Scénario: S19 — La suppression d'un objectif l'emporte sur une modification plus récente faite sur l'autre appareil
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -245,7 +245,7 @@ Fonctionnalité: Créer et gérer un objectif
       | élément          | information | valeur non retenue | valeur conservée   |
       | Publier le guide | délai       | 2027-01-31         | objectif supprimé  |
 
-  @US-001 @RG-047 @RG-046 @LOT-001 @propose
+  @US-001 @RG-047 @RG-046 @LOT-001
   Scénario: S20 — Ce qui a été rattaché ou créé entre-temps sous l'objectif supprimé subit les conséquences de la suppression
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -262,9 +262,9 @@ Fonctionnalité: Créer et gérer un objectif
     Et sur les deux appareils, la tâche "Annexe" existe sans objectif
     Et sur les deux appareils, "Version imprimable" est un objectif principal
 
-  # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
+  # ---------------------------------------------------------------- Historique (CA-11, RG-050)
 
-  @US-001 @RG-050 @LOT-001 @propose
+  @US-001 @RG-050 @LOT-001
   Scénario: S21 — La création, le changement de délai et la suppression d'un objectif sont conservés dans l'historique
     Quand l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris

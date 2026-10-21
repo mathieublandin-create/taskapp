@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-002 — Créer et gérer mes tâches
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-002
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-002
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 
 Fonctionnalité: Créer et gérer mes tâches
   En tant qu'utilisateur,
@@ -49,7 +49,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | 2026-11-30 |            | estimation manquante             |
       |            |            | délai manquant, estimation manquante |
 
-  @US-002 @RG-003 @LOT-001 @propose
+  @US-002 @RG-003 @LOT-001
   Plan du scénario: S04 — Une tâche à l'intitulé vide est refusée
     Quand l'utilisateur crée une tâche de délai 2026-11-30, estimée à 1 h, dont l'intitulé est <intitulé>
     Alors l'enregistrement est refusé avec le motif "intitulé manquant"
@@ -78,7 +78,7 @@ Fonctionnalité: Créer et gérer mes tâches
 
   # ---------------------------------------------------------------- Rattachement (CA-5, CA-6)
 
-  @US-002 @RG-001 @LOT-001 @propose
+  @US-002 @RG-001 @LOT-001
   Scénario: S06 — Une tâche sans objectif figure dans la vue « Tâches sans objectif »
     Quand l'utilisateur crée une tâche :
       | intitulé        | délai      | estimation | objectifs |
@@ -271,7 +271,7 @@ Fonctionnalité: Créer et gérer mes tâches
 
   # ---------------------------------------------------------------- Liste (CA-11)
 
-  @US-002 @RG-045 @RG-001 @LOT-001 @propose
+  @US-002 @RG-045 @RG-001 @LOT-001
   Scénario: S20 — La liste des tâches est triée par délai croissant et présente les informations de chaque tâche
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les tâches suivantes :
@@ -313,7 +313,7 @@ Fonctionnalité: Créer et gérer mes tâches
 
   # ---------------------------------------------------------------- Suppression concurrente (CA-13) et historique (CA-14)
 
-  @US-002 @RG-047 @RG-056 @LOT-001 @propose
+  @US-002 @RG-047 @RG-056 @LOT-001
   Scénario: S23 — La suppression d'une tâche l'emporte sur une modification plus récente faite sur l'autre appareil
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
@@ -330,7 +330,7 @@ Fonctionnalité: Créer et gérer mes tâches
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | intitulé    | Chapitre 1 revu    | tâche supprimée  |
 
-  @US-002 @RG-050 @LOT-001 @propose
+  @US-002 @RG-050 @LOT-001
   Scénario: S24 — La vie d'une tâche est conservée dans l'historique
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Quand l'utilisateur crée une tâche :

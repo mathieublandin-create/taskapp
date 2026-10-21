@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-031 — Utiliser l'application sans réseau sur mon PC
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-031
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-031
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 # Remarque pour Anthony (E9) : les scénarios d'ouverture de l'application (adresse web, application installée,
 # première ouverture sans réseau) peuvent nécessiter une exécution par l'interface (tag @ihm à demander à Pepper).
 
@@ -66,7 +66,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # ---------------------------------------------------------------- Indication hors ligne (CA-3)
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S04 — Sans réseau, le PC indique qu'il est hors ligne et combien de modifications attendent, comme le smartphone
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -136,7 +136,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
       | l'utilisateur ferme le navigateur     |
       | le PC est éteint puis rallumé         |
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S09 — Il n'y a pas de durée maximale d'utilisation sans réseau sur le PC
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -161,7 +161,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
       | élément | information | valeur non retenue | valeur conservée |
       | B       | intitulé    | A                  | B                |
 
-  @US-031 @RG-047 @RG-056 @LOT-001 @propose
+  @US-031 @RG-047 @RG-056 @LOT-001
   Scénario: S11 — Au retour du réseau sur le PC, une suppression faite sur le smartphone l'emporte sur une modification faite sans réseau
     Étant donné que le PC est sans réseau
     Quand sur le smartphone, l'utilisateur supprime la tâche "Chapitre 1" et confirme
@@ -173,7 +173,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-05         | tâche supprimée  |
 
-  @US-031 @RG-049 @LOT-001 @propose
+  @US-031 @RG-049 @LOT-001
   Scénario: S12 — Au retour du réseau sur le PC, une incohérence d'état est signalée sans correction
     Étant donné les tâches suivantes :
       | intitulé  | état     | délai      | estimation | objectifs | tâche parente |
@@ -199,14 +199,14 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # ---------------------------------------------------------------- Cas limites
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S14 — La première ouverture de l'application dans un navigateur, sans réseau, est impossible
     Étant donné que l'application n'a jamais été ouverte dans le navigateur du PC
     Et que le PC est sans réseau
     Quand l'utilisateur ouvre l'application sur le PC depuis son adresse web
     Alors l'application ne s'ouvre pas sur le PC
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S15 — Données du navigateur effacées : les modifications non enregistrées sont perdues et les données sont rechargées depuis le Drive
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
@@ -216,7 +216,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors sur le PC, la tâche "Chapitre 1" existe avec le délai 2026-11-30
     Et sur le PC, la tâche "Chapitre 1 : contexte" n'existe pas
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S16 — Deux onglets ouverts sans réseau affichent les mêmes données et ne perdent aucune modification
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et que le PC est sans réseau
@@ -227,7 +227,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" exactement une fois
     Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
 
-  @US-031 @RG-021 @LOT-001 @propose
+  @US-031 @RG-021 @LOT-001
   Scénario: S17 — Le réseau perdu pendant une saisie sur le PC ne laisse aucune donnée enregistrée à moitié
     Quand sur le PC, l'utilisateur commence la création d'une sous-tâche "Section A" de la tâche "Chapitre 1", de délai 2026-11-20, estimée à 1 h
     Et le réseau est coupé sur le PC pendant la saisie
@@ -242,3 +242,30 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Quand sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Et l'envoi au Drive est interrompu 3 fois avant d'aboutir
     Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
+
+  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-10, RG-057)
+
+  @US-031 @RG-057 @RG-021 @LOT-001
+  Scénario: S19 — Hors ligne depuis plus de 24 h avec des modifications en attente, un bandeau de rappel s'affiche sur le PC sans rien bloquer, puis disparaît à l'enregistrement
+    Étant donné que le PC est sans réseau
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le PC, un bandeau de rappel signale que des modifications ne sont pas encore enregistrées dans le Drive
+    Et sur le PC, le bandeau de rappel est non bloquant
+    Quand sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Alors sur le PC, l'opération est acceptée
+    Quand le réseau revient sur le PC
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le PC, aucun bandeau de rappel n'est affiché
+
+  @US-031 @RG-057 @LOT-001
+  Plan du scénario: S20 — Pas de bandeau de rappel sur le PC avant 24 h hors ligne, ni sans modification en attente
+    Étant donné que le PC est sans réseau
+    Et que <situation>
+    Quand nous sommes le <moment> heure de Europe/Paris
+    Alors sur le PC, aucun bandeau de rappel n'est affiché
+
+    Exemples:
+      | situation                                                                                | moment              |
+      | sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"      | 2026-10-22 à 09:59  |
+      | aucune modification n'est en attente sur le PC                                           | 2026-10-22 à 10:01  |

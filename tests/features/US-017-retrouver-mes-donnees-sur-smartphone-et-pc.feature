@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-017 — Retrouver mes données sur smartphone et sur PC
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-017
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-017
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 # Les délais (une heure, une minute) se vérifient avec l'horloge contrôlée du banc à deux appareils (conventions §9.11, PT-04).
 
 Fonctionnalité: Retrouver mes données sur smartphone et sur PC
@@ -19,7 +19,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Deux appareils (CA-1)
 
-  @US-017 @RG-017 @LOT-001 @propose
+  @US-017 @RG-017 @LOT-001
   Plan du scénario: S01 — Les fonctions du lot 1 sont disponibles sur chacun des deux appareils
     Quand sur le <appareil>, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et sur le <appareil>, l'utilisateur crée une tâche :
@@ -79,7 +79,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
     Et sur le PC, l'objectif "Publier le guide" existe au plus tard 1 minute après l'ouverture
 
-  @US-017 @RG-017 @LOT-001 @propose
+  @US-017 @RG-017 @LOT-001
   Scénario: S05 — À l'ouverture, les modifications de l'autre appareil sont intégrées en une minute au plus
     Étant donné que l'application est fermée sur le PC
     Et que sur le smartphone, 3 modifications ont été enregistrées dans le Drive depuis la dernière ouverture du PC
@@ -184,7 +184,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "B" existe avec le délai 2026-11-30
 
-  @US-017 @RG-036 @LOT-001 @propose
+  @US-017 @RG-036 @LOT-001
   Scénario: S13 — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
     Étant donné que l'horloge du smartphone est en retard de 25 heures
     Quand les deux appareils échangent leurs modifications
@@ -200,7 +200,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand l'utilisateur marque comme lue la modification non retenue de la tâche "B"
     Alors la liste des modifications non retenues est vide
 
-  @US-017 @RG-056 @LOT-001 @propose
+  @US-017 @RG-056 @LOT-001
   Scénario: S15 — Tant qu'une modification non retenue n'est pas lue, l'application le signale sans bloquer
     Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
     Et que la liste des modifications non retenues contient une valeur écartée pour le délai de la tâche "Chapitre 1"
@@ -211,7 +211,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand l'utilisateur marque comme lue la modification non retenue de la tâche "Chapitre 1"
     Alors l'indicateur de synchronisation ne signale aucune information à lire
 
-  @US-017 @RG-056 @LOT-001 @propose
+  @US-017 @RG-056 @LOT-001
   Scénario: S16 — Une modification non retenue lue sur un appareil l'est aussi sur l'autre, et n'est signalée qu'une fois
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
@@ -247,7 +247,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Données absentes ou illisibles dans le Drive (CA-9, RG-044)
 
-  @US-017 @RG-044 @LOT-001 @propose
+  @US-017 @RG-044 @LOT-001
   Plan du scénario: S18 — Données de l'application supprimées ou illisibles dans le Drive : avertissement, et rien n'est effacé ni réécrit avant le choix
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été <altération> dans le Drive, en dehors de l'application
@@ -262,7 +262,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | supprimées                     |
       | rendues illisibles             |
 
-  @US-017 @RG-044 @LOT-001 @propose
+  @US-017 @RG-044 @LOT-001
   Scénario: S19 — Décider plus tard laisse l'application utilisable, sans rien effacer
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
@@ -285,7 +285,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
     Et sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-  @US-017 @RG-044 @LOT-001 @propose
+  @US-017 @RG-044 @LOT-001
   Scénario: S21 — Repartir de zéro efface les données des deux appareils ; l'autre appareil ne repose pas la question
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
@@ -304,7 +304,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | élément          | information | valeur non retenue        | valeur conservée          |
       | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
 
-  @US-017 @RG-044 @LOT-001 @propose
+  @US-017 @RG-044 @LOT-001
   Scénario: S22 — Renoncer à repartir de zéro ne change rien
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
@@ -326,7 +326,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Réparations après fusion (CA-10 ; détail dans US-001, 002, 003, 023, 024, 025)
 
-  @US-017 @RG-047 @RG-056 @LOT-001 @propose
+  @US-017 @RG-047 @RG-056 @LOT-001
   Scénario: S24 — Réparation après fusion : la suppression l'emporte sur une modification concurrente
     Étant donné les tâches suivantes :
       | intitulé   | état    | délai      | estimation | objectifs | tâche parente |
@@ -341,7 +341,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | élément    | information | valeur non retenue | valeur conservée |
       | Chapitre 1 | délai       | 2026-12-10         | tâche supprimée  |
 
-  @US-017 @RG-048 @RG-056 @LOT-001 @propose
+  @US-017 @RG-048 @RG-056 @LOT-001
   Scénario: S25 — Réparation après fusion : une hiérarchie d'objectifs invalide est rétablie en annulant le placement le plus ancien
     Étant donné un objectif "Alpha" sans délai
     Et un objectif "Bêta" sans délai
@@ -355,7 +355,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
-  @US-017 @RG-049 @LOT-001 @propose
+  @US-017 @RG-049 @LOT-001
   Scénario: S26 — Réparation après fusion : une incohérence d'état est signalée, sans correction automatique
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -371,7 +371,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Heure de Paris (CA-11, RG-054 ; cas limite des fuseaux)
 
-  @US-017 @RG-054 @RG-053 @LOT-001 @propose
+  @US-017 @RG-054 @RG-053 @LOT-001
   Plan du scénario: S27 — La mention « heure de Paris » n'apparaît que si l'appareil est réglé sur un autre fuseau
     Étant donné que le smartphone est réglé sur le fuseau "<fuseau>"
     Alors sur le smartphone, la mention "heure de Paris" <présence>
@@ -400,7 +400,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # ---------------------------------------------------------------- Autres cas limites
 
-  @US-017 @RG-020 @LOT-001 @propose
+  @US-017 @RG-020 @LOT-001
   Scénario: S29 — Drive plein : l'utilisateur est averti et ses modifications restent sur l'appareil
     Étant donné que le Drive du compte "A" est plein
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
@@ -412,11 +412,46 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le smartphone échange ses modifications avec le Drive
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
 
-  @US-017 @RG-017 @LOT-001 @propose
-  Scénario: S30 — Un appareil qui ne sait pas lire les données enregistrées par une version plus récente invite à se mettre à jour, sans rien perdre
+  @US-017 @RG-017 @RG-058 @LOT-001
+  Scénario: S30 — Un appareil qui ne sait pas lire le format des données enregistrées par une version plus récente passe en consultation seule et invite à se mettre à jour, sans rien perdre
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, l'utilisateur est invité à mettre l'application à jour
-    Et sur le smartphone, la saisie n'est pas possible tant que l'application n'est pas mise à jour
+    Et sur le smartphone, l'application est en consultation seule : la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et sur le smartphone, l'objectif "Publier le guide" existe toujours
+
+  @US-017 @RG-058 @LOT-001
+  Scénario: S31 — Deux versions de l'application qui partagent le même format de données coexistent : la saisie n'est pas bloquée
+    Étant donné que le PC utilise une version de l'application plus récente que celle du smartphone
+    Et que les deux versions partagent le même format de données
+    Quand sur le PC, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Et sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Alors sur le smartphone, l'opération est acceptée
+    Et sur le smartphone, la saisie n'est pas bloquée
+    Quand les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur les deux appareils, l'objectif "Courir un semi-marathon" existe sans délai
+
+  # ---------------------------------------------------------------- Fichiers du Drive modifiés à la main mais restés lisibles (CA-9, RG-044 étendue, V-02)
+
+  @US-017 @RG-044 @LOT-001
+  Scénario: S32 — Un fichier du Drive modifié à la main mais resté lisible est traité comme illisible : avertissement, et rien n'est effacé ni réécrit avant le choix
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et qu'un fichier de données de l'application a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible
+    Quand le smartphone échange ses modifications avec le Drive
+    Alors sur le smartphone, l'utilisateur est averti que ses données sont absentes ou illisibles dans le Drive
+    Et sur le smartphone, l'utilisateur se voit proposer "restaurer" et "repartir de zéro"
+    Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et rien n'a été réécrit dans le Drive
+
+  @US-017 @RG-044 @LOT-001
+  Scénario: S33 — Le contenu modifié à la main dans le Drive n'est jamais fusionné avec les données de l'application
+    Étant donné un objectif "Publier le guide" de délai 2026-12-15
+    Et que dans le Drive, le délai de l'objectif "Publier le guide" a été changé à la main en 2027-06-30, le fichier restant lisible
+    Quand le smartphone échange ses modifications avec le Drive
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Quand sur le smartphone, l'utilisateur choisit de restaurer ses données
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et le Drive du compte "A" contient l'objectif "Publier le guide"

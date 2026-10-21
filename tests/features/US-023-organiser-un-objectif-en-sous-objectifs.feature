@@ -1,10 +1,10 @@
 # language: fr
 #
 # Tests métiers — US-023 — Organiser un objectif en sous-objectifs
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-023
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-023
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 
 Fonctionnalité: Organiser un objectif en sous-objectifs
   En tant qu'utilisateur,
@@ -36,7 +36,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Version imprimable | 2026-10-20 | à décliner en tâches | oui       |
       | Version en ligne   | sans délai | à décliner en tâches | non       |
 
-  @US-023 @RG-022 @LOT-001 @propose
+  @US-023 @RG-022 @LOT-001
   Scénario: S03 — La liste des objectifs distingue les objectifs principaux de leurs sous-objectifs
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -114,7 +114,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Quand l'utilisateur place l'objectif "Version imprimable" sous l'objectif "Publier le guide"
     Alors "Version imprimable" est un sous-objectif de l'objectif "Publier le guide"
 
-  @US-023 @RG-022 @LOT-001 @propose
+  @US-023 @RG-022 @LOT-001
   Scénario: S10 — Un objectif qui a des sous-objectifs ne peut pas être placé sous un autre objectif
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -136,7 +136,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | Apprendre l'italien | Apprendre l'italien | objectif placé sous lui-même     |
       | Apprendre l'italien | Version imprimable  | un seul niveau de sous-objectifs |
 
-  @US-023 @RG-022 @LOT-001 @propose
+  @US-023 @RG-022 @LOT-001
   Scénario: S12 — Déplacer un sous-objectif sous son parent actuel est sans effet
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un sous-objectif "Version imprimable" de l'objectif "Publier le guide"
@@ -188,7 +188,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
 
   # ---------------------------------------------------------------- Deux appareils (CA-9 RG-048, CA-10 RG-047)
 
-  @US-023 @RG-048 @RG-056 @LOT-001 @propose
+  @US-023 @RG-048 @RG-056 @LOT-001
   Scénario: S16 — Placements croisés sur les deux appareils : le placement le plus ancien est annulé et signalé
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Alpha" sans délai
@@ -204,7 +204,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | élément | information | valeur non retenue | valeur conservée     |
       | Alpha   | parent      | sous Bêta          | placement annulé     |
 
-  @US-023 @RG-048 @RG-056 @LOT-001 @propose
+  @US-023 @RG-048 @RG-056 @LOT-001
   Scénario: S17 — Un placement qui créerait un deuxième niveau est annulé, la création concurrente est conservée
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "O" sans délai
@@ -220,7 +220,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | élément | information | valeur non retenue | valeur conservée |
       | O       | parent      | sous P             | placement annulé |
 
-  @US-023 @RG-048 @RG-056 @LOT-001 @propose
+  @US-023 @RG-048 @RG-056 @LOT-001
   Scénario: S18 — Deux placements concurrents qui produiraient un deuxième niveau : le plus ancien est annulé, la hiérarchie est identique sur les deux appareils
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Alpha" sans délai
@@ -239,7 +239,7 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
-  @US-023 @RG-047 @LOT-001 @propose
+  @US-023 @RG-047 @LOT-001
   Scénario: S19 — Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -251,9 +251,9 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
     Alors sur les deux appareils, l'objectif "Publier le guide" n'existe plus
     Et sur les deux appareils, "Version imprimable" est un objectif principal
 
-  # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
+  # ---------------------------------------------------------------- Historique (CA-11, RG-050)
 
-  @US-023 @RG-050 @LOT-001 @propose
+  @US-023 @RG-050 @LOT-001
   Scénario: S20 — La création d'un sous-objectif et ses changements de parent sont conservés dans l'historique
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et un objectif "Développer mon activité" sans délai

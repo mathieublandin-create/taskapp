@@ -1,12 +1,12 @@
 # language: fr
 #
 # Tests métiers — US-025 — Abandonner une tâche
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-025
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-025
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
 # Confirmation de l'abandon : le commanditaire a répondu « toujours » à Q-ERG-13 (2026-10-21). La confirmation est
-# demandée pour tout abandon, avec ou sans sous-tâches ; les scénarios qui la vérifient ne sont donc pas tagués @propose.
+# demandée pour tout abandon, avec ou sans sous-tâches ; elle est établie dès l'origine (aucune proposition en attente).
 
 Fonctionnalité: Abandonner une tâche
   En tant qu'utilisateur,
@@ -37,7 +37,7 @@ Fonctionnalité: Abandonner une tâche
     Quand l'utilisateur abandonne la tâche "Refaire le logo" et renonce
     Alors l'état de la tâche "Refaire le logo" est "à faire"
 
-  @US-025 @RG-027 @RG-008 @RG-053 @LOT-001 @propose
+  @US-025 @RG-027 @RG-008 @RG-053 @LOT-001
   Plan du scénario: S03 — La date d'abandon est la journée de Paris, y compris en voyage et la nuit du changement d'heure
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
@@ -55,7 +55,7 @@ Fonctionnalité: Abandonner une tâche
       | UTC                  | 2026-10-25 | 22:30 | 2026-10-25     |
       | UTC                  | 2026-10-25 | 23:30 | 2026-10-26     |
 
-  @US-025 @RG-027 @LOT-001 @propose
+  @US-025 @RG-027 @LOT-001
   Scénario: S04 — Une tâche abandonnée quitte les tâches à faire et reste consultable parmi les tâches abandonnées
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |
@@ -78,7 +78,7 @@ Fonctionnalité: Abandonner une tâche
     Et la tâche "Payer la facture" n'a pas de date de fin
     Et la tâche "Payer la facture" n'est pas en retard
 
-  @US-025 @RG-027 @LOT-001 @propose
+  @US-025 @RG-027 @LOT-001
   Scénario: S06 — Abandonner une tâche terminée n'est pas proposé
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -135,7 +135,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section B" est "abandonnée"
     Et l'état de la tâche "Section C" est "abandonnée"
 
-  @US-025 @RG-027 @RG-023 @LOT-001 @propose
+  @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S10 — La confirmation de l'abandon d'une tâche parente indique le nombre de sous-tâches abandonnées avec elle
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -146,7 +146,7 @@ Fonctionnalité: Abandonner une tâche
     Quand l'utilisateur demande l'abandon de la tâche "Chapitre 1"
     Alors une confirmation est demandée, qui annonce 2 sous-tâches abandonnées avec la tâche
 
-  @US-025 @RG-027 @RG-023 @LOT-001 @propose
+  @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S11 — Reprendre une tâche parente reprend les sous-tâches abandonnées avec elle, pas celles abandonnées auparavant
     Étant donné les tâches suivantes :
       | intitulé   | état     | délai      | estimation | objectifs | tâche parente |
@@ -162,7 +162,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'état de la tâche "Section B" est "à faire"
     Et l'état de la tâche "Section C" est "abandonnée"
 
-  @US-025 @RG-027 @RG-023 @LOT-001 @propose
+  @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S12 — La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée
     Étant donné les tâches suivantes :
       | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
@@ -200,7 +200,7 @@ Fonctionnalité: Abandonner une tâche
     Et sur les deux appareils, la tâche "Refaire le logo" existe avec le délai 2026-12-15
     Et la liste des modifications non retenues est vide
 
-  @US-025 @RG-049 @LOT-001 @propose
+  @US-025 @RG-049 @LOT-001
   Scénario: S15 — Tâche parente abandonnée sur le PC pendant qu'une sous-tâche est reprise sur le smartphone : incohérence signalée
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et les tâches suivantes :
@@ -216,7 +216,7 @@ Fonctionnalité: Abandonner une tâche
     Et sur les deux appareils, l'état de la tâche "Section A" est "à faire"
     Et sur les deux appareils, la tâche "Chapitre 1" est signalée en incohérence avec sa sous-tâche "Section A"
 
-  @US-025 @RG-049 @LOT-001 @propose
+  @US-025 @RG-049 @LOT-001
   Plan du scénario: S16 — L'incohérence d'une tâche parente abandonnée est résolue par l'utilisateur
     Étant donné que la tâche "Chapitre 1", abandonnée, est signalée en incohérence avec sa sous-tâche à faire "Section A"
     Quand l'utilisateur <action>
@@ -228,9 +228,9 @@ Fonctionnalité: Abandonner une tâche
       | abandonne la tâche "Section A" et confirme |
       | reprend la tâche "Chapitre 1"              |
 
-  # ---------------------------------------------------------------- Historique (CA-11, RG-050 proposée)
+  # ---------------------------------------------------------------- Historique (CA-11, RG-050)
 
-  @US-025 @RG-050 @LOT-001 @propose
+  @US-025 @RG-050 @LOT-001
   Scénario: S17 — L'abandon et la reprise d'une tâche sont conservés dans l'historique
     Étant donné les tâches suivantes :
       | intitulé        | état    | délai      | estimation | objectifs | tâche parente |

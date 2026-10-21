@@ -5,11 +5,13 @@
 >
 > **Version 0.3 du 2026-10-20 (Pepper, E1 de DEM-002)** : ajout des US-033 à US-036 (questions de bilan du soir, fun fact du matin).
 >
-> **Version 0.4 du 2026-10-20 (Pepper, fin de E1 pour LOT-001)** : réponses Q-DEM001-21 à 29, avis de l'architecte (F1 à F14), décisions DEC-001 à DEC-012 et réponses aux questions ergonomiques Q-ERG-02 à 11 intégrées. US-018 rejoint LOT-001 (DEC-002). Dans la colonne RG, l'astérisque (*) signale une règle **proposée**, à valider en E6.
+> **Version 0.4 du 2026-10-20 (Pepper, fin de E1 pour LOT-001)** : réponses Q-DEM001-21 à 29, avis de l'architecte (F1 à F14), décisions DEC-001 à DEC-012 et réponses aux questions ergonomiques Q-ERG-02 à 11 intégrées. US-018 rejoint LOT-001 (DEC-002). Dans la colonne RG, l'astérisque (*) signalait une règle **proposée**, à valider en E6 ; les astérisques sont retirés en v0.7 (règles validées).
 >
 > **Version 0.5 du 2026-10-21** : réponses Q-DEM001-39, 41 et 42 (DEC-013 à DEC-016) ; US-031 intégrée à LOT-001 ; nouvelle RG-055.
 >
-> Toutes les US non reportées sont au statut **En analyse**. Persona unique : **l'utilisateur** (le commanditaire). Voir le [cahier des charges v0.4](cahier-des-charges.md).
+> **Version 0.7 du 2026-10-21 (Pepper, fin de E6 pour LOT-001)** : validation du commanditaire du 2026-10-21 (DEC-018, « oui pour tous »). Les 10 US de LOT-001 passent au statut **Validée** ; les astérisques des RG proposées sont retirés (RG-044 b, RG-047 à RG-050, RG-054, garde-fous de RG-055, RG-056 a à c : établies) ; nouvelles RG-057 (bandeau après 24 h hors ligne, US-018 et US-031) et RG-058 (versions de l'application, US-017).
+>
+> Les 10 US de LOT-001 sont au statut **Validée** ; toutes les autres US non reportées sont au statut **En analyse**. Persona unique : **l'utilisateur** (le commanditaire). Voir le [cahier des charges v0.7](cahier-des-charges.md).
 
 ## Légende
 - **Q bloquantes** : questions résiduelles (Q-DEM001-21 et suivantes) dont la réponse est nécessaire pour finaliser les critères d'acceptation de l'US.
@@ -37,12 +39,12 @@
 
 | US | Titre | Récit | RG | Q bloquantes | Évolution v0.2 | Lot |
 |---|---|---|---|---|---|---|
-| US-001 | Créer et gérer un objectif | **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer un objectif, avec ou sans délai, **afin de** formaliser ce que je cherche à atteindre. | RG-001, RG-002, RG-004, RG-024, RG-025, RG-045, RG-046, RG-047*, RG-050*, RG-053, RG-054* | — | Modifiée : délai facultatif (Q5.1) ; v0.4 : Q-26, 28, 29 intégrées | LOT-001 |
-| US-023 | Organiser un objectif en sous-objectifs | **En tant qu'**utilisateur, **je veux** décomposer un objectif en sous-objectifs, **afin de** structurer les objectifs ambitieux. | RG-022, RG-025, RG-046, RG-047*, RG-048*, RG-050* | — | Nouvelle (Q6.1 d) ; v0.4 : Q-24, 26, 29 intégrées | LOT-001 |
-| US-002 | Créer et gérer mes tâches | **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer une tâche, avec son délai et son estimation, et la rattacher à zéro, un ou plusieurs objectifs, **afin de** transformer mes objectifs en travail concret. | RG-001, RG-003, RG-004, RG-024, RG-028, RG-029, RG-045, RG-046, RG-047*, RG-050*, RG-053, RG-054* | — | Modifiée : délai obligatoire, rattachement multiple, tâches sans objectif (Q5, Q6) ; v0.4 : Q-28, 29 et Q-ERG-03 (aucun délai ni estimation par défaut) intégrées | LOT-001 |
-| US-024 | Décomposer une tâche en sous-tâches | **En tant qu'**utilisateur, **je veux** découper une tâche en sous-tâches, **afin de** suivre plus finement un travail important. | RG-023, RG-003, RG-028, RG-029, RG-046, RG-047*, RG-049*, RG-050* | — | Nouvelle (Q6.1 d) ; v0.4 : Q-25, 27, 29 intégrées | LOT-001 |
-| US-003 | Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif | **En tant qu'**utilisateur, **je veux** déclarer une tâche terminée, pouvoir la rouvrir, et voir si chacun de mes objectifs est atteint, **afin de** savoir ce qui est accompli. | RG-025, RG-026, RG-023, RG-001, RG-008, RG-045, RG-049*, RG-050*, RG-053, RG-054* | — | Modifiée : fin sur déclaration, réouverture, atteinte calculée (Q5.4, Q7) ; v0.4 : Q-25, 26 intégrées | LOT-001 |
-| US-025 | Abandonner une tâche | **En tant qu'**utilisateur, **je veux** abandonner une tâche que je ne réaliserai pas, sans la supprimer, **afin de** garder une trace et de ne plus la voir parmi mon travail à faire. | RG-027, RG-025, RG-023, RG-045, RG-049*, RG-050*, RG-053, RG-054* | — | Nouvelle (Q7.3) ; v0.4 : Q-26.2, 27 intégrées | LOT-001 |
+| US-001 | Créer et gérer un objectif | **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer un objectif, avec ou sans délai, **afin de** formaliser ce que je cherche à atteindre. | RG-001, RG-002, RG-004, RG-024, RG-025, RG-045, RG-046, RG-047, RG-050, RG-053, RG-054 | — | Modifiée : délai facultatif (Q5.1) ; v0.4 : Q-26, 28, 29 intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-023 | Organiser un objectif en sous-objectifs | **En tant qu'**utilisateur, **je veux** décomposer un objectif en sous-objectifs, **afin de** structurer les objectifs ambitieux. | RG-022, RG-025, RG-046, RG-047, RG-048, RG-050 | — | Nouvelle (Q6.1 d) ; v0.4 : Q-24, 26, 29 intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-002 | Créer et gérer mes tâches | **En tant qu'**utilisateur, **je veux** créer, consulter, modifier et supprimer une tâche, avec son délai et son estimation, et la rattacher à zéro, un ou plusieurs objectifs, **afin de** transformer mes objectifs en travail concret. | RG-001, RG-003, RG-004, RG-024, RG-028, RG-029, RG-045, RG-046, RG-047, RG-050, RG-053, RG-054 | — | Modifiée : délai obligatoire, rattachement multiple, tâches sans objectif (Q5, Q6) ; v0.4 : Q-28, 29 et Q-ERG-03 (aucun délai ni estimation par défaut) intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-024 | Décomposer une tâche en sous-tâches | **En tant qu'**utilisateur, **je veux** découper une tâche en sous-tâches, **afin de** suivre plus finement un travail important. | RG-023, RG-003, RG-028, RG-029, RG-046, RG-047, RG-049, RG-050 | — | Nouvelle (Q6.1 d) ; v0.4 : Q-25, 27, 29 intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-003 | Terminer ou rouvrir une tâche et suivre l'atteinte d'un objectif | **En tant qu'**utilisateur, **je veux** déclarer une tâche terminée, pouvoir la rouvrir, et voir si chacun de mes objectifs est atteint, **afin de** savoir ce qui est accompli. | RG-025, RG-026, RG-023, RG-001, RG-008, RG-045, RG-049, RG-050, RG-053, RG-054 | — | Modifiée : fin sur déclaration, réouverture, atteinte calculée (Q5.4, Q7) ; v0.4 : Q-25, 26 intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-025 | Abandonner une tâche | **En tant qu'**utilisateur, **je veux** abandonner une tâche que je ne réaliserai pas, sans la supprimer, **afin de** garder une trace et de ne plus la voir parmi mon travail à faire. | RG-027, RG-025, RG-023, RG-045, RG-049, RG-050, RG-053, RG-054 | — | Nouvelle (Q7.3) ; v0.4 : Q-26.2, 27 intégrées ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
 | US-021 | Gérer des tâches récurrentes | **En tant qu'**utilisateur, **je veux** définir une tâche qui se répète selon une fréquence, **afin de** ne pas la recréer à chaque occurrence. | à créer | Fréquences à recueillir le moment venu | **Reportée** (Q8 b : « plus tard ») | Non planifiée |
 
 ## EP-02 — Priorisation
@@ -96,10 +98,10 @@
 
 | US | Titre | Récit | RG | Q bloquantes | Évolution v0.2 | Lot |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | **En tant qu'**utilisateur, **je veux** me connecter à l'application avec mon compte Google, **afin d'**accéder à mes données conservées dans mon propre espace de stockage. | RG-018, RG-019, RG-020, RG-035, RG-043, RG-055 | — | Nouvelle (Q19.2 « non », Q3 b) ; v0.4 : Q-22 intégrée ; données conservées à la déconnexion (22.3 b) ; v0.5 : Q-42 répondue (DEC-015, DEC-016) ; action « Supprimer les données de cet appareil » | LOT-001 |
-| US-017 | Retrouver mes données sur smartphone et sur PC | **En tant qu'**utilisateur, **je veux** que mes données soient conservées dans mon espace de stockage personnel et que je les retrouve sur mon smartphone comme sur mon PC, **afin de** passer de l'un à l'autre sans ressaisie. | RG-017, RG-018, RG-020, RG-036, RG-044, RG-047* à RG-049*, RG-053, RG-054* | — | Modifiée : stockage personnel, smartphone et PC dès la première version, règle de conflit (Q3, compléments) ; v0.4 : Q-21, 22, 23 intégrées ; limites F1, F14 ; CA-7 « hors ligne inclus » ; v0.5 : Q-39 et Q-41 répondues | LOT-001 |
-| US-018 | Utiliser l'application sans réseau sur mon smartphone | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon smartphone sans réseau, mes modifications étant prises en compte au retour du réseau, **afin de** ne pas dépendre de la couverture réseau. | RG-021, RG-035, RG-036, RG-047* à RG-049* | — | Modifiée : confirmée (Q4.1 c), recentrée sur le smartphone (complément) ; v0.4 : intégrée à LOT-001 (DEC-002) ; fichier détaillé créé ; v0.5 : Q-39 répondue | LOT-001 |
-| US-031 | Utiliser l'application sans réseau sur mon PC | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, **afin d'**avoir le même comportement sur mes deux appareils. | RG-021, RG-036 | — | Nouvelle, conditionnelle (Q-DEM001-39) ; v0.4 : si Q-39 b), rejoint LOT-001 ; v0.5 : intégrée à LOT-001 (Q-39 b, DEC-013) ; fichier détaillé créé | LOT-001 |
+| US-022 | Se connecter avec mon compte Google | **En tant qu'**utilisateur, **je veux** me connecter à l'application avec mon compte Google, **afin d'**accéder à mes données conservées dans mon propre espace de stockage. | RG-018, RG-019, RG-020, RG-035, RG-043, RG-055 | — | Nouvelle (Q19.2 « non », Q3 b) ; v0.4 : Q-22 intégrée ; données conservées à la déconnexion (22.3 b) ; v0.5 : Q-42 répondue (DEC-015, DEC-016) ; action « Supprimer les données de cet appareil » ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** | LOT-001 (Validée) |
+| US-017 | Retrouver mes données sur smartphone et sur PC | **En tant qu'**utilisateur, **je veux** que mes données soient conservées dans mon espace de stockage personnel et que je les retrouve sur mon smartphone comme sur mon PC, **afin de** passer de l'un à l'autre sans ressaisie. | RG-017, RG-018, RG-020, RG-036, RG-044, RG-047 à RG-049, RG-053, RG-054, RG-056, RG-058 | — | Modifiée : stockage personnel, smartphone et PC dès la première version, règle de conflit (Q3, compléments) ; v0.4 : Q-21, 22, 23 intégrées ; limites F1, F14 ; CA-7 « hors ligne inclus » ; v0.5 : Q-39 et Q-41 répondues ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** ; v0.7 : V-06 option 2 (RG-058), fichiers modifiés à la main (RG-044 étendue) | LOT-001 (Validée) |
+| US-018 | Utiliser l'application sans réseau sur mon smartphone | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon smartphone sans réseau, mes modifications étant prises en compte au retour du réseau, **afin de** ne pas dépendre de la couverture réseau. | RG-021, RG-035, RG-036, RG-047 à RG-049, RG-056, RG-057 | — | Modifiée : confirmée (Q4.1 c), recentrée sur le smartphone (complément) ; v0.4 : intégrée à LOT-001 (DEC-002) ; fichier détaillé créé ; v0.5 : Q-39 répondue ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** ; v0.7 : bandeau après 24 h hors ligne (RG-057) | LOT-001 (Validée) |
+| US-031 | Utiliser l'application sans réseau sur mon PC | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, **afin d'**avoir le même comportement sur mes deux appareils. | RG-021, RG-036, RG-056, RG-057 | — | Nouvelle, conditionnelle (Q-DEM001-39) ; v0.4 : si Q-39 b), rejoint LOT-001 ; v0.5 : intégrée à LOT-001 (Q-39 b, DEC-013) ; fichier détaillé créé ; **v0.7 : Validée par le commanditaire le 2026-10-21 (DEC-018)** ; v0.7 : bandeau après 24 h hors ligne (RG-057) | LOT-001 (Validée) |
 
 ## EP-08 — Planning et agenda Google
 
@@ -207,15 +209,18 @@
 | RG-044 | US-017 |
 | RG-045 | US-001, US-002, US-003, US-023, US-024, US-025 |
 | RG-046 | US-001, US-002, US-023, US-024 |
-| RG-047* | US-017, US-001, US-002, US-023, US-024 |
-| RG-048* | US-017, US-023 |
-| RG-049* | US-017, US-003, US-024, US-025 |
-| RG-050* | US-001, US-002, US-003, US-023, US-024, US-025 |
+| RG-047 | US-017, US-001, US-002, US-023, US-024 |
+| RG-048 | US-017, US-023 |
+| RG-049 | US-017, US-003, US-024, US-025 |
+| RG-050 | US-001, US-002, US-003, US-023, US-024, US-025 |
 | RG-051 | US-004, US-006, US-020 |
 | RG-052 | US-007, US-011, US-032 |
 | RG-053 | US-001, US-002, US-003, US-017, US-025, US-008, US-015, US-016, US-020, US-028, US-029 |
-| RG-054* | US-017, US-001, US-002, US-003, US-025 |
+| RG-054 | US-017, US-001, US-002, US-003, US-025 |
 | RG-055 | US-022 |
+| RG-056 | US-017, US-018, US-031 |
+| RG-057 | US-018, US-031 |
+| RG-058 | US-017 |
 
 ### Pourquoi DEM-002 n'entre pas dans LOT-001
 Selon Q-DEM001-1, seule la capacité « objectifs et tâches » est indispensable à la première version ; les rappels (Q-DEM001-1 e) ne le sont pas. Les US-033 à US-036 enrichissent les rappels du matin et du soir (US-015, US-016), qui ne sont pas encore livrés : elles ne peuvent pas être recettées sans eux. Elles rejoignent donc le lot « Rappels », où elles partagent les mêmes écrans et le même canal (l'agenda Google). Les y ajouter ne retarde pas LOT-001.

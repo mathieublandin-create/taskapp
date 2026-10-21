@@ -28,7 +28,7 @@ Statut : Validée
 
 ## Critères d'acceptation
 1. **CA-1** — L'utilisateur déclare une tâche « à faire » terminée. Elle passe à l'état « terminée », et la date de la journée en cours, dans le fuseau de référence Europe/Paris, est conservée comme date de fin (RG-026, RG-008, RG-053).
-   - Exemple : l'utilisateur, à New York, termine une tâche le 10 mars à 23 h, heure locale (le 11 mars à 4 h à Paris) : la date de fin est le 11 mars.
+   - Exemple : l'utilisateur, à New York, termine une tâche le 10 novembre 2026 à 23 h, heure locale (le 11 novembre 2026 à 5 h à Paris, 6 h d'écart à cette date) : la date de fin est le 11 novembre 2026.
 2. **CA-2** — Aucune tâche ne passe à l'état « terminée » sans une action explicite de l'utilisateur, y compris une tâche parente dont toutes les sous-tâches sont terminées.
 3. **CA-3** — L'utilisateur rouvre une tâche terminée. Elle repasse à l'état « à faire » et n'a plus de date de fin affichée. La date de fin précédente est conservée dans l'historique (RG-050).
 4. **CA-4** — Un objectif est « atteint » quand toutes ses tâches non abandonnées sont terminées et que tous ses sous-objectifs sont atteints. Les tâches abandonnées sont ignorées. Un objectif qui n'a ni tâche non abandonnée ni sous-objectif est « à décliner en tâches ». Dans les autres cas, il est « en cours » (RG-025).
@@ -48,7 +48,7 @@ Statut : Validée
 ## Cas limites et cas d'erreur
 - Déclarer terminée une tâche déjà terminée : l'action n'est pas proposée.
 - Tâche terminée sur un appareil et modifiée sur l'autre : RG-036 (US-017).
-- Tâche terminée sur un appareil et abandonnée sur l'autre, avant échange : l'état le plus récent l'emporte (RG-036), et l'autre est signalé comme valeur écartée **(P, à confirmer avec RG-036)**.
+- Tâche terminée sur un appareil et abandonnée sur l'autre, avant échange : l'état le plus récent l'emporte (RG-036), et l'autre est signalé comme valeur écartée.
 - Objectif sans délai : son atteinte se calcule de la même façon.
 - Passage à l'heure d'été ou d'hiver : la journée reste celle de Paris, de minuit à minuit ; aucune date de fin n'est décalée.
 
@@ -131,7 +131,7 @@ Statut : Validée
 | Cas limite : changement d'heure du 25/10/2026 | S03 |
 | RG-054 (mention « heure de Paris » sur la date de fin) | S21 |
 
-Remarque : l'exemple de CA-1 (10 mars, 23 h à New York, soit 4 h à Paris) n'est exact qu'en 2026 ; en 2027, l'écart est de 6 h ce jour-là (5 h à Paris). Les scénarios S02 et S03 utilisent des dates vérifiées (2026-11-10 et 2026-10-25). Il faudra préciser l'année de l'exemple au prochain passage en E1.
+Remarque : l'exemple de CA-1 est daté avec son année (10 novembre 2026, 23 h à New York, soit 5 h à Paris le 11 novembre), puisque l'écart horaire entre New York et Paris varie selon les dates ; il correspond au scénario S02. Correction de forme appliquée avec la validation du 2026-10-21 (DEC-018).
 
 ## Questions ouvertes
 Aucune. Tous les critères sont validés par le commanditaire (DEC-018).

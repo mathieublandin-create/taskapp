@@ -1,12 +1,12 @@
 # language: fr
 #
 # Tests métiers — US-022 — Se connecter avec mon compte Google
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.6, US-022
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.7, US-022
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
-# @propose : le scénario repose sur une règle ou un critère encore proposé, à valider par le commanditaire en E6.
-# « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6, proposée).
-# Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive garde provisoirement le nom « Objectifs et Tâches » (à revoir par Steeve en E7).
+# Règles et critères proposés validés par le commanditaire le 2026-10-21 (DEC-018) : plus aucun scénario n'est en attente de validation.
+# « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6).
+# Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive porte le même nom (V-13, DEC-018).
 
 Fonctionnalité: Se connecter avec mon compte Google
   En tant qu'utilisateur,
@@ -43,7 +43,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-  @US-022 @RG-020 @LOT-001 @propose
+  @US-022 @RG-020 @LOT-001
   Scénario: S04 — À la toute première connexion, le Drive ne contient rien et l'application présente un état vide qui invite à créer
     Étant donné que le Drive du compte "A" ne contient aucune donnée de l'application
     Et que l'application n'a jamais été utilisée sur le smartphone
@@ -53,10 +53,10 @@ Fonctionnalité: Se connecter avec mon compte Google
 
   @US-022 @RG-020 @LOT-001
   Scénario: S05 — Après la première connexion, le dossier de l'application est visible dans le Drive
-    # Nom du dossier fixé en E4 (Steeve) ; il reste « Objectifs et Tâches » malgré DEC-017, à revoir en E7.
+    # Nom du dossier : « Done Juan », comme l'application (V-13, DEC-018).
     Étant donné que le Drive du compte "A" ne contient aucune donnée de l'application
     Quand l'utilisateur se connecte avec le compte "A" sur le smartphone
-    Alors le Drive du compte "A" contient un dossier visible nommé "Objectifs et Tâches"
+    Alors le Drive du compte "A" contient un dossier visible nommé "Done Juan"
 
   @US-022 @RG-019 @LOT-001
   Plan du scénario: S06 — Connexion annulée ou autorisations refusées : l'utilisateur reste sur l'écran de connexion, sans donnée créée
@@ -72,7 +72,7 @@ Fonctionnalité: Se connecter avec mon compte Google
       | annule la connexion                     |
       | refuse les autorisations demandées      |
 
-  @US-022 @RG-019 @LOT-001 @propose
+  @US-022 @RG-019 @LOT-001
   Scénario: S07 — À la réouverture, l'utilisateur n'a pas à se reconnecter tant que son accès est valide
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -97,7 +97,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
     Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon"
 
-  @US-022 @RG-043 @LOT-001 @propose
+  @US-022 @RG-043 @LOT-001
   Plan du scénario: S09 — Avant la déconnexion, l'application indique le nombre de modifications pas encore enregistrées dans le Drive
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et que le smartphone est sans réseau
@@ -180,7 +180,7 @@ Fonctionnalité: Se connecter avec mon compte Google
 
   # ---------------------------------------------------------------- Supprimer les données de cet appareil (CA-10, RG-055)
 
-  @US-022 @RG-055 @LOT-001 @propose
+  @US-022 @RG-055 @LOT-001
   Scénario: S15 — Supprimer les données de cet appareil : confirmation, dépôt préalable, retour à la connexion, rien n'est supprimé dans le Drive
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -194,7 +194,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et le Drive du compte "A" contient l'objectif "Publier le guide"
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-  @US-022 @RG-055 @LOT-001 @propose
+  @US-022 @RG-055 @LOT-001
   Scénario: S16 — Renoncer à la suppression des données de l'appareil ne change rien
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -203,7 +203,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors les données du compte "A" sont toujours présentes sur le smartphone
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-  @US-022 @RG-055 @LOT-001 @propose
+  @US-022 @RG-055 @LOT-001
   Plan du scénario: S17 — Sans réseau, la suppression annonce le nombre de modifications qui seraient perdues et demande une confirmation explicite
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et que le smartphone est sans réseau
@@ -219,7 +219,7 @@ Fonctionnalité: Se connecter avec mon compte Google
       | confirme | les données du compte "A" ne sont plus présentes sur le smartphone                         |
       | renonce  | les données du compte "A" sont toujours présentes sur le smartphone, y compris 3 modifications en attente |
 
-  @US-022 @RG-055 @LOT-001 @propose
+  @US-022 @RG-055 @LOT-001
   Scénario: S18 — Après la suppression des données de l'appareil, la connexion suivante recharge les données depuis le Drive, réseau nécessaire
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et un objectif "Publier le guide" de délai 2026-12-15
@@ -232,7 +232,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et l'utilisateur se connecte avec le compte "A" sur le smartphone
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
-  @US-022 @RG-055 @RG-043 @LOT-001 @propose
+  @US-022 @RG-055 @RG-043 @LOT-001
   Scénario: S19 — Supprimer les données de cet appareil ne touche pas aux données d'un autre compte conservées sur l'appareil
     Étant donné que les données du compte "A" sont conservées sur le smartphone, avec 1 modification en attente
     Et que l'utilisateur est connecté avec le compte "B" sur le smartphone
@@ -243,7 +243,7 @@ Fonctionnalité: Se connecter avec mon compte Google
 
   # ---------------------------------------------------------------- Cas limites et cas d'erreur
 
-  @US-022 @RG-019 @LOT-001 @propose
+  @US-022 @RG-019 @LOT-001
   Plan du scénario: S20 — Connexion impossible sans réseau, ou interrompue : message, nouvel essai possible, rien de créé à moitié
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que <situation réseau>
@@ -265,7 +265,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors la connexion échoue avec le motif "Drive indisponible pour ce compte"
     Et sur le smartphone, aucune autre fonction n'est accessible
 
-  @US-022 @RG-019 @RG-043 @LOT-001 @propose
+  @US-022 @RG-019 @RG-043 @LOT-001
   Scénario: S22 — Après une déconnexion, la reconnexion sans réseau n'est pas possible
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Quand sur le smartphone, l'utilisateur se déconnecte

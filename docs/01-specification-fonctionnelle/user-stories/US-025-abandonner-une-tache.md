@@ -27,7 +27,7 @@ Statut : Validée
 4. **CA-4** — L'état des objectifs de la tâche est recalculé : la tâche abandonnée est ignorée (RG-025).
    - Exemple : un objectif a deux tâches, l'une terminée, l'autre à faire. L'utilisateur abandonne la seconde : l'objectif devient « atteint ».
 5. **CA-5** — L'utilisateur peut reprendre une tâche abandonnée : elle repasse « à faire », sa date d'abandon n'est plus affichée, et les objectifs concernés sont recalculés (RG-027).
-6. **CA-6** — Abandonner une tâche parente abandonne aussi ses sous-tâches à faire ; ses sous-tâches terminées restent terminées. La confirmation indique le nombre de sous-tâches qui seront abandonnées **(P pour le contenu de la confirmation)**.
+6. **CA-6** — Abandonner une tâche parente abandonne aussi ses sous-tâches à faire ; ses sous-tâches terminées restent terminées. La confirmation indique le nombre de sous-tâches qui seront abandonnées.
 7. **CA-7** — Reprendre une tâche parente reprend aussi les sous-tâches qui avaient été abandonnées avec elle (CA-6), mais pas celles qui avaient été abandonnées auparavant, une par une.
 8. **CA-8** — La reprise d'une sous-tâche dont la tâche parente est abandonnée n'est pas proposée ; il faut d'abord reprendre la tâche parente.
 9. **CA-9** — L'utilisateur peut abandonner une sous-tâche seule. L'estimation de la tâche parente est recalculée (US-024, CA-4). Si c'était la dernière sous-tâche ni terminée ni abandonnée, la tâche parente peut désormais être déclarée terminée.
@@ -112,7 +112,7 @@ Statut : Validée
 | Cas limite : sous-tâche ajoutée à une tâche abandonnée | US-024 S18 |
 | Changement d'heure du 25/10/2026, voyage | S03 |
 
-Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée ; S01 et S02 ne sont pas tagués `@propose`. La date d'abandon (CA-1) et le contenu de la confirmation (CA-6) restent des propositions (S03, S10).
+Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée. La date d'abandon (CA-1, S03) et le contenu de la confirmation (CA-6, S10), proposés par Pepper, sont validés par le commanditaire le 2026-10-21 (DEC-018, V-21 n et p).
 
 ## Questions ouvertes
 Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
