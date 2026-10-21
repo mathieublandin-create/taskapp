@@ -1,6 +1,6 @@
 # Guide d'ergonomie
 
-> **Version 0.2.1, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
+> **Version 0.2.3, 2026-10-21 (Steeve).** E7 de LOT-001, tour 1 : catalogue des libellés et des codes d'état observables (§6.6, ANT-7), écran d'atterrissage (BEN-6), mention « Heure de Paris » par écran (BEN-8), compteur 3/3 « En cours » (PEP-10), confirmation d'abandon sans sous-tâche (ECR-007 D2), question Q-ERG-18. Version précédente : 0.2.1. Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
 >
 > **Entrées de la v0.2** : LOT-001 et ses 10 US (US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025), cahier des charges v0.5 (RG-043 à RG-055), DAT v0.4 et synthèse d'architecture du lot, décisions DEC-001 à DEC-016 (`suivi-projet.md`), réponses du commanditaire aux questions Q-ERG-02 à Q-ERG-11.
 >
@@ -14,7 +14,7 @@
 3. [Charte graphique (tokens)](#3-charte-graphique-tokens)
 4. [Bibliothèque de composants](#4-bibliothèque-de-composants)
 5. [Règles d'interaction](#5-règles-dinteraction)
-6. [États : vide, chargement, erreur, hors ligne, synchronisation](#6-états--vide-chargement-erreur-hors-ligne-synchronisation)
+6. [États : vide, chargement, erreur, hors ligne, synchronisation](#6-états--vide-chargement-erreur-hors-ligne-synchronisation) (catalogue des libellés et codes d'état : §6.6)
 7. [Alertes et propositions](#7-alertes-et-propositions)
 8. [Rédaction de l'interface](#8-rédaction-de-linterface)
 9. [Accessibilité (WCAG 2.2 AA)](#9-accessibilité-wcag-22-aa)
@@ -360,6 +360,17 @@ Blocs gris `color.surface` à la forme des lignes attendues, sans animation de b
 ### 4.21 Mention « Heure de Paris » (`ParisTimeNote`) — nouveau (v0.2, RG-054, A-F6)
 Réponse à A-F6 : **forme de la mention « heure de Paris »**.
 - **Quand** : seulement si le fuseau de l'appareil diffère de celui de Paris. Absente sinon (aucun bruit pour l'utilisateur à Paris).
+- **Écrans du lot 1 qui la portent (BEN-8)** :
+
+| Écran | Emplacement | Maquette |
+|---|---|---|
+| Tâches (liste) | Sous-titre de la vue, à côté de « Triées par délai » | ECR-002 L3 (appareil à New York) |
+| Objectifs (liste) | Sous-titre de la vue, à côté de « n objectifs en cours » | ECR-008 A |
+| Détail d'un objectif | Ligne de progression (retard, atteinte) | ECR-003 D |
+| Détail d'une tâche | À côté de « Terminée le … » et « Abandonnée le … » | ECR-007 G (appareil à New York) |
+| Feuille « Compte et synchronisation » | Ligne « Fuseau » | ECR-011 B, I |
+
+  Aucun autre écran du lot 1 ne la porte (connexion, saisie rapide, bandeaux, confirmations). Texte et nom accessible : `MEN-HEURE-PARIS` (§6.6.4).
 - **Où** : (1) puce sous le titre des vues qui affichent une journée ou un retard (Tâches, Objectifs ; Aujourd'hui et Semaine plus tard) ; (2) à côté des dates déterminées par la journée de Paris : date de fin, date d'abandon (ECR-007) ; (3) ligne « Fuseau » de la feuille de compte (ECR-011). **Jamais** sur un délai, qui est une date sans heure (RG-053).
 - **Forme** : puce `font.caption`, fond `color.surface`, bordure `color.border`, `radius.s`, icône horloge 14 px + texte « Heure de Paris ». Hauteur 22 px, zone tactile étendue à 44 px.
 - **Interaction** : un appui (ou le survol / focus sur PC) ouvre une info-bulle fermable : « Les jours, les retards et les horaires suivent l'heure de Paris, où que vous soyez. » Avec l'exemple utile quand il existe : « Il est 4 h à Paris, alors que votre appareil indique 22 h la veille. »
@@ -473,7 +484,7 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 | Tâches, aucune tâche | « Aucune tâche pour l'instant. » / « Commencez par ce qui vous vient à l'esprit, vous trierez ensuite. » | « Ajouter une tâche » |
 | Objectifs, aucun objectif | « Un objectif donne une direction à vos tâches. » | « Créer un objectif » |
 | Objectif sans tâche | « À décliner en tâches. » (US-001 CA-8, RG-025) | « Ajouter une tâche » |
-| **(v0.2)** Premier lancement, Drive vide (US-022 CA-2) | « Bienvenue. Un objectif donne une direction à vos tâches. Commencez par le vôtre, ou ajoutez directement une tâche. » | « Créer mon premier objectif » (principal) ; « Ajouter une tâche sans objectif » (tertiaire) |
+| **(v0.2, E7)** Premier lancement, compte neuf (US-022 CA-2) : affiché tant qu'il n'existe ni objectif ni tâche (`EVD-BIENVENUE`, §6.6.5, avec l'écran d'atterrissage après chaque choix) | « Bienvenue. Un objectif donne une direction à vos tâches. Commencez par le vôtre, ou ajoutez directement une tâche. » | « Créer mon premier objectif » (principal) ; « Ajouter une tâche sans objectif » (tertiaire) |
 | **(v0.2)** Tâches, filtre « Sans objectif » vide | « Toutes vos tâches ont un objectif. » | — |
 | **(v0.2)** Tâches, filtre « Abandonnées » ou « Terminées » vide | « Aucune tâche abandonnée. » / « Aucune tâche terminée. » | — |
 | **(v0.2)** Modifications non retenues, rien à lire | Section absente | — |
@@ -496,7 +507,7 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 | Action impossible localement | Toast avec action | « Impossible d'enregistrer. Réessayer » |
 | Échec de synchronisation temporaire | Indicateur en état « Nouvelle tentative… », aucune interruption | — |
 | Échec persistant (> 3 tentatives) | Indicateur en état « Action requise » + détail dans la feuille de synchronisation | « Votre espace de stockage est plein. Libérez de la place pour reprendre l'enregistrement. » |
-| Accès Google perdu ou expiré (RG-035) | Bandeau non fermable | « Reconnectez votre compte Google pour reprendre la synchronisation et les rappels. Vos données sont conservées. » + bouton « Se reconnecter » |
+| Accès Google perdu ou expiré (RG-035) | Bandeau non fermable | « Reconnectez votre compte pour reprendre la synchronisation. Vos données sont conservées et vous pouvez continuer à travailler. » + bouton « Se reconnecter » (`ERR-010`) |
 | Créneau Google non créé | Sur la ligne de tâche, icône créneau en état barré ; détail dans la feuille de synchronisation | « Le créneau n'a pas pu être créé dans votre agenda. Nouvelle tentative automatique. » |
 
 | Session Google expirée sur PC (renouvellement du jeton nécessitant un geste, DAT R3 / F14) | Indicateur « Reprendre la synchronisation » (un clic), **pas** de bandeau : ce n'est pas une perte d'accès | « Cliquez pour reprendre la synchronisation avec Google. » |
@@ -506,11 +517,13 @@ Pas de bouton « Enregistrer » dans les détails : chaque modification est enre
 
 Règle : un message d'erreur dit **ce qui s'est passé**, **ce qui est préservé** (« vos données sont conservées ») et **quoi faire**. Jamais de code technique à l'écran.
 
+**(E7) Textes exacts et codes** : les tableaux ci-dessous donnent le type, la présentation et un exemple ; les **libellés exacts et les codes `ERR-xxx` / `ALR-xxx` figurent au catalogue du §6.6, qui fait foi**. Le texte du bandeau « Accès Google perdu » est celui du §6.6.3 (le lot 1 n'ayant pas de rappels, la mention « et les rappels » est retirée).
+
 **(v0.2)** Messages ajoutés par LOT-001 (ECR-010, ECR-011) :
 | Type | Présentation | Message |
 |---|---|---|
 | Connexion annulée ou autorisation refusée (US-022 CA-4) | Message d'information sur l'écran de connexion (`role="alert"`) | « Connexion annulée. Une connexion à un compte Google est nécessaire pour utiliser l'application. Rien n'a été créé. » |
-| Première connexion ou reconnexion sans réseau | Message d'attention, bouton « Réessayer » | « Pas de connexion à Internet. Une connexion est nécessaire pour vous connecter la première fois. Rien n'a été créé. » |
+| Première connexion sans réseau (`ERR-003`) ou reconnexion sans réseau après une déconnexion (`ERR-004`, texte distinct : les données de l'appareil sont conservées) | Message d'attention, bouton « Réessayer » | « Pas de connexion à Internet. Une connexion est nécessaire pour vous connecter la première fois. Rien n'a été créé. » (`ERR-003`) |
 | Connexion interrompue | Même mise en page | « La connexion a été interrompue. Aucune donnée n'a été créée à moitié. Réessayez. » |
 | Drive indisponible ou désactivé (RG-019, RG-020) | Message d'erreur, une seule action | « Google Drive n'est pas disponible pour ce compte (par exemple, un compte d'organisation sans accès au Drive). L'application en a besoin pour enregistrer vos données. Essayez avec un autre compte Google. » |
 | Drive plein (US-017) | Carte d'erreur dans ECR-011 ; indicateur « Action requise » | « Votre Google Drive est plein. Vos modifications sont conservées sur cet appareil. Libérez de la place : l'enregistrement reprendra tout seul. » |
@@ -548,6 +561,206 @@ Règle : un message d'erreur dit **ce qui s'est passé**, **ce qui est préserv�
 **(v0.2)** « Action requise » couvre : accès Google perdu (bandeau), Drive plein, données absentes du Drive, version de l'application trop ancienne. « Session à renouveler » est propre au PC et n'est jamais un bandeau. Les fréquences de synchronisation ne sont pas visibles : l'heure du « dernier échange » suffit (DAT : à l'ouverture, 5 s après une modification, puis toutes les 2 min au premier plan ; exigence de l'utilisateur : 1 h, DEC-014).
 
 L'indicateur couvre deux échanges distincts — l'espace de stockage (données) et Google Calendar (créneaux, événements, rappels) — mais n'affiche qu'**un** état, le plus grave des deux. La feuille de synchronisation détaille chacun.
+
+### 6.6 Catalogue des libellés et des codes d'état observables (E7, ANT-7)
+
+> Destiné à Anthony (tests automatisés) et à Benjamin. **Ce catalogue fait foi** pour les libellés exacts : si un texte du §4, §6.1 à §6.5 ou d'une maquette en diffère, c'est le catalogue qui l'emporte (les maquettes et les paragraphes concernés ont été alignés en v0.2.3). Les entrées marquées **[sous réserve Q-ERG-xx]** dépendent d'une réponse du commanditaire et ne sont pas tranchées ici.
+
+#### 6.6.1 Conventions
+
+| Sujet | Règle |
+|---|---|
+| **Famille de codes** | `SYN-` état de l'indicateur · `BAN-` bandeau · `MEN-` mention · `ETA-` état d'un objet · `EVD-` état vide · `TST-` message éphémère · `CNF-` boîte de confirmation · `ERR-` erreur (l'application n'a pas pu faire ce qui était demandé, ou ne peut plus enregistrer) · `ALR-` alerte ou information (rien n'a échoué : écart, risque, explication, valeur non retenue). |
+| **Stabilité** | Un code n'est jamais renuméroté ni réutilisé. Un code retiré reste dans ce catalogue, barré. Un libellé peut évoluer (rédaction), pas le code. |
+| **Observabilité (proposition de Steeve, nom de l'attribut à confirmer par Anthony en E9)** | Chaque élément qui porte un état ou un message expose son code dans l'attribut `data-etat="CODE"` (un message d'erreur ou d'alerte ajoute `data-message="ERR-xxx"` ou `data-message="ALR-xxx"`), en plus du **texte visible exact** et du **rôle accessible** indiqués ci-dessous. Un test peut donc vérifier le code, le texte, ou les deux ; le code ne dépend jamais de la langue ni de la couleur. |
+| **Variables** | `{n}` entier ; `{appareil}` = « smartphone » ou « PC » (jamais « téléphone ») ; `{élément}` intitulé exact entre « » ; `{date}` au format « 19 oct. » (année seulement si elle diffère de l'année en cours) ; `{heure}` « 10 h 32 ». |
+| **Pluriel** | 0 ou 1 → singulier (« 1 modification », « 0 modification »), 2 et plus → pluriel. Les verbes et participes s'accordent (« 1 modification n'a pas été retenue » / « 3 modifications n'ont pas été retenues »). |
+| **Ancienneté « dernier échange »** | moins d'une minute : « à l'instant » · 1 à 59 min : « il y a {n} min » · 1 à 23 h : « il y a {n} h » · au-delà : « hier à {heure} » puis « le {date} à {heure} ». |
+| **Typographie** | Espace insécable entre nombre et unité, avant « : », « ? », « ! » et « · » entouré d'espaces. Guillemets « » avec espaces insécables. Points de suspension : le caractère « … ». |
+| **Langue** | Français, vouvoiement (§8). Aucun code technique n'est jamais affiché à l'écran : les codes ci-dessous ne vivent que dans l'attribut `data-etat` / `data-message` et dans les tests. |
+
+#### 6.6.2 États de l'indicateur de synchronisation (`SyncStatus`, §4.8, §6.5)
+
+Un seul état est exposé à la fois (`data-etat` de l'indicateur). **Ordre de gravité, du plus grave au moins grave** (proposition de conception) : `SYN-ACTION` > `SYN-SESSION` > `SYN-RETENTATIVE` > `SYN-HORS-LIGNE` > `SYN-EN-COURS` > `SYN-ATTENTE` > `SYN-INFO` > `SYN-OK`. Le point « à lire » est un **modificateur** de `SYN-OK` (donc `SYN-INFO`), jamais d'un autre état.
+
+| Code | Quand | Libellé visible PC (pied de barre latérale, titre de la feuille) | Smartphone | Nom accessible (`role="status"`, annoncé au changement) | Icône (§3.7) |
+|---|---|---|---|---|---|
+| `SYN-OK` | Dernier échange réussi, rien en attente, rien à lire | « À jour · {ancienneté} » | Icône seule | « Synchronisé, à jour » | nuage coché |
+| `SYN-INFO` | Comme `SYN-OK`, avec au moins 1 modification non retenue non lue (`ALR-009` à `ALR-011`) | « À jour · {n} information(s) » | Icône + point accent, sans nombre | « À jour, {n} information(s) à lire » | nuage coché + point accent |
+| `SYN-EN-COURS` | Échange en cours | « Synchronisation… » | Icône animée | « Synchronisation en cours » | nuage avec flèches |
+| `SYN-ATTENTE` | En ligne, modifications pas encore envoyées | « {n} modification(s) à envoyer » | Icône + petit nombre | « {n} modification(s) à envoyer » | nuage + nombre |
+| `SYN-HORS-LIGNE` | Appareil sans réseau (ou accès Google perdu, traité comme une coupure : `SYN-ACTION` l'emporte alors) | « Hors ligne · {n} en attente » ; **« Hors ligne »** si n = 0 | Libellé visible, identique | « Hors ligne, {n} modification(s) en attente » | nuage barré |
+| `SYN-RETENTATIVE` | Échec temporaire, nouvelle tentative automatique (3 tentatives au plus avant `SYN-ACTION`) | « Nouvelle tentative… » | Icône `color.warning` | « Nouvelle tentative de synchronisation » | nuage avec flèches, orange |
+| `SYN-SESSION` | PC seulement : jeton Google expiré, un clic suffit | « Reprendre la synchronisation » (bouton) | — (état PC) | « Reprendre la synchronisation » | nuage avec flèches, accent |
+| `SYN-ACTION` | Accès Google perdu (`ERR-010`), Drive plein (`ERR-011`), données absentes ou illisibles (`ERR-012`), version trop ancienne (`ERR-013`) | « Action requise » | Libellé visible « Action requise » | « Action requise » | nuage avec point d'exclamation, rouge |
+
+Libellés de la feuille « Compte et synchronisation » (`SyncSheet`, §4.26), observables sous `data-etat="SYN-FEUILLE-…"` :
+
+| Code | Texte exact |
+|---|---|
+| `SYN-FEUILLE-DERNIER-ECHANGE` | « Dernier échange avec votre Google Drive : {ancienneté} ({heure}). » |
+| `SYN-FEUILLE-RIEN-EN-ATTENTE` | « Aucune modification en attente. » |
+| `SYN-FEUILLE-EN-ATTENTE` | « {n} modification(s) en attente » (titre de la liste ; une ligne par modification : intitulé de l'élément + nature : « Terminée », « Nouvelle tâche », « Délai changé : 20 déc. → 15 déc. »…) |
+| `SYN-FEUILLE-HORS-LIGNE` | « Vos modifications sont enregistrées sur cet appareil. Elles seront envoyées au retour du réseau, sans rien faire. » |
+| `SYN-FEUILLE-BOUTON` | Bouton « Synchroniser maintenant » ; hors ligne : `aria-disabled="true"` (reste focalisable), explication « Disponible au retour du réseau. » liée par `aria-describedby` |
+| `SYN-FEUILLE-AUTRE-ONGLET` | « Cet onglet n'effectue pas la synchronisation : un autre onglet de l'application s'en charge. Les deux onglets affichent les mêmes données. » (PC, jamais d'interruption) |
+| `SYN-FEUILLE-DOSSIER` | « Dossier « Done Juan » dans votre Google Drive » |
+| `SYN-FEUILLE-FUSEAU` | Ligne « Fuseau » : « Heure de Paris » puis « Votre appareil est réglé sur {fuseau}. » — seulement si le fuseau de l'appareil diffère de Paris (`MEN-HEURE-PARIS`) |
+
+#### 6.6.3 Bandeaux (`Banner`, §4.9)
+
+Au plus **un** bandeau à la fois (`data-etat` du bandeau ; absent du DOM sinon). Ordre : `BAN-ACCES-GOOGLE` > `BAN-CONSULTATION-SEULE` > `BAN-RAPPEL-24H`. Rôle : `role="region"` avec nom accessible = titre ; `role="alert"` à l'apparition de `BAN-ACCES-GOOGLE` seulement.
+
+| Code | Titre | Texte | Action | Fermable | Message | Indicateur associé |
+|---|---|---|---|---|---|---|
+| `BAN-ACCES-GOOGLE` | « Accès Google perdu » | « Reconnectez votre compte pour reprendre la synchronisation. Vos données sont conservées et vous pouvez continuer à travailler. » | « Se reconnecter » (seule action) | Non, tant que non résolu (RG-035) | `ERR-010` | `SYN-ACTION` |
+| `BAN-ACCES-GOOGLE` avec `data-variante="24H"` **[sous réserve Q-ERG-16 et Q-ERG-17]** | idem | « Reconnectez votre compte pour reprendre la synchronisation. Vos données sont conservées. » + ligne « {n} modification(s) ne sont encore que sur ce {appareil}. » (accord : « 1 modification n'est encore que sur ce {appareil} ») | idem | Non | `ERR-010` | `SYN-ACTION` |
+| `BAN-CONSULTATION-SEULE` | « Consultation seule » | « Une version plus récente de l'application a enregistré vos données. Mettez à jour l'application pour les modifier. » + si n > 0 : « Vos {n} modifications en attente sont conservées. » | « Mettre à jour » | Non (RG-058) | `ERR-013` | `SYN-ACTION` |
+| `BAN-RAPPEL-24H` **[sous réserve Q-ERG-16 : point de départ des 24 h, et Q-ERG-18 : réapparition après fermeture]** | « Hors ligne depuis plus de 24 h » | « {n} modification(s) ne sont encore que sur ce {appareil}. Elles seront enregistrées dans votre Google Drive au retour du réseau. » | Aucune | Oui (bouton « Masquer le rappel ») | `ALR-002` | `SYN-HORS-LIGNE` |
+
+Absences vérifiables : aucun bandeau pour `SYN-SESSION` (PC), `SYN-RETENTATIVE`, `SYN-ATTENTE`, ni pour le hors ligne de moins de 24 h. `BAN-RAPPEL-24H` est absent s'il n'y a aucune modification en attente, et disparaît à l'enregistrement dans le Drive. En consultation seule : bouton « + » absent, cases inertes (toast `TST-CONSULTATION-SEULE`).
+
+#### 6.6.4 Mentions
+
+Les mentions sont des textes ou marqueurs brefs portés par un élément.
+
+| Code | Texte visible exact | Où / quand | Nom accessible |
+|---|---|---|---|
+| `MEN-ATTENTE` | Point `color.text.tertiary` à droite de la ligne (aucun texte visible). **C'est l'indication « non synchronisé » des US-017, US-018 et US-031** : le mot « synchronisé » n'est jamais écrit à l'écran (§8) | Tout élément modifié ou créé dont l'envoi au Drive n'est pas terminé ; disparaît quand l'envoi est fait, sans toast | « Modification en attente d'envoi » |
+| `MEN-HEURE-PARIS` | « Heure de Paris » (puce, icône horloge) | Seulement si le fuseau de l'appareil diffère de Paris ; écrans du lot 1 au §4.21 ; jamais sur un délai | « Heure de Paris : afficher l'explication » |
+| `MEN-HEURE-PARIS-EXPLICATION` | « Les jours, les retards et les horaires suivent l'heure de Paris, où que vous soyez. » (+ exemple : « Il est {heure} à Paris, alors que votre appareil indique {heure} la veille. ») | Info-bulle de la puce, fermable (Échap) | — |
+| `MEN-SANS-DELAI` | « Sans délai » | Objectif sans délai (RG-002), choix explicite à la création ; jamais sur une tâche (délai obligatoire) | — |
+| `MEN-EN-RETARD` | « En retard » ; en liste : « En retard · {date} » | Tâche non terminée ni abandonnée dont le délai est antérieur à la journée de Paris ; objectif non atteint dans le même cas. Jamais sur une tâche terminée ou abandonnée | « En retard, délai {date} » |
+| `MEN-INCOHERENCE` | « Incohérence » (icône triangle + mot) | Marqueur dans les listes tant que `ALR-003` ou `ALR-004` persiste | « Incohérence » |
+| `MEN-NON-RETENUE` | « {n} modification(s) non retenue(s) · Voir » | Ligne discrète sur l'élément concerné (détail de tâche, d'objectif) | — |
+| `MEN-ESTIMATION-CALCULEE` | « Somme des sous-tâches » (cadenas) | Estimation d'une tâche parente, non modifiable | « Estimation calculée : somme des sous-tâches » |
+| `MEN-OBJECTIFS-HERITES` | « Hérités de la tâche » (cadenas) | Objectifs d'une sous-tâche, lecture seule | idem |
+| `MEN-TRI-DELAI` | « Triées par délai » | En-tête de la liste Tâches (lot 1) | — |
+| `MEN-OBLIGATOIRE` | « (obligatoire) » | Libellés « Délai » et « Estimation » de la saisie rapide ; « (facultatif) » / « (facultative) » pour les autres | — |
+
+États d'un objet (`ETA-`), texte exact visible :
+
+| Code | Objet | Texte | Condition |
+|---|---|---|---|
+| `ETA-OBJ-EN-COURS` | Objectif | « En cours » | Au moins une tâche non abandonnée à faire, ou un sous-objectif non atteint, **quel que soit le compteur** (PEP-10 : « 3 / 3 tâches » peut accompagner « En cours » si un sous-objectif ne l'est pas atteint, ECR-008 A, « Préparer le lancement », ligne complétée de « 1 sous-objectif en cours ») |
+| `ETA-OBJ-ATTEINT` | Objectif | « Atteint » (coche verte) | RG-025 |
+| `ETA-OBJ-A-DECLINER` | Objectif | « À décliner en tâches » | Ni tâche non abandonnée ni sous-objectif |
+| `ETA-OBJ-COMPTEUR` | Objectif | « {t} / {n} tâches » (terminées sur non abandonnées) | Toujours, en toutes lettres ; nom accessible de la ligne : « {intitulé}, {état}, {t} tâches sur {n} terminées, délai {date} » |
+| `ETA-TACHE-A-FAIRE` | Tâche | Case vide | — |
+| `ETA-TACHE-TERMINEE` | Tâche | Case cochée ; détail : « Terminée le {date} » | — |
+| `ETA-TACHE-ABANDONNEE` | Tâche | « Abandonnée le {date} » | Visible dans le filtre « Abandonnées » |
+| `ETA-SOUS-TACHE-ABANDONNEE-AVEC` | Sous-tâche | « Abandonnée avec la tâche » | Reprise avec la tâche parente |
+| `ETA-SOUS-TACHE-ABANDONNEE-AVANT` | Sous-tâche | « Abandonnée avant la tâche » | Non reprise avec la tâche parente |
+| `ETA-SOUS-TACHE-TERMINEE-AVANT` | Sous-tâche | « Terminée avant l'abandon » | Reste terminée |
+
+#### 6.6.5 États vides et écrans d'atterrissage
+
+| Code | Écran | Texte exact | Action |
+|---|---|---|---|
+| `EVD-BIENVENUE` | Tâches, **tant qu'il n'existe ni objectif ni tâche** (compte neuf, ECR-010 C ; BEN-6, US-022 CA-2) | Titre « Bienvenue » ; « Un objectif donne une direction à vos tâches. Commencez par le vôtre, ou ajoutez directement une tâche. » | « Créer mon premier objectif » (principal) ; « Ajouter une tâche sans objectif » (tertiaire) |
+| `EVD-TACHES` | Tâches, aucune tâche mais au moins un objectif | « Aucune tâche pour l'instant. » / « Commencez par ce qui vous vient à l'esprit, vous trierez ensuite. » | « Ajouter une tâche » |
+| `EVD-OBJECTIFS` | Objectifs, aucun objectif mais au moins une tâche | « Un objectif donne une direction à vos tâches. » | « Créer un objectif » |
+| `EVD-OBJECTIF-SANS-TACHE` | Détail d'un objectif sans tâche | « À décliner en tâches. » | « Ajouter une tâche » |
+| `EVD-FILTRE-SANS-OBJECTIF` | Tâches, filtre « Sans objectif » | « Toutes vos tâches ont un objectif. » | — |
+| `EVD-FILTRE-ABANDONNEES` | Tâches, filtre « Abandonnées » | « Aucune tâche abandonnée. » | — |
+| `EVD-FILTRE-TERMINEES` | Tâches, filtre « Terminées » | « Aucune tâche terminée. » | — |
+
+**Écran d'atterrissage après la première connexion (BEN-6).** L'utilisateur arrive sur **Tâches** (accueil du lot 1) dans l'état `EVD-BIENVENUE`. Puis :
+- « Créer mon premier objectif » → feuille de création (ECR-008 B) → après « Créer l'objectif », **détail de l'objectif** créé dans l'état `EVD-OBJECTIF-SANS-TACHE` (ECR-003 B) ;
+- « Ajouter une tâche sans objectif » → saisie rapide (ECR-006) → après « Ajouter », la feuille reste ouverte pour enchaîner (toast `TST-AJOUTEE`) ; à la fermeture, **Tâches** affiche la liste avec la tâche (ECR-002 L1). Le bandeau d'accueil a disparu dès la première création, d'un objectif ou d'une tâche.
+
+#### 6.6.6 Messages éphémères (`Toast`, §4.10)
+
+`role="status"`, 4 s (6 s avec action).
+
+| Code | Texte exact | Action |
+|---|---|---|
+| `TST-AJOUTEE` | « Ajoutée à Tâches » (dans la feuille de saisie) | — |
+| `TST-TERMINEE` | « Tâche terminée » | « Annuler » |
+| `TST-HORS-LIGNE` | « Hors ligne. Vos modifications sont enregistrées sur l'appareil et seront envoyées au retour du réseau. » | — (unique au passage hors ligne) |
+| `TST-NON-RETENUES` | « {n} modification(s) n'ont pas été retenues · Voir » | « Voir » |
+| `TST-CONSULTATION-SEULE` | « Consultation seule · mettez à jour pour modifier » | — |
+| `TST-ERREUR-ENREGISTREMENT` | « Impossible d'enregistrer. Réessayer » (message `ERR-014`) | « Réessayer » |
+
+#### 6.6.7 Boîtes de confirmation (`ConfirmDialog`, §4.12)
+
+`role="alertdialog"`, « Annuler » focalisé par défaut, Échap = Annuler. Observable : `data-etat` de la boîte.
+
+| Code | Titre exact | Bouton d'action | Rouge |
+|---|---|---|---|
+| `CNF-SUPPR-TACHE` | « Supprimer la tâche et ses {n} sous-tâches ? » (sans sous-tâche : « Supprimer la tâche ? ») | « Supprimer » | Oui |
+| `CNF-SUPPR-OBJECTIF` | « Supprimer « {élément} » ? » (+ nombre de tâches détachées et de sous-objectifs promus) | « Supprimer » | Oui |
+| `CNF-ABANDON-TACHE` | « Abandonner « {élément} » ? » — **toujours demandée** (US-025 CA-1, Q-ERG-13) ; sans sous-tâche : une seule phrase (« La tâche quitte vos tâches à faire. Vous la retrouverez dans « Abandonnées » et pourrez la reprendre. ») ; ECR-007 D2 | « Abandonner » | Non |
+| `CNF-ABANDON-TACHE-CASCADE` | Même titre ; ajoute « Ses {n} sous-tâches à faire seront abandonnées aussi. La sous-tâche déjà terminée reste terminée. » ; ECR-007 D | « Abandonner » | Non |
+| `CNF-ROUVRIR-SOUS-TACHE` | « Rouvrir aussi « {élément} » ? » | « Rouvrir les deux » | Non |
+| `CNF-AJOUT-SOUS-TACHE-TERMINEE` | « Rouvrir « {élément} » pour y ajouter une sous-tâche ? » | « Rouvrir et ajouter » | Non |
+| `CNF-DECONNEXION` | « Se déconnecter ? » (+ « {n} modifications ne sont pas encore enregistrées dans votre Google Drive. Elles restent sur cet appareil et seront enregistrées à votre prochaine connexion avec ce compte. Vos données ne sont pas effacées. ») — **absente s'il n'y a rien en attente** | « Se déconnecter » | Non |
+| `CNF-SUPPR-DONNEES` | « Supprimer les données de cet appareil ? » (les données restent dans le Drive et sur l'autre appareil ; rechargées à la prochaine connexion, réseau nécessaire) | « Supprimer les données » | Oui |
+| `CNF-SUPPR-DONNEES-PERTE` | « {n} modification(s) seraient perdues » (dépôt impossible, RG-055) | « Supprimer quand même » | Oui |
+| `CNF-REPARTIR-ZERO` | « Effacer toutes vos données sur vos deux appareils ? » (+ « {n} modifications faites ici et pas encore enregistrées seront perdues. ») | « Tout effacer » | Oui |
+
+#### 6.6.8 Erreurs (`ERR-`)
+
+Chaque erreur a un **titre** et un **texte** (« ce qui s'est passé, ce qui est préservé, quoi faire », §6.3). Rôle `role="alert"` pour les erreurs de connexion et les champs ; `role="status"` pour les erreurs de fond de feuille.
+
+**Motifs d'échec de connexion (US-022).** Pour chaque motif, la connexion échoue, l'utilisateur peut réessayer, aucune donnée n'est créée sur l'appareil ni dans le Drive (S06, S18, S20, S21, S22) et le focus reste sur le bouton. Correspondance avec les motifs écrits dans les scénarios de Pepper :
+
+| Code | Motif du scénario (`.feature`) | Titre exact | Texte exact | Action | Scénarios |
+|---|---|---|---|---|---|
+| `ERR-001` | « annule la connexion » | « Connexion annulée » | « Une connexion à un compte Google est nécessaire pour utiliser l'application. Rien n'a été créé. » | « Continuer avec Google » | S06 |
+| `ERR-002` | « refuse les autorisations demandées » | « Connexion annulée » (**même texte que `ERR-001`**, imposé par US-022 CA-4 ; seul le code diffère) | idem | « Continuer avec Google » | S06 |
+| `ERR-003` | « réseau nécessaire pour la première connexion » (première connexion, ou rechargement après suppression des données de l'appareil) | « Pas de connexion à Internet » | « Une connexion est nécessaire pour vous connecter la première fois. Réessayez dès que vous avez du réseau. Rien n'a été créé. » | « Réessayer » | S18, S20 |
+| `ERR-004` | « réseau nécessaire pour se connecter » (reconnexion après une déconnexion) | « Pas de connexion à Internet » | « Une connexion est nécessaire pour vous reconnecter. Vos données sont conservées sur cet appareil. Réessayez dès que vous avez du réseau. » | « Réessayer » | S22 |
+| `ERR-005` | « connexion interrompue » | « Connexion interrompue » | « La connexion a été interrompue. Aucune donnée n'a été créée à moitié. Réessayez. » | « Réessayer » | S20 |
+| `ERR-006` | « Drive indisponible pour ce compte » | « Google Drive n'est pas disponible pour ce compte » | « C'est le cas, par exemple, d'un compte d'organisation sans accès au Drive. L'application en a besoin pour enregistrer vos données. Essayez avec un autre compte Google. » | « Choisir un autre compte » (aucune autre fonction accessible) | S21 |
+
+Remarque pour Pepper et Anthony : `ERR-003` et `ERR-004` sont deux textes distincts (la reconnexion rassure sur les données de l'appareil, la première connexion non), ce qui correspond à vos deux motifs. ECR-010 E affiche `ERR-003` ; la variante `ERR-004` suit la même mise en page (légende de la maquette alignée).
+
+**Synchronisation et données.**
+
+| Code | Quand | Titre exact | Texte exact | Action | Présentation |
+|---|---|---|---|---|---|
+| `ERR-010` | Accès Google perdu ou retiré (RG-035, US-022 S12) | « Accès Google perdu » | voir `BAN-ACCES-GOOGLE` | « Se reconnecter » | Bandeau + `SYN-ACTION` |
+| `ERR-011` | Drive plein (US-017) | « Votre Google Drive est plein » | « Vos modifications ne peuvent plus y être enregistrées. Elles sont conservées sur cet appareil. Libérez de la place dans Google Drive : l'enregistrement reprendra tout seul. » | « Ouvrir Google Drive » | Carte d'erreur dans la feuille (en-tête : « Une action de votre part est nécessaire. Vos données sont conservées sur cet appareil. ») + `SYN-ACTION` |
+| `ERR-012` | Dossier ou fichiers absents ou illisibles (RG-044) | « Vos données ne sont plus dans votre Google Drive » | « Le dossier « Done Juan » a été supprimé ou ne peut plus être lu. Cet appareil en garde une copie : {n} objectifs, {n} tâches, dernière mise à jour {ancienneté}. Rien n'est effacé ni modifié tant que vous n'avez pas choisi. » | « Restaurer mes données » (principal) ; « Repartir de zéro… » ; « Décider plus tard » | Feuille de choix (§4.25) + `SYN-ACTION` |
+| `ERR-013` | Données écrites par une version plus récente (RG-058) | « Consultation seule » | voir `BAN-CONSULTATION-SEULE` | « Mettre à jour » | Bandeau + carte « Mettez l'application à jour » dans la feuille + `SYN-ACTION` |
+| `ERR-014` | Écriture locale impossible | — | « Impossible d'enregistrer. Réessayer » | « Réessayer » | Toast `TST-ERREUR-ENREGISTREMENT` |
+| `ERR-015` | Session Google du navigateur expirée (PC) | « La session Google de ce navigateur a expiré » | « Vous pouvez continuer à travailler : vos {n} modifications sont conservées sur ce PC. Pour les envoyer et recevoir celles de votre smartphone, reprenez la synchronisation. » | « Reprendre la synchronisation » | Feuille + `SYN-SESSION`, **aucun bandeau** |
+
+**Saisie et organisation.**
+
+| Code | Quand | Texte exact | Présentation |
+|---|---|---|---|
+| `ERR-020` | Intitulé vide à « Ajouter » / « Créer l'objectif » (US-001 CA-5, US-002) | « Indiquez un intitulé. » | Sous le champ, `color.danger` + icône, focus sur le champ, saisie conservée |
+| `ERR-021` | Délai non choisi à la saisie d'une tâche (RG-003, US-002 CA-3) | « Indiquez un délai. » | Sous les puces de délai, focus sur la première erreur |
+| `ERR-022` | Estimation non choisie (RG-029, US-002 CA-3) | « Indiquez une estimation. » | Sous les puces d'estimation |
+| `ERR-030` | Deuxième niveau de sous-objectif (US-023 CA-6) | Titre « Déplacement impossible » ; « « {élément} » a déjà {n} sous-objectif(s). Un seul niveau de sous-objectifs est autorisé. Déplacez ou supprimez d'abord son sous-objectif, ou placez celui-ci ailleurs. » | Boîte avec « Compris » |
+| `ERR-031` | Objectif placé sous lui-même (US-023 CA-5) | « Un objectif ne peut pas être placé sous lui-même » | Ligne indisponible dans `ParentPicker`, raison écrite |
+
+Les trois erreurs de champ (`ERR-020` à `ERR-022`) sont **cumulables** : toutes les informations manquantes sont nommées en même temps, dans l'ordre intitulé, délai, estimation.
+
+#### 6.6.9 Alertes et informations (`ALR-`)
+
+| Code | Niveau | Quand | Titre / texte exact | Présentation et issues |
+|---|---|---|---|---|
+| `ALR-001` | Attention | Horloge de l'appareil déréglée au-delà du seuil que Pepper fixe en CA numéroté d'US-017 (ANT-4, BEN-12) | « L'heure de cet appareil semble incorrecte » / « Elle diffère de plus de 24 h de l'heure réelle. Corrigez-la dans les réglages de l'appareil pour éviter des conflits entre vos appareils. » | Carte dans la feuille ; aucun blocage |
+| `ALR-002` | Attention | Rappel après 24 h hors ligne | voir `BAN-RAPPEL-24H` **[sous réserve Q-ERG-16, Q-ERG-17, Q-ERG-18]** | Bandeau fermable |
+| `ALR-003` | Attention | Tâche terminée avec sous-tâche à faire après fusion (RG-049, US-003 CA-12, US-024 CA-10) | « Incohérence avec une sous-tâche » / « Cette tâche est terminée, mais {n} sous-tâche(s) {est/sont} à faire. Rien n'a été modifié. Tant que c'est le cas, l'objectif « {élément} » n'est pas atteint. » | `InconsistencyCard` ; « Rouvrir la tâche » (principal), « Terminer la sous-tâche », « Abandonner la sous-tâche » ; + `MEN-INCOHERENCE` |
+| `ALR-004` | Attention | Tâche abandonnée avec sous-tâche à faire après fusion (RG-049, US-025 CA-10) | « Incohérence avec une sous-tâche » / « Cette tâche est abandonnée, mais {n} sous-tâche(s) {est/sont} à faire. Rien n'a été modifié. » | Même gabarit ; « Reprendre la tâche » (principal), « Terminer la sous-tâche », « Abandonner la sous-tâche » ; **texte nouveau, sans cadre dédié (même gabarit que ECR-007 H)** |
+| `ALR-005` | Attention | Délai d'une tâche postérieur à celui de son objectif (RG-024, US-002 CA-7) | En liste : « {date} · après le délai de l'objectif » ; en détail : « Après le délai de l'objectif ({date}) » | Triangle + texte, jamais bloquant ; aucune alerte si l'un des deux délais manque |
+| `ALR-006` | Attention | Délai d'une sous-tâche postérieur à celui de la tâche parente (RG-024) | « {date} · après le délai de la tâche » | idem |
+| `ALR-007` | Attention | Délai d'un sous-objectif postérieur à celui de l'objectif parent (US-023 CA-4) | « {date} · après « {parent} » » | idem |
+| `ALR-008` | Information | Cet appareil découvre le choix « repartir de zéro » fait ailleurs (RG-044 b) | « Vos données ont été effacées » / « Vous avez choisi de repartir de zéro sur votre {appareil}. {n} modification(s) faites ici avant ce choix n'ont pas été conservées. » | Carte dans la feuille ; « Compris » |
+| `ALR-009` | Information | Valeur écartée par la règle de conflit (RG-036) | Titre : « {Information} de « {élément} » » / « Votre valeur « {valeur} » ({appareil}, {heure}) n'a pas été retenue. Valeur conservée : « {valeur} » ({appareil}, {heure}). » | `DiscardedItem` ; « Voir la tâche » (ou l'objectif) et « Compris » ; `SYN-INFO` jusqu'à « Compris » (Q-ERG-14) |
+| `ALR-010` | Information | Suppression qui l'emporte (RG-047) | « Objectif « {élément} » supprimé » (ou « Tâche … supprimée ») / « Supprimé sur votre {appareil}. Votre modification de {sa/son} {information} ({appareil}, {heure}) n'a pas été conservée. » | `DiscardedItem` ; « Compris » |
+| `ALR-011` | Information | Déplacement annulé (RG-048) | « Placement de « {élément} » annulé » / « Un déplacement plus récent, fait sur votre {appareil}, place « {élément} » sous « {élément} ». Les deux ne peuvent pas coexister : le plus ancien a été annulé. » | `DiscardedItem` ; « Voir l'objectif » et « Compris » |
+| `ALR-012` | Information | Première sous-tâche ajoutée à une tâche qui a une estimation (US-024 CA-5) | « L'estimation de la tâche ({durée}) sera remplacée par la somme de ses sous-tâches. » | Message avant l'enregistrement, dans la saisie rapide |
+| `ALR-013` | Information | « Terminer la tâche » indisponible tant qu'il reste des sous-tâches à faire (US-003 CA-8, US-024 CA-8) | « Il reste {n} sous-tâche(s) à terminer ou abandonner. » | Au-dessus du bouton, `role="status"`, lié par `aria-describedby` ; bouton `aria-disabled="true"` |
+
+**Réserves de ce catalogue.**
+- Q-ERG-16 (point de départ des 24 h), Q-ERG-17 (accès perdu depuis plus de 24 h : un ou deux bandeaux) et Q-ERG-18 (réapparition d'un bandeau fermé) attendent le commanditaire : ni le déclencheur de `BAN-RAPPEL-24H`, ni la variante `BAN-ACCES-GOOGLE`/`24H`, ni la règle de réapparition ne sont fixés. Les libellés ne dépendent pas de la réponse, sauf la ligne « {n} modification(s) ne sont encore que sur ce {appareil}. » de la variante.
+- Le seuil exact de l'horloge déréglée (`ALR-001`) est une règle métier que Pepper fixe en CA numéroté (ANT-4, BEN-12) : le libellé « plus de 24 h » est repris tel quel de la maquette et sera aligné.
+- Les noms d'attribut (`data-etat`, `data-message`) et l'ordre de gravité des états de l'indicateur sont des propositions de conception, à confirmer par Anthony en E9 et par le commanditaire si l'ordre de gravité l'intéresse.
 
 ---
 
@@ -762,8 +975,9 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | Q-ERG-13 | ECR-007 | Abandon d'une tâche : confirmation toujours, ou seulement avec des sous-tâches ? | **Répondue** (2026-10-21) : confirmation toujours (US-025 CA-1) ; ECR-007 l'applique. |
 | Q-ERG-14 | ECR-011 | Les « modifications non retenues » (valeurs écartées, suppressions, déplacements annulés) restent listées combien de temps ? | Jusqu'à ce que l'utilisateur les ferme (« Compris »), sans limite de durée ; le point accent de l'indicateur ne s'éteint qu'à ce moment. |
 | Q-ERG-15 | ECR-010 | Quel **nom** donner à l'application ? Il apparaît à l'écran de connexion, sur l'écran de consentement de Google (test technique R1/R2, étape P3), dans le Drive (nom du dossier) et dans les magasins d'applications. | Tranché le 2026-10-21 (DEC-017) : « Done Juan », identique au dossier du Drive. |
-| Q-ERG-16 **(E7)** | ECR-011 J | **Rappel RG-057 : point de départ des 24 h.** Début du hors ligne, ou plus ancienne modification en attente ? Relève d'une règle métier non tranchée : **question pour le commanditaire**. | Recommandation : plus ancienne modification en attente (l'alerte suit l'âge des données exposées ; pas d'alarme pour une modification récente faite pendant une longue coupure). Le cadre J est conçu pour les deux. |
-| Q-ERG-17 **(E7)** | ECR-011 L | **Accès Google perdu depuis plus de 24 h, bandeau « Se reconnecter » déjà affiché.** Second bandeau RG-057, ou non ? **Question pour le commanditaire.** | Recommandation : un seul bandeau (celui de « Se reconnecter », non fermable), complété de la phrase « n modifications ne sont encore que sur cet appareil ». Évite deux bandeaux empilés (P1, supprimer avant d'ajouter). |
+| Q-ERG-16 **(E7, en attente du commanditaire)** | ECR-011 J | **RG-057 : à partir de quand compte-t-on les 24 h du bandeau ?** a) depuis le dernier échange réussi avec le Drive ; b) depuis la plus ancienne modification en attente ; c) depuis la coupure du réseau. Règle métier non tranchée : **question pour le commanditaire**. | Position de Steeve : b), l'alerte suit l'âge des données exposées. Recommandation de Jarvis : b). **Non tranchée.** Le cadre J et `BAN-RAPPEL-24H` (§6.6.3) sont conçus pour toutes les options. |
+| Q-ERG-17 **(E7, en attente du commanditaire)** | ECR-011 L | **Accès Google perdu depuis plus de 24 h, bandeau « Se reconnecter » déjà affiché.** a) un seul bandeau, complété de « n modifications ne sont encore que sur cet appareil » ; b) deux bandeaux. **Question pour le commanditaire.** | Position de Steeve : a) (un seul bandeau, P1). Recommandation de Jarvis : a). **Non tranchée** : la variante `BAN-ACCES-GOOGLE` / `24H` du catalogue est marquée sous réserve. |
+| Q-ERG-18 **(E7, en attente du commanditaire)** | ECR-011 J | **Un bandeau des 24 h fermé réapparaît-il ?** a) oui, à la prochaine ouverture de l'application, tant que des modifications sont en attente ; b) non. **Question pour le commanditaire.** | Position de Steeve : a). Recommandation de Jarvis : a). **Non tranchée.** |
 
 ### 12.1 bis Décisions de conception prises par Steeve en v0.2 (pour information, sans question)
 - **Dossier Drive** : « Done Juan » (CA-3 de US-022 : « son nom est fixé en E4 »).
@@ -841,3 +1055,4 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Réponses Q-ERG-02 à 11 intégrées (§12.1). Navigation du lot 1 (§2.1). Principe P11. Composants §4.21 à §4.28. Cas de ConfirmDialog (§4.12). États et messages ajoutés (§6). Créneau déplacé, ordre d'Aujourd'hui, fun fact, bilan (§7.5 à §7.8). Accessibilité et responsive du lot (§9, §10). Statuts DAT-UX mis à jour (§11). Réserves Q-DEM001 levées (§12.2). Nouvelles questions Q-ERG-12 à 15. Maquettes ECR-007, 008, 010, 011 créées ; ECR-001, 002, 003 mises à jour. |
 | 0.2.2 | 2026-10-21 | Steeve | E7 de LOT-001 : bandeau RG-057 (§4.9, ECR-011 J et L) et consultation seule RG-058 (ECR-011 K) ; questions Q-ERG-16 et 17 ; réserves caduques retirées (Q-ERG-13 répondue). |
 | 0.2.1 | 2026-10-21 | Steeve | Nom « Done Juan » (DEC-017) : application et dossier Drive (V-13), validation E6 de LOT-001 (DEC-018). |
+| 0.2.3 | 2026-10-21 | Steeve | E7 de LOT-001, corrections du tour 1. **Catalogue des libellés et codes d'état observables (§6.6, ANT-7)** : indicateur `SYN-`, bandeaux `BAN-`, mentions `MEN-`, états `ETA-`, vides `EVD-`, toasts `TST-`, confirmations `CNF-`, erreurs `ERR-001` à `ERR-031` (dont les 6 motifs de connexion d'US-022), alertes `ALR-001` à `ALR-013`. Écran d'atterrissage après la première connexion (BEN-6). Écrans portant « Heure de Paris » (§4.21, BEN-8). Compteur 3/3 « En cours » (PEP-10). Textes de §6.3 alignés sur le catalogue. Q-ERG-16 à 18 reformulées, non tranchées. |
