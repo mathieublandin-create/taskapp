@@ -1,6 +1,6 @@
 # Parcours utilisateurs
 
-> **Version 0.2, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001. La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot. Entrées de la v0.2 : LOT-001 et ses 10 US, cahier des charges v0.5, DAT v0.4, décisions DEC-001 à DEC-016, réponses Q-ERG-02 à 11. Les écrans cités (`ECR-xxx`) sont inventoriés dans le [guide d'ergonomie, §13](guide-ergonomie.md#13-inventaire-des-écrans). Les choix qui dépendent d'une question ouverte portent la mention **(sous réserve de Q-…)**.
+> **Version 0.2.1, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001. La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot. Entrées de la v0.2 : LOT-001 et ses 10 US, cahier des charges v0.5, DAT v0.4, décisions DEC-001 à DEC-016, réponses Q-ERG-02 à 11. Les écrans cités (`ECR-xxx`) sont inventoriés dans le [guide d'ergonomie, §13](guide-ergonomie.md#13-inventaire-des-écrans). Les choix qui dépendent d'une question ouverte portent la mention **(sous réserve de Q-…)**.
 >
 > **Lecture par lot.** P-01, P-03, P-04, P-05 et P-06 sont des parcours **cibles** (lots « Planification », « Rappels », « Suivi du temps », « Pilotage »). Le **lot 1** livre P-02 (adapté), P-07 à P-13 (nouveaux) et les étapes hors ligne de P-01. Chaque parcours indique ce qui change en v0.2.
 
@@ -113,7 +113,7 @@ Cas particuliers dépendant de Q-DEM001-33 : créneau déplacé dans la même jo
 
 | # | Ce que fait Camille | Écran | Ce que fait l'application | Gestes |
 |---|---|---|---|---|
-| 1 | Ouvre l'application (Google Play en test interne sur le smartphone, adresse web sur le PC). | ECR-010 A | Seule l'invitation à se connecter est affichée : un bouton, et ce que l'application demande à Google (identité, dossier « Objectifs et Tâches », rien d'autre). Aucune donnée, aucune autre fonction (CA-1). | 0 |
+| 1 | Ouvre l'application (Google Play en test interne sur le smartphone, adresse web sur le PC). | ECR-010 A | Seule l'invitation à se connecter est affichée : un bouton, et ce que l'application demande à Google (identité, dossier « Done Juan », rien d'autre). Aucune donnée, aucune autre fonction (CA-1). | 0 |
 | 2 | Appuie sur « Continuer avec Google ». | ECR-010 A | Ouvre la connexion Google. | 1 |
 | 3 | Choisit son compte et accepte les accès. | Écran Google (hors maquette) | **Aucun avertissement « application non validée »** au lot 1 (ENF-08). | 1 à 2 |
 | 4 | Attend quelques secondes. | ECR-010 B | Étapes : compte identifié, dossier trouvé ou créé dans le Drive, récupération des données. Annulation possible. Moins de 10 s sur 4G. | 0 |
@@ -166,7 +166,7 @@ Si le **navigateur** a effacé les données du site, les modifications non envoy
 
 | # | Ce que fait Camille | Écran | Ce que fait l'application | Gestes |
 |---|---|---|---|---|
-| 1 | A supprimé par erreur le dossier « Objectifs et Tâches » dans Google Drive. | Google Drive | — | — |
+| 1 | A supprimé par erreur le dossier « Done Juan » dans Google Drive. | Google Drive | — | — |
 | 2 | Ouvre l'application. | ECR-011 E | « Action requise » dans l'indicateur et feuille de choix : « Vos données ne sont plus dans votre Google Drive. Cet appareil en garde une copie : 12 objectifs, 47 tâches… » **Rien n'est effacé ni réécrit.** | 0 |
 | 3a | **Restaurer mes données** (action principale). | ECR-011 E | Les données sont recréées dans le Drive à partir de l'appareil, puis retrouvées sur l'autre appareil. Toast de confirmation. | 1 |
 | 3b | **Repartir de zéro…** | ECR-011 E → confirmation | Dialogue « Effacer toutes vos données sur vos deux appareils ? » avec le nombre de modifications non enregistrées perdues. Après confirmation, l'appareil est vidé. | 2 |
@@ -428,3 +428,4 @@ Incohérence après synchronisation (RG-049) : une tâche parente « Terminée �
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Steeve | Création : persona, parcours P-01 à P-06, diagrammes d'enchaînement. |
 | 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Parcours cibles P-01, P-03 à P-06 mis à jour des réponses Q-ERG-04 à 11. P-02 adapté au lot 1. Nouveaux parcours P-07 (première connexion), P-08 (déconnexion et changement de compte), P-09 (hors ligne et modifications non retenues), P-10 (reprise de session sur PC), P-11 (restaurer ou repartir de zéro), P-12 (supprimer les données de l'appareil), P-13 (sous-tâches, fin, abandon). Diagrammes 3.1 bis, 3.4 (v0.2), 3.5, 3.6, 3.7. Points ouverts PO-01 à 04 résolus, PO-05 à 09 ajoutés. |
+| 0.2.1 | 2026-10-21 | Steeve | Nom « Done Juan » (DEC-017) : application et dossier Drive (V-13), validation E6 de LOT-001 (DEC-018). |

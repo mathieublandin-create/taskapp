@@ -1,6 +1,6 @@
 # Guide d'ergonomie
 
-> **Version 0.2, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
+> **Version 0.2.1, 2026-10-21 (Steeve).** Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
 >
 > **Entrées de la v0.2** : LOT-001 et ses 10 US (US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025), cahier des charges v0.5 (RG-043 à RG-055), DAT v0.4 et synthèse d'architecture du lot, décisions DEC-001 à DEC-016 (`suivi-projet.md`), réponses du commanditaire aux questions Q-ERG-02 à Q-ERG-11.
 >
@@ -207,7 +207,7 @@ Si l'utilisateur a demandé la réduction des animations (`prefers-reduced-motio
 | Sous-tâche, sous-objectif **(v0.2)** | flèche coudée vers le bas | Compteur « 1/3 » sur la ligne du parent |
 | Information, modification non retenue **(v0.2)** | cercle avec « i » | Niveau « information » ; toujours avec texte |
 | Verrou, valeur calculée ou héritée **(v0.2)** | cadenas | Estimation calculée, objectifs hérités ; jamais seul |
-| Dossier Drive **(v0.2)** | dossier | Dossier « Objectifs et Tâches » |
+| Dossier Drive **(v0.2)** | dossier | Dossier « Done Juan » |
 | Se déconnecter **(v0.2)** | flèche vers une porte | Action secondaire de ECR-011 |
 | Supprimer | corbeille | Danger ; menu et feuille de compte |
 | Heure de Paris **(v0.2)** | horloge | Dans la puce `ParisTimeNote` (§4.21) |
@@ -726,7 +726,7 @@ Ces décisions sont au statut « Proposé », et le système du smartphone (Andr
 | DAT-UX-13 | Session Google expirée sur PC (DAT R3, F14) | Sur la PWA, le jeton expire au bout d'une heure ; la reprise de la synchronisation peut demander un clic. | — | État « Session à renouveler » de l'indicateur (§6.5), un clic, sans bandeau. À valider avec le commanditaire si la fréquence s'avère gênante. **(v0.2) Maquetté : ECR-011 H et I ; US-031 CA-5.** |
 | DAT-UX-14 | Report automatique (RG-032, DAT F5) | Sans appareil actif à minuit, le report est appliqué à la première ouverture du jour. | Mention « Reportée d'hier » sur la tâche (ECR-001). | Inchangé ; la mention couvre ce cas sans message supplémentaire. |
 | DAT-UX-16 **(v0.2)** | Verrou entre onglets (US-031, DAT §4.1) | Un seul onglet synchronise ; les autres doivent rester utilisables et cohérents. | — | Mention dans ECR-011 seulement, aucune interruption ; reprise sans message si l'onglet qui synchronise se ferme. À vérifier en E14 avec deux onglets hors ligne. |
-| DAT-UX-17 **(v0.2)** | Nom du dossier Drive et de l'application (CA-3 de US-022) | Le dossier est visible par l'utilisateur ; l'application porte le même nom sur l'écran de consentement Google. | — | Dossier **« Objectifs et Tâches »** (nom du DAT confirmé par Steeve) ; nom d'application provisoire identique, en attente de Q-ERG-15. |
+| DAT-UX-17 **(v0.2)** | Nom du dossier Drive et de l'application (CA-3 de US-022) | Le dossier est visible par l'utilisateur ; l'application porte le même nom sur l'écran de consentement Google. | — | Dossier **« Done Juan »** (nom du DAT confirmé par Steeve) ; nom d'application identique (Q-ERG-15 tranchée, DEC-017). |
 | DAT-UX-18 **(v0.2)** | Mention « Heure de Paris » (A-F6) | Affichage seulement ; l'appareil connaît son fuseau. | — | Forme définie au §4.21 ; aucune dépendance d'architecture. |
 | DAT-UX-15 | Vérification des notifications Google (DAT R10) | Les rappels ne servent à rien si les notifications de Google Agenda sont désactivées sur le smartphone. | — | Étape guidée à la connexion de l'agenda (lot « Rappels ») : « Vérifiez que les notifications de Google Agenda sont activées », avec un rappel de test. |
 
@@ -761,10 +761,10 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | Q-ERG-12 | Navigation, ECR-002 | Au lot 1, il n'existe ni planification, ni créneau, ni rappel : « Aujourd'hui » et « Semaine » seraient vides. L'application peut-elle s'ouvrir sur **Tâches** (triée par délai), avec seulement deux entrées **Tâches** et **Objectifs**, les autres vues arrivant avec leurs lots ? (Le principe P3 « Aujourd'hui d'abord » s'applique dès que cette vue a du contenu.) | Oui : deux onglets au lot 1 ; 4 onglets ensuite. Évite deux onglets vides (P2). |
 | Q-ERG-13 | ECR-007 | US-025 CA-1 (proposition de Pepper) demande une confirmation avant d'abandonner une tâche. L'abandon étant réversible (« Reprendre »), souhaitez-vous la confirmation **toujours**, ou **seulement quand la tâche a des sous-tâches** (sinon : action immédiate avec toast « Annuler ») ? | Confirmation seulement avec des sous-tâches (un geste de moins pour le cas courant, la cascade reste protégée). La maquette applique l'US (confirmation toujours). |
 | Q-ERG-14 | ECR-011 | Les « modifications non retenues » (valeurs écartées, suppressions, déplacements annulés) restent listées combien de temps ? | Jusqu'à ce que l'utilisateur les ferme (« Compris »), sans limite de durée ; le point accent de l'indicateur ne s'éteint qu'à ce moment. |
-| Q-ERG-15 | ECR-010 | Quel **nom** donner à l'application ? Il apparaît à l'écran de connexion, sur l'écran de consentement de Google (test technique R1/R2, étape P3), dans le Drive (nom du dossier) et dans les magasins d'applications. | Provisoire : « Objectifs et Tâches », identique au dossier du Drive. À remplacer par le nom choisi avant le test technique. |
+| Q-ERG-15 | ECR-010 | Quel **nom** donner à l'application ? Il apparaît à l'écran de connexion, sur l'écran de consentement de Google (test technique R1/R2, étape P3), dans le Drive (nom du dossier) et dans les magasins d'applications. | Tranché le 2026-10-21 (DEC-017) : « Done Juan », identique au dossier du Drive. |
 
 ### 12.1 bis Décisions de conception prises par Steeve en v0.2 (pour information, sans question)
-- **Dossier Drive** : « Objectifs et Tâches » (CA-3 de US-022 : « son nom est fixé en E4 »).
+- **Dossier Drive** : « Done Juan » (CA-3 de US-022 : « son nom est fixé en E4 »).
 - **Mention « Heure de Paris »** : forme au §4.21 (A-F6).
 - **Un seul endroit** pour la synchronisation et le compte (ECR-011), ouvert par l'avatar ou l'indicateur.
 - **Estimation d'une tâche** : icône horloge au lot 1 (le sablier est réservé au reste à faire).
@@ -837,3 +837,4 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Steeve | Création : principes, tokens, composants, interactions, états, alertes, accessibilité, responsive, points en attente du DAT (confrontés au DAT v0.1 brouillon), questions ergonomiques, inventaire des écrans. |
 | 0.2 | 2026-10-21 | Steeve | E4 de LOT-001. Réponses Q-ERG-02 à 11 intégrées (§12.1). Navigation du lot 1 (§2.1). Principe P11. Composants §4.21 à §4.28. Cas de ConfirmDialog (§4.12). États et messages ajoutés (§6). Créneau déplacé, ordre d'Aujourd'hui, fun fact, bilan (§7.5 à §7.8). Accessibilité et responsive du lot (§9, §10). Statuts DAT-UX mis à jour (§11). Réserves Q-DEM001 levées (§12.2). Nouvelles questions Q-ERG-12 à 15. Maquettes ECR-007, 008, 010, 011 créées ; ECR-001, 002, 003 mises à jour. |
+| 0.2.1 | 2026-10-21 | Steeve | Nom « Done Juan » (DEC-017) : application et dossier Drive (V-13), validation E6 de LOT-001 (DEC-018). |
