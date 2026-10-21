@@ -75,7 +75,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   Scénario: S04 — Sans réseau, le PC indique qu'il est hors ligne et combien de modifications attendent, comme le smartphone
     Étant donné que le PC est sans réseau
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
-    Alors sur le PC, l\'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 1 modification(s) en attente
     Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
 
   # ---------------------------------------------------------------- Retour du réseau (CA-4) et session expirée (CA-5)
@@ -92,7 +92,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
     Et sur le PC, l'objectif "Courir un semi-marathon" existe sans délai
     Et sur le PC, la tâche "Chapitre 1 : contexte" ne porte plus la mention "MEN-ATTENTE"
-    Et sur le PC, l\'indicateur de synchronisation n\'est plus "SYN-HORS-LIGNE"
+    Et sur le PC, l'indicateur de synchronisation n'est plus "SYN-HORS-LIGNE"
 
   @US-031 @RG-017 @RG-021 @LOT-001
   Scénario: S06 — Session Google du navigateur expirée : le travail continue, puis tout est mis à jour après le geste de reconnexion
@@ -102,7 +102,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et sur le smartphone, l'utilisateur enregistre ses modifications dans le Drive
     Et la session Google du navigateur du PC expire
     Et le réseau revient sur le PC
-    Alors sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Et le Drive du compte "A" ne contient pas encore la tâche "Chapitre 1 : contexte"
     Quand sur le PC, l'utilisateur termine la tâche "Chapitre 1 : contexte"
     Alors sur le PC, l'opération est acceptée
@@ -117,7 +117,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et que la session Google du navigateur du PC a expiré
     Quand sur le PC, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
     Alors sur le PC, l'opération est acceptée
-    Et sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
+    Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
     Alors sur le smartphone, la tâche "Chapitre 1" existe avec le délai 2026-12-05
@@ -197,7 +197,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Étant donné que l'accès au compte Google "A" a été retiré sur le PC
     Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Alors sur le PC, l'opération est acceptée
-    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand sur le PC, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
@@ -250,29 +250,93 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et l'envoi au Drive est interrompu 3 fois avant d'aboutir
     Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
 
-  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-10, RG-057)
+  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-10, RG-057 ; Q-ERG-16 b, Q-ERG-18, DEC-025)
+  # Les 24 h courent depuis la plus ancienne modification en attente ; le bandeau est BAN-RAPPEL-24H.
 
   @US-031 @RG-057 @RG-021 @LOT-001
-  Scénario: S19 — Hors ligne depuis plus de 24 h avec des modifications en attente, un bandeau de rappel s'affiche sur le PC sans rien bloquer, puis disparaît à l'enregistrement
+  Scénario: S19 — Hors ligne avec une modification en attente depuis plus de 24 h, le bandeau "BAN-RAPPEL-24H" s'affiche sur le PC sans rien bloquer
     Étant donné que le PC est sans réseau
     Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
-    Alors sur le PC, un bandeau de rappel signale que des modifications ne sont pas encore enregistrées dans le Drive
-    Et sur le PC, le bandeau de rappel est non bloquant
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" est non bloquant
     Quand sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Alors sur le PC, l'opération est acceptée
-    Quand le réseau revient sur le PC
-    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
-    Et sur le PC, aucun bandeau de rappel n'est affiché
 
   @US-031 @RG-057 @LOT-001
-  Plan du scénario: S20 — Pas de bandeau de rappel sur le PC avant 24 h hors ligne, ni sans modification en attente
+  Scénario: S19b — Les 24 h courent depuis la plus ancienne modification en attente : une modification plus récente ne les remet pas à zéro
+    Étant donné que le PC est sans réseau
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Et que sur le PC, l'utilisateur a créé un objectif "Courir un semi-marathon" sans délai
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 2 modifications en attente
+
+  @US-031 @RG-057 @LOT-001
+  Plan du scénario: S20 — Pas de bandeau "BAN-RAPPEL-24H" tant que la plus ancienne modification en attente a 24 h ou moins, ni sans modification en attente
     Étant donné que le PC est sans réseau
     Et que <situation>
     Quand nous sommes le <moment> heure de Europe/Paris
-    Alors sur le PC, aucun bandeau de rappel n'est affiché
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
 
     Exemples:
-      | situation                                                                                | moment              |
-      | sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"      | 2026-10-22 à 09:59  |
-      | aucune modification n'est en attente sur le PC                                           | 2026-10-22 à 10:01  |
+      | situation                                                                                    | moment              |
+      | sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"         | 2026-10-22 à 09:59  |
+      | sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"         | 2026-10-22 à 10:00  |
+      | aucune modification n'est en attente sur le PC                                              | 2026-10-22 à 10:01  |
+
+  @US-031 @RG-057 @LOT-001
+  Scénario: S20b — Hors ligne depuis plus de 24 h mais avec une modification faite il y a 1 minute : pas de bandeau tant que la plus ancienne modification en attente a 24 h ou moins
+    Étant donné que le PC est sans réseau
+    Et que nous sommes le 2026-10-22 à 11:00 heure de Europe/Paris
+    Quand sur le PC, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 11:01 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand nous sommes le 2026-10-23 à 11:01 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+
+  @US-031 @RG-057 @RG-021 @LOT-001
+  Scénario: S21 — Le bandeau "BAN-RAPPEL-24H" disparaît quand les modifications sont enregistrées dans le Drive
+    Étant donné que le PC est sans réseau
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Et que sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand le réseau revient sur le PC
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+
+  @US-031 @RG-057 @LOT-001
+  Scénario: S21b — Le bandeau "BAN-RAPPEL-24H" fermé réapparaît à la prochaine ouverture de l'application tant que des modifications sont en attente
+    Étant donné que le PC est sans réseau
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Et que sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand sur le PC, l'utilisateur ferme le bandeau "BAN-RAPPEL-24H"
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand l'utilisateur ferme l'onglet de l'application
+    Et l'utilisateur ouvre l'application sur le PC depuis son adresse web
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand le réseau revient sur le PC
+    Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+
+  @US-031 @RG-057 @RG-035 @LOT-001
+  Scénario: S22 — Accès Google perdu avec des modifications en attente depuis plus de 24 h : un seul bandeau "BAN-ACCES-GOOGLE", complété du nombre de modifications
+    Étant donné que l'accès au compte Google "A" a été retiré sur le PC
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" variante 24H mentionne 1 modification en attente
+    Et sur le PC, un seul bandeau est affiché
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand sur le PC, l'utilisateur se reconnecte avec le compte "A"
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le PC, aucun bandeau n'est affiché
+
+  @US-031 @RG-057 @RG-035 @LOT-001
+  Scénario: S22b — Accès Google perdu depuis 24 h ou moins : le bandeau "BAN-ACCES-GOOGLE" n'est pas complété du nombre de modifications
+    Étant donné que l'accès au compte Google "A" a été retiré sur le PC
+    Et que sur le PC, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:00 heure de Europe/Paris
+    Alors sur le PC, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Et sur le PC, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
+    Et sur le PC, un seul bandeau est affiché

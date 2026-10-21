@@ -1,8 +1,8 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.7 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
+> **Version 0.8 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
-> **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-011 sont au statut **Proposé** et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique R1, R2, R11, qui peut modifier ADR-004 (jetons du PC) et ADR-003 (format Drive) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
+> **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-012 sont au statut **Proposé** et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique R1, R2, R11, qui peut modifier ADR-004 (jetons du PC) et ADR-003 (format Drive) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
 
 ## Historique
 
@@ -15,6 +15,7 @@
 | 0.5 | 2026-10-21 | Starck | E7 de LOT-001 ; DEC-018 (V-01 à V-23) : RG-044 b et extension aux fichiers modifiés à la main, RG-047 à RG-050, RG-054 à RG-056 établies ; nouvelles RG-057 et RG-058 ; V-13 (dossier « Done Juan », DEC-017) | Dossier du Drive et nom du système : « Done Juan » (remplace « Objectifs et Tâches »). Retrait des mentions « proposée » des règles établies. §4.2 : règle de compatibilité des versions (RG-058) précisée, consultation seule sans écriture Drive ni effacement local, contrôle de `generation` effectué seulement après compatibilité de schéma, empreinte du manifeste. §4.1.5 bis : rappel après 24 h hors ligne (RG-057), calcul local. Aucun nouvel ADR ; ADR-003 inchangé dans sa décision. |
 | 0.6 | 2026-10-21 | Starck | E7 de LOT-001, tour 1 : ANT-8, ANT-12, BEN-5c, PEP-9, ANT-4, ANT-11, PEP-11 | **Modèles de vue** : nouvelle couche `presentation/modeles-de-vue` (§2.4), requêtes de présentation pures testables sans React (ANT-8). **« Retirer l'accès »** : pas de bouton dans l'application au lot 1, la révocation passe par la gestion du compte Google (§4.1.5, BEN-5c). Statut du DAT et des ADR avant E9 explicité (ANT-12). Objet-valeur `Duree` et estimation calculée à 0 (§2.4, §6.2, PEP-9). Banc de test : en-tête `Date` simulé et `appareilId` fixe (§3.3, ANT-4, ANT-11). Bandeau RG-057 : calcul depuis la plus ancienne modification en attente, en hypothèse en attente de Q-ERG-16 (alternative a : dernier contact Drive) ; Q-ERG-17 ouverte (§4.1.5 bis). Revérification de l'alignement sur RG-043 (PEP-11) : aucun écart. Aucun nouvel ADR ; décisions des ADR inchangées. |
 | 0.7 | 2026-10-21 | Starck | E7 de LOT-001, tour 2 : points ANT-17 à ANT-20 de `conventions.md` v0.2 §17.2 | **ANT-17** : `fuseauAppareil()` ajouté au port `Horloge`, réservé à la mention « heure de Paris » (RG-054) (§2.4). **ANT-18** : ports transverses complémentaires et placement confirmés (§2.4). **ANT-19** : un appareil conserve les champs inconnus de même `schemaVersion` à la réécriture de son fichier (§4.2). **ANT-20** : scénarios `@ihm` exécutés par cucumber-js piloté par Playwright, profil `ihm` ; ADR-009 précisé (§2.4, §3.3). RG-057 reste une hypothèse en attente de Q-ERG-16 ; Q-ERG-17 ouverte. |
+| 0.8 | 2026-10-21 | Starck | **DEC-019 à DEC-024** (réponses à `etude-sans-cloud-ou-gratuit.md`) ; **DEC-025** (RG-057, Q-ERG-17, Q-ERG-18, Q-REF-1, Q-REF-2, Q-LOT-1) | **Distribution Android (DEC-021, remplace DEC-005)** : installation directe de l'APK, sans Google Play ; nouvel **ADR-012** (signature, conservation de la clé, `versionCode`, publication sur l'hébergement statique, installation par fichier ou par ADB, mise à jour par écrasement, vérification des développeurs Android en 2027) ; C4 niveau 1 (§2.2), pile (§3.2), clients OAuth Android liés à la clé de publication (§4.1.2), conséquence sur RG-058 (§4.2), environnements, intégration continue et mises à jour (§7.4), nouveau §7.5, arbitrage A2 (§9), risques R8, R16, R17 (§10), DS-17. **Hébergement PC (DEC-006 maintenue, DEC-023)** : GitHub Pages si le dépôt est public, Cloudflare Pages tant qu'il est privé (§7.5) ; PO-7 tranché (GitHub). **DEC-025** : RG-057, calcul depuis la plus ancienne modification en attente, n'est plus une hypothèse ; un seul bandeau `BAN-ACCES-GOOGLE` complété de la mention en cas d'accès perdu (Q-ERG-17) ; bandeau fermé réaffiché à la prochaine ouverture (Q-ERG-18) (§4.1.5 bis). RG-048 : annulation **itérative** des déplacements, du plus ancien au plus récent, jusqu'à une hiérarchie valide ; terminaison et convergence démontrées (§4.2, Q-REF-1). Q-REF-2 : déjà conforme (§4.2). Q-LOT-1 : sans impact. ADR-001 : renvoi vers ADR-012. Aucune autre décision d'ADR modifiée. |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -92,8 +93,8 @@ flowchart TB
     GDR["Google Drive<br/>(espace personnel de l'utilisateur)"]
     GCA["Google Calendar<br/>(agenda principal)"]
     GCAPP["Application Google Agenda<br/>(notifications)"]
-    HOST["Hébergement statique<br/>(fichiers de la PWA)"]
-    STORE["Google Play (piste de test interne)<br/>ou App Store / TestFlight"]
+    HOST["Hébergement statique<br/>(fichiers de la PWA et de l'APK)"]
+    STORE["Page de téléchargement de l'APK<br/>(sur l'hébergement statique, ADR-012)"]
 
     U -- "gère objectifs, tâches, temps, bilans" --> APP
     APP -- "authentification, autorisations" --> GID
@@ -102,7 +103,7 @@ flowchart TB
     GCA -- "notifications 8 h / 21 h et créneaux" --> GCAPP
     GCAPP -- "notifie" --> U
     HOST -- "distribue la PWA (PC)" --> APP
-    STORE -- "distribue l'application mobile" --> APP
+    STORE -- "APK signé, installé par l'utilisateur<br/>(fichier ou ADB)" --> APP
 ```
 
 ### 2.3 C4 niveau 2 : conteneurs
@@ -214,7 +215,8 @@ Section de référence pour Anthony (`conventions.md`). Les versions sont celles
 | Tests de bout en bout | **Playwright** (et `@axe-core/playwright` pour l'accessibilité) | Parcours UI sur la PWA, mode hors ligne simulable | Cypress |
 | Simulation HTTP | **MSW** | Rejoue les réponses Google dans les tests d'adaptateurs | nock |
 | Qualité | ESLint (typescript-eslint, configuration *strict*), Prettier, `tsc --noEmit`, Semgrep (sécurité), audit des dépendances | Lint et analyse statique « au vert » (E12) | — |
-| Intégration continue | **GitHub Actions** (si le dépôt est sur GitHub ; à confirmer) | Gratuit pour un petit projet, construction Android incluse | GitLab CI |
+| Intégration continue | **GitHub Actions** (dépôt GitHub, PO-7 tranché ; gratuit sans limite de minutes une fois le dépôt public, DEC-023) | Construction Android incluse ; signature de l'APK par secrets chiffrés (ADR-012) | GitHub Actions sur dépôt privé (quota gratuit de minutes) |
+| Distribution Android | **APK signé installé directement** (DEC-021, ADR-012), `apksigner` pour la vérification | Gratuit, sans magasin | Google Play (DEC-005, remplacée) ; F-Droid (inadapté) |
 
 ### 3.3 Outillage de tests : organisation (ADR-009)
 - **Unitaires (Vitest)** : `domaine`, `synchro` et cas d'usage, avec des adaptateurs en mémoire. Couverture minimale proposée : 90 % des lignes pour `domaine` et `synchro`, 80 % pour l'ensemble. Anthony fixe les seuils définitifs.
@@ -263,7 +265,8 @@ Scopes **exclus** :
 Principes :
 - l'application n'utilise **aucun secret client** : tous ses clients OAuth sont publics ;
 - notre code ne manipule **aucun jeton de rafraîchissement** ;
-- les clients OAuth sont restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines JavaScript autorisées sur le web.
+- les clients OAuth sont restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines JavaScript autorisées sur le web ;
+- **sur Android, l'empreinte déclarée est celle de la clé de publication du projet** (ADR-012), et non celle d'une clé gérée par Google Play. L'authentification par Google Play services fonctionne à l'identique pour une application installée directement : elle dépend du composant système, pas du magasin.
 
 **Limite connue sur PC** : sans serveur, une PWA ne peut pas renouveler son jeton en arrière-plan. Les données restent consultables et modifiables localement ; la synchronisation reprend au premier geste de l'utilisateur. Si ce comportement gêne à l'usage, deux évolutions sont possibles :
 - (a) une application de bureau Tauri, avec un client OAuth « bureau » (PKCE) et un jeton conservé dans le trousseau du système ;
@@ -300,10 +303,12 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
   - suppression de l'espace de stockage du compte sur l'appareil.
 - **« Retirer l'accès » (BEN-5c)** : **aucune US du lot 1 ne la prévoit, donc il n'y a pas de bouton dans l'application.** L'utilisateur qui veut retirer l'accès passe par la gestion de son compte Google (« Sécurité > Applications tierces »). L'application constate ensuite la révocation à la prochaine requête (`invalid_grant` ou `401`) et applique le parcours « accès Google perdu » ci-dessus, sans rien effacer. L'appel au point de révocation Google par l'application n'est pas dans le périmètre du lot 1 ; s'il était souhaité plus tard, il faudrait une US.
 
-#### 4.1.5 bis Rappel après 24 h hors ligne (RG-057, US-018 et US-031)
-- Calcul **local** et identique sur les deux plateformes : bandeau affiché si la **plus ancienne modification en attente** date de plus de 24 h. **Hypothèse en attente de la réponse du commanditaire à Q-ERG-16** (option b, simple recommandation de Jarvis : c'est l'âge des données présentes seulement sur l'appareil qui compte). Alternative : a) depuis le dernier contact Drive réussi (`dernierContactDrive`, instant local mis à jour à chaque lecture ou dépôt réussi). Q-ERG-17 (un seul bandeau en cas d'accès perdu) reste également ouverte. L'instant de la plus ancienne modification en attente est déduit du journal local des modifications non déposées ; il est remis à zéro par un dépôt confirmé. Il n'est pas synchronisé et ne change pas le format Drive. Le calcul est porté par un modèle de vue (§2.4).
-- Évaluation à l'ouverture, au retour au premier plan et chaque minute application ouverte. Pas de notification système ni de tâche de fond (DEC-007). Le bandeau ne bloque rien et ne limite pas l'usage hors ligne (RG-021).
-- Il disparaît après un dépôt confirmé par Drive. Il dépend de l'horloge de l'appareil, sans conséquence grave si elle est déréglée (information non bloquante).
+#### 4.1.5 bis Rappel après 24 h hors ligne (RG-057, US-018 et US-031 ; DEC-025)
+- **Seuil (DEC-025, Q-ERG-16)** : calcul **local** et identique sur les deux plateformes. Le bandeau est affiché si la **plus ancienne modification en attente** date de plus de 24 h : c'est l'âge des données présentes seulement sur l'appareil qui compte. L'instant de cette modification est déduit du journal local des modifications non déposées ; il est remis à zéro par un dépôt confirmé. Il n'est pas synchronisé et ne change pas le format Drive. Le calcul est porté par un modèle de vue (§2.4).
+- **Accès Google perdu (DEC-025, Q-ERG-17)** : **un seul bandeau**, `BAN-ACCES-GOOGLE`, complété de la mention des 24 h quand le seuil est dépassé. Le modèle de vue produit un seul code de bandeau, avec un indicateur « mention 24 h » ; il n'affiche jamais deux bandeaux pour la même cause.
+- **Bandeau fermé (DEC-025, Q-ERG-18)** : l'utilisateur peut fermer le bandeau ; il réapparaît à la **prochaine ouverture** de l'application si la condition est toujours remplie. L'état « fermé » est **local et en mémoire**, propre à la session : ni persisté, ni synchronisé. Interprétation technique retenue, à confirmer par Pepper et Steeve sans arbitrage : « ouverture » signifie un lancement de l'application sur le smartphone, ou un nouveau chargement de la PWA sur le PC. Le simple retour au premier plan ne réaffiche pas le bandeau.
+- **Évaluation** : à l'ouverture, au retour au premier plan et chaque minute tant que l'application est ouverte. Pas de notification système ni de tâche de fond (DEC-007). Le bandeau ne bloque rien et ne limite pas l'usage hors ligne (RG-021).
+- **Disparition** : après un dépôt confirmé par Drive. Le calcul dépend de l'horloge de l'appareil, sans conséquence grave si elle est déréglée (information non bloquante).
 
 #### 4.1.6 PC hors ligne (DEC-013, US-031)
 - **Démarrage sans réseau** : le service worker (Workbox) met en cache l'ensemble de l'application, en mode « précache ». L'application s'ouvre sans réseau une fois installée ou visitée.
@@ -345,7 +350,7 @@ Done Juan/
   - deux déplacements croisés qui créent un cycle, ou un deuxième niveau de sous-objectifs (Q-24).
 
   Après chaque fusion, une **passe de réparation déterministe** du domaine s'exécute :
-  - les cycles et les profondeurs illégales sont corrigés en annulant le déplacement le plus ancien, qui est consigné comme valeur écartée ;
+  - les cycles et les profondeurs illégales sont corrigés en annulant les déplacements en cause **un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide** (RG-048, DEC-025). Chaque déplacement annulé est consigné comme valeur écartée ;
   - les incohérences d'état ne sont pas corrigées automatiquement : elles sont **signalées** à l'utilisateur, par exemple « tâche terminée avec une sous-tâche à faire ».
 
   Les règles exactes de réparation sont fixées par RG-047 à RG-049 (établies, V-03 à V-05, DEC-018).
@@ -356,19 +361,27 @@ Done Juan/
     - une sous-tâche dont la tâche parente est supprimée est considérée comme supprimée et signalée.
 
     La convergence est garantie sans écriture de réparation ;
-  - **hiérarchies** (RG-048) : la réparation est écrite. Le déplacement le plus ancien (HLC) est annulé ; la valeur précédente est lue dans le journal ; une création, reconnue à ce que le HLC de `parentId` est égal au HLC de création, n'est jamais annulée. Les deux appareils écrivent la même réparation, et le signalement a un identifiant déterministe ;
+  - **hiérarchies** (RG-048 ; Q-REF-1 tranchée par DEC-025) : la réparation est écrite et **itérative**.
+    - **Candidats** : les éléments dont la valeur gagnante de `parentId` provient d'un **déplacement**, et qui participent à une violation (cycle ou deuxième niveau). Une valeur issue d'une **création** n'est jamais candidate : une création n'est jamais annulée.
+    - **Boucle** : tant que la hiérarchie est invalide, l'application annule le candidat dont le déplacement est le **plus ancien** (HLC du déplacement, puis `appareilId`, puis identifiant de l'élément), puis réévalue la hiérarchie. Annuler, c'est rétablir la valeur **précédente** de `parentId` lue dans le journal métier (RG-050 ; l'entrée d'un changement de parent porte le HLC de l'écriture et son origine), avec son **origine** (création ou déplacement) et le **HLC de cette origine**. L'écriture de réparation porte ces métadonnées d'origine : une valeur rétablie qui provient elle-même d'un déplacement reste candidate, avec son propre HLC.
+    - **Terminaison** : chaque annulation fait reculer la valeur d'un élément d'au moins un cran dans son propre historique, qui est fini. Au pire, toutes les valeurs reviennent à leur création. Or un ensemble de valeurs de création est toujours valide : chaque création a été validée localement, et un parent ne peut devenir sous-élément que par un déplacement, qui est candidat. La boucle s'arrête donc toujours sur une hiérarchie valide.
+    - **Convergence** : le calcul ne dépend que de l'état fusionné et du journal, fusionné par union. Les deux appareils annulent les mêmes déplacements, dans le même ordre, et écrivent les mêmes valeurs ; l'écart d'horodatage entre leurs écritures de réparation est sans effet, puisque les valeurs sont identiques.
+    - **Signalement** : chaque déplacement annulé produit une entrée « Modifications non retenues » (RG-056), avec un identifiant déterministe (élément, HLC du déplacement annulé). Une chaîne de N déplacements annulés produit N entrées, signalées une seule fois même si les deux appareils les constatent (RG-056 c).
+    - Le mécanisme précédent (« le plus ancien est annulé ») en est le cas particulier N = 1 : la conception est conservée, seule la boucle est explicitée. Un cas de test à prévoir pour Anthony : une chaîne de trois déplacements croisés qui exige deux annulations.
   - **incohérences d'état** (RG-049) : elles sont **dérivées**, et signalées tant qu'elles existent ;
   - **état d'une tâche** : l'état et ses dates (`etat`, `dateFin`, `dateAbandon`, `abandonParCascade`) forment **un seul registre**, fusionné comme une seule information. Une tâche abandonnée ne peut ainsi jamais porter de date de fin ;
   - **objectifs d'une sous-tâche** : ceux de la tâche parente, dérivés à la lecture.
 - **Taille** : moins de 5 Mo non compressé à 5 ans d'usage (ENF-T-05), soit environ 0,5 à 1 Mo compressé. Le fichier est réécrit en entier à chaque dépôt, ce qui est acceptable. Le journal pourra être partitionné par année si nécessaire.
 - **Versions de schéma** : chaque fichier porte un `schemaVersion`.
   - Un appareil lit les schémas antérieurs et les migre (Zod).
-  - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **consultation seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile.
+  - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **consultation seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile, dont la mise à jour est manuelle (ADR-012).
   - **RG-058 (V-06 option 2)** : le `schemaVersion` est **le seul critère** de blocage. Deux versions de l'application qui partagent le même schéma coexistent, saisie comprise. Conséquences d'implémentation :
     - une évolution compatible du modèle (champ optionnel ignoré par les anciennes versions) n'incrémente pas `schemaVersion` ; une évolution incompatible l'incrémente et est annoncée au commanditaire, car elle bloque la saisie des appareils non mis à jour ;
     - en consultation seule, l'appareil n'écrit rien dans le Drive, ne fusionne pas les fichiers plus récents et n'efface rien en local. Ses modifications en attente restent dans la base locale (ENF-06) et sont déposées après la mise à jour ; l'interface masque les actions de saisie ;
     - le contrôle de `generation` (RG-044 b) n'est effectué qu'une fois la compatibilité de schéma établie : un appareil en consultation seule n'efface jamais ses données locales ;
-    - le message indique la version de schéma attendue.
+    - le message indique la version de schéma attendue ;
+    - **Q-REF-2 (DEC-025)** : « aucune écriture dans le Drive en consultation seule » est confirmé ; c'est le comportement décrit ci-dessus, sans changement ;
+    - **distribution directe de l'APK (DEC-021, ADR-012)** : le smartphone est mis à jour à la main et peut donc rester plus longtemps en retard sur la PWA. La règle RG-058 ne change pas. Deux mesures en limitent l'effet : une évolution incompatible du schéma est publiée **en même temps** pour la PWA et l'APK, et annoncée dans les notes de version ; sur Android, l'action « Mettre à jour » ouvre la page de téléchargement de l'APK (§7.5).
 - **Empreinte** : chaque fichier porte une empreinte SHA-256 de son contenu.
   - Un fichier dont l'empreinte ne correspond pas a été modifié hors de l'application. Il est traité comme **illisible** (RG-044) et n'est jamais fusionné.
   - Ce mécanisme couvre aussi les modifications manuelles qui laissent le fichier lisible (extension de RG-044, établie : V-02). Le manifeste porte lui aussi une empreinte de son contenu, de sorte qu'un `generation` ou un `schemaVersion` modifié à la main est détecté.
@@ -618,16 +631,36 @@ erDiagram
 | Environnement | Projet Google Cloud | Clients OAuth | Données | Distribution |
 |---|---|---|---|---|
 | Développement | `objectifs-taches-dev` | Web (localhost) et Android en mode debug | Compte Google de test ; dossier Drive `… (dev)` | Local ; simulateurs pour les tests automatisés |
-| Recette | `objectifs-taches-dev` (partagé) | Web (URL de prévisualisation) et Android `…recette` | Compte Google de recette dédié | PWA sur une URL de recette ; APK de recette par la piste de test interne |
-| Production | `objectifs-taches` (distinct) | Web (domaine de production) et Android | Compte du commanditaire | PWA sur l'hébergement statique ; Google Play, piste de test interne (A2) ; iOS selon A1 |
+| Recette | `objectifs-taches-dev` (partagé) | Web (URL de prévisualisation) et Android `…recette` | Compte Google de recette dédié | PWA sur une URL de recette ; **APK de recette** (`<paquet>.recette`, clé de recette) installé directement par le commanditaire, qui coexiste avec la production (ADR-012) |
+| Production | `objectifs-taches` (distinct) | Web (origine de l'hébergement statique) et Android (empreinte de la clé de publication) | Compte du commanditaire | PWA sur l'hébergement statique ; **APK installé directement** (DEC-021, ADR-012), page de téléchargement sur le même hébergement ; pas d'iPhone en v1 (DEC-001) |
 
 **Intégration continue (GitHub Actions)** :
 - à chaque *pull request* : lint, typage, tests unitaires, Cucumber, construction de la PWA et de l'APK ;
-- sur une étiquette de version : déploiement de la PWA et publication de l'AAB signé sur la piste interne.
+- sur une étiquette de version : déploiement de la PWA ; construction, signature et vérification (`apksigner verify`) de l'APK ; contrôle que le `versionCode` augmente ; publication de l'APK, de `android/derniere-version.json` et de la page de téléchargement sur l'hébergement statique (ADR-012). Les secrets de signature ne sont accessibles qu'à ce flux, déclenché sur une étiquette de la branche principale.
 
 Les versions suivent la numérotation sémantique. La version de l'application est distincte de la version du schéma de données.
 
-**Mises à jour** : la PWA se met à jour par son service worker, avec une invite « nouvelle version », sans rechargement forcé pendant une saisie. Sur mobile, la mise à jour passe par le store. La règle de compatibilité des schémas est décrite au §4.2.
+**Mises à jour** : la PWA se met à jour par son service worker, avec une invite « nouvelle version », sans rechargement forcé pendant une saisie. Sur Android, la mise à jour est **faite par l'utilisateur** : il installe le nouvel APK par-dessus l'ancien, ce qui conserve les données locales et la connexion (ADR-012). La règle de compatibilité des schémas, et sa conséquence pour une mise à jour manuelle, sont décrites au §4.2.
+
+### 7.5 Distribution Android et hébergement de la version PC (DEC-021, DEC-006, DEC-023)
+
+**Distribution Android (ADR-012)**, en résumé :
+| Sujet | Disposition |
+|---|---|
+| Signature | Une clé de publication par application (production, recette). Elle n'est jamais dans le dépôt (`.gitignore` à poser avant sa création). Elle est conservée dans les secrets chiffrés de GitHub Actions, sous réserve de l'accord du commanditaire (QC-8), avec une **sauvegarde hors ligne chez le commanditaire**. |
+| Numérotation | `versionCode` strictement croissant, dérivé de la version sémantique, contrôlé par l'intégration continue |
+| Publication | `android/` sur l'hébergement statique : APK, empreinte SHA-256, `derniere-version.json`, procédure d'installation |
+| Installation | Par fichier (navigateur du téléphone, « installer des applications inconnues »), ou par câble (`adb install -r`) |
+| Mise à jour | Installation par-dessus, avec le même paquet et la même clé : données conservées. Jamais de désinstallation, qui effacerait la base locale. |
+| Invitation à mettre à jour (RG-058) | L'action « Mettre à jour » ouvre la page de téléchargement. Aucun téléchargement ni installation par l'application elle-même au lot 1. |
+| Vérification des développeurs Android | Appliquée en France en 2027 (date non publiée). Recommandation : compte gratuit « distribution limitée » (20 appareils, sans pièce d'identité), ou ADB, exempté. Choix à faire par le commanditaire avant l'échéance (QC-9). |
+| Recette (E16) | Le commanditaire installe l'APK de recette avec le guide fourni ; la version se lit dans les réglages Android. |
+
+**Hébergement de la PWA et de l'APK** (DEC-006 maintenue) :
+- **dépôt public** (DEC-023, passage à faire par le commanditaire) : **GitHub Pages**, gratuit, sans compte supplémentaire, déployé par GitHub Actions ;
+- **tant que le dépôt est privé** : GitHub Pages est payant (GitHub Pro) ; utiliser **Cloudflare Pages**, gratuit, avec un compte à créer par le commanditaire ;
+- le choix est **figé au moment du test technique R11** (prérequis P5), selon la visibilité du dépôt à cette date. Changer d'hébergeur ensuite change l'**origine** de la PWA : il faut alors déclarer la nouvelle origine dans le client OAuth web, et la base locale du PC (IndexedDB, liée à l'origine) repart du Drive, ce qui fait perdre les seules modifications non déposées. Il est donc préférable de choisir avant la mise en production ;
+- **avant le passage en public** : vérifier qu'aucun secret ne figure dans l'historique Git. Un contrôle par noms de fichiers au 2026-10-21 n'en a trouvé aucun. Les identifiants de clients OAuth ne sont pas des secrets.
 
 ---
 
@@ -671,8 +704,8 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | Id | Sujet | Options | Recommandation de Starck |
 |---|---|---|---|
 | **A1** | Système du smartphone | Android ; iPhone | **À préciser par le commanditaire.** Android : aucun coût récurrent. iPhone : Apple Developer Program (99 USD par an), un Mac ou un service de construction macOS dans le cloud, et un arrière-plan beaucoup plus limité. L'architecture couvre les deux ; seul le coût diffère. |
-| **A2** | Distribution de l'application Android | (a) Google Play, piste de test interne (25 USD, une seule fois ; mises à jour automatiques ; pas d'examen public) ; (b) installation directe de l'APK (gratuite, mais soumise à la vérification des développeurs Android, en déploiement depuis 2026, avec un compte « distribution limitée ») | **(a) Piste de test interne** : la plus simple et la plus durable |
-| **A3** | Hébergement de la PWA (PC) | GitHub Pages, Cloudflare Pages ou Firebase Hosting (offres gratuites) ; domaine personnalisé facultatif (environ 10 à 15 € par an) | Hébergement statique gratuit, sans domaine en v1. Aucune donnée utilisateur n'y transite. |
+| **A2** | Distribution de l'application Android | (a) Google Play, piste de test interne (25 USD une fois) ; (b) installation directe de l'APK (gratuite) | **Tranché : (b), DEC-021 (2026-10-21), qui remplace DEC-005 (a).** Mise en œuvre : ADR-012, §7.5. |
+| **A3** | Hébergement de la PWA (PC) | GitHub Pages, Cloudflare Pages (offres gratuites) ; domaine personnalisé facultatif (environ 10 à 15 € par an) | **Tranché : hébergement statique gratuit, sans domaine (DEC-006).** Code public autorisé (DEC-023) : GitHub Pages si le dépôt est public, Cloudflare Pages tant qu'il est privé (§7.5). |
 | **A4** | Serveur applicatif | (a) Aucun serveur (*local-first*) ; (b) une petite fonction sans serveur (environ 0 à 5 € par mois) qui détient un jeton de rafraîchissement, pour la détection en temps réel des créneaux déplacés, le report à minuit et le renouvellement silencieux sur PC | **(a) Aucun serveur.** L'option b conserverait des jetons, donc des données personnelles, chez l'éditeur, ce qui contredit l'exclusion du CdC §4.3. Elle crée aussi un coût et une charge d'exploitation pour un gain faible (§5). |
 | **A5** | Statut OAuth et vérification Google (à partir des fonctions d'agenda) | (a) Production non vérifiée : écran d'avertissement au consentement ; (b) vérification Google : domaine, politique de confidentialité, vidéo, quelques jours à quelques semaines ; (c) mode « Test » : reconnexion tous les 7 jours | **(a)**. Option b seulement si l'écran d'avertissement est inacceptable. Si le compte du commanditaire est un compte Google Workspace : application « interne », sans vérification. |
 | **A6** | Emplacement des données dans Drive | (a) Dossier **visible** (`drive.file`) ; (b) dossier **caché** de l'application (`drive.appdata`) | **(a)** : l'utilisateur voit et possède ses fichiers, conformément à Q-3 b. Le risque de modification accidentelle est couvert par la détection et la restauration (§4.2). |
@@ -693,7 +726,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | R5 | Versions d'application différentes entre la PWA et le mobile (schéma) | Moyenne | Lecture impossible | `schemaVersion`, lecture seule et invitation à mettre à jour (§4.2) ; migrations testées |
 | R6 | L'utilisateur modifie ou supprime manuellement les fichiers Drive | Faible | Données incohérentes | Validation Zod, fichier ignoré, restauration depuis l'appareil |
 | R7 | L'utilisateur modifie une série de rappels directement dans Google Calendar (heure, suppression) | Moyenne | Rappels décalés ou absents | Détection par la synchronisation incrémentale ; alerte et proposition de recréer la série ; l'heure de l'application fait foi |
-| R8 | Évolution des règles Google : classification des scopes, vérification des développeurs Android | Moyenne | Délais ou coûts imprévus | Veille ; scopes minimaux ; arbitrages A2 et A5 |
+| R8 | Évolution des règles Google : classification des scopes, facturation des API au-delà d'un seuil quotidien (annoncée pour fin 2026), vérification des développeurs Android | Moyenne | Délais ou coûts imprévus | Veille ; scopes minimaux ; volumétrie très inférieure aux seuils ; arbitrage A5 ; R17 |
 | R9 | Taille du lot 1, alourdi par le socle transverse | Élevée | Retard du premier incrément | Voir `avis-dependances-lot1.md` : mise au point technique préalable et découpage |
 | R10 | Notifications Google Calendar désactivées ou non installées sur le smartphone | Moyenne | Rappels non perçus | Vérification guidée à la connexion de l'agenda ; notification de secours sur smartphone (Q-38 b) |
 | R11 | L'origine de la PWA, sans domaine propre (DEC-006), n'est pas acceptée par l'écran de consentement en production (domaine autorisé à vérifier), ou un écran d'avertissement s'affiche malgré des scopes non sensibles | Moyenne | Bloque US-022 CA-8 sur PC | Test technique R1/R2. Repli : domaine personnalisé (environ 10 à 15 € par an, arbitrage du commanditaire). |
@@ -701,6 +734,8 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | R13 | Maturité ou performances du module SQLite pour Capacitor | Faible | Retard d'US-018 | Adaptateur derrière `DepotLocal` ; repli sur l'IndexedDB de la WebView Android |
 | R14 | Erreur dans la fusion ou la réparation (perte ou divergence) | Moyenne | Bloquant (perte de données) | Tests de propriétés (fast-check), banc Cucumber à deux appareils, recette technique E14 ciblée |
 | R15 | Éviction ou effacement par le navigateur de l'IndexedDB du PC avant le dépôt de modifications | Faible | Perte des seules modifications non déposées | `storage.persist()`, dépôt 5 s après la modification, indicateur des modifications en attente, avertissement si le stockage n'est pas persistant (§4.1.6) |
+| R16 | Perte ou compromission de la clé de signature de l'APK | Faible | Plus de mise à jour possible ; réinstallation qui efface la base locale (modifications non déposées perdues) | Sauvegarde hors ligne chez le commanditaire ; secrets chiffrés ; procédure de changement de clé (ADR-012) ; dépôt de toutes les modifications avant toute désinstallation |
+| R17 | Vérification des développeurs Android appliquée en France (2027) : installation directe ralentie (parcours avancé, délai de 24 h) ou bloquée sans enregistrement | Certaine (date inconnue) | Mises à jour du smartphone gênées | Compte gratuit « distribution limitée » ou installation par ADB (ADR-012) ; décision QC-9 du commanditaire avant l'échéance ; veille |
 
 ### 10.2 Points ouverts
 
@@ -712,7 +747,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | PO-4 | ~~Effacement volontaire et changement de compte~~ : **tranché** (DEC-015, DEC-016). Garde-fou validé (V-09, RG-055). | Pepper | US-022 |
 | PO-5 | ~~Fuseau de référence~~ : **tranché par DEC-012** (Europe/Paris). Restent A-F3, A-F6 et la confirmation de P-T1. | Pepper, Steeve | Lots « Rappels » et « Suivi du temps » ; aucun impact sur le lot 1 |
 | PO-6 | Scope `calendar.events.owned` ou `calendar.events` | Vérification dans la console Google | ADR-005 (lot avec agenda) |
-| PO-7 | Hébergeur du dépôt et de l'intégration continue (GitHub ?) | Commanditaire ou Jarvis | Conventions d'Anthony |
+| PO-7 | ~~Hébergeur du dépôt et de l'intégration continue~~ : **tranché**, GitHub et GitHub Actions ; dépôt privé, passage en public autorisé (DEC-023) | Commanditaire | — |
 | PO-8 | Contenu des 100 fun facts : rédaction, sources, licence | Pepper et commanditaire | Lot DEM-002 |
 
 ---
@@ -739,7 +774,7 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 | ★ DS-14 Tests | **Vitest** (unitaires, couverture v8) ; **fast-check** (tests par propriétés : convergence de la fusion, durées, rotation) ; **@cucumber/cucumber** en mode `--strict`, avec `# language: fr`, *step definitions* en TypeScript chargées par `tsx`, et simulateurs en mémoire (banc multi-appareils) ; **MSW** (contrats des adaptateurs Google) ; **Playwright** avec axe (PWA, y compris le hors ligne). Sur smartphone, pas de bout en bout automatisé en v1 : recette manuelle guidée sur appareil réel. **Stryker** (mutation, indicateur). Seuils : ceux d'Anthony (§10). | §3.3, ADR-009 |
 | ★ DS-15 Arborescence | **Un seul paquet** (pas de monodépôt), géré par pnpm. `src/<contexte>/<couche>/`, `src/infrastructure-google/`, `src/composition/` ; `tests/` selon `conventions.md` §3.2 (tests unitaires **séparés**, en miroir de `src/`). `android/` (et `ios/`) générés par Capacitor à la racine ; `public/` contient les ressources statiques, dont `fun-facts.fr.json` (lot DEM-002). | §2.4 |
 | ★ DS-16 Qualité | Prettier ; ESLint (configuration *flat*, `typescript-eslint` `strict-type-checked`, `eslint-plugin-react-hooks`, `jsx-a11y`) ; `no-restricted-syntax` et `no-restricted-globals` pour interdire `Date.now`, `new Date()` sans argument, `Math.random` et `crypto.randomUUID` hors des adaptateurs ; `tsc --noEmit` ; **dependency-cruiser** pour les règles de couches et de contextes ; **Semgrep** (SAST) ; **gitleaks** (secrets) ; **osv-scanner** et `license-checker` (SCA et licences) ; Husky et lint-staged pour les hooks locaux. | §7.1 |
-| DS-17 Intégration continue, environnements, distribution | **GitHub Actions** (sous réserve de l'hébergement du dépôt, PO-7) ; environnements et distribution selon §7.4 et les arbitrages A2 et A3. | §7.4 |
+| DS-17 Intégration continue, environnements, distribution | **GitHub Actions** (PO-7 tranché). Environnements selon §7.4. Distribution Android par **APK installé directement** (DEC-021, ADR-012) : signature dans l'intégration continue sur étiquette, `versionCode` croissant, publication sur l'hébergement statique. Hébergement : GitHub Pages (dépôt public) ou Cloudflare Pages (dépôt privé), §7.5. | §7.4, §7.5, ADR-012 |
 | DS-18 Calendar | Marquage par `extendedProperties.private` ; identifiants déterministes ; réconciliation déclarative ; `posApp` dans l'événement contre les boucles ; lecture incrémentale par `syncToken` (pas de notifications push) ; attente exponentielle avec gigue ; les rappels et les créneaux sont écrits avec `timeZone: "Europe/Paris"` (DEC-012). | §4.4, ADR-006 |
 | ★ DS-19 Historisation | **Journal métier en ajout seul**, et non des instantanés. Chaque entrée porte l'instant UTC et le jour calculé dans Europe/Paris (DEC-012). Le journal est alimenté **dès le lot 1** par chaque cas d'usage (liste dans `avis-dependances-lot1.md`, S7). Les courbes démarrent à la première entrée du journal, sans reconstitution antérieure. | §6.1, §6.2 |
 | DS-20 Fun facts | Liste **embarquée** (JSON versionné). Rotation par **fonction pure** (graine, date d'origine, J, version de la liste) : aucun état de cycle à partager entre appareils. La graine est tirée une fois par `SourceAleatoire`, puis synchronisée. La permutation utilise un générateur pseudo-aléatoire initialisé par la graine, implémenté dans le domaine. | §6.3, ADR-008 |
@@ -777,3 +812,4 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 | [ADR-009](adr/ADR-009-outillage-de-tests.md) | Outillage de tests : Vitest, cucumber-js en français, Playwright, simulateurs Google | Proposé |
 | [ADR-010](adr/ADR-010-architecture-hexagonale-stockage-local.md) | Architecture hexagonale et stockage local (IndexedDB et SQLite) | Proposé |
 | [ADR-011](adr/ADR-011-horloges-et-fuseau-de-reference.md) | Horloges hybrides (HLC), instants en UTC et fuseau de référence fixe Europe/Paris (révisé après DEC-012) | Proposé |
+| [ADR-012](adr/ADR-012-distribution-android-apk-direct.md) | Distribution Android par installation directe de l'APK, sans Google Play (DEC-021) | Proposé |

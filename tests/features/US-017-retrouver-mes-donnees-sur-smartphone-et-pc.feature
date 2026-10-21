@@ -98,7 +98,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et que sur le smartphone, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
-    Et sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
+    Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Et sur le PC, l'objectif "Publier le guide" n'existe pas
     Quand sur le PC, l'utilisateur crée une tâche :
       | intitulé         | délai      | estimation | objectifs |
@@ -209,7 +209,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Plan du scénario: S13a — Une horloge d'appareil décalée de plus de 24 h est signalée à l'utilisateur
     Étant donné que l'horloge du smartphone est <sens> de <écart>
     Quand les deux appareils échangent leurs modifications
-    Alors sur le smartphone, l\'alerte "ALR-001" est affichée
+    Alors sur le smartphone, l'alerte "ALR-001" est affichée
 
     Exemples:
       | sens       | écart       |
@@ -222,7 +222,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Plan du scénario: S13b — Une horloge d'appareil décalée de 24 h au plus n'est pas signalée
     Étant donné que l'horloge du smartphone est <sens> de <écart>
     Quand les deux appareils échangent leurs modifications
-    Alors sur le smartphone, l\'alerte "ALR-001" n\'est pas affichée
+    Alors sur le smartphone, l'alerte "ALR-001" n'est pas affichée
 
     Exemples:
       | sens       | écart       |
@@ -245,12 +245,12 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Scénario: S15 — Tant qu'une modification non retenue n'est pas lue, l'application le signale sans bloquer
     Étant donné que la liste des modifications non retenues contient une valeur écartée pour l'intitulé de la tâche "B"
     Et que la liste des modifications non retenues contient une valeur écartée pour le délai de la tâche "Chapitre 1"
-    Alors l\'indicateur de synchronisation est "SYN-INFO"
+    Alors l'indicateur de synchronisation est "SYN-INFO"
     Et toutes les fonctions restent utilisables
     Quand l'utilisateur marque comme lue la modification non retenue de la tâche "B"
-    Alors l\'indicateur de synchronisation est toujours "SYN-INFO"
+    Alors l'indicateur de synchronisation est toujours "SYN-INFO"
     Quand l'utilisateur marque comme lue la modification non retenue de la tâche "Chapitre 1"
-    Alors l\'indicateur de synchronisation n\'est pas "SYN-INFO"
+    Alors l'indicateur de synchronisation n'est pas "SYN-INFO"
 
   @US-017 @RG-056 @LOT-001
   Scénario: S16 — Une modification non retenue lue sur un appareil l'est aussi sur l'autre, et n'est signalée qu'une fois
@@ -267,7 +267,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand sur le smartphone, l'utilisateur marque comme lue la modification non retenue de la tâche "B"
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la liste des modifications non retenues est vide
-    Et sur les deux appareils, l\'indicateur de synchronisation n\'est pas "SYN-INFO"
+    Et sur les deux appareils, l'indicateur de synchronisation n'est pas "SYN-INFO"
 
   # ---------------------------------------------------------------- Sans réseau et perte d'accès (CA-7)
 
@@ -298,7 +298,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été <altération> dans le Drive, en dehors de l'application
     Quand le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Alors sur le smartphone, le message d'erreur "ERR-012" est affiché
     Et sur le smartphone, l'utilisateur se voit proposer "restaurer" et "repartir de zéro"
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et rien n'a été réécrit dans le Drive
@@ -312,7 +312,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Scénario: S19 — Décider plus tard laisse l'application utilisable, sans rien effacer
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
-    Et que sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
     Quand sur le smartphone, l'utilisateur décide plus tard
     Et sur le smartphone, l'utilisateur crée une tâche :
       | intitulé   | délai      | estimation | objectifs |
@@ -325,7 +325,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Scénario: S20 — Restaurer les données à partir de la copie de l'appareil
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
-    Et que sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
     Quand sur le smartphone, l'utilisateur choisit de restaurer ses données
     Et les deux appareils échangent leurs modifications
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
@@ -337,7 +337,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
     Et que le PC est sans réseau
     Et que sur le PC, l'utilisateur a renommé l'objectif "Publier le guide" en "Publier le guide pratique"
-    Et que sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
     Quand sur le smartphone, l'utilisateur choisit de repartir de zéro
     Alors une confirmation est demandée
     Quand l'utilisateur confirme
@@ -354,7 +354,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
   Scénario: S22 — Renoncer à repartir de zéro ne change rien
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et les données de l'application ont été supprimées dans le Drive, en dehors de l'application
-    Et que sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
     Quand sur le smartphone, l'utilisateur choisit de repartir de zéro et renonce
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et rien n'a été réécrit dans le Drive
@@ -364,7 +364,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et que le Drive est momentanément indisponible
     Quand le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le message d\'erreur "ERR-012" n\'est pas affiché
+    Alors sur le smartphone, le message d'erreur "ERR-012" n'est pas affiché
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
     Quand le Drive redevient disponible
     Et le smartphone échange ses modifications avec le Drive
@@ -451,7 +451,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné que le Drive du compte "A" est plein
     Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
     Et le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le message d\'erreur "ERR-011" est affiché
+    Alors sur le smartphone, le message d'erreur "ERR-011" est affiché
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
     Quand de l'espace est libéré dans le Drive du compte "A"
@@ -463,8 +463,8 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, l\'action "Mettre à jour" est proposée
-    Et sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n\'est pas possible tant que l\'application n\'est pas mise à jour
+    Alors sur le smartphone, l'action "Mettre à jour" est proposée
+    Et sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et sur le smartphone, l'objectif "Publier le guide" existe toujours
 
   @US-017 @RG-058 @LOT-001
@@ -472,7 +472,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n\'est pas possible tant que l\'application n\'est pas mise à jour
+    Alors sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et aucune écriture n'a été faite dans le Drive par le smartphone
     Et le Drive du compte "A" ne contient pas l'objectif "Publier le guide"
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
@@ -500,7 +500,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Étant donné un objectif "Publier le guide" de délai 2026-12-15
     Et qu'un fichier de données de l'application a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible
     Quand le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le message d\'erreur "ERR-012" est affiché
+    Alors sur le smartphone, le message d'erreur "ERR-012" est affiché
     Et sur le smartphone, l'utilisateur se voit proposer "restaurer" et "repartir de zéro"
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et rien n'a été réécrit dans le Drive

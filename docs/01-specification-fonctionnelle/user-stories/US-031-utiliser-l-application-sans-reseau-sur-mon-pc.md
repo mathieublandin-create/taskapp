@@ -34,7 +34,7 @@ Statut : Validée
 7. **CA-7** — Il n'y a pas de durée maximale d'utilisation sans réseau : l'utilisation n'est jamais bloquée.
 8. **CA-8** — Au retour du réseau, la règle de conflit, l'information sur les valeurs écartées et les règles de réparation s'appliquent comme sur le smartphone (RG-036, RG-047 à RG-049 ; US-017, CA-6, CA-8 et CA-10).
 9. **CA-9** — Quand l'accès au compte Google est perdu (retiré ou expiré), le PC se comporte comme sans réseau (CA-2 à CA-6), et l'application propose de se reconnecter (RG-035 ; US-022, CA-7).
-10. **CA-10** — *(RG-057, V-12)* Quand le PC est hors ligne depuis plus de 24 h avec des modifications en attente (non encore enregistrées dans le Drive), l'application affiche un bandeau de rappel **non bloquant**, comme sur le smartphone (US-018, CA-9) : ces modifications ne sont encore que sur le PC. Le bandeau n'empêche aucune opération et peut être ignoré. Il n'apparaît pas avant 24 h, ni si aucune modification n'est en attente. Il disparaît dès que les modifications sont enregistrées dans le Drive.
+10. **CA-10** — *(RG-057, V-12 ; DEC-025)* Quand le PC est hors ligne avec des modifications en attente (non encore enregistrées dans le Drive), l'application affiche un bandeau de rappel **non bloquant** (`BAN-RAPPEL-24H`) : ces modifications ne sont encore que sur le PC. (a) **Point de départ** : les 24 h courent depuis la **plus ancienne modification en attente** ; le bandeau s'affiche quand elle a **plus de 24 h** (à 24 h exactement, ou moins, il n'apparaît pas). Un appareil hors ligne depuis plus de 24 h dont la seule modification en attente date de 1 minute n'affiche pas le bandeau. (b) **Fermeture** : le bandeau peut être fermé ; il **réapparaît à la prochaine ouverture de l'application** tant que des modifications sont en attente. (c) **Accès Google perdu** (CA-8, RG-035) : si des modifications sont en attente depuis plus de 24 h, **un seul** bandeau est affiché, « Se reconnecter » (`BAN-ACCES-GOOGLE`), complété de la mention « n modifications ne sont encore que sur cet appareil » ; il n'y a pas de second bandeau. Depuis moins de 24 h, il est affiché sans cette mention. (d) Le bandeau n'empêche aucune opération et peut être ignoré. Il n'apparaît pas si aucune modification n'est en attente. Il disparaît dès que les modifications sont enregistrées dans le Drive.
 
 ## Cas limites et cas d'erreur
 - Première ouverture de l'application sur ce PC, ou dans ce navigateur, sans réseau : impossible ; le navigateur ne peut pas afficher l'application.
@@ -44,6 +44,9 @@ Statut : Validée
 - Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié.
 - Réseau intermittent : aucune modification n'est enregistrée deux fois, et aucune n'est perdue.
 - Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
+- Hors ligne depuis plus de 24 h, mais modification en attente faite il y a 1 minute : pas de bandeau de rappel (CA-10 a ; S20b).
+- Bandeau de rappel fermé : il réapparaît à la prochaine ouverture de l'application tant que des modifications sont en attente (CA-10 b ; S21).
+- Accès Google perdu depuis plus de 24 h avec des modifications en attente : un seul bandeau « Se reconnecter », complété du nombre de modifications (CA-10 c ; S22, S22b). La session Google expirée sur PC (CA-5) reste sans bandeau.
 
 ## Hors périmètre
 - Synchronisation en arrière-plan, application fermée.
@@ -125,7 +128,7 @@ Statut : Validée
 - **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **21 scénarios** dont 7 exécutés par l'interface (`@ihm`). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **27 scénarios** dont 7 exécutés par l'interface (`@ihm`). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -138,7 +141,7 @@ Statut : Validée
 | CA-7 | S09 |
 | CA-8 | S10, S11, S12 |
 | CA-9 | S13 |
-| CA-10 (RG-057) | S19, S20 |
+| CA-10 (RG-057) | S19, S19b (plus ancienne modification en attente), S20 (24 h exactement, avant 24 h, aucune modification), S20b (hors ligne depuis 25 h, modification faite il y a 1 min), S21 (disparition à l'enregistrement), S21b (fermé puis rouvert), S22, S22b (accès Google perdu : un seul bandeau, avec ou sans mention) |
 | Cas limite : première ouverture sans réseau | S14 (`@ihm` ; résultat observable : aucun écran de Done Juan, message d'indisponibilité du navigateur) |
 | Cas limite : données du navigateur effacées | S15 (`@ihm`) |
 | Cas limite : deux onglets | S16 (`@ihm`) |
@@ -158,3 +161,4 @@ Aucune. Tous les critères sont validés par le commanditaire (DEC-018).
 | 2026-10-21 | V-12 retenue (DEC-018) : nouveau CA-10 (bandeau de rappel non bloquant après 24 h hors ligne avec modifications en attente, RG-057) et CA-7 précisé ; scénarios S19 et S20. |
 | 2026-10-21 | Validée par le commanditaire le 2026-10-21 (DEC-018) : US, critères (P) retenus et règles proposées associées (marqueurs (P) retirés). |
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-5 et ANT-6 (tag `@ihm` sur S01a, S01b, S08, S14, S15, S16, S17 ; S01 scindé ; résultat observable de S14 ; S17 reformulé en étapes successives), ANT-16 (convention de date des tâches de contexte : glossaire d'étapes), assertions de bandeaux, mentions et indicateur exprimées par les codes du catalogue (`SYN-`, `MEN-`, `BAN-`), PEP-8. RG-057 et les scénarios S19 et S20 sont inchangés dans l'attente des réponses Q-ERG-16 à 18. |
+| 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 intégrée à RG-057 et au CA-10 (24 h depuis la plus ancienne modification en attente ; accès perdu : un seul bandeau « Se reconnecter » complété ; bandeau fermé réapparaissant à la prochaine ouverture). Scénarios S19 et S20 réécrits avec `BAN-RAPPEL-24H` ; nouveaux S19b, S20b, S21, S21b, S22, S22b (le S19 d'origine est scindé : la disparition du bandeau est dans S21). |

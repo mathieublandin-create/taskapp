@@ -33,6 +33,6 @@ L'option 6 reste une évolution possible si l'expérience de connexion de la PWA
 ## Conséquences
 - \+ Un seul code métier et un seul code d'interface ; des tests communs.
 - \+ Sur le smartphone : fonctionnement hors ligne durable (SQLite), notifications locales, arrière-plan Android.
-- − Une application mobile à construire, à signer et à distribuer : arbitrage A2 pour Android (store ou installation directe), A1 pour iOS (coût annuel Apple).
+- − Une application mobile à construire, à signer et à distribuer : pour Android, installation directe de l'APK (DEC-021, qui remplace DEC-005 ; mise en œuvre dans **ADR-012**, 2026-10-21) ; A1 pour iOS (coût annuel Apple ; pas d'iPhone en v1, DEC-001).
 - − Deux adaptateurs de stockage local, IndexedDB et SQLite, derrière un même port (ADR-010).
 - − Sur PC, renouvellement du jeton non silencieux après 1 h sans session Google active (ADR-004).

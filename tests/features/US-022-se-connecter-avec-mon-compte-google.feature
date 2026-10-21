@@ -132,7 +132,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que l'accès au compte Google "A" <cause> sur le smartphone
     Quand l'utilisateur ouvre l'application sur le smartphone
-    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Quand sur le smartphone, l'utilisateur modifie le délai de l'objectif "Publier le guide" en 2027-01-31
     Alors sur le smartphone, l'opération est acceptée
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
@@ -150,7 +150,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand l'accès au compte Google "A" est retiré depuis le compte Google
     Et sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Et le smartphone échange ses modifications avec le Drive
-    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le smartphone, l'objectif "Courir un semi-marathon" porte la mention "MEN-ATTENTE"
 
   # ---------------------------------------------------------------- Autorisations demandées (CA-8)
@@ -305,4 +305,4 @@ Fonctionnalité: Se connecter avec mon compte Google
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, aucune connexion n'est demandée avant d'afficher les données
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
-    Et sur le PC, l\'indicateur de synchronisation est "SYN-SESSION", avec l\'action "Reprendre la synchronisation"
+    Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"

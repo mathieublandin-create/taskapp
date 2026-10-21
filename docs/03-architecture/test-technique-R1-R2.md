@@ -1,8 +1,9 @@
 # Test technique préalable R1/R2 (avant E9 de LOT-001)
 
-> Version 1 du 2026-10-21. Auteur : Starck.
+> Version 2 du 2026-10-21. Auteur : Starck.
+> **Version 2** : distribution par installation directe de l'APK (DEC-021, ADR-012) et choix de l'hébergement (DEC-023, DAT v0.8 §7.5). Ajouts : prérequis P5 précisé, prérequis P9, étape 3.3.8 (APK signé par une clé de publication, mise à jour par écrasement), critère R16-T. Aucune autre étape modifiée.
 > Statut : **protocole prêt, non exécuté. Aucun résultat à ce jour.**
-> Références : DAT v0.4, §4.1, §4.1.6 et §10 (R1, R2, R3, R11, R12) ; ADR-004 ; ADR-005 ; US-022 (CA-5, CA-8) ; US-017 ; US-031.
+> Références : DAT v0.8 (initialement v0.4), ADR-012, §4.1, §4.1.6 et §10 (R1, R2, R3, R11, R12) ; ADR-004 ; ADR-005 ; US-022 (CA-5, CA-8) ; US-017 ; US-031.
 
 ## 1. Objet
 Lever, avant la conception détaillée de LOT-001 (E9), les risques qui pourraient remettre en cause l'architecture :
@@ -23,10 +24,11 @@ Lever, avant la conception détaillée de LOT-001 (E9), les risques qui pourraie
 | P2 | **Projet Google Cloud** `objectifs-taches-dev` (DAT §7.4), avec l'API Google Drive activée | **Commanditaire** (propriétaire), ou une personne qu'il désigne comme propriétaire du projet | La création exige d'accepter les conditions de Google Cloud avec son compte. Aucune facturation n'est nécessaire. |
 | P3 | **Écran de consentement OAuth** : type « Externe », statut **« En production »**, nom de l'application, adresse d'assistance, **sans logo**, scopes `openid`, `email` et `drive.file`, domaine autorisé de l'hébergement | Commanditaire, guidé pas à pas | Le passage en production se fait d'un clic, sans vérification pour des scopes non sensibles. |
 | P4 | **Identifiants OAuth** : <br>(a) client **Web** avec les origines `http://localhost:5173` et l'URL de l'hébergement ;<br>(b) client **Android** avec le nom de paquet `<à fixer par Anthony>.poc` et l'empreinte SHA-1 de la clé de signature de débogage | Commanditaire, avec les informations fournies par l'équipe | Les identifiants clients ne sont pas des secrets : ils peuvent être transmis dans le dépôt. |
-| P5 | **Hébergement statique** (DEC-006), avec une URL HTTPS | Commanditaire (création du compte gratuit), ou équipe si un compte projet existe | Nécessaire pour R11 et R12 ; R1 peut se tester sur `localhost`. |
-| P6 | **Smartphone Android** physique, Android 10 ou plus, Google Play services à jour, mode développeur et débogage USB activés, ou installation d'un APK de débogage | **Commanditaire** | Un émulateur avec Google Play peut remplacer le téléphone pour R1, mais pas pour R2 (vérifications du Play Store et de l'appareil). Le Play Console (25 USD) n'est **pas** nécessaire pour ce test. |
+| P5 | **Hébergement statique** (DEC-006), avec une URL HTTPS. **Choix (DAT v0.8 §7.5)** : GitHub Pages si le dépôt est **public** à la date du test (aucun compte supplémentaire) ; sinon Cloudflare Pages (compte gratuit à créer par le commanditaire). Le choix fait ici devient celui de la production, car l'origine de la PWA est déclarée dans le client OAuth. | Commanditaire (passage du dépôt en public, ou création du compte Cloudflare) | Nécessaire pour R11 et R12 ; R1 peut se tester sur `localhost`. |
+| P6 | **Smartphone Android** physique, Android 10 ou plus, Google Play services à jour, mode développeur et débogage USB activés, ou installation d'un APK de débogage | **Commanditaire** | Un émulateur avec Google Play peut remplacer le téléphone pour R1, mais pas pour R2 (vérifications du Play Store et de l'appareil). Google Play n'est pas utilisé (DEC-021). |
 | P7 | **PC** avec Chrome ou Edge à jour | Commanditaire | — |
 | P8 | **Application de test** (preuve de concept) : coque Capacitor et page web reprenant le noyau prévu par ADR-004 | Équipe (Benjamin ou Anthony, à organiser par Jarvis) | Environ une journée de travail. Écran « Diagnostic » avec ses boutons et un journal horodaté. Elle ne journalise **jamais** la valeur d'un jeton, seulement sa présence et sa date d'expiration. |
+| P9 | **Clé de publication de la preuve de concept** (ADR-012) : une clé dédiée au test, distincte de la clé de débogage, dont l'empreinte SHA-1 est déclarée dans un second client OAuth Android du projet de test. `.gitignore` excluant les fichiers de clé posé avant sa création. | Équipe | Permet de vérifier, dès le test, le fonctionnement d'un APK signé hors Google Play, comme en production. La clé de production sera créée plus tard, selon ADR-012. |
 
 ## 3. Protocole
 
@@ -55,6 +57,12 @@ Chaque étape est consignée dans le tableau de résultats (§5) avec la date, l
 6. **(Informatif, pour un lot ultérieur)** Une tâche d'arrière-plan (WorkManager ou Background Runner), application fermée, tente toutes les 30 min d'obtenir un jeton et de lister les fichiers pendant 3 h. Noter les réussites et les échecs.
 7. **Révocation** : retirer l'accès sur myaccount.google.com → « Sécurité » → « Applications tierces ». Refaire l'étape 2. **Observer** l'erreur obtenue, qui doit être traduite en `AccesGoogleRevoque`.
 
+8. **APK de publication et mise à jour par écrasement (ADR-012, R16-T)** :
+   1. installer l'APK de la preuve de concept **signé par la clé P9**, par fichier (téléchargé depuis l'hébergement P5 avec le navigateur du téléphone) : noter les autorisations demandées par Android et un éventuel avertissement de Google Play Protect ;
+   2. se connecter, créer le fichier de test (3.2.1), puis vérifier que le jeton silencieux (3.3.2) fonctionne avec ce client ;
+   3. installer **par-dessus** un second APK de la même clé, avec un `versionCode` supérieur, par câble (`adb install -r`). **Observer** : données locales, identité et jeton silencieux conservés, sans nouvelle interface de consentement ;
+   4. (informatif) tenter d'installer un APK signé par la clé de **débogage** par-dessus : le refus d'Android est attendu.
+
 ### 3.4 R3 et R12 : PC
 1. **R3** : PWA installée et session Google du navigateur active. Rouvrir la PWA plus d'une heure après la connexion. Cliquer sur « Synchroniser ». **Observer** : le jeton est-il obtenu par un seul clic, avec au plus une fenêtre qui se ferme seule, sans saisie de mot de passe ?
 2. Se déconnecter de Google dans le navigateur, puis refaire l'étape 1. Une interface de connexion est attendue.
@@ -70,6 +78,7 @@ Chaque étape est consignée dans le tableau de résultats (§5) avec la date, l
 | R11 | Aucun écran d'avertissement ne s'affiche aux étapes 3.1.3 et 3.1.4. | **Oui** (CA-8 de US-022) ; sinon, arbitrage du commanditaire |
 | R3 | Au plus un geste à l'étape 3.4.1, sans mot de passe. | Non : confirme F14 |
 | R12 | L'étape 3.4.3 réussit. | Oui pour US-031, avec une correction possible en E12 |
+| R16-T | Les étapes 3.3.8.1 à 3.3.8.3 réussissent : l'APK signé hors Google Play s'authentifie, et la mise à jour par écrasement conserve les données et l'autorisation. | **Oui** (ADR-012) |
 
 ## 5. Résultats
 *À remplir lors de l'exécution. Aucun résultat n'est disponible à ce jour.*

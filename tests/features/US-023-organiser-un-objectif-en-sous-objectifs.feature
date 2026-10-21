@@ -263,6 +263,32 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
 
+  @US-023 @RG-048 @RG-056 @LOT-001
+  Scénario: S18c — Chaîne de trois placements : les placements sont annulés un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide
+    # Annuler le seul placement le plus ancien ne suffit pas (Alpha resterait au sommet de deux niveaux) : le suivant est annulé à son tour ;
+    # le troisième, devenu valide, est conservé. Chaque annulation est signalée.
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et un objectif "Alpha" sans délai
+    Et un objectif "Bêta" sans délai
+    Et un objectif "Gamma" sans délai
+    Et un objectif "Delta" sans délai
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur place l'objectif "Alpha" sous l'objectif "Bêta"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur place l'objectif "Gamma" sous l'objectif "Alpha"
+    Et 10 minutes plus tard, sur le PC, l'utilisateur place l'objectif "Delta" sous l'objectif "Gamma"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, "Alpha" est un objectif principal
+    Et sur les deux appareils, "Gamma" est un objectif principal
+    Et sur les deux appareils, "Delta" est un sous-objectif de l'objectif "Gamma"
+    Et sur les deux appareils, aucun sous-objectif n'a de sous-objectif
+    Et les deux appareils présentent la même hiérarchie d'objectifs
+    Et sur chacun des deux appareils, la liste des modifications non retenues contient exactement 2 informations
+    Et la liste des modifications non retenues contient :
+      | élément | information | valeur non retenue | valeur conservée |
+      | Alpha   | parent      | sous Bêta          | placement annulé |
+      | Gamma   | parent      | sous Alpha         | placement annulé |
+
   @US-023 @RG-047 @LOT-001
   Scénario: S19 — Un sous-objectif créé sous un objectif supprimé sur l'autre appareil devient objectif principal
     Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour

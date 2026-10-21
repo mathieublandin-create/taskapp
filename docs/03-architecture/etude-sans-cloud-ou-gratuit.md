@@ -1,9 +1,11 @@
 # Étude : se passer du cloud, ou ne recourir qu'à des services gratuits
 
-> **Version 1 du 2026-10-21.** Auteur : Starck, architecte logiciel.
+> **Version 2 du 2026-10-21.** Auteur : Starck, architecte logiciel.
+> **Version 2** : le commanditaire a répondu le 2026-10-21 (DEC-019 à DEC-024). Ses décisions et leurs conséquences figurent au §12 ; la fiche ETU-001 (Raspberry Pi) est ouverte au §13 ; deux nouvelles questions QC-8 et QC-9 sont ajoutées au §10. Les §1 à §9 restent l'étude telle que soumise.
 > **Origine** : demande du commanditaire du 2026-10-21, verbatim : « étudie le fait de pas utiliser de solution cloud ou alors gratuite ».
 > **Nature** : étude d'aide à la décision. **Aucune décision n'est prise ici.** Le DAT (v0.6) et les ADR-001 à ADR-011 ne sont pas modifiés. Si une option autre que la situation actuelle est retenue, ses conséquences passeront par un arbitrage du commanditaire consigné dans `suivi-projet.md`, puis par une nouvelle version du DAT et des ADR.
 > **Références** : DAT v0.6 ; ADR-002, 003, 004, 005, 006, 007 ; `suivi-projet.md` (DEC-001 à DEC-018) ; cahier des charges v0.7 (Q-DEM001-3 b, RG-012 à RG-014, RG-017, RG-019, RG-020, RG-033, RG-034, RG-037, §4.3) ; `test-technique-R1-R2.md`.
+> **Suite donnée** : voir §12. L'étude a été tranchée par DEC-019 à DEC-024 ; la mise en œuvre figure dans le DAT v0.8 et ADR-012.
 > **Fiabilité des sources** : les prix et conditions ont été recherchés sur le web le 2026-10-21. Les pages officielles n'étaient pas toutes accessibles. Chaque chiffre est suivi de sa source (§11). La mention **(non vérifié)** signale une information issue de mes connaissances ou d'une source secondaire isolée, à confirmer avant toute décision.
 
 ---
@@ -335,6 +337,8 @@ On peut donc **décider maintenant de rester sur A** sans s'enfermer : une bascu
 | **QC-5** | Pour les rappels et les créneaux des lots suivants, préférez-vous… | a) **Google Calendar** (prévu) ; b) des notifications du smartphone et un agenda dans l'application, sans Google Calendar | **a)** |
 | **QC-6** | Êtes-vous prêt à installer et entretenir vous-même un logiciel ou un matériel de synchronisation (Syncthing, Raspberry Pi) ? | Oui / Non | — (seulement si QC-1 b ou c) |
 | **QC-7** | Le code source de l'application peut-il être **public** (hébergement et intégration continue gratuits chez GitHub) ? | Oui / Non, privé (hébergement gratuit chez Cloudflare) | Indifférent pour le coût ; aucun secret n'est dans le code |
+| **QC-8** *(ajoutée en v2, après DEC-021)* | La **clé de signature** de l'application Android peut-elle être conservée, chiffrée, dans les secrets de GitHub, pour que chaque version soit signée automatiquement ? Vous en gardez de toute façon une copie de sauvegarde hors ligne. | a) oui, signature automatique ; b) non, la clé reste chez vous seulement et chaque version est signée sur un poste local | **a)**, avec une sauvegarde hors ligne obligatoire |
+| **QC-9** *(ajoutée en v2, à trancher avant l'application de la vérification des développeurs en France, en 2027)* | Pour continuer à installer l'APK simplement, acceptez-vous d'enregistrer l'application dans un **compte gratuit « distribution limitée »** de Google, lié à votre compte Google (validation en deux étapes et profil de paiement requis, sans frais) ? | a) oui ; b) non, installation par câble (ADB) à chaque mise à jour | **a)** |
 
 Lecture rapide des réponses :
 - QC-1 a) et QC-2 oui : on reste sur A (K0, ou K1 selon QC-3), sans changement d'architecture ;
@@ -384,3 +388,50 @@ Recherches effectuées le 2026-10-21. Les pages officielles de Google n'ont pas 
 - Acceptation de l'origine `http://localhost` en production par l'écran de consentement OAuth.
 - Faisabilité de la variante R-b (fournisseur d'agenda Android depuis Capacitor : identifiants, propriétés privées) et de l'agenda local Android.
 - Comportement 2026 de la restriction « Private Network Access » de Chrome.
+
+---
+
+## 12. Décisions du commanditaire (2026-10-21)
+
+Verbatim : « Qc-2 : C), qc-2 : oui, qc-3 : installation moi même, qc-5 : calendrier, qc-7 : oui. On étudiera dans un second temps une installation sur un radpbrry pi( que j'ai déjà) ». Le premier « Qc-2 : C) » est lu comme la réponse à QC-1 (`suivi-projet.md`, DEC-019).
+
+| Décision | Question | Réponse | Conséquence d'architecture |
+|---|---|---|---|
+| DEC-019 | QC-1 | c) coût **et** indépendance | Critère pour les choix suivants : à coût égal, préférer la solution qui dépend le moins d'un service tiers |
+| DEC-020 | QC-2 | Oui | **Option A maintenue** : données dans le Google Drive du commanditaire. DAT, ADR-002 et ADR-003 inchangés ; lot 1 inchangé. |
+| DEC-021 | QC-3 | Installation par lui-même | **Option F1** : installation directe de l'APK, sans Google Play. **Remplace DEC-005.** Nouvel ADR-012 ; DAT v0.8 §7.4, §7.5, R16, R17 ; test technique v2. |
+| DEC-022 | QC-5 | Google Calendar | Position R-a (ADR-006) maintenue pour le lot « Rappels ». La variante R-b (agenda du téléphone Android) reste une piste à vérifier à l'E3 de ce lot, sans engagement. |
+| DEC-023 | QC-7 | Oui, code public | Hébergement : GitHub Pages dès que le dépôt est public, Cloudflare Pages tant qu'il est privé ; choix figé au test R11 (DAT §7.5). Intégration continue gratuite sur un dépôt public. Le passage en public est une action du commanditaire, après vérification de l'absence de secrets dans l'historique. |
+| DEC-024 | — | Raspberry Pi déjà possédé ; étude reportée | Fiche ETU-001 (§13) ; option C non étudiée plus avant pour l'instant |
+
+QC-4 et QC-6 sont sans objet après DEC-020. Combinaison retenue : **K1** (zéro coût strict), soit l'option A, la PWA sur un hébergement statique gratuit et l'APK installé directement. **Coût : 0 € initial, 0 € par an.**
+
+**Effets sur le lot 1 validé** : aucune US ni aucun critère d'acceptation n'est remis en cause. Quelques mentions sont à répercuter par leurs auteurs, sans nouvel arbitrage :
+- ENF-07 (cahier des charges) et LOT-001 §5 ligne 3 : Pepper ;
+- parcours utilisateurs (« Google Play en test interne ») et guide d'ergonomie v0.2 : Steeve ;
+- cible de l'action « Mettre à jour » (US-017, S30) : elle ouvre la page de téléchargement de l'APK. Le texte du scénario reste valable.
+
+## 13. Fiche ETU-001 : auto-hébergement sur le Raspberry Pi du commanditaire (étude reportée)
+
+| Élément | Contenu |
+|---|---|
+| Origine | DEC-024 (2026-10-21) : « On étudiera dans un second temps une installation sur un Raspberry Pi (que j'ai déjà) » |
+| Statut | **Ouverte, non commencée.** Aucune échéance fixée. À planifier par Jarvis à la demande du commanditaire. |
+| Point de départ | Option C du §5 ; ADR-003 (format indépendant du transport) ; port `TransportSynchro` (§8) |
+| Effet sur les décisions actuelles | Aucun tant que l'étude n'est pas faite et tranchée. DEC-020 (Drive) reste en vigueur. |
+
+**Points à étudier**
+1. **Rôle du Raspberry Pi**, à comparer :
+   - (a) pair Syncthing toujours allumé, qui remplace Drive ;
+   - (b) même rôle, mais **en complément** de Drive : copie de sauvegarde locale, indépendance partielle ;
+   - (c) serveur WebDAV ;
+   - (d) sauvegarde périodique du dossier Drive « Done Juan » sur le Raspberry Pi, sans changer l'application. C'est probablement l'option la plus simple pour l'indépendance (DEC-019).
+2. **Matériel existant** : modèle, mémoire, support de stockage (carte SD ou SSD), système, alimentation. Mesure de la consommation réelle.
+3. **Accès hors domicile** : Tailscale (offre gratuite, coordination par un tiers), relais Syncthing, ou absence d'accès. Un port ouvert est à écarter.
+4. **Sécurité** : mises à jour du système, comptes, chiffrement du disque, exposition réseau.
+5. **Sauvegardes et reprise** : défaillance de la carte SD, restauration, rôle des copies complètes portées par les appareils.
+6. **Effet sur les décisions** : RG-020 et Q-DEM001-3 (b vers c), DEC-007 (lecture de « serveur exploité »), DEC-009, DEC-020, RG-044 et RG-058 appliquées à un dossier local, US-017 et US-022.
+7. **Effet sur l'application** : nouvel adaptateur de transport ; accès au dossier sur Android (sélecteur de dossier du système) et sur PC (File System Access) ; test technique dédié.
+8. **Agenda** : sans changement, Google Calendar restant retenu (DEC-022).
+9. **Charge pour le commanditaire** : installation, maintenance, supervision.
+

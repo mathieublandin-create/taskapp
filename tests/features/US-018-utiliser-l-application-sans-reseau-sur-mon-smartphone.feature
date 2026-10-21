@@ -79,7 +79,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Et sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
-    Alors sur le smartphone, l\'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 2 modification(s) en attente
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec 2 modification(s) en attente
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Et sur le smartphone, l'objectif "Courir un semi-marathon" porte la mention "MEN-ATTENTE"
     Et sur le smartphone, l'objectif "Publier le guide" ne porte pas la mention "MEN-ATTENTE"
@@ -97,7 +97,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
     Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" ne porte plus la mention "MEN-ATTENTE"
-    Et sur le smartphone, l\'indicateur de synchronisation n\'est plus "SYN-HORS-LIGNE"
+    Et sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-HORS-LIGNE"
 
   @US-018 @RG-021 @RG-036 @RG-056 @LOT-001
   Scénario: S07 — Au retour du réseau, la règle de conflit s'applique et la valeur écartée est signalée
@@ -160,7 +160,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Étant donné que l'accès au compte Google "A" <cause> sur le smartphone
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Alors sur le smartphone, l'opération est acceptée
-    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l\'action "Se reconnecter"
+    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
@@ -198,36 +198,93 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
     Et sur le PC, après échange, il existe 1 objectif d'intitulé "Courir un semi-marathon"
 
-  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-9, RG-057)
+  # ---------------------------------------------------------------- Rappel après 24 h hors ligne (CA-9, RG-057 ; Q-ERG-16 b, Q-ERG-18, DEC-025)
+  # Les 24 h courent depuis la plus ancienne modification en attente ; le bandeau est BAN-RAPPEL-24H.
 
   @US-018 @RG-057 @RG-021 @LOT-001
-  Scénario: S15 — Hors ligne depuis plus de 24 h avec des modifications en attente, un bandeau de rappel s'affiche sans rien bloquer
+  Scénario: S15 — Hors ligne avec une modification en attente depuis plus de 24 h, le bandeau "BAN-RAPPEL-24H" s'affiche sur le smartphone sans rien bloquer
     Étant donné que le smartphone est sans réseau
     Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
-    Alors sur le smartphone, un bandeau de rappel signale que des modifications ne sont pas encore enregistrées dans le Drive
-    Et sur le smartphone, le bandeau de rappel est non bloquant
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Et sur le smartphone, le bandeau "BAN-RAPPEL-24H" est non bloquant
     Quand sur le smartphone, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Alors sur le smartphone, l'opération est acceptée
 
   @US-018 @RG-057 @LOT-001
-  Plan du scénario: S16 — Pas de bandeau de rappel avant 24 h hors ligne, ni sans modification en attente
+  Scénario: S15b — Les 24 h courent depuis la plus ancienne modification en attente : une modification plus récente ne les remet pas à zéro
+    Étant donné que le smartphone est sans réseau
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Et que sur le smartphone, l'utilisateur a créé un objectif "Courir un semi-marathon" sans délai
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 2 modifications en attente
+
+  @US-018 @RG-057 @LOT-001
+  Plan du scénario: S16 — Pas de bandeau "BAN-RAPPEL-24H" tant que la plus ancienne modification en attente a 24 h ou moins, ni sans modification en attente
     Étant donné que le smartphone est sans réseau
     Et que <situation>
     Quand nous sommes le <moment> heure de Europe/Paris
-    Alors sur le smartphone, aucun bandeau de rappel n'est affiché
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
 
     Exemples:
-      | situation                                                                                                   | moment              |
-      | sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"                 | 2026-10-22 à 09:59  |
-      | aucune modification n'est en attente sur le smartphone                                                      | 2026-10-22 à 10:01  |
+      | situation                                                                                    | moment              |
+      | sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"         | 2026-10-22 à 09:59  |
+      | sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"         | 2026-10-22 à 10:00  |
+      | aucune modification n'est en attente sur le smartphone                                              | 2026-10-22 à 10:01  |
+
+  @US-018 @RG-057 @LOT-001
+  Scénario: S16b — Hors ligne depuis plus de 24 h mais avec une modification faite il y a 1 minute : pas de bandeau tant que la plus ancienne modification en attente a 24 h ou moins
+    Étant donné que le smartphone est sans réseau
+    Et que nous sommes le 2026-10-22 à 11:00 heure de Europe/Paris
+    Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 11:01 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand nous sommes le 2026-10-23 à 11:01 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
 
   @US-018 @RG-057 @RG-021 @LOT-001
-  Scénario: S17 — Le bandeau de rappel disparaît quand les modifications sont enregistrées dans le Drive
+  Scénario: S17 — Le bandeau "BAN-RAPPEL-24H" disparaît quand les modifications sont enregistrées dans le Drive
     Étant donné que le smartphone est sans réseau
     Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Et que nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
-    Et que sur le smartphone, un bandeau de rappel est affiché
+    Et que sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
     Quand le réseau revient sur le smartphone
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
-    Et sur le smartphone, aucun bandeau de rappel n'est affiché
+    Et sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+
+  @US-018 @RG-057 @LOT-001
+  Scénario: S17b — Le bandeau "BAN-RAPPEL-24H" fermé réapparaît à la prochaine ouverture de l'application tant que des modifications sont en attente
+    Étant donné que le smartphone est sans réseau
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et que nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Et que sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand sur le smartphone, l'utilisateur ferme le bandeau "BAN-RAPPEL-24H"
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand l'utilisateur ferme l'application sur le smartphone
+    Et l'utilisateur ouvre l'application sur le smartphone
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand le réseau revient sur le smartphone
+    Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+
+  @US-018 @RG-057 @RG-035 @LOT-001
+  Scénario: S17c — Accès Google perdu avec des modifications en attente depuis plus de 24 h : un seul bandeau "BAN-ACCES-GOOGLE", complété du nombre de modifications
+    Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:01 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H mentionne 1 modification en attente
+    Et sur le smartphone, un seul bandeau est affiché
+    Et sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
+    Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
+    Et sur le smartphone, aucun bandeau n'est affiché
+
+  @US-018 @RG-057 @RG-035 @LOT-001
+  Scénario: S17d — Accès Google perdu depuis 24 h ou moins : le bandeau "BAN-ACCES-GOOGLE" n'est pas complété du nombre de modifications
+    Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Quand nous sommes le 2026-10-22 à 10:00 heure de Europe/Paris
+    Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché avec l'action "Se reconnecter"
+    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
+    Et sur le smartphone, un seul bandeau est affiché
