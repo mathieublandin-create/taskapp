@@ -116,7 +116,7 @@ Correspondance avec les décisions DS attendues par Anthony (`conventions.md` §
   - **sur le web** : le jeton d'accès dure 1 h, puis il est renouvelé ; ce renouvellement est silencieux si la session Google du navigateur est active.
 - **Modifications non enregistrées** : elles sont conservées dans la base locale. Elles ne sont jamais effacées avant leur dépôt confirmé (ENF-T-07).
 - **Options de Q-22.2** : les trois sont faisables. **L'option c recommandée par Pepper est la plus simple techniquement** : la perte d'accès se comporte comme une coupure de réseau. Les options a et b demanderaient de développer des modes bloquants. Si US-018 n'est pas au lot 1, l'option c revient de fait à du hors ligne : c'est un argument de plus pour D1.
-- **Q-22.3 a** (effacement à la déconnexion, avec confirmation si des modifications ne sont pas déposées) : faisable.
+- **Q-22.3** : le commanditaire a retenu **b** (données conservées à la déconnexion, RG-043). C'est faisable et pris en compte dans le DAT v0.4 (base locale cloisonnée par compte). La tension avec ENF-05 est traitée par Q-DEM001-42.
 - **Q-22.4 a** (restauration) : faisable. **Nuance** : l'application ne peut pas savoir si une suppression dans Drive est volontaire. Elle doit donc poser la question à l'utilisateur : restaurer, ou repartir de zéro et effacer aussi la copie locale.
 
 ### S7 — Données à enregistrer dès le lot 1 (DS-19)
@@ -185,7 +185,7 @@ Les historiques sur 12 semaines sont recalculés à partir d'un **journal métie
 | Q-21.2 | Oui (affichage immédiat à l'ouverture) | **Faisable**, avec l'exception de la PWA du PC quand la session Google a expiré (F14). |
 | Q-22.1 | a (Drive du même compte) | **D'accord.** Un seul consentement ; scope `drive.file`. |
 | Q-22.2 | c (fonctionnement comme hors ligne) | **D'accord.** C'est la plus simple techniquement. Elle suppose toutefois la mécanique du hors ligne : argument pour D1. |
-| Q-22.3 | a (effacement après dépôt, confirmation sinon) | **D'accord.** |
+| Q-22.3 | a (effacement après dépôt, confirmation sinon) | D'accord à l'époque. **Le commanditaire a retenu b** (RG-043) : faisable, voir DAT v0.4. |
 | Q-22.4 | a (restauration depuis l'appareil) | **D'accord, faisable.** Ajouter le choix « repartir de zéro », car une suppression volontaire ne se distingue pas d'une suppression accidentelle. |
 | Q-23.1 | a (information par information) | **D'accord.** Ajouter les règles de réparation des invariants entre plusieurs informations (F12). |
 | Q-23.2 | Oui (informer de la valeur écartée) | **D'accord, faisable.** Préciser que seules les modifications **concurrentes** sont concernées : une valeur remplacée plus tard, en connaissance de cause, n'est pas une valeur écartée. |

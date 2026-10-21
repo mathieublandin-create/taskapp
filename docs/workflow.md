@@ -245,3 +245,28 @@ La gravité est proposée par l'agent qui détecte l'anomalie. Une contestation 
 | E16 | Recette des itérations majeures |
 | À tout moment | Arbitrages (règle anti-boucle) |
 | E17 | Planification des anomalies mineures et cosmétiques |
+
+## Politique de modèles (optimisation des tokens)
+Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<agent>.md`). Jarvis peut l'**imposer autrement à chaque délégation**, selon la complexité réelle de la tâche.
+
+### Modèles par défaut
+| Agent | Modèle par défaut | Justification |
+|---|---|---|
+| Jarvis | sonnet | Coordination, consolidation, suivi : peu de raisonnement de fond |
+| Pepper | opus | Rigueur, détection des ambiguïtés et des contradictions |
+| Steeve | sonnet | Production de maquettes et de guides à partir d'un besoin établi |
+| Starck | opus | Choix d'architecture, compromis, risques |
+| Anthony | opus | Conception détaillée, tests, revue de code et sécurité |
+| Benjamin | sonnet | Implémentation guidée par une spécification technique complète |
+
+### Choix du modèle par type de tâche
+| Niveau | Modèle | Tâches typiques |
+|---|---|---|
+| Mécanique | **haiku** | Consigner des réponses ou des décisions dans un tableau, mettre à jour des statuts ou le suivi, renuméroter, vérifier des liens ou un format, exécuter une suite de tests et en rapporter le résultat brut |
+| Production | **sonnet** | Maquettes et guides, fichiers `.feature` à partir d'US validées, intégration de réponses sans ambiguïté, développement à partir d'une ST complète, corrections simples (RC, ANO mineures), PV de recette, comptes rendus de cérémonies, avis de refinement |
+| Raisonnement | **opus** | Analyse d'écart et rédaction d'US (E1), constitution de lot (E2), analyse d'impact et ADR (E3), contrôle d'explicitation (E8), conception détaillée (E9), tests unitaires (E10), revue de code (E13), tests techniques (E14), fiches d'arbitrage, anomalies bloquantes ou débogage difficile |
+
+### Règles
+- En cas de doute, on choisit le niveau **supérieur** pour ce qui **produit une référence** (spécification, conception, revue) et le niveau **inférieur** pour ce qui **exécute** une référence.
+- **Escalade** : si un agent lancé sur un modèle inférieur échoue ou livre un résultat insuffisant (critère de fin non atteint, remarque de qualité), Jarvis relance la tâche sur le niveau supérieur. Il consigne l'escalade dans le journal des échanges. Les relances comptent dans la règle anti-boucle.
+- Une tâche en cours garde le modèle avec lequel elle a été lancée. Un changement de modèle par défaut ne vaut que pour les lancements suivants.

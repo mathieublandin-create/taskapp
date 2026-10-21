@@ -7,6 +7,8 @@
 >
 > **Version 0.4 du 2026-10-20 (Pepper, fin de E1 pour LOT-001)** : réponses Q-DEM001-21 à 29, avis de l'architecte (F1 à F14), décisions DEC-001 à DEC-012 et réponses aux questions ergonomiques Q-ERG-02 à 11 intégrées. US-018 rejoint LOT-001 (DEC-002). Dans la colonne RG, l'astérisque (*) signale une règle **proposée**, à valider en E6.
 >
+> **Version 0.5 du 2026-10-21** : réponses Q-DEM001-39, 41 et 42 (DEC-013 à DEC-016) ; US-031 intégrée à LOT-001 ; nouvelle RG-055.
+>
 > Toutes les US non reportées sont au statut **En analyse**. Persona unique : **l'utilisateur** (le commanditaire). Voir le [cahier des charges v0.4](cahier-des-charges.md).
 
 ## Légende
@@ -94,10 +96,10 @@
 
 | US | Titre | Récit | RG | Q bloquantes | Évolution v0.2 | Lot |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | **En tant qu'**utilisateur, **je veux** me connecter à l'application avec mon compte Google, **afin d'**accéder à mes données conservées dans mon propre espace de stockage. | RG-018, RG-019, RG-020, RG-035, RG-043 | Q-DEM001-42 | Nouvelle (Q19.2 « non », Q3 b) ; v0.4 : Q-22 intégrée ; données conservées à la déconnexion (22.3 b) | LOT-001 |
-| US-017 | Retrouver mes données sur smartphone et sur PC | **En tant qu'**utilisateur, **je veux** que mes données soient conservées dans mon espace de stockage personnel et que je les retrouve sur mon smartphone comme sur mon PC, **afin de** passer de l'un à l'autre sans ressaisie. | RG-017, RG-018, RG-020, RG-036, RG-044, RG-047* à RG-049*, RG-053, RG-054* | Q-DEM001-39, 41 | Modifiée : stockage personnel, smartphone et PC dès la première version, règle de conflit (Q3, compléments) ; v0.4 : Q-21, 22, 23 intégrées ; limites F1, F14 ; CA-7 « hors ligne inclus » | LOT-001 |
-| US-018 | Utiliser l'application sans réseau sur mon smartphone | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon smartphone sans réseau, mes modifications étant prises en compte au retour du réseau, **afin de** ne pas dépendre de la couverture réseau. | RG-021, RG-035, RG-036, RG-047* à RG-049* | Q-DEM001-39 | Modifiée : confirmée (Q4.1 c), recentrée sur le smartphone (complément) ; v0.4 : intégrée à LOT-001 (DEC-002) ; fichier détaillé créé | LOT-001 |
-| US-031 | *(conditionnelle)* Utiliser l'application sans réseau sur mon PC | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, **afin d'**avoir le même comportement sur mes deux appareils. | RG-021, RG-036 | Q-DEM001-39 (P1 depuis DEC-002) | Nouvelle, conditionnelle (Q-DEM001-39) ; v0.4 : si Q-39 b), rejoint LOT-001 | Selon Q-DEM001-39 (LOT-001 si b) |
+| US-022 | Se connecter avec mon compte Google | **En tant qu'**utilisateur, **je veux** me connecter à l'application avec mon compte Google, **afin d'**accéder à mes données conservées dans mon propre espace de stockage. | RG-018, RG-019, RG-020, RG-035, RG-043, RG-055 | — | Nouvelle (Q19.2 « non », Q3 b) ; v0.4 : Q-22 intégrée ; données conservées à la déconnexion (22.3 b) ; v0.5 : Q-42 répondue (DEC-015, DEC-016) ; action « Supprimer les données de cet appareil » | LOT-001 |
+| US-017 | Retrouver mes données sur smartphone et sur PC | **En tant qu'**utilisateur, **je veux** que mes données soient conservées dans mon espace de stockage personnel et que je les retrouve sur mon smartphone comme sur mon PC, **afin de** passer de l'un à l'autre sans ressaisie. | RG-017, RG-018, RG-020, RG-036, RG-044, RG-047* à RG-049*, RG-053, RG-054* | — | Modifiée : stockage personnel, smartphone et PC dès la première version, règle de conflit (Q3, compléments) ; v0.4 : Q-21, 22, 23 intégrées ; limites F1, F14 ; CA-7 « hors ligne inclus » ; v0.5 : Q-39 et Q-41 répondues | LOT-001 |
+| US-018 | Utiliser l'application sans réseau sur mon smartphone | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon smartphone sans réseau, mes modifications étant prises en compte au retour du réseau, **afin de** ne pas dépendre de la couverture réseau. | RG-021, RG-035, RG-036, RG-047* à RG-049* | — | Modifiée : confirmée (Q4.1 c), recentrée sur le smartphone (complément) ; v0.4 : intégrée à LOT-001 (DEC-002) ; fichier détaillé créé ; v0.5 : Q-39 répondue | LOT-001 |
+| US-031 | Utiliser l'application sans réseau sur mon PC | **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, **afin d'**avoir le même comportement sur mes deux appareils. | RG-021, RG-036 | — | Nouvelle, conditionnelle (Q-DEM001-39) ; v0.4 : si Q-39 b), rejoint LOT-001 ; v0.5 : intégrée à LOT-001 (Q-39 b, DEC-013) ; fichier détaillé créé | LOT-001 |
 
 ## EP-08 — Planning et agenda Google
 
@@ -105,7 +107,7 @@
 |---|---|---|---|---|---|---|
 | US-019 | Tenir compte de mes événements d'agenda dans ma capacité | **En tant qu'**utilisateur, **je veux** que mes événements Google Calendar réduisent le temps disponible du jour, **afin de** ne pas planifier plus que ce que mon agenda permet. | RG-033, RG-011 | Q-DEM001-34 | Confirmée : n'est plus conditionnelle (Q15.1 « oui ») | Lot « Agenda » |
 | US-020 | Placer mes tâches planifiées en créneaux dans mon agenda | **En tant qu'**utilisateur, **je veux** que chaque tâche planifiée reçoive un horaire suggéré et apparaisse comme un créneau dans mon agenda Google principal, **afin de** voir mon travail dans mon agenda. | RG-034, RG-006, RG-053 | Q-DEM001-32 | Modifiée : n'est plus conditionnelle ; horaire suggéré, agenda principal (Q15.2, compléments) ; v0.4 : horaires à l'heure de Paris (DEC-012) | Lot « Agenda » |
-| US-032 | Prendre en compte un créneau déplacé dans mon agenda | **En tant qu'**utilisateur, **je veux** être notifié dans l'application quand je déplace un créneau de tâche dans Google Calendar, et recevoir le soir une proposition de replanification que je valide ou modifie, **afin que** mon planning reste cohérent avec mon agenda. | RG-037, RG-031, RG-052 | Q-DEM001-33 (en partie répondue), 41 | Nouvelle (compléments Q15.2) ; v0.4 : détection limitée aux moments où l'application est ouverte (F2) ; traitement immédiat possible (Q-ERG-05) ; reproposée chaque jour si non traitée (RG-052) ; en cas de refus, créneau supprimé de l'agenda et tâche déplanifiée (Q-ERG-11 a) | Lot « Agenda » |
+| US-032 | Prendre en compte un créneau déplacé dans mon agenda | **En tant qu'**utilisateur, **je veux** être notifié dans l'application quand je déplace un créneau de tâche dans Google Calendar, et recevoir le soir une proposition de replanification que je valide ou modifie, **afin que** mon planning reste cohérent avec mon agenda. | RG-037, RG-031, RG-052 | Q-DEM001-33 (en partie répondue) | Nouvelle (compléments Q15.2) ; v0.4 : détection limitée aux moments où l'application est ouverte (F2) ; traitement immédiat possible (Q-ERG-05) ; reproposée chaque jour si non traitée (RG-052) ; en cas de refus, créneau supprimé de l'agenda et tâche déplanifiée (Q-ERG-11 a) ; v0.5 : non soumise au délai d'une heure (DEC-014) | Lot « Agenda » |
 
 ## Dépendances entre US
 
@@ -147,7 +149,7 @@
 | US-036 | US-035 | La gestion porte sur la liste utilisée par le tirage. |
 
 ### Enchaînement indicatif des lots (à proposer formellement lors des E2 suivantes)
-1. **LOT-001 — Socle et objectifs/tâches** (validé : DEC-002 à DEC-004) : US-022, US-017, US-018, US-001, US-023, US-002, US-024, US-003, US-025 ; US-031 selon Q-DEM001-39.
+1. **LOT-001 — Socle et objectifs/tâches** (validé : DEC-002 à DEC-004) : US-022, US-017, US-018, US-031, US-001, US-023, US-002, US-024, US-003, US-025 (US-031 ajoutée par DEC-013).
 2. *(Lot « Hors ligne » supprimé : US-018 est intégrée à LOT-001.)*
 3. **Priorisation et planification** : US-030, US-004, US-005, US-006, US-027, US-028.
 4. **Suivi du temps** : US-008, US-009.
@@ -213,6 +215,7 @@
 | RG-052 | US-007, US-011, US-032 |
 | RG-053 | US-001, US-002, US-003, US-017, US-025, US-008, US-015, US-016, US-020, US-028, US-029 |
 | RG-054* | US-017, US-001, US-002, US-003, US-025 |
+| RG-055 | US-022 |
 
 ### Pourquoi DEM-002 n'entre pas dans LOT-001
 Selon Q-DEM001-1, seule la capacité « objectifs et tâches » est indispensable à la première version ; les rappels (Q-DEM001-1 e) ne le sont pas. Les US-033 à US-036 enrichissent les rappels du matin et du soir (US-015, US-016), qui ne sont pas encore livrés : elles ne peuvent pas être recettées sans eux. Elles rejoignent donc le lot « Rappels », où elles partagent les mêmes écrans et le même canal (l'agenda Google). Les y ajouter ne retarde pas LOT-001.

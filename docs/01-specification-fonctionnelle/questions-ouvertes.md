@@ -374,6 +374,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-ERG-02 à 11 (questions ergonomiques de Steeve) | 2026-10-20 | Verbatim (suivi-projet) : « Q-ERG-02 : oui, Q-ERG-03 : non, Q-ERG-04 : oui, Q-ERG-05 : oui, Q-ERG-06 : par priorité, Q-ERG-07 à 11 : réafficher tous les jours l'alerte non traitée, la planification après délais est possible mais génère une alerte, la ré-estimation de la capacité est à faire chaque semaine, le dimanche, validation du planning tâhe par tâche, il est libéré ». Q-ERG-11 précisée ensuite : option a) (créneau supprimé de l'agenda, tâche déplanifiée). | RG-003, RG-029 (03) ; RG-040 (02) ; RG-039 (04) ; RG-037 (05, 11) ; RG-051 (06) ; RG-052 (07) ; RG-006 (08) ; RG-011 (09) ; RG-031 (10). US-002 (LOT-001) ; US-035, US-033, US-032, US-004, US-006, US-007, US-011, US-026, US-027 (backlog). |
 | DEC-011 (fuseau) | 2026-10-20 | « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | **Remplacée par DEC-012.** |
 | DEC-012 (fuseau) | 2026-10-20 | « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » | Fuseau fixe Europe/Paris : RG-008 modifiée (Q-10.4 a remplacée par b), nouvelle RG-053 ; Q-DEM001-37 répondue (c). |
+| Q-DEM001-39, 41, 42 | 2026-10-21 | Verbatim : « Q39-b; Q41-oui; Q42-1-non, proposer seulement l'option déconnexion et une autre option supprimer les données;Q42-2:a) ». | Q-39 b) → RG-021, ENF-04, US-031 dans LOT-001 (DEC-013) ; Q-41 oui → RG-017, RG-037, ENF-02 (DEC-014) ; Q-42.1 → deux actions distinctes, nouvelle RG-055, garde-fous proposés (DEC-015) ; Q-42.2 a) → RG-043 (DEC-016). US-022, US-017, US-018, US-031. |
 | Q-DEM001-24 à 29 | 2026-10-20 | Toutes les options recommandées sont retenues (24.1–24.4, 25.1–25.7, 26.1–26.4, 27.1–27.3, 28.1–28.5, 29.1–29.4). | Q-24 → RG-022 ; Q-25 → RG-023, RG-026 ; Q-26 → RG-025 ; Q-27 → RG-027, RG-015 ; Q-28 → RG-002, RG-003, RG-028, RG-029, nouvelle RG-045 ; Q-29 → nouvelle RG-046. US-001, 002, 003, 023, 024, 025. |
 
 ---
@@ -422,10 +423,10 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
 | Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Répondue (DEC-012 : option c, fuseau fixe Europe/Paris) |
 | Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte |
-| Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | **P1** (depuis DEC-002) | US-031, US-017, US-018 | Ouverte |
+| Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | **P1** (depuis DEC-002) | US-031, US-017, US-018 | Répondue (b, DEC-013) |
 | Q-DEM001-40 | Rappel du soir : invitation à saisir | Q18.5 partielle | P3 | US-016 | Ouverte |
-| Q-DEM001-41 | Confirmation du sens du délai d'une heure | Réponse « 1h » à Q-21.1, qui ne désigne aucune option | P1 | US-017 ; plus tard US-032 | Ouverte |
-| Q-DEM001-42 | Données conservées sur un appareil après déconnexion | Tension entre la réponse 22.3 (« non ») et ENF-05 | P1 | US-022 | Ouverte |
+| Q-DEM001-41 | Confirmation du sens du délai d'une heure | Réponse « 1h » à Q-21.1, qui ne désigne aucune option | P1 | US-017 ; plus tard US-032 | Répondue (oui, DEC-014) |
+| Q-DEM001-42 | Données conservées sur un appareil après déconnexion | Tension entre la réponse 22.3 (« non ») et ENF-05 | P1 | US-022 | Répondue (DEC-015, DEC-016) |
 
 ### Q-DEM001-21 — Sens de « la notification apparaisse dans l'heure qui suit » (P1)
 *Origine* : votre complément du 2026-10-20 sur le délai de prise en compte entre appareils (Q-DEM001-3). Le mot « notification » laisse un doute, car un autre complément parle d'une notification de l'application quand un créneau est déplacé dans Google Calendar.
@@ -795,6 +796,8 @@ En cas d'égalité, quel critère départage deux tâches ?
 
 ## Questions résiduelles — v0.4
 
+> **Répondues le 2026-10-21** (DEC-014 à DEC-016) : voir le tableau des réponses.
+>
 > Rédigées par Pepper le 2026-10-20, après les réponses P1 du commanditaire, l'avis de l'architecte (DAT §8) et les décisions DEC-001 à DEC-010. Ce sont des questions **fermées**, P1 : elles bloquent la validation (E6) des US indiquées.
 
 ### Q-DEM001-41 — Confirmation du sens du délai d'une heure (P1)

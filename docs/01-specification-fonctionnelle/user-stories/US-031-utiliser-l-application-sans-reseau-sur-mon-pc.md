@@ -1,0 +1,107 @@
+# US-031 — Utiliser l'application sans réseau sur mon PC
+Demande d'origine : DEM-001 · Lot : LOT-001
+Statut : En analyse
+
+**En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, mes modifications étant prises en compte au retour du réseau, **afin d'**avoir le même comportement sur mes deux appareils.
+
+> Convention : les critères marqués **(P)** sont des propositions de Pepper qui ne découlent pas directement d'une réponse du commanditaire. Ils sont soumis à sa validation en E6.
+
+## Analyse d'écart (cahier des charges et existant)
+- **Nouveau dans le lot** : US conditionnelle depuis la v0.2. Le commanditaire a retenu l'option b) de Q-DEM001-39 : le PC est utilisable hors ligne dès LOT-001 (DEC-013), comme le recommandait l'architecte.
+- **Transposition de US-018** : mêmes règles que sur le smartphone (RG-021, RG-035, RG-036, RG-047 à RG-049).
+- **Spécificités du PC** :
+  - l'application s'utilise depuis une adresse web et peut être installée comme une application (ENF-07, DEC-006) ;
+  - pour l'ouvrir sans réseau, il faut l'avoir ouverte au moins une fois avec le réseau, sur ce PC et dans ce navigateur ;
+  - limite F14 : quand la session Google du navigateur a expiré, la mise à jour avec l'autre appareil attend un geste de reconnexion ; l'utilisation sur les données du PC continue ;
+  - les données du PC sont conservées par le navigateur : si l'utilisateur efface les données de son navigateur, il efface aussi celles de l'application sur ce PC.
+- **Existant.** Aucune fonctionnalité livrée.
+
+## Règles de gestion applicables (RG-xxx)
+- RG-021 : consultation et saisie sans réseau, sur le smartphone et sur le PC ; prise en compte au retour du réseau.
+- RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
+- RG-017 : exception du PC quand la session Google du navigateur a expiré (F14).
+- RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
+- RG-047 à RG-049 (proposées) : réparations après fusion.
+- RG-019 : la première connexion nécessite le compte Google, donc le réseau.
+- ENF-04, ENF-06 (validée), ENF-07.
+
+## Critères d'acceptation
+1. **CA-1** — Sur le PC, l'utilisateur s'étant déjà connecté au moins une fois dans ce navigateur, l'application s'ouvre sans réseau, depuis son adresse web ou depuis l'application installée, et affiche les données présentes sur le PC.
+2. **CA-2** — Sans réseau, l'utilisateur peut effectuer toutes les opérations du lot 1 : créer, modifier et supprimer des objectifs, sous-objectifs, tâches et sous-tâches ; terminer, rouvrir, abandonner et reprendre des tâches. Les règles de gestion s'appliquent comme avec le réseau.
+3. **CA-3** — Sans réseau, l'application indique qu'elle est hors ligne et que des modifications ne sont pas encore synchronisées, de la même façon que sur le smartphone **(P : forme fixée en E4)**.
+4. **CA-4** — Au retour du réseau, si la session Google du navigateur est active, les modifications sont enregistrées dans le Drive sans action de l'utilisateur, et celles faites entre-temps sur l'autre appareil sont intégrées. L'indication « non synchronisé » disparaît une fois l'enregistrement fait.
+5. **CA-5** — *(limite F14)* Si la session Google du navigateur a expiré, l'utilisateur continue de consulter et de saisir sur les données du PC. L'application indique qu'une reconnexion est nécessaire pour la mise à jour avec l'autre appareil ; après le geste de reconnexion, les modifications en attente sont enregistrées et celles de l'autre appareil intégrées. Aucune n'est perdue.
+6. **CA-6** — Aucune modification faite sans réseau n'est perdue, même si l'onglet ou le navigateur est fermé, ou le PC éteint, avant le retour du réseau (ENF-06). Elle est enregistrée dans le Drive au premier retour du réseau, application ouverte et session Google active.
+7. **CA-7** — Il n'y a pas de durée maximale d'utilisation sans réseau **(P)**.
+8. **CA-8** — Au retour du réseau, la règle de conflit, l'information sur les valeurs écartées et les règles de réparation proposées s'appliquent comme sur le smartphone (RG-036, RG-047 à RG-049 ; US-017, CA-6, CA-8 et CA-10).
+9. **CA-9** — Quand l'accès au compte Google est perdu (retiré ou expiré), le PC se comporte comme sans réseau (CA-2 à CA-6), et l'application propose de se reconnecter (RG-035 ; US-022, CA-7).
+
+## Cas limites et cas d'erreur
+- Première ouverture de l'application sur ce PC, ou dans ce navigateur, sans réseau : impossible ; le navigateur ne peut pas afficher l'application **(P : message éventuel fixé en E4)**.
+- Données du navigateur effacées par l'utilisateur alors que des modifications ne sont pas encore enregistrées dans le Drive : ces modifications sont perdues ; l'application ne peut pas l'empêcher. Les données sont rechargées depuis le Drive à la connexion suivante **(P : avertissement à prévoir dans le guide utilisateur)**.
+- Deux onglets de l'application ouverts sur le même PC sans réseau : aucune modification n'est perdue, et les deux onglets affichent les mêmes données **(P)**.
+- Navigateur en mode « navigation privée » : les données ne sont pas conservées après la fermeture ; l'usage hors ligne n'est pas garanti **(P)**.
+- Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié **(P)**.
+- Réseau intermittent : aucune modification n'est enregistrée deux fois, et aucune n'est perdue.
+- Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
+
+## Hors périmètre
+- Synchronisation en arrière-plan, application fermée.
+- Renouvellement de la session Google sans geste de l'utilisateur après son expiration (impossible sans serveur, DEC-007).
+- Utilisation sur un PC partagé sans session personnelle.
+
+## Impacts architecture
+
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.1.6), ADR-001, ADR-003, ADR-004, ADR-010.*
+
+- **Composants touchés** :
+  - PWA :
+    - service worker Workbox en **précache** de toute l'application, ce qui permet l'ouverture sans réseau depuis l'adresse web ou depuis l'application installée (CA-1) ;
+    - invitation à mettre à jour, sans rechargement forcé pendant une saisie ;
+  - `DepotLocal` IndexedDB (Dexie), **cloisonné par compte** (DEC-016), une transaction par cas d'usage ;
+  - `FournisseurAuth` web : Google Identity Services **chargé à la demande et de façon non bloquante**. Le script de Google ne se charge pas hors ligne : l'application démarre à partir de l'identité mise en cache (R12) ;
+  - `synchronisation` : déclenchée par les événements `online`, `visibilitychange` et par le geste de reconnexion (CA-4, CA-5).
+- **Plusieurs onglets ouverts** (cas limite) :
+  - un seul `appareilId` par profil de navigateur ;
+  - **Web Locks API** (`navigator.locks`) : un seul onglet à la fois exécute le cycle de synchronisation et écrit le fichier de l'appareil dans le Drive. Sans ce verrou, deux onglets pourraient écrire chacun une version du même fichier ;
+  - l'HLC est lue et avancée dans la transaction IndexedDB, donc partagée entre onglets ;
+  - l'actualisation de l'affichage d'un onglet à l'autre se fait par observation de la base (`liveQuery` de Dexie, ou `BroadcastChannel`).
+- **Stockage et éviction** :
+  - l'application demande `navigator.storage.persist()` au premier lancement. Son état est visible dans l'écran « État de la synchronisation », et un avertissement s'affiche si le stockage n'est pas persistant ;
+  - si les données du navigateur sont effacées, seules les modifications non déposées sont perdues. Le dépôt 5 s après chaque modification réduit cette fenêtre au minimum ;
+  - **navigation privée** : stockage temporaire, aucune garantie. L'application la détecte si possible, sinon elle se contente de la mention dans le guide utilisateur.
+- **Données** : aucune nouvelle donnée ; même modèle que sur le smartphone.
+- **Accès Google** :
+  - jeton d'accès d'une heure, en mémoire ;
+  - une fois la session Google du navigateur expirée, une nouvelle demande de jeton exige un geste de l'utilisateur (CA-5, F14). Entre-temps, l'application continue de fonctionner ;
+  - aucun renouvellement en arrière-plan, puisqu'il n'y a pas de serveur (DEC-007).
+- **Sécurité** :
+  - CSP stricte : seules les origines Google sont autorisées ;
+  - aucun jeton dans IndexedDB ;
+  - données au repos dans le profil du navigateur, lisibles par toute personne qui utilise ce profil (RG-043). Parades : l'action « Supprimer les données de cet appareil » (DEC-015) et la recommandation de ne pas utiliser un PC partagé.
+- **Exigences non fonctionnelles** :
+  - ouverture hors ligne de la PWA installée en moins de 2 s ;
+  - action locale en moins de 100 ms ;
+  - intégration à l'ouverture en moins de 10 s si la session est active ;
+  - navigateurs cibles : Chrome et Edge pour ordinateur.
+- **Risques** :
+  - R12 : chargement du script de Google hors ligne ;
+  - R15 : éviction du stockage ;
+  - R3 : friction de la reconnexion ;
+  - comportement réel de `storage.persist()` pour une PWA installée, à observer pendant le test technique (§3.4) ;
+  - deux onglets : traités par le verrou.
+- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
+
+## Impacts ergonomie
+
+## Tests métiers
+À rédiger en E5 : `tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`.
+
+## Questions ouvertes
+Aucune. Les critères (P) sont soumis à la validation du commanditaire en E6.
+
+## Historique (validations du commanditaire, précisions)
+| Date | Événement |
+|---|---|
+| 2026-10-20 | v0.2 : US conditionnelle au backlog (Q-DEM001-39). |
+| 2026-10-21 | Intégration à LOT-001 par décision du commanditaire (Q-DEM001-39 b, DEC-013). Fichier détaillé créé (Pepper, v0.5). |

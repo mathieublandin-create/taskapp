@@ -10,11 +10,11 @@ Statut : En analyse
 - **Confirmé** : Q-DEM001-4.1 c) (consultation et saisie sans réseau) ; smartphone prioritaire (complément du commanditaire).
 - **Modifié en v0.4** : l'US était proposée pour le lot suivant LOT-001. Le commanditaire l'a intégrée à LOT-001 (DEC-002), conformément à la recommandation de l'architecte (S3) : la mécanique de conservation des saisies sur l'appareil est de toute façon nécessaire au lot 1 (règle de conflit entre appareils connectés, perte de l'accès Google traitée comme une coupure de réseau, Q-DEM001-22.2 c).
 - **Précisé** par Q-DEM001-23 : conflits résolus information par information, valeurs écartées signalées.
-- **Smartphone Android uniquement** (DEC-001). Le PC relève de US-031, selon Q-DEM001-39, désormais P1.
+- **Smartphone Android uniquement** (DEC-001). Le PC relève de US-031, également intégrée à LOT-001 (Q-DEM001-39 b, DEC-013) : mêmes règles, transposées au PC.
 - **Existant.** Aucune fonctionnalité livrée.
 
 ## Règles de gestion applicables (RG-xxx)
-- RG-021 : consultation et saisie sans réseau ; prise en compte au retour du réseau ; smartphone prioritaire.
+- RG-021 : consultation et saisie sans réseau, sur le smartphone et sur le PC ; prise en compte au retour du réseau ; smartphone prioritaire.
 - RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
 - RG-047 à RG-049 (proposées) : réparations après fusion.
@@ -40,7 +40,7 @@ Statut : En analyse
 - Mise à jour avec l'autre appareil quand l'application est fermée : hors périmètre ; elle a lieu à la prochaine ouverture.
 
 ## Hors périmètre
-- Utilisation sans réseau sur le PC (US-031, selon Q-DEM001-39).
+- Utilisation sans réseau sur le PC (US-031, dans le même lot).
 - Synchronisation en arrière-plan, application fermée (lot ultérieur).
 - Application pour iPhone (exclue en v1, DEC-001).
 
@@ -71,10 +71,7 @@ Statut : En analyse
 - **Risques** :
   - R13 : maturité et performances du module SQLite pour Capacitor. Parade : adaptateur derrière un port, et repli possible sur l'IndexedDB de la WebView, acceptable sur Android ;
   - R2 : renouvellement silencieux du jeton.
-- **Q-DEM001-39 (PC)** : si l'option b est retenue, le même périmètre s'applique au PC, avec trois ajouts :
-  - service worker qui met en cache l'application ;
-  - chargement de Google Identity Services **à la demande et non bloquant**, car le script Google ne se charge pas hors ligne ;
-  - `navigator.storage.persist()`.
+- **PC** : le hors ligne du PC relève de US-031, entrée dans le lot par DEC-013. Le noyau est le même ; les spécificités du PC sont décrites dans les impacts architecture de US-031.
 - **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
 
 ## Impacts ergonomie
@@ -83,10 +80,11 @@ Statut : En analyse
 À rédiger en E5 : `tests/features/US-018-utiliser-l-application-sans-reseau-sur-mon-smartphone.feature`.
 
 ## Questions ouvertes
-- **Q-DEM001-39 (P1)** : hors ligne sur le PC. Si l'option b) est retenue (même lot), US-031 rejoint LOT-001 ou le périmètre de cette US est étendu au PC.
+Aucune. Q-DEM001-39 a été répondue le 2026-10-21 (b, DEC-013) : le PC fait l'objet de US-031, dans le même lot. Les critères (P) sont soumis à la validation du commanditaire en E6.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
 |---|---|
 | 2026-10-20 | v0.1 et v0.2 : US au backlog, proposée pour le lot suivant LOT-001. |
 | 2026-10-20 | Intégration à LOT-001 par décision du commanditaire (DEC-002). Fichier détaillé créé (Pepper, fin de E1, v0.4). |
+| 2026-10-21 | v0.5 (Pepper) : Q-DEM001-39 b) (DEC-013) ; le PC est traité par US-031, dans le même lot. |

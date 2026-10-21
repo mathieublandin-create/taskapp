@@ -1,6 +1,6 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.3 (brouillon), 2026-10-20.** Auteur : Starck, architecte logiciel.
+> **Version 0.4 (brouillon), 2026-10-21.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
 > Toutes les décisions sont au statut **Proposé**. Elles passeront au statut « Accepté » à la clôture (E17) du lot qui les met en œuvre.
 
@@ -11,6 +11,7 @@
 | 0.1 | 2026-10-20 | Starck | DEM-001, DEM-002, cahier des charges v0.2 et v0.3, LOT-001 (proposé), réponses Q-DEM001-1 à 20 et compléments du commanditaire | Création. Architecture *local-first* sans serveur applicatif. Base de code TypeScript unique (PWA pour le PC, Capacitor pour le smartphone). Synchronisation par Google Drive (état fusionnable par appareil). Intégration Google Calendar par réconciliation déclarative. ADR-001 à ADR-011 proposés. Avis sur LOT-001 dans `avis-dependances-lot1.md`. Décisions DS-01 à DS-20 et réponses aux points de testabilité d'Anthony (§11). |
 | 0.2 | 2026-10-20 | Starck | **DEC-011** (commanditaire) : « le fuseau horaire est celui de l'appareil, on enregistre en base les éléments en utc » | ADR-011 révisé : la journée est celle du fuseau de l'appareil (RG-008 maintenue), les instants sont stockés en UTC ; l'option « fuseau de l'agenda » est écartée. Introduction d'un fuseau technique unique pour l'agenda (`Parametres.fuseauAgenda`, valeur selon Q-DEM001-37). Mise à jour de §4.4.1, §6.1, §6.4, §8 (F3 réécrit, ajout de P-T1), §10 (PO-5), §11 (DS-08, DS-11, DS-18, DS-19, PT-02, PT-06, PT-07, PT-08) et ADR-006. |
 | 0.3 | 2026-10-20 | Starck | **DEC-012** (commanditaire), qui remplace DEC-011 : « je change d'avis, reste sur un agenda qui est aligné sur le fuseau horaire Français métropolitain » | ADR-011 révisé : fuseau de référence **fixe Europe/Paris** (constante) pour la journée, les rappels et les créneaux ; instants en UTC. Suppression du paramètre de fuseau de l'agenda et de l'enregistrement du fuseau de l'appareil. §8.1 : A-F1, A-F2, A-F4 et A-F5 sans objet ; A-F3 et P-T1 reformulés ; nouveau point A-F6 (affichage en voyage). Ajout de PT-16 (changements d'heure du 25/10/2026 et du 28/03/2027). Mise à jour d'ADR-006, d'ADR-008 et de l'avis sur le lot 1. |
+| 0.4 | 2026-10-21 | Starck | E3 de LOT-001 ; RG-043 (réponse « non » à Q-22.3 : données conservées sur l'appareil à la déconnexion) ; cahier des charges v0.4 (RG-043 à RG-054) | Alignement sur RG-043, DEC-013 à DEC-016 : plus aucun effacement à la déconnexion ; action distincte de suppression des données (DEC-015) ; PC hors ligne dès le lot 1 (DEC-013, US-031) ; base locale **cloisonnée par compte** (§4.1.4, §4.1.5, §7.1, DS-07, ADR-004). Ajouts issus de l'analyse d'impact : empreinte SHA-256 des fichiers Drive et `generation` du manifeste (RG-044) ; registre « cycle de vie » unique (état et dates) ; conséquences des suppressions dérivées à la lecture (RG-046, RG-047) ; réparation des hiérarchies (RG-048) ; incohérences dérivées (RG-049) ; chargement non bloquant de Google Identity Services. Nouveaux risques R11 à R14. Test technique préalable R1/R2 : `test-technique-R1-R2.md`. |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -259,15 +260,40 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
 | Compte Google Workspace : application « interne » | Ni vérification ni avertissement | Seulement si le compte du commanditaire est un compte Workspace |
 
 #### 4.1.4 Identité et appareils
-- Le compte est identifié par la claim `sub`. Si un autre compte se connecte sur un appareil, la base locale du compte précédent est d'abord synchronisée, puis effacée. Il n'y a jamais de mélange entre comptes.
+- Le compte est identifié par la claim `sub`. **La base locale est cloisonnée par compte** : un espace de stockage (base IndexedDB, ou fichier SQLite) par `sub`, nommé d'après une empreinte de ce `sub`. Un autre compte qui se connecte sur l'appareil ouvre son propre espace et ne voit jamais les données du précédent (RG-018, US-022 CA-9). Il n'y a jamais de mélange entre comptes.
+- **DEC-016** : les données du compte précédent sont **conservées à part** sur l'appareil, invisibles pour l'autre compte. C'est le comportement natif du cloisonnement. Chaque espace de stockage a sa propre synchronisation, et seul l'espace du compte connecté est synchronisé.
 - Chaque installation reçoit un `appareilId` (UUID) au premier lancement.
 
 #### 4.1.5 Perte d'accès (RG-035, Q-DEM001-22)
 - Une erreur `401` persistante, `invalid_grant` ou une révocation fait passer l'application à l'état « accès Google perdu ».
 - L'application reste utilisable comme hors ligne (recommandation Q-22.2 c). Les modifications s'accumulent localement, puis sont déposées dans Drive après la reconnexion.
 - L'application **ne supprime jamais** d'événement Google à la suite d'une déconnexion ou d'une révocation.
-- **Déconnexion volontaire** (Q-22.3 a) : l'application dépose d'abord ce qui est en attente, puis efface la base locale. Si le dépôt échoue, elle demande une confirmation explicite qui précise le nombre de modifications perdues.
+- **Déconnexion volontaire (RG-043)** : l'application **n'efface pas** les données locales, y compris les modifications non encore déposées.
+  - Elle tente un dernier dépôt si le réseau et le jeton le permettent. Sinon, elle indique le nombre de modifications en attente.
+  - Elle efface ensuite la session : jeton en mémoire, identifiant de compte actif et, sur Android, l'état d'identification du Credential Manager.
+  - Les données ne sont plus affichées jusqu'à la reconnexion. À la reconnexion avec le même compte, l'espace local est rouvert et les modifications en attente sont déposées.
+- **« Supprimer les données de cet appareil » (DEC-015)** : action distincte de la déconnexion. Elle porte sur l'espace du compte connecté et se déroule ainsi (garde-fou encore à valider) :
+  - dépôt des modifications en attente ;
+  - si le dépôt est impossible, confirmation qui indique le nombre de modifications perdues ;
+  - suppression de l'espace de stockage du compte sur l'appareil.
 - L'action « Retirer l'accès » appelle le point de révocation de Google, puis applique la déconnexion.
+
+#### 4.1.6 PC hors ligne (DEC-013, US-031)
+- **Démarrage sans réseau** : le service worker (Workbox) met en cache l'ensemble de l'application, en mode « précache ». L'application s'ouvre sans réseau une fois installée ou visitée.
+- **Google Identity Services** : le script `accounts.google.com/gsi/client` est chargé **à la demande et de façon non bloquante**. Il ne se charge pas hors ligne. L'application démarre sans lui, à partir de l'identité mise en cache, et le charge au retour du réseau (R12).
+- **Session expirée (F14)** : l'application reste utilisable, puisque les saisies vont dans IndexedDB. Elle affiche « reconnexion nécessaire pour synchroniser » ; le nombre de modifications en attente est visible. Le dépôt reprend après le geste de reconnexion.
+- **Éviction du stockage par le navigateur** :
+  - au premier lancement, l'application demande `navigator.storage.persist()`. Chrome et Edge l'accordent en général à une PWA installée. L'état obtenu est affiché dans l'écran « État de la synchronisation » ;
+  - tant que le stockage n'est pas persistant, le navigateur peut évincer les données de l'origine en cas de manque d'espace ;
+  - l'utilisateur peut aussi les effacer lui-même (« Effacer les données de navigation », désinstallation de la PWA).
+
+  Dans ces cas, seules les **modifications non déposées** sont perdues ; tout le reste est dans le Drive et rechargé à la reconnexion. Parades : dépôt 5 s après chaque modification ; indicateur permanent des modifications en attente ; avertissement si le stockage n'est pas persistant (R15).
+- **Plusieurs onglets** :
+  - un seul `appareilId` par profil de navigateur ;
+  - un verrou `navigator.locks` garantit qu'un seul onglet exécute la synchronisation et écrit le fichier de l'appareil dans le Drive ;
+  - l'HLC est avancée dans la transaction IndexedDB ;
+  - l'affichage est actualisé d'un onglet à l'autre par observation de la base.
+- Navigateurs cibles : Chrome et Edge pour ordinateur. Firefox et Safari ne sont pas ciblés en v1.
 
 ### 4.2 Google Drive : stockage et format (ADR-003)
 
@@ -294,11 +320,29 @@ Objectifs et Tâches/
   - les cycles et les profondeurs illégales sont corrigés en annulant le déplacement le plus ancien, qui est consigné comme valeur écartée ;
   - les incohérences d'état ne sont pas corrigées automatiquement : elles sont **signalées** à l'utilisateur, par exemple « tâche terminée avec une sous-tâche à faire ».
 
-  Les règles exactes de réparation sont à fixer par Pepper dans les US concernées (voir F12).
+  Les règles exactes de réparation sont fixées par RG-047 à RG-049 (proposées, cahier des charges v0.4).
+- **Choix de mise en œuvre (E3 de LOT-001)** :
+  - **suppressions** (RG-046, RG-047) : leurs conséquences sont **dérivées à la lecture**, sans écriture en cascade :
+    - un lien vers un objectif supprimé est ignoré ;
+    - un sous-objectif dont le parent est supprimé devient principal ;
+    - une sous-tâche dont la tâche parente est supprimée est considérée comme supprimée et signalée.
+
+    La convergence est garantie sans écriture de réparation ;
+  - **hiérarchies** (RG-048) : la réparation est écrite. Le déplacement le plus ancien (HLC) est annulé ; la valeur précédente est lue dans le journal ; une création, reconnue à ce que le HLC de `parentId` est égal au HLC de création, n'est jamais annulée. Les deux appareils écrivent la même réparation, et le signalement a un identifiant déterministe ;
+  - **incohérences d'état** (RG-049) : elles sont **dérivées**, et signalées tant qu'elles existent ;
+  - **état d'une tâche** : l'état et ses dates (`etat`, `dateFin`, `dateAbandon`, `abandonParCascade`) forment **un seul registre**, fusionné comme une seule information. Une tâche abandonnée ne peut ainsi jamais porter de date de fin ;
+  - **objectifs d'une sous-tâche** : ceux de la tâche parente, dérivés à la lecture.
 - **Taille** : moins de 5 Mo non compressé à 5 ans d'usage (ENF-T-05), soit environ 0,5 à 1 Mo compressé. Le fichier est réécrit en entier à chaque dépôt, ce qui est acceptable. Le journal pourra être partitionné par année si nécessaire.
 - **Versions de schéma** : chaque fichier porte un `schemaVersion`.
   - Un appareil lit les schémas antérieurs et les migre (Zod).
   - Un appareil qui rencontre un schéma **plus récent** que le sien passe en **lecture seule** et invite l'utilisateur à mettre l'application à jour. C'est utile car la PWA se met à jour avant l'application mobile.
+- **Empreinte** : chaque fichier porte une empreinte SHA-256 de son contenu.
+  - Un fichier dont l'empreinte ne correspond pas a été modifié hors de l'application. Il est traité comme **illisible** (RG-044) et n'est jamais fusionné.
+  - Ce mécanisme couvre aussi les modifications manuelles qui laissent le fichier lisible.
+- **Génération des données (RG-044 b, proposée)** : `manifeste.json` porte un identifiant `generation`.
+  - « Repartir de zéro » crée une nouvelle génération.
+  - Un appareil qui détient une génération différente signale ses modifications non déposées comme valeurs écartées, efface ses données locales du compte, puis relit le Drive.
+  - Une erreur transitoire (`5xx`, `429`, réseau) n'est jamais interprétée comme une absence de données.
 - **Sauvegarde** : Drive conserve l'historique des révisions de chaque fichier. Chaque appareil possède en outre une copie complète. Si les fichiers sont supprimés ou modifiés hors de l'application (Q-22.4), l'appareil le détecte (fichier absent ou invalide), avertit l'utilisateur et propose de **réécrire son état local**. C'est faisable sans coût particulier.
 - **Appareils obsolètes** : le fichier d'un appareil inactif depuis plus de 90 jours, par exemple une ancienne installation, est fusionné puis archivé. Les pierres tombales sont conservées en v1, car leur volume est négligeable.
 
@@ -508,7 +552,8 @@ erDiagram
   - `Trusted Types` si le navigateur le permet.
 - **Données au repos** :
   - Android : stockage privé de l'application (bac à sable) ; un chiffrement SQLCipher est possible plus tard ;
-  - PC : IndexedDB du profil de navigateur, effacée à la déconnexion. Ne pas utiliser l'application sur un PC partagé sans session personnelle ;
+  - PC : IndexedDB du profil de navigateur ;
+  - **conséquence de RG-043** : après une déconnexion, les données **restent au repos sur l'appareil**. Sur Android, elles restent dans le bac à sable de l'application ; elles sont accessibles à qui dispose du téléphone déverrouillé et peut se reconnecter avec le compte Google enregistré. Sur PC, elles sont lisibles par toute personne qui utilise le même profil de navigateur. C'est une tension avec ENF-05, que le commanditaire a traitée par l'action « Supprimer les données de cet appareil » (DEC-015). Recommandation d'usage : ne pas utiliser l'application sur un PC partagé sans session personnelle du système ;
   - Drive : protégé par le compte Google. Un chiffrement côté client est possible en option (A7), non recommandé en v1.
 - **Intégrité des fichiers Drive** : validation par Zod à la lecture. Un fichier invalide est ignoré, l'utilisateur est averti, et ce fichier n'écrase jamais l'état local.
 - **Chaîne d'approvisionnement** : dépendances verrouillées, audit en intégration continue (`pnpm audit` ou OSV-Scanner), mises à jour automatisées (Dependabot ou Renovate), Semgrep.
@@ -605,7 +650,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 
 | Id | Risque | Probabilité | Impact | Parade |
 |---|---|---|---|---|
-| R1 | `drive.file` : les fichiers créés par le client Android ne seraient pas visibles du client web, ou inversement, alors que les deux clients appartiennent au même projet Cloud | Faible | Bloquant pour la synchronisation | **Mise au point technique au lot 1, avant E9.** Repli : `drive.appdata` (A6 b). |
+| R1 | `drive.file` : les fichiers créés par le client Android ne seraient pas visibles du client web, ou inversement, alors que les deux clients appartiennent au même projet Cloud | Faible | Bloquant pour la synchronisation | **Test technique préalable**, protocole dans [`test-technique-R1-R2.md`](test-technique-R1-R2.md), avant E9. Repli : `drive.appdata` (arbitrage A6 à rouvrir, car DEC-009 retient le dossier visible). |
 | R2 | Renouvellement silencieux du jeton sur Android en arrière-plan | Moyenne | Pas de synchronisation d'arrière-plan | Mise au point technique ; repli : synchronisation au premier plan seulement |
 | R3 | Friction du renouvellement du jeton sur la PWA du PC (après 1 h) | Moyenne | Gêne d'usage sur PC | Synchronisation au geste ; évolution vers Tauri ou une fonction d'échange de jeton (§4.1.2) |
 | R4 | Horloge d'un appareil déréglée, qui fausse la règle « la plus récente » | Faible | Valeur écartée à tort | HLC, avertissement en cas de décalage supérieur à 24 h, journal des valeurs écartées |
@@ -615,6 +660,11 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | R8 | Évolution des règles Google : classification des scopes, vérification des développeurs Android | Moyenne | Délais ou coûts imprévus | Veille ; scopes minimaux ; arbitrages A2 et A5 |
 | R9 | Taille du lot 1, alourdi par le socle transverse | Élevée | Retard du premier incrément | Voir `avis-dependances-lot1.md` : mise au point technique préalable et découpage |
 | R10 | Notifications Google Calendar désactivées ou non installées sur le smartphone | Moyenne | Rappels non perçus | Vérification guidée à la connexion de l'agenda ; notification de secours sur smartphone (Q-38 b) |
+| R11 | L'origine de la PWA, sans domaine propre (DEC-006), n'est pas acceptée par l'écran de consentement en production (domaine autorisé à vérifier), ou un écran d'avertissement s'affiche malgré des scopes non sensibles | Moyenne | Bloque US-022 CA-8 sur PC | Test technique R1/R2. Repli : domaine personnalisé (environ 10 à 15 € par an, arbitrage du commanditaire). |
+| R12 | Le script Google Identity Services ne se charge pas hors ligne sur PC | Certaine si Q-39 b | Démarrage hors ligne bloqué | Chargement du script à la demande et non bloquant ; application utilisable sans lui |
+| R13 | Maturité ou performances du module SQLite pour Capacitor | Faible | Retard d'US-018 | Adaptateur derrière `DepotLocal` ; repli sur l'IndexedDB de la WebView Android |
+| R14 | Erreur dans la fusion ou la réparation (perte ou divergence) | Moyenne | Bloquant (perte de données) | Tests de propriétés (fast-check), banc Cucumber à deux appareils, recette technique E14 ciblée |
+| R15 | Éviction ou effacement par le navigateur de l'IndexedDB du PC avant le dépôt de modifications | Faible | Perte des seules modifications non déposées | `storage.persist()`, dépôt 5 s après la modification, indicateur des modifications en attente, avertissement si le stockage n'est pas persistant (§4.1.6) |
 
 ### 10.2 Points ouverts
 
@@ -623,7 +673,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | PO-1 | Système du smartphone | A1 | Choix des modules natifs iOS, coûts |
 | PO-2 | Sens du délai d'une heure | Q-DEM001-21, F1 | Critères d'acceptation de US-017 |
 | PO-3 | Granularité de la règle « la plus récente l'emporte » | Q-DEM001-23 | Regroupement des champs dans le CRDT |
-| PO-4 | Comportement en cas de perte d'accès et de déconnexion | Q-DEM001-22 | US-022 |
+| PO-4 | ~~Effacement volontaire et changement de compte~~ : **tranché** (DEC-015, DEC-016). Reste à valider le garde-fou de DEC-015. | Pepper | US-022 |
 | PO-5 | ~~Fuseau de référence~~ : **tranché par DEC-012** (Europe/Paris). Restent A-F3, A-F6 et la confirmation de P-T1. | Pepper, Steeve | Lots « Rappels » et « Suivi du temps » ; aucun impact sur le lot 1 |
 | PO-6 | Scope `calendar.events.owned` ou `calendar.events` | Vérification dans la console Google | ADR-005 (lot avec agenda) |
 | PO-7 | Hébergeur du dépôt et de l'intégration continue (GitHub ?) | Commanditaire ou Jarvis | Conventions d'Anthony |
@@ -643,7 +693,7 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 | DS-04 Flux OAuth | **Clients publics uniquement**, sans aucun secret : Google Identity Services, modèle « jeton », sur le web ; Credential Manager et AuthorizationClient sur Android ; SDK GoogleSignIn (PKCE interne) sur iOS. Les identifiants clients ne sont pas secrets : ils sont injectés à la construction par environnement (variables `VITE_GOOGLE_CLIENT_ID_WEB`, configuration Android par variante de build). Il existe un projet Google Cloud pour le développement et la recette, et un autre pour la production. | §4.1, §7.4, ADR-004 |
 | ★ DS-05 Scopes | Lot 1 : `openid`, `email`, `drive.file` (non sensibles). Lot avec agenda : ajout par **autorisation incrémentale** de `calendar.events.owned`, ou à défaut de `calendar.events`. Un scope n'est demandé qu'au premier usage de la fonctionnalité concernée. Le refus d'un scope dégrade la fonctionnalité concernée sans bloquer les autres (erreur `PorteeInsuffisante`). | §4.1.1, ADR-005 |
 | DS-06 `CoffreJetons` | Port conservé. Il ne conserve **jamais de jeton de rafraîchissement** produit par notre code. Web : jeton d'accès **en mémoire uniquement**, perdu à la fermeture de l'onglet et obtenu à nouveau par Google Identity Services. Android : jeton d'accès en mémoire, renouvellement délégué à Google Play services. iOS : délégué au SDK GoogleSignIn (trousseau). La règle de `conventions.md` §8, « stockage sécurisé de la plateforme », est donc satisfaite par délégation. | §4.1.2, ADR-004 |
-| ★ DS-07 Stockage local | Port `DepotLocal`. Web : **IndexedDB via Dexie**. Natif : **SQLite** (`@capacitor-community/sqlite`). Chaque cas d'usage écrit en **une transaction** les champs modifiés avec leur HLC et les entrées du journal métier. Une modification validée localement survit à un arrêt brutal. Pas de chiffrement au repos en v1 : bac à sable Android, profil de navigateur ; SQLCipher est possible plus tard. Données effacées à la déconnexion. | §3.2, ADR-010 |
+| ★ DS-07 Stockage local | Port `DepotLocal`. Web : **IndexedDB via Dexie**. Natif : **SQLite** (`@capacitor-community/sqlite`). Chaque cas d'usage écrit en **une transaction** les champs modifiés avec leur HLC et les entrées du journal métier. Une modification validée localement survit à un arrêt brutal. Pas de chiffrement au repos en v1 : bac à sable Android, profil de navigateur ; SQLCipher est possible plus tard. **Un espace de stockage par compte (`sub`)**. Les données sont **conservées à la déconnexion** (RG-043). Un autre compte qui se connecte ne voit pas ces données, conservées à part (DEC-016). Leur effacement se fait seulement par l'action « Supprimer les données de cet appareil » (DEC-015) ou par « repartir de zéro » (RG-044 b). | §3.2, ADR-010 |
 | DS-08 Identifiants | **UUID v7** (RFC 9562 ; horodatage UTC intégré), générés sur l'appareil par le port `GenerateurIdentifiants`. Ils sont globalement uniques et triables par date de création. Exceptions, à clé naturelle ou déterministe : `SaisieTemps` (tacheId, jour), `LienTacheObjectif` (tacheId, objectifId), `ExceptionCapacite` et `BilanSoir` (date), identifiants d'événements Google (`hash` en base32hex), `AlerteCreneau`. | §6.1 |
 | DS-09 Traitements planifiés | Délégation à Google Calendar (séries récurrentes) et **rattrapage idempotent** par le premier appareil actif. Aucune exécution à heure fixe côté application, hormis les notifications locales programmées à l'avance sur le smartphone, en secours. | §5, ADR-006, ADR-007 |
 | ★ DS-10 Format dans Drive | Un dossier visible ; **un fichier d'état par appareil** (`appareils/<appareilId>.etat.json.gz`, JSON compressé) et un `manifeste.json`. Le fichier porte `schemaVersion` (entier croissant) et `versionApplication`. Lecture des schémas antérieurs par **migrations** pures et testées (Zod). Un schéma plus récent que celui de l'appareil fait passer l'application en **lecture seule** et demande une mise à jour. Pas de fichier unique partagé. | §4.2, ADR-003 |
