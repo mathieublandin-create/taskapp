@@ -73,6 +73,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- Distribution par APK (DEC-021, ADR-012) : ajouter un `.gitignore` avant de créer la clé de signature (Anthony, socle E9) ; questions QC-8 (clé dans les secrets GitHub) et QC-9 (compte gratuit « distribution limitée » ou ADB) posées au commanditaire.
 - ETU-001 (plus tard) : étude d'auto-hébergement sur le Raspberry Pi du commanditaire (option C de `03-architecture/etude-sans-cloud-ou-gratuit.md`).
 - DEC-023 : le dépôt GitHub est actuellement privé ; le passage en public est une action du commanditaire (paramètres du dépôt).
 - Nom « Done Juan » (DEC-017) à répercuter : maquettes et guides (Steeve), cahier des charges et US (Pepper), DAT (Starck), README. Dossier Drive « Done Juan » (DEC-018, V-13).
