@@ -99,3 +99,30 @@ Tour 1 terminé. Un tour 2 sera mené après les corrections et les réponses du
   - ajouter US-024 S16b ;
   - documenter le format `"ERR-030 variante …"` utilisé dans les scénarios.
 - **Reste à faire, en attente du commanditaire** : RG-057 (Q-ERG-16 à 18), Q-LOT-1, Q-REF-1, Q-REF-2.
+
+## Tour 2 — Avis et clôture (2026-10-21)
+
+| US | Pepper | Anthony | Benjamin | Consolidé |
+|---|---|---|---|---|
+| US-022 | Ready | Ready (condition E9 : test R2/R11) | Ready | **Ready** |
+| US-017 | Ready | Ready (condition E9 : test R1) | Ready | **Ready** |
+| US-018 | Ready après PEP-12 | Ready | Ready | **Ready** (PEP-12 corrigée) |
+| US-031 | Ready après PEP-12 | Ready | Ready | **Ready** (PEP-12 corrigée) |
+| US-001, 023, 002, 024, 003, 025 | Ready | Ready | Ready | **Ready** |
+
+Starck et Steeve étaient déjà Ready au tour 1 et ont traité toutes leurs remarques.
+
+- **Décisions du commanditaire intégrées** : DEC-021 (APK direct), DEC-025 (RG-057, RG-048, RG-058, US-017 en 4 incréments), DEC-026 (prochaine ouverture). Documents : CdC v0.9.1, 243 scénarios, DAT v0.8, ADR-012, guide v0.2.6, conventions v0.2.
+- **Corrections de fin de tour** : PEP-12 (RG-057 dans les impacts architecture d'US-018 et US-031, et dans LOT-001), PEP-13 (RG-057 dans le CdC), PEP-14 (guide et parcours sans Google Play), PEP-15 (conventions : deux bandeaux distincts, Q-ERG-16 à 18 closes). Toutes traitées.
+- **Suivis non bloquants, reportés en E8 et E9** :
+  - ANT-22 : conventions v0.3, alignées sur DAT v0.8 et ADR-012 ;
+  - ANT-23 : résultat observable d'US-031 S14 ;
+  - ANT-24 : en-têtes des `.feature` (CdC v0.9) ;
+  - BEN-13 : APK et clé de signature ;
+  - BEN-14 : rattachement des scénarios d'US-017 à ses 4 incréments ;
+  - ANT-14 et BEN-2 : ordre de réalisation ;
+  - `.gitignore` à créer avant la clé de signature.
+- **Préalable à E9 pour US-022 et US-017** : le test technique R1, R2 et R11 (actions du commanditaire).
+- **Leçon retenue** : dans les prochaines cérémonies, Jarvis conservera le texte intégral des remarques, et pas seulement leur identifiant.
+
+**Verdict : LOT-001 est Ready. Le refinement est clos ; le lot passe en E8 (contrôle d'explicitation par Anthony).**

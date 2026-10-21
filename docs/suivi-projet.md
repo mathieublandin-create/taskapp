@@ -9,21 +9,21 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 terminée (211 scénarios, dont 88 proposés ; CdC v0.6) ; E6 validée (DEC-018) ; décisions intégrées (CdC v0.7, 219 scénarios, UX v0.2.1) ; E7 refinement : tour 1 terminé (4 US Non Ready), corrections en cours, questions Q-ERG-16 à 18 et Q-LOT-1 au commanditaire ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** (refinement en 2 tours, `ceremonies/refinement-LOT-001.md`) ; E8 à lancer (Anthony) ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-001 | Créer et gérer un objectif | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-002 | Créer et gérer mes tâches | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
-| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Validée | E7 | tous | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
-| US-025 | Abandonner une tâche | LOT-001 | Validée | E7 | tous | Validée le 2026-10-21 (DEC-018) |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-001 | Créer et gérer un objectif | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-002 | Créer et gérer mes tâches | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Prête | E7 → E8 | anthony | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
+| US-025 | Abandonner une tâche | LOT-001 | Prête | E7 → E8 | anthony | Validée le 2026-10-21 (DEC-018) |
 
 ## Validations du commanditaire
 | Date | Étape (E2 / E6 / E16) | Objet | Verdict | Remarques |
@@ -41,7 +41,7 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
-| Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | Questions tranchées (DEC-025), dernières corrections puis avis du tour 2 | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
+| Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
