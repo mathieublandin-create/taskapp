@@ -48,7 +48,9 @@ flowchart TD
     E11 --> E12[E12 Développement US par US<br/>Benjamin]
     E12 --> E13{E13 Revue de code<br/>Anthony}
     E13 -- changements requis --> E12
-    E13 -- approuvé, toutes les US du lot --> E14[E14 Recette des agents<br/>Pepper · Steeve · Starck]
+    E13 -- approuvé, toutes les US du lot --> E13b{E13b Revue de fin de développement<br/>tous les agents}
+    E13b -- non mature --> E12
+    E13b -- mature --> E14[E14 Recette des agents<br/>Pepper · Steeve · Starck]
     E14 --> E15{E15 Anomalies bloquantes ou majeures ?}
     E15 -- oui --> E12
     E15 -- non, itération majeure --> E16{{E16 ★ Recette commanditaire}}
@@ -162,6 +164,25 @@ flowchart TD
 - En cas de changements requis : retour en E12, puis nouvelle revue limitée aux remarques ouvertes.
 - Statut une fois approuvée : **En recette**.
 
+### E13b — Revue de fin de développement (Benjamin, Anthony, Starck, Pepper, Steeve ; animée par Jarvis)
+Une fois toutes les US du lot approuvées en E13, cette revue vérifie que **le lot est mature pour être testé**.
+- **Benjamin** présente l'état du lot : US réalisées, résultats des tests unitaires et Cucumber, couverture, limitations connues, dette signalée.
+- **Anthony** confirme que toutes les revues de code sont approuvées et que la Definition of Done technique est respectée. Il vérifie aussi que la dette est inscrite au registre.
+- **Starck** vérifie la conformité d'ensemble au DAT et le fonctionnement de bout en bout du lot : intégration, synchronisation, déploiement de recette.
+- **Pepper** vérifie que tous les scénarios Cucumber du lot sont exécutables, que les données de test sont prêtes et que rien ne bloque la recette métier.
+- **Steeve** vérifie que les écrans du lot sont présents et utilisables pour la recette d'ergonomie.
+
+Critères de maturité, tous requis :
+- toutes les US du lot sont approuvées en E13 ;
+- les tests unitaires et Cucumber passent en intégration continue, sans régression, et la couverture minimale est atteinte ;
+- les versions de recette sont disponibles : application Android installable et version PC déployée ;
+- aucune remarque bloquante n'est ouverte ;
+- les limitations connues sont listées.
+
+Verdict **Mature** ou **Non mature**. Si le lot n'est pas mature, chaque point bloquant est numéroté `FD-LOT-xxx-n` et renvoyé en E12, puis repasse par E13 et par une nouvelle revue E13b. La règle anti-boucle s'applique.
+
+Le compte rendu est enregistré dans `docs/ceremonies/fin-dev-LOT-xxx.md`.
+
 ### E14 — Recette des agents (en parallèle, une fois toutes les US du lot approuvées)
 | Agent | Type de tests | Référentiel |
 |---|---|---|
@@ -239,7 +260,7 @@ La gravité est proposée par l'agent qui détecte l'anomalie. Une contestation 
 
 ## Statuts
 - **US** : En analyse → Validée → Prête → En conception → En développement → En revue → En recette → Terminée (ou En arbitrage, à toute étape)
-- **Lot** : Proposé → Validé → En préparation (E3–E7) → En réalisation (E8–E13) → En recette (E14–E16) → Clôturé
+- **Lot** : Proposé → Validé → En préparation (E3–E7) → En réalisation (E8–E13b) → En recette (E14–E16) → Clôturé
 
 ## Points de validation du commanditaire
 | Moment | Objet |
