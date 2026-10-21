@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; Q-ERG-12 à 14 tranchées, Q-ERG-15 (nom) en attente ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | E3 terminée (Starck, DAT v0.4) ; E4 terminée (Steeve) ; E5 en cours (Pepper) ; Q-ERG-12 à 14 tranchées, nom de l'application : « Done Juan » (DEC-017) ; test technique R1/R2 en attente d'actions du commanditaire (bloquant avant E9) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -44,6 +44,7 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-017 | 2026-10-21 | Q-ERG-15 Nom de l'application | « Done Juan » (verbatim : « option 2 ») |
 | DEC-013 | 2026-10-21 | Q-DEM001-39 Hors ligne sur PC | b) Le PC est utilisable hors ligne dès LOT-001 : US-031 intégrée au lot |
 | DEC-014 | 2026-10-21 | Q-DEM001-41 Délai d'une heure | Oui : le délai porte uniquement sur les données entre appareils ; la détection d'un créneau déplacé n'y est pas soumise |
 | DEC-015 | 2026-10-21 | Q-DEM001-42.1 Effacement des données | Non à l'action combinée : deux actions distinctes, « Se déconnecter » (données conservées) et « Supprimer les données de cet appareil » |
@@ -62,6 +63,7 @@
 | DEC-010 | 2026-10-20 | A7 Chiffrement Drive | Pas de chiffrement supplémentaire en v1 |
 
 ## Points bloquants
+- Nom « Done Juan » (DEC-017) à répercuter : maquettes et guides (Steeve), cahier des charges et US (Pepper), DAT (Starck), README. Nom du dossier Drive (« Objectifs et Tâches ») à revoir par Steeve en E7.
 - Pour Starck (refinement) : état lu / non lu de la liste « Modifications non retenues » (synchronisé ou local).
 - Test technique R1/R2 (`03-architecture/test-technique-R1-R2.md`) : nécessite des actions du commanditaire (projet Google Cloud, compte de test, téléphone Android, compte d'hébergement, 2 séances d'environ 1 h 30). Bloquant avant E9 de LOT-001.
 - Proposition de Starck à valider en E6 : étendre RG-044 aux fichiers Drive modifiés à la main (traités comme illisibles).
