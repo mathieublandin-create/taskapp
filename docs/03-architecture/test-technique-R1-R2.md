@@ -69,6 +69,14 @@ Chaque étape est consignée dans le tableau de résultats (§5) avec la date, l
 3. **R12** : couper le réseau du PC, puis ouvrir la PWA installée. **Observer** : l'application s'ouvre-t-elle et affiche-t-elle l'identité en cache, sans erreur liée au script de Google ?
 4. Vérifier, dans l'écran « Diagnostic », le résultat de `navigator.storage.persist()` pour la PWA installée (R15).
 
+### 3.5 PC : distinguer un accès retiré d'une session expirée (Q-US-031-1, DAT §4.1.6 bis ; ajouté en v0.10)
+Objet : valider l'hypothèse de conception qui qualifie « accès perdu » seulement sur preuve. Prérequis : connexion réussie au 3.1 ; écran « Diagnostic » journalisant, pour chaque appel, le code de réponse, le code d'erreur de Google Identity Services et l'échéance du jeton (jamais sa valeur).
+1. **Demande de jeton après expiration (session Google active).** Attendre l'expiration du jeton (plus d'une heure) ou recharger la page, puis demander un jeton. **Observer** : un geste de l'utilisateur est-il exigé ? Une fenêtre s'ouvre-t-elle et se ferme-t-elle seule ? Quel code d'erreur si le navigateur bloque la fenêtre ? (Complète R3.)
+2. **Jeton non échu après retrait de l'accès.** Avec un jeton valide (au moins 60 s avant son échéance), retirer l'accès de l'application dans « Compte Google > Sécurité > Applications tierces ». Appeler Drive immédiatement, puis à 1, 5 et 15 min. **Observer** : Drive répond-il `401`, ou accepte-t-il le jeton jusqu'à son échéance ? Dans quel délai le refus apparaît-il ? Si le jeton reste accepté, la ligne « `401` sur jeton non échu » du tableau du §4.1.6 bis disparaît.
+3. **Demande de jeton après le retrait.** Après le retrait (jeton échu ou page rechargée), demander un jeton avec les mêmes scopes. **Observer** : l'écran de consentement s'affiche-t-il de nouveau, ou une erreur est-elle renvoyée (code exact) ? `hasGrantedAllScopes` est-il vrai après un nouveau consentement complet, faux après un consentement partiel ? Les deux cas (accès re-consenti et refus) doivent produire les états du tableau du §4.1.6 bis.
+
+Critère : informatif pour E9 (les états affichés ne dépendent pas du résultat) ; seul le résultat du point 2 peut retirer la détection précoce du retrait (PO-10). Consigner les résultats au §5.
+
 ## 4. Critères de succès
 
 | Risque | Succès si | Bloquant pour E9 ? |
