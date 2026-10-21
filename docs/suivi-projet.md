@@ -41,12 +41,13 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
-| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | 36 répondues ; 4 en attente du commanditaire (Q-US-017-3, A8/CA-13, Q-US-001-1, Q-US-025-2) | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
+| E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | 40/40 répondues (4 par DEC-030) ; intégration puis contrôle final d'Anthony (itération 2/2) | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
 | Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-030 | 2026-10-21 | E8 LOT-001 : 4 questions au commanditaire | Verbatim « Reco ». A8/Q-US-017-4 : limite de CA-13 acceptée (heure changée hors ligne, application fermée ou appareil redémarré : la valeur non retenue est signalée jusqu'au retour du réseau) ; Q-US-017-3 a) : « Repartir de zéro » l'emporte toujours sur « Restaurer » (complète RG-044) ; Q-US-001-1 a) : rattachement et placement non retenus après suppression concurrente d'un objectif signalés dans « Modifications non retenues » (complète RG-047) ; Q-US-025-2 a) : une sous-tâche terminée sous une tâche parente abandonnée ne se rouvre pas directement, il faut reprendre la tâche parente d'abord. Ces points valent validation E6 des compléments correspondants. |
 | DEC-026 | 2026-10-21 | RG-057 « prochaine ouverture » (Q-ERG-18) | Lancement de l'application ou rechargement de la PWA ; pas un simple retour au premier plan (verbatim « Reco ») |
 | DEC-027 | 2026-10-21 | QC-8 Clé de signature Android | Conservée dans les secrets chiffrés GitHub, avec une sauvegarde hors ligne chez le commanditaire (verbatim « Reco ») |
 | DEC-028 | 2026-10-21 | QC-9 Vérification des développeurs Android (2027) | Compte gratuit « distribution limitée » lié au compte Google du commanditaire (verbatim « Reco ») |
