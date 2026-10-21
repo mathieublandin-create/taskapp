@@ -1,7 +1,7 @@
 # language: fr
 #
 # Tests métiers — US-017 — Retrouver mes données sur smartphone et sur PC
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.10, US-017
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.11, US-017
 # E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
@@ -226,15 +226,15 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le smartphone, l'alerte "ALR-001" est affichée
 
   @US-017 @RG-036 @LOT-001
-  Scénario: S12d — Heure changée pendant que l'appareil est sans réseau et l'application fermée : la modification non retenue est signalée
+  Scénario: S12d — Heure changée pendant que l'appareil est sans réseau, puis redémarrage du smartphone : la modification non retenue est signalée
     # DEC-030 (A8, Q-US-017-4) : limite acceptée de CA-13 (DAT §6.4, point 4). Rien n'est perdu sans avertissement (ENF-06).
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
     Et que le smartphone est sans réseau
-    Et que l'application est fermée sur le smartphone
     Et que l'heure du smartphone est changée en retard de 25 h
-    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et que le smartphone a été éteint puis rallumé
+    Quand 5 minutes plus tard, sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
     Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
     Et le réseau revient sur le smartphone
     Et les deux appareils échangent leurs modifications
@@ -461,7 +461,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et que sur le smartphone, le message d'erreur "ERR-012" est affiché
     Quand sur le PC, l'utilisateur choisit de restaurer ses données
     Et sur le smartphone, l'utilisateur choisit de repartir de zéro
-    Et l'utilisateur confirme
+    Et sur le smartphone, l'utilisateur confirme
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, aucun objectif n'existe

@@ -184,7 +184,7 @@ Statut : Validée
 | CA-14 (RG-056 : modifications non retenues, jusqu'à « Compris », point « à lire ») | S14, S15, S15b (point « à lire » hors ligne), S16 |
 | Cas limite : Drive plein | S29 |
 | Cas limite : fuseaux différents sur les deux appareils, voyage | S28 |
-| CA-13 ; cas limite : horloge déréglée (quelques minutes ; seuil de 24 h ; écart constant de plus de 24 h ; heure changée hors réseau, application fermée) | S12, S12c, S12d, S13a, S13b |
+| CA-13 ; cas limite : horloge déréglée (quelques minutes ; seuil de 24 h ; écart constant de plus de 24 h ; heure changée hors réseau, appareil redémarré) | S12, S12c, S12d, S13a, S13b |
 | Cas limite : horodatages strictement identiques | S12b |
 | CA-12 (RG-058) ; cas limite : versions différentes | S30, S30b, S31 |
 | Cas limite : fichiers du Drive modifiés à la main mais restés lisibles | S32, S32b (seul le fichier du smartphone est altéré), S33 |
