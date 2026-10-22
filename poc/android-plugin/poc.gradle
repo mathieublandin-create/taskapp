@@ -1,0 +1,39 @@
+// Configuration ajoutée par scripts/prepare-android.sh au module app.
+// Tout vient de l'environnement ; aucune valeur n'est écrite dans ce fichier.
+
+def env = { String nom, String defaut = '' -> System.getenv(nom) ?: defaut }
+
+android {
+    defaultConfig {
+        versionCode env('POC_VERSION_CODE', '1').toInteger()
+        versionName env('POC_VERSION_NAME', '0.0.1')
+        // Identifiant « serveur » de Credential Manager (ID client OAuth Web, non secret).
+        resValue 'string', 'poc_google_web_client_id', env('VITE_GOOGLE_WEB_CLIENT_ID')
+    }
+
+    // Sans clé fournie, le débogage utilise la clé automatique d'Android (SHA-1 non maîtrisé :
+    // utile pour vérifier la compilation, pas pour l'authentification Google).
+    if (env('POC_KEYSTORE_FILE')) {
+        signingConfigs {
+            poc {
+                storeFile file(env('POC_KEYSTORE_FILE'))
+                storePassword env('POC_KEYSTORE_PASSWORD')
+                keyAlias env('POC_KEY_ALIAS')
+                keyPassword env('POC_KEY_PASSWORD')
+            }
+        }
+        buildTypes {
+            debug { signingConfig signingConfigs.poc }
+            release { signingConfig signingConfigs.poc }
+        }
+    }
+
+    kotlinOptions { jvmTarget = '21' }
+}
+
+dependencies {
+    implementation 'androidx.credentials:credentials:1.5.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.5.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
+    implementation 'com.google.android.gms:play-services-auth:21.4.0'
+}

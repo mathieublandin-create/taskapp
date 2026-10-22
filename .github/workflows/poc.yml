@@ -1,0 +1,168 @@
+name: poc
+
+# Déclenchement manuel uniquement. Le workflow n'est actif qu'une fois présent sur la branche par défaut.
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "versionCode de l'APK"
+        default: "1"
+      version_name:
+        description: "versionName de l'APK"
+        default: "0.0.1"
+      deploy_pages:
+        description: "Déployer sur GitHub Pages (dépôt public uniquement)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  pwa:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: poc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: poc/package-lock.json
+      - run: npm ci
+      - run: npm run lint && npm run typecheck && npm test
+      - name: Construire la PWA
+        run: npm run build
+        env:
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+          VITE_APP_ORIGIN: ${{ vars.VITE_APP_ORIGIN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pwa-dist
+          path: poc/dist
+          retention-days: 3
+
+  apk:
+    needs: pwa
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [debug, release]
+    defaults:
+      run:
+        working-directory: poc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: poc/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+
+      # La PWA embarquée dans l'APK est servie depuis la racine de l'application Capacitor :
+      # elle est donc reconstruite avec VITE_BASE_PATH=/ (l'artefact pwa-dist, lui, vise l'hébergement).
+      - name: Construire la PWA pour Capacitor
+        run: npm run build
+        env:
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+          VITE_BASE_PATH: /
+          VITE_APP_ORIGIN: ${{ vars.VITE_APP_ORIGIN }}
+
+      # Sans secret : l'APK debug est construit avec la clé automatique d'Android ; la release est ignorée.
+      # L'expression concatène deux termes (jamais « a || b ») pour ne jamais retomber sur l'autre clé.
+      - name: Restaurer la clé de signature (jamais écrite dans le dépôt)
+        id: cle
+        env:
+          KEYSTORE_B64: ${{ matrix.type == 'release' && secrets.POC_KEYSTORE_RELEASE_B64 || '' }}${{ matrix.type == 'debug' && secrets.POC_KEYSTORE_DEBUG_B64 || '' }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "disponible=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Aucune clé ${{ matrix.type }} fournie (secret absent)."
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/poc.jks"
+          echo "POC_KEYSTORE_FILE=$RUNNER_TEMP/poc.jks" >> "$GITHUB_ENV"
+          echo "disponible=true" >> "$GITHUB_OUTPUT"
+
+      - name: Préparer le projet Android
+        if: matrix.type == 'debug' || steps.cle.outputs.disponible == 'true'
+        env:
+          POC_ANDROID_PACKAGE: ${{ vars.POC_ANDROID_PACKAGE || 'fr.donejuan.poc' }}
+          POC_VERSION_CODE: ${{ inputs.version_code }}
+          POC_VERSION_NAME: ${{ inputs.version_name }}
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+        run: ./scripts/prepare-android.sh
+
+      - name: Compiler et signer
+        if: matrix.type == 'debug' || steps.cle.outputs.disponible == 'true'
+        working-directory: poc/android
+        env:
+          POC_VERSION_CODE: ${{ inputs.version_code }}
+          POC_VERSION_NAME: ${{ inputs.version_name }}
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+          POC_KEYSTORE_PASSWORD: ${{ matrix.type == 'release' && secrets.POC_KEYSTORE_RELEASE_PASSWORD || '' }}${{ matrix.type == 'debug' && secrets.POC_KEYSTORE_DEBUG_PASSWORD || '' }}
+          POC_KEY_ALIAS: ${{ matrix.type == 'release' && secrets.POC_KEY_RELEASE_ALIAS || '' }}${{ matrix.type == 'debug' && secrets.POC_KEY_DEBUG_ALIAS || '' }}
+          POC_KEY_PASSWORD: ${{ matrix.type == 'release' && secrets.POC_KEY_RELEASE_PASSWORD || '' }}${{ matrix.type == 'debug' && secrets.POC_KEY_DEBUG_PASSWORD || '' }}
+        run: ./gradlew assemble${{ matrix.type == 'release' && 'Release' || 'Debug' }}
+
+      # Lit le certificat réellement présent dans l'APK : aucun mot de passe n'est nécessaire.
+      - name: Afficher l'empreinte SHA-1 du certificat de l'APK (contrôle, non secret)
+        if: matrix.type == 'debug' || steps.cle.outputs.disponible == 'true'
+        run: |
+          apksigner="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
+          for apk in android/app/build/outputs/apk/${{ matrix.type }}/*.apk; do
+            echo "APK : $apk"
+            "$apksigner" verify --print-certs "$apk" | grep -E "SHA-1 digest|SHA-256 digest"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.type == 'debug' || steps.cle.outputs.disponible == 'true'
+        with:
+          name: poc-${{ matrix.type }}-apk
+          path: poc/android/app/build/outputs/apk/${{ matrix.type }}/*.apk
+          retention-days: 3
+
+  site:
+    needs: [pwa, apk]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pwa-dist
+          path: site
+      # Si la release n'a pas été produite (secret absent), aucun artefact ne correspond au motif.
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: poc-release-apk
+          path: site/android
+          merge-multiple: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+          retention-days: 3
+      - if: ${{ inputs.deploy_pages }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy-pages:
+    if: ${{ inputs.deploy_pages }}
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
