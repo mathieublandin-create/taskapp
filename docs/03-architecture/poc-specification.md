@@ -364,7 +364,7 @@ Complément recommandé : un contrôle automatique (Semgrep ou `gitleaks`, DAT �
 
 ## 12. Reste à faire par l'équipe
 
-**v2 (DEC-034)** : les tâches 2, 3 et 5 sont **suspendues** (repli). Le workflow `poc` fonctionne sans clé : le job `apk (release)` est sauté et `apk (debug)` est signé par une clé automatique, sans usage pour le test web.
+**v2 (DEC-034)** : les tâches 2, 3 et 5 sont **suspendues** (repli). Le workflow `poc` a une entrée `android` (booléen, **faux par défaut**) : les jobs `apk` sont alors **sautés**, et seuls la PWA et son déploiement sur Pages sont construits, sans clé. `android = vrai` ne sert qu'en repli (annexe A du protocole).
 
 | # | Tâche | Qui | État v2 |
 |---|---|---|---|
@@ -378,7 +378,7 @@ Complément recommandé : un contrôle automatique (Semgrep ou `gitleaks`, DAT �
 | 8 | Tenir le tableau de résultats pendant les séances et en tirer la décision | Starck | À faire |
 | 9 | Mesures M-RED, M-PERSIST, M-DUR (§13) | Benjamin | Fait (`b0239ec`), corrections du §15 à apporter |
 | 10 | Volet partage R-P1/R-P2 (§14) | Benjamin | **Optionnel**, à faire avant l'E3 d'EPI-001, pas avant la séance web |
-| 11 | (Suggestion) Entrée `android` (booléen, faux par défaut) dans `poc.yml` pour sauter les jobs `apk` | Anthony | Facultatif : gagne environ 10 min par passage |
+| 11 | Entrée `android` (booléen, faux par défaut) dans `poc.yml` pour sauter les jobs `apk` | Anthony | Fait |
 
 ## 13. Redirection et durabilité (v2, DEC-034, ADR-013)
 

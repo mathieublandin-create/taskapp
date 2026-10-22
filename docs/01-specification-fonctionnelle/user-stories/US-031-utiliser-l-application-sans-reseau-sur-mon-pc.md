@@ -58,16 +58,16 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 
 ## Impacts architecture
 
-*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.1.6), ADR-001, ADR-003, ADR-004, ADR-010.*
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4 (§4.1.6), ADR-001, ADR-003, ADR-004, ADR-010. **Révisé le 2026-10-22 (DEC-034)** : DAT v0.11 (§4.1.6, §4.1.6 bis, §4.1.7, §7.4 bis), ADR-013.*
 
-> **À réviser par Starck (DEC-034).** La remarque sur RG-058 (« la PWA est publiée avant l'application Android ») devient sans objet si DEC-034 est confirmée. Pepper ne modifie pas cette section.
+> **Révision DEC-034 (Starck, 2026-10-22).** Le PC utilise la même PWA que le téléphone (ADR-013). Deux changements le concernent. (1) **À l'ouverture, sur le PC aussi**, l'application tente une **redirection silencieuse** vers Google (`prompt=none`, une tentative par ouverture, DAT §4.1.7) si une identité est en cache, que le réseau est disponible et qu'aucun jeton n'est en mémoire. Si la session Google du navigateur est active, l'accès est renouvelé sans geste. Sinon, la redirection revient en erreur, l'application s'ouvre sur les données locales avec `SYN-SESSION`, et la demande de jeton exige un geste (« Reprendre la synchronisation »), comme avant. D'où la précondition « redirection en échec » ajoutée par Pepper à US-017 S06 et US-022 S23. Le geste reste nécessaire si le jeton expire **pendant** l'usage. (2) Les écritures IndexedDB passent en **durabilité stricte**. Les remarques liées à l'application Android (RG-058) ne valent plus qu'en repli (ADR-012).
 
 - **Composants touchés** :
   - PWA :
     - service worker Workbox en **précache** de toute l'application, ce qui permet l'ouverture sans réseau depuis l'adresse web ou depuis l'application installée (CA-1) ;
     - invitation à mettre à jour, sans rechargement forcé pendant une saisie ;
-  - `DepotLocal` IndexedDB (Dexie), **cloisonné par compte** (DEC-016), une transaction par cas d'usage ;
-  - `FournisseurAuth` web : Google Identity Services **chargé à la demande et de façon non bloquante**. Le script de Google ne se charge pas hors ligne : l'application démarre à partir de l'identité mise en cache (R12) ;
+  - `DepotLocal` IndexedDB (Dexie), **cloisonné par compte** (DEC-016) et par environnement (§7.4 bis du DAT), une transaction par cas d'usage, en **durabilité stricte**, confirmée à `complete` ;
+  - `FournisseurAuth` web (le même sur tous les appareils, ADR-013) : redirection silencieuse à l'ouverture (§4.1.7, sans script tiers, fragment de retour lu puis effacé avant tout traitement), et Google Identity Services **chargé à la demande et de façon non bloquante** pour le geste. Le script de Google ne se charge pas hors ligne ; hors ligne, aucune redirection n'est tentée : l'application démarre à partir de l'identité mise en cache (R12) ;
   - `synchronisation` : déclenchée par les événements `online`, `visibilitychange` et par le geste de reconnexion (CA-4, CA-5).
 - **Plusieurs onglets ouverts** (cas limite) :
   - un seul `appareilId` par profil de navigateur ;
@@ -81,10 +81,11 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 - **Données** : aucune nouvelle donnée ; même modèle que sur le smartphone.
 - **Accès Google** :
   - jeton d'accès d'une heure, en mémoire ;
-  - une fois la session Google du navigateur expirée, une nouvelle demande de jeton exige un geste de l'utilisateur (CA-5, F14). Entre-temps, l'application continue de fonctionner ;
+  - à l'ouverture : redirection silencieuse, qui renouvelle l'accès sans geste si la session Google du navigateur est active (v0.11) ; en échec, ou en cours d'usage après l'expiration du jeton, une nouvelle demande de jeton exige un geste (CA-5, F14). Entre-temps, l'application continue de fonctionner ;
   - aucun renouvellement en arrière-plan, puisqu'il n'y a pas de serveur (DEC-007).
 - **Sécurité** :
   - CSP stricte : seules les origines Google sont autorisées ;
+  - redirection : `state` vérifié, fragment effacé avant tout traitement, `Referrer-Policy: no-referrer`, URI de redirection déclarées dans le client OAuth Web ;
   - aucun jeton dans IndexedDB ;
   - données au repos dans le profil du navigateur, lisibles par toute personne qui utilise ce profil (RG-043). Parades : l'action « Supprimer les données de cet appareil » (DEC-015) et la recommandation de ne pas utiliser un PC partagé.
 - **Exigences non fonctionnelles** :
@@ -95,7 +96,8 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 - **Risques** :
   - R12 : chargement du script de Google hors ligne ;
   - R15 : éviction du stockage ;
-  - R3 : friction de la reconnexion ;
+  - R3 : friction de la reconnexion, réduite par la redirection silencieuse à l'ouverture ;
+  - R18 : évolution possible du flux OAuth implicite chez Google ;
   - comportement réel de `storage.persist()` pour une PWA installée, à observer pendant le test technique (§3.4) ;
   - deux onglets : traités par le verrou.
 - **RG-057 (rappel après 24 h hors ligne, établie, V-12)** :
@@ -104,8 +106,8 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
   - le bandeau disparaît dès que le marqueur rejoint la dernière modification, c'est-à-dire après un dépôt confirmé par Drive ;
   - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007) ;
   - impact : un champ local de plus, un sélecteur dans `synchronisation`, aucune migration du format Drive.
-- **RG-058 (versions de l'application)** : la PWA est publiée avant l'application Android. Le PC ne passe en consultation seule que si le `schemaVersion` du Drive dépasse le sien (cas rare : PC resté sur un service worker ancien). L'invitation à mettre à jour ne recharge jamais pendant une saisie.
-- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
+- **RG-058 (versions de l'application)** : avec la PWA unique, tous les appareils se mettent à jour par le service worker ; *en repli (APK)*, la PWA est publiée avant l'application Android. Le PC ne passe en consultation seule que si le `schemaVersion` du Drive dépasse le sien (cas rare : PC resté sur un service worker ancien). L'invitation à mettre à jour ne recharge jamais pendant une saisie.
+- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010, ADR-013.
 
 ## Impacts ergonomie
 

@@ -17,7 +17,7 @@ Vous mettez en ligne l'application de test sur GitHub, vous créez un petit proj
 | a) Rendre le dépôt public et activer GitHub Pages | 10 min |
 | b) Projet Google Cloud | 30 min |
 | c) Identifiant Web | 10 min |
-| d) Mettre l'application de test en ligne | 5 min, plus 10 min d'attente |
+| d) Mettre l'application de test en ligne | 5 min, plus 5 min d'attente |
 | e) Préparer le téléphone | 5 min |
 | f) Transmission à l'équipe | 5 min |
 | **Préparation totale** | **environ 1 h**, en une ou plusieurs fois |
@@ -191,10 +191,10 @@ Ouvrez **Clients > Done Juan POC Web**, ajoutez les deux **URI de redirection** 
 
 ### d.2 Lancer la mise en ligne
 1. Onglet **Actions** du dépôt, workflow **poc** (colonne de gauche), puis **Run workflow**.
-2. Gardez les valeurs proposées. **Cochez « Déployer sur GitHub Pages »**.
-3. Cliquez sur **Run workflow**. Attendez la fin (pastille verte), environ 10 minutes.
+2. Gardez les valeurs proposées. **Cochez « Déployer sur GitHub Pages »**. **Laissez décochée la case « Construire les APK »** (elle ne sert que pour l'annexe R).
+3. Cliquez sur **Run workflow**. Attendez la fin (pastille verte), environ 5 minutes.
 
-Résultat attendu : une pastille **verte**. Une ligne « apk (release) » peut apparaître comme **sautée** (grisée) : c'est normal, aucune clé n'est nécessaire pour ce test.
+Résultat attendu : une pastille **verte**. Les lignes « apk » apparaissent comme **sautées** (grisées) : c'est normal, aucune clé n'est nécessaire pour ce test.
 
 4. Ouvrez `https://mathieublandin-create.github.io/taskapp/` sur le PC. Résultat attendu : l'écran « Diagnostic » de l'application de test.
 
