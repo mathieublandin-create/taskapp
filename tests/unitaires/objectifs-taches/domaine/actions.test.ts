@@ -50,6 +50,12 @@ const vueTaches = () =>
         tacheParenteId: t(1),
         cycleDeVie: abandonnee('2026-10-19', 'op:2'),
       })
+      .avecTache({
+        id: t(9),
+        intitule: 'Sous-tâche abandonnée sous terminée',
+        tacheParenteId: t(2),
+        cycleDeVie: abandonnee('2026-10-19', 'op:3'),
+      })
       .construire(),
   );
 
@@ -115,9 +121,10 @@ describe('actionsTache (ST-US-024 §6.5, ST-US-003 §6.3, ST-US-025 §6.3)', () 
     expect(actionsDe(t(3))).not.toContain('ABANDONNER');
   });
 
-  it('UT-US-025-10 actionsTache — REPRENDRE si la tâche est abandonnée, sauf sous une tâche parente abandonnée (CA-8)', () => {
+  it('UT-US-025-10 actionsTache — REPRENDRE si la tâche est abandonnée, sauf sous une tâche parente abandonnée, y compris sous une tâche parente terminée (CA-8, CA-13)', () => {
     expect(actionsDe(t(3))).toContain('REPRENDRE');
     expect(actionsDe(t(8))).toContain('REPRENDRE');
+    expect(actionsDe(t(9))).toContain('REPRENDRE');
     expect(actionsDe(t(6))).not.toContain('REPRENDRE');
     expect(actionsDe(t(1))).not.toContain('REPRENDRE');
   });

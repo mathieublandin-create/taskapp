@@ -30,6 +30,14 @@ export type ConfirmationRequise =
       readonly tacheId: IdTache;
       readonly intitule: string;
       readonly sousTachesAbandonnees: number;
+    }
+  | {
+      // CNF-REPRENDRE-SOUS-TACHE (DEC-032, US-025 CA-13) : la sous-tâche reprise et sa tâche parente terminée
+      readonly type: 'REPRISE_SOUS_TACHE';
+      readonly tacheId: IdTache;
+      readonly intitule: string;
+      readonly tacheParenteId: IdTache;
+      readonly intituleTacheParente: string;
     };
 
 export type Evaluation =

@@ -1,4 +1,4 @@
-// Codes du catalogue : guide d'ergonomie v0.2.10 §6.6 (conventions.md §8.5).
+// Codes du catalogue : guide d'ergonomie v0.2.11 §6.6 (conventions.md §8.5).
 // Liste des codes, vérifiée en CI contre le guide par scripts/verifier-catalogue.ts (ST-US-022).
 export const CODES_CATALOGUE = [
   'ALR-001',
@@ -23,6 +23,7 @@ export const CODES_CATALOGUE = [
   'CNF-AJOUT-SOUS-TACHE-TERMINEE',
   'CNF-DECONNEXION',
   'CNF-REPARTIR-ZERO',
+  'CNF-REPRENDRE-SOUS-TACHE',
   'CNF-ROUVRIR-SOUS-TACHE',
   'CNF-SUPPR-DONNEES',
   'CNF-SUPPR-DONNEES-PERTE',

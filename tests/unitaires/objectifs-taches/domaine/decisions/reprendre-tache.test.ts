@@ -15,6 +15,8 @@ const SECTION_B = idTache(3);
 const SECTION_C = idTache(4);
 const A_FAIRE = idTache(5);
 const SUPPRIMEE = idTache(6);
+const CHAPITRE_TERMINE = idTache(7);
+const SECTION_D = idTache(8);
 const contexte = contexteDecision('2026-10-21T08:00:00.000Z', '2026-10-21');
 const vue = () =>
   construireVueMetier(
@@ -44,6 +46,17 @@ const vue = () =>
       })
       .avecTache({ id: A_FAIRE })
       .avecTache({ id: SUPPRIMEE, cycleDeVie: abandonnee('2026-10-18', 'opS:0'), supprime: true })
+      .avecTache({
+        id: CHAPITRE_TERMINE,
+        intitule: 'Chapitre 2',
+        cycleDeVie: terminee('2026-10-21'),
+      })
+      .avecTache({
+        id: SECTION_D,
+        intitule: 'Section D',
+        tacheParenteId: CHAPITRE_TERMINE,
+        cycleDeVie: abandonnee('2026-10-20', 'opD:0'),
+      })
       .construire(),
   );
 const reprise = (id: typeof CHAPITRE, dateAbandon: string, rang: number, cause?: number) => ({
@@ -83,6 +96,45 @@ describe('Reprise d’une tâche (RG-027)', () => {
     expect(deciderReprise({ tacheId: CHAPITRE })(vue(), contexte)).toEqual(
       succes({
         modifications: [reprise(CHAPITRE, '2026-10-19', 0), reprise(SECTION_B, '2026-10-19', 1, 0)],
+        valeur: undefined,
+      }),
+    );
+  });
+
+  it('UT-US-025-18 evaluerReprise — demande la confirmation REPRISE_SOUS_TACHE pour une sous-tâche abandonnée dont la tâche parente est terminée (CA-13, DEC-032)', () => {
+    expect(evaluerReprise({ tacheId: SECTION_D })(vue())).toEqual(
+      succes({
+        type: 'CONFIRMATION_REQUISE',
+        confirmation: {
+          type: 'REPRISE_SOUS_TACHE',
+          tacheId: SECTION_D,
+          intitule: 'Section D',
+          tacheParenteId: CHAPITRE_TERMINE,
+          intituleTacheParente: 'Chapitre 2',
+        },
+      }),
+    );
+  });
+
+  it('UT-US-025-18 deciderReprise — reprend la sous-tâche et rouvre sa tâche parente terminée, REOUVERTURE de rang 1 causée par la reprise (CA-13, DEC-032, S12f)', () => {
+    expect(deciderReprise({ tacheId: SECTION_D })(vue(), contexte)).toEqual(
+      succes({
+        modifications: [
+          reprise(SECTION_D, '2026-10-20', 0),
+          {
+            type: 'ECRIRE_TACHE',
+            id: CHAPITRE_TERMINE,
+            ecriture: { champ: 'cycleDeVie', valeur: { etat: 'A_FAIRE' } },
+            evenement: {
+              type: 'REOUVERTURE',
+              element: { type: 'TACHE', id: CHAPITRE_TERMINE },
+              avant: { etat: 'TERMINEE', dateFin: date('2026-10-21') },
+              apres: { etat: 'A_FAIRE' },
+              rang: 1,
+              cause: 0,
+            },
+          },
+        ],
         valeur: undefined,
       }),
     );

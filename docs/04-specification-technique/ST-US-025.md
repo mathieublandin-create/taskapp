@@ -10,10 +10,10 @@
 | RG couvertes | RG-008, RG-023, RG-025, RG-027, RG-036 et RG-049 (via le rang 9), RG-045, RG-050, RG-053, RG-054 |
 | DAT / ADR | DAT v0.10.1 (§4.2 « état d'une tâche », §6.1) ; ADR-003, ADR-011 |
 | Maquettes | ECR-007 (C, D, D2, F), ECR-002 (filtre « Abandonnées »), ECR-003 ; guide v0.2.8 §4.12, §6.6.4, §6.6.7 |
-| Q-US traitées | Q-US-025-1, Q-US-025-2 (DEC-030), Q-US-001-2 (E8) ; **Q-US-025-3 posée (§16)** |
+| Q-US traitées | Q-US-025-1, Q-US-025-2 (DEC-030), Q-US-001-2 (E8) ; Q-US-025-3 (DEC-032, option a ; RG-027 complétée, CdC v0.12 ; CA-13 ; guide v0.2.11 §6.6.7) |
 | Prérequis | ST-US-003 (rang 7) |
-| Version | 0.1 |
-| Statut | **Bloquée (partiellement) par Q-US-025-3** : seul le cas « reprendre une sous-tâche abandonnée dont la tâche parente est terminée » attend la réponse (§6.2, étape 4 ; UT-US-025-18) ; le reste est prêt pour E10 |
+| Version | 0.2 |
+| Statut | **Prête pour E10** (Q-US-025-3 tranchée, DEC-032) ; tests du §13 en phase rouge |
 | Auteur | Anthony |
 | Branche Git | `us/US-025-abandon` |
 
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | DEC-032 (Q-US-025-3 a) : CA-13, §6.2 étape 4 et réouverture de la tâche parente, §6.3, confirmation `REPRISE_SOUS_TACHE` → `CNF-REPRENDRE-SOUS-TACHE`, étapes du §12, rangs de S12c à S12f, UT-US-025-18 ; statut levé |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Abandon d'une tâche, toujours confirmé (`CNF-ABANDON-TACHE`, ou `CNF-ABANDON-TACHE-CASCADE` qui annonce le nombre de sous-tâches à faire abandonnées avec elle), date d'abandon = jour de Paris, cascade marquée par `abandonParCascade` (identifiant de l'entrée `ABANDON` de la tâche parente), reprise d'une tâche et des seules sous-tâches abandonnées avec elle, actions proposées (CA-8, DEC-030), affichage des sous-tâches d'une tâche abandonnée (`ETA-SOUS-TACHE-*`), journal (`ABANDON`, `REPRISE`, conséquences avec `cause`).
@@ -44,12 +45,13 @@
 | CA-10 incohérence | S15, S16 | RG-049 | ST-US-024 UT-US-024-21, 22 | `incoherenceDe` | 9 |
 | CA-11 historique | S17, S18 | RG-050 | UT-US-025-04, 05, 09, 17 | Décisions | 8 |
 | CA-12 réouverture sous une tâche abandonnée (DEC-030) | S12b | RG-027 | ST-US-003 UT-US-003-07, 10 | `evaluerReouverture` | 8 |
+| CA-13 reprise d'une sous-tâche sous une tâche parente terminée (DEC-032) | S12c, S12d, S12e, S12f | RG-027, RG-023, RG-050 | UT-US-025-10, 14, 18 | `evaluerReprise`, `deciderReprise`, `construireConfirmation` | 8 (S12c, S12e : 9) |
 | Cas limite RG-036 | S14 | RG-036 | ST-US-017 incrément 2 | — | 9 |
 
 ### 2.2 Règles de gestion → implémentation
 | RG | Élément | Tests |
 |---|---|---|
-| RG-027 (abandon, reprise, cascade, CA-8, DEC-030) | `decisions/abandonner-tache.ts`, `decisions/reprendre-tache.ts`, `actionsTache` | UT-US-025-01 à 10 |
+| RG-027 (abandon, reprise, cascade, CA-8, DEC-030 ; CA-13, DEC-032) | `decisions/abandonner-tache.ts`, `decisions/reprendre-tache.ts`, `actionsTache` | UT-US-025-01 à 10, 18 |
 | RG-025 | `etatObjectif` (tâches abandonnées ignorées, ST-US-001) | UT-US-025-12 |
 | RG-008, RG-053, RG-054 | `dateAbandon = contexte.jour` ; `MEN-HEURE-PARIS` | UT-US-025-13, 15 |
 | RG-050 | `ABANDON`, `REPRISE`, conséquences avec `cause` | UT-US-025-04, 05, 09, 17 |
@@ -59,9 +61,9 @@
 |---|---|---|---|---|
 | 1 | `src/objectifs-taches/domaine/decisions/abandonner-tache.ts` | Domaine | Créer | `evaluerAbandon`, `deciderAbandon` |
 | 2 | `src/objectifs-taches/domaine/decisions/reprendre-tache.ts` | Domaine | Créer | `evaluerReprise`, `deciderReprise` |
-| 3 | `src/objectifs-taches/domaine/confirmation.ts`, `actions.ts` | Domaine | Modifier | `ABANDON_TACHE` ; `ABANDONNER`, `REPRENDRE` |
+| 3 | `src/objectifs-taches/domaine/confirmation.ts`, `actions.ts` | Domaine | Modifier | `ABANDON_TACHE`, `REPRISE_SOUS_TACHE` ; `ABANDONNER`, `REPRENDRE` |
 | 4 | `src/objectifs-taches/application/cas-usage/abandonner-tache.ts`, `reprendre-tache.ts` | Application | Créer | `AbandonnerTache` (`evaluer`, `executer`), `ReprendreTache` (`evaluer`, `executer`) |
-| 5 | `src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts`, `ligne-tache.ts`, `confirmation.ts` | Modèle de vue | Modifier | Date d'abandon, `ETA-TACHE-ABANDONNEE`, `ETA-SOUS-TACHE-*`, `CNF-ABANDON-TACHE`, `CNF-ABANDON-TACHE-CASCADE` |
+| 5 | `src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts`, `ligne-tache.ts`, `confirmation.ts` | Modèle de vue | Modifier | Date d'abandon, `ETA-TACHE-ABANDONNEE`, `ETA-SOUS-TACHE-*`, `CNF-ABANDON-TACHE`, `CNF-ABANDON-TACHE-CASCADE`, `CNF-REPRENDRE-SOUS-TACHE` |
 | 6 | `src/objectifs-taches/presentation/ui/ecrans/detail-tache.tsx` (menu « … » : « Abandonner la tâche… » ; tâche abandonnée : « Reprendre la tâche »), `composants/ligne-tache.tsx` (icône cercle barré) | UI | Modifier | ECR-007 C, D, D2, F |
 | 7 | `src/composition/web.ts`, `src/objectifs-taches/index.ts` | Composition | Modifier | Enregistrement |
 | 8 | `tests/steps/objectifs-taches/taches.steps.ts`, `refus.steps.ts` ; `tests/support/construction-taches.ts` | Test | Modifier | §12 ; état « abandonnée » et colonne « date d'abandon » |
@@ -71,6 +73,8 @@
 ```ts
 // confirmation.ts (ajout)
   | { readonly type: 'ABANDON_TACHE'; readonly tacheId: IdTache; readonly intitule: string; readonly sousTachesAbandonnees: number }
+  | { readonly type: 'REPRISE_SOUS_TACHE'; readonly tacheId: IdTache; readonly intitule: string;          // la sous-tâche reprise
+      readonly tacheParenteId: IdTache; readonly intituleTacheParente: string }                         // CNF-REPRENDRE-SOUS-TACHE (DEC-032)
 // decisions
 export const evaluerAbandon = (c: { readonly tacheId: IdTache }) => (vue: VueMetier) => Resultat<Evaluation, RefusMetier>;
 export const deciderAbandon = (c: { readonly tacheId: IdTache }) => (vue: VueMetier, contexte: ContexteDecision) => Resultat<Decision<void>, RefusMetier>;
@@ -82,8 +86,8 @@ export const deciderReprise = (c: { readonly tacheId: IdTache }) => (vue: VueMet
 |---|---|---|---|---|
 | `AbandonnerTache.evaluer` | `{ tacheId }` | `Evaluation` (toujours `CONFIRMATION_REQUISE`, Q-ERG-13) | `ElementIntrouvable`, `ActionNonDisponible('ABANDONNER')` | Aucun |
 | `AbandonnerTache.executer` | `{ tacheId }` | `void` | idem | `ECRIRE_TACHE cycleDeVie ABANDONNEE` (tâche et sous-tâches à faire) + `ABANDON` |
-| `ReprendreTache.evaluer` | `{ tacheId }` | `Evaluation` | `ElementIntrouvable`, `ActionNonDisponible('REPRENDRE')` | Aucun |
-| `ReprendreTache.executer` | `{ tacheId }` | `void` | idem | `ECRIRE_TACHE cycleDeVie A_FAIRE` (tâche et sous-tâches abandonnées avec elle) + `REPRISE` |
+| `ReprendreTache.evaluer` | `{ tacheId }` | `Evaluation` (`CONFIRMATION_REQUISE` `REPRISE_SOUS_TACHE` pour une sous-tâche dont la tâche parente est terminée, sinon `SANS_CONFIRMATION`) | `ElementIntrouvable`, `ActionNonDisponible('REPRENDRE')` | Aucun |
+| `ReprendreTache.executer` | `{ tacheId }` | `void` | idem | `ECRIRE_TACHE cycleDeVie A_FAIRE` (tâche et sous-tâches abandonnées avec elle) + `REPRISE` ; tâche parente terminée : `ECRIRE_TACHE` de la tâche parente `A_FAIRE` + `REOUVERTURE` (`cause`) |
 
 ### 4.3 Ports, 4.4 Adaptateurs
 Sans objet.
@@ -96,12 +100,14 @@ readonly dateAbandon?: { readonly date: DateCalendaire; readonly libelle: string
 // lignes de sous-tâches d'une tâche parente abandonnée (ajout)
 readonly etiquette?: { readonly code: 'ETA-SOUS-TACHE-ABANDONNEE-AVEC' | 'ETA-SOUS-TACHE-ABANDONNEE-AVANT' | 'ETA-SOUS-TACHE-TERMINEE-AVANT'; readonly libelle: string };
 // construireConfirmation(ABANDON_TACHE) : n = 0 → CNF-ABANDON-TACHE ; n > 0 → CNF-ABANDON-TACHE-CASCADE (variables element, n)
+// construireConfirmation(REPRISE_SOUS_TACHE) → CNF-REPRENDRE-SOUS-TACHE (variables element = sous-tâche, tacheParente = tâche parente ; guide v0.2.11 §6.6.7)
 ```
 | Écran | Maquette | Codes | Actions → cas d'usage |
 |---|---|---|---|
 | Détail, menu « … » | ECR-007 C | — | « Abandonner la tâche… » (jamais par balayage) → `AbandonnerTache.evaluer` → boîte → `executer` |
 | Confirmation | ECR-007 D, D2 | `CNF-ABANDON-TACHE`, `CNF-ABANDON-TACHE-CASCADE` (bouton normal, non rouge ; « Annuler » focalisé) | « Abandonner » → `executer` |
 | Tâche abandonnée | ECR-007 F | `ETA-TACHE-ABANDONNEE` (« Abandonnée le … » + `MEN-HEURE-PARIS`), étiquettes `ETA-SOUS-TACHE-*`, aucune case « Terminer » | « Reprendre la tâche » → `ReprendreTache.evaluer` puis `executer` |
+| Reprise d'une sous-tâche sous une tâche parente terminée | ECR-007 D3 | `CNF-REPRENDRE-SOUS-TACHE` (« Annuler » focalisé, « Reprendre les deux », non rouge) | « Reprendre la tâche » → `evaluer` → boîte → `executer` ; « Annuler » : rien |
 | Liste | ECR-002 | filtre « Abandonnées », `EVD-FILTRE-ABANDONNEES` | — |
 
 ## 5. Modèle de données et migrations
@@ -132,17 +138,22 @@ evaluerReprise(c)(vue):
   1. T ← tâche active, sinon ElementIntrouvable
   2. si T.etat ≠ ABANDONNEE : ActionNonDisponible(REPRENDRE)
   3. si T a une tâche parente P et P.etat = ABANDONNEE : ActionNonDisponible(REPRENDRE)          // CA-8
-  4. si T a une tâche parente P et P.etat = TERMINEE : selon la réponse à Q-US-025-3            // en attente
+  4. si T a une tâche parente P et P.etat = TERMINEE :                                              // CA-13, DEC-032
+       CONFIRMATION_REQUISE REPRISE_SOUS_TACHE { tacheId: T, intitule: T.intitule, tacheParenteId: P, intituleTacheParente: P.intitule }
   5. sinon : SANS_CONFIRMATION
-deciderReprise(c)(vue, contexte): contrôles 1 à 4, puis
+deciderReprise(c)(vue, contexte): contrôles 1 à 3, puis
   modifications ← [ ECRIRE_TACHE T cycleDeVie { A_FAIRE }, evenement REPRISE rang 0, avant etatJournalDe(T), apres { A_FAIRE } ]
   pour chaque sous-tâche S de T telle que S.etat = ABANDONNEE et S.abandonParCascade = T.evenementAbandon (rang k = 1, 2…) :
     modifications += ECRIRE_TACHE S cycleDeVie { A_FAIRE }, evenement REPRISE rang k, cause 0, avant etatJournalDe(S), apres { A_FAIRE }
+  si T a une tâche parente P et P.etat = TERMINEE (T n'a alors pas de sous-tâche, donc rang 1) :      // CA-13, DEC-032
+    modifications += ECRIRE_TACHE P cycleDeVie { A_FAIRE }, evenement REOUVERTURE rang 1, cause 0, avant etatJournalDe(P), apres { A_FAIRE }
 ```
+Comme pour toute commande avec confirmation, `executer` ne redemande pas la confirmation (`conventions.md` §8.6) ; si l'utilisateur renonce (S12d), rien n'est écrit.
+
 S11 : « Section C » abandonnée seule avant l'abandon de « Chapitre 1 » n'a pas `abandonParCascade` égal : elle reste abandonnée ; « Section B » est reprise ; « Section A », terminée, reste terminée.
 
 ### 6.3 Actions (ajout à `actionsTache`)
-`ABANDONNER` si `A_FAIRE` ; `REPRENDRE` si `ABANDONNEE`, sauf sous-tâche d'une tâche parente abandonnée (et, selon Q-US-025-3, sous-tâche d'une tâche parente terminée).
+`ABANDONNER` si `A_FAIRE` ; `REPRENDRE` si `ABANDONNEE`, sauf sous-tâche d'une tâche parente abandonnée (CA-8). Une sous-tâche abandonnée dont la tâche parente est terminée a `REPRENDRE` (CA-13, DEC-032 ; avec confirmation, §6.2).
 
 ### 6.4 Étiquettes des sous-tâches d'une tâche parente abandonnée (ECR-007 F, guide §6.6.4)
 | Sous-tâche S (tâche parente P abandonnée) | Étiquette |
@@ -178,7 +189,10 @@ Comme ST-US-003.
 |---|---|---|---|---|---|---|
 | 1 | `l'utilisateur abandonne la tâche {string} et confirme` ; `… et renonce` | Quand | `taches.steps.ts` | Nouveau | 8 | `AbandonnerTache.evaluer` puis `executer`, ou rien |
 | 2 | `l'utilisateur demande l'abandon de la tâche {string}` | Quand | idem | Nouveau | 8 | `evaluer` ; commande en attente |
-| 3 | `l'utilisateur reprend la tâche {string}` | Quand | idem | Nouveau | 8 | `ReprendreTache.evaluer` ; `SANS_CONFIRMATION` → `executer` ; `CONFIRMATION_REQUISE` → commande en attente (selon Q-US-025-3) ; refus → résultat mémorisé |
+| 3 | `l'utilisateur reprend la tâche {string}` | Quand | idem | Nouveau | 8 | `ReprendreTache.evaluer` ; `SANS_CONFIRMATION` → `executer` ; `CONFIRMATION_REQUISE` → commande en attente (`conventions.md` §8.6), suivie de `l'utilisateur confirme` ; refus → résultat mémorisé |
+| 3b | `l'utilisateur reprend la tâche {string} et renonce` | Quand | idem | Nouveau (glossaire v1.6) | 8 | `evaluer` (doit demander `CNF-REPRENDRE-SOUS-TACHE`, sinon l'étape échoue), puis oubli, sans écriture |
+| 3c | `une confirmation {string} est demandée, qui annonce la réouverture de la tâche {string}` | Alors | `refus.steps.ts` | Nouveau (glossaire v1.6) | 8 | `construireConfirmation` de la commande en attente : code égal au premier paramètre ; tâche annoncée = variable `tacheParente` pour `CNF-REPRENDRE-SOUS-TACHE`, `element` pour `CNF-ROUVRIR-SOUS-TACHE` et `CNF-AJOUT-SOUS-TACHE-TERMINEE` |
+| 3d | `aucun élément ne porte la mention {string}` (avec préfixes d'appareil) | Alors | `etat-affiche.steps.ts` | Nouveau (glossaire v1.2) | 9 | Codes de mention de toutes les lignes des listes « Objectifs » et « Tâches » (trois filtres d'état) : `MEN-INCOHERENCE` (`LigneTache.incoherence`, rang 9) ; `MEN-ATTENTE` ajouté par ST-US-017 (incrément 1). Livrée au rang 9, rang de la capacité `MEN-INCOHERENCE` |
 | 4 | `une confirmation est demandée, qui rappelle que la tâche pourra être reprise` | Alors | `refus.steps.ts` | Nouveau | 8 | Code `CNF-ABANDON-TACHE` ou `CNF-ABANDON-TACHE-CASCADE` |
 | 5 | `une confirmation est demandée, qui annonce {int} sous-tâche(s) abandonnée(s) avec la tâche` | Alors | idem | Nouveau | 8 | `CNF-ABANDON-TACHE-CASCADE`, `n` |
 | 6 | `la tâche {string} est {string} avec la date d'abandon {date}` | Alors | `taches.steps.ts` | Nouveau | 8 | État « abandonnée » et `dateAbandon` |
@@ -188,7 +202,7 @@ Comme ST-US-003.
 | 10 | `l'état de la tâche …`, `l'estimation de la tâche …`, `l'utilisateur termine …`, `l'utilisateur filtre …`, `la liste des tâches contient exactement …`, `l'historique …`, `l'utilisateur confirme` | — | — | Réutilisés (ST-US-002, 003, 024, socle) | 0 à 7 | — |
 | 11 | Étapes du rang 9 (deux appareils, `la liste des modifications non retenues est vide`, incohérence) | — | — | Réutilisés (ST-US-017, ST-US-024) | 9 | — |
 
-**Scénarios exécutables par rang** : rang 8 : S01 à S13, S12b, S17, S18 ; rang 9 : S14, S15, S16.
+**Scénarios exécutables par rang** : rang 8 : S01 à S13, S12b, S12d, S12f, S17, S18 ; rang 9 : S12c, S12e, S14, S15, S16. S12c et S12e vérifient l'absence de `MEN-INCOHERENCE`, capacité du rang 9 (`conventions.md` §11.13, règle 2) ; S12e utilise aussi l'incrément 1 (rang 3).
 
 ## 13. Tests unitaires fournis (E10)
 | Id | Fichier | Élément | Cas testé | RG / CA | Échec |
@@ -210,7 +224,7 @@ Comme ST-US-003.
 | UT-US-025-15 | `…/presentation/detail-tache.test.ts` | `construireDetailTache` | « Abandonnée le » + `MEN-HEURE-PARIS` (New York) ; pas de date de fin ; étiquettes `ETA-SOUS-TACHE-*` du §6.4 | CA-3, CA-5 | NI |
 | UT-US-025-16 | `…/presentation/liste-taches.test.ts` | `construireListeTaches` | tâche abandonnée absente du filtre « à faire », présente dans « abandonnée » | CA-2 | NI |
 | UT-US-025-17 | `…/application/reprendre-tache.test.ts` | `ReprendreTache` | historique de « Section B » terminé par `ABANDON` puis `REPRISE` ; aucune entrée `ABANDON` pour « Section A » | CA-11, S18 | NI |
-| UT-US-025-18 | `…/domaine/decisions/reprendre-tache.test.ts` | `evaluerReprise` | sous-tâche abandonnée d'une tâche parente terminée | Q-US-025-3 | **Écrit après la réponse** |
+| UT-US-025-18 | `…/domaine/decisions/reprendre-tache.test.ts`, `…/presentation/confirmation.test.ts` | `evaluerReprise`, `deciderReprise`, `construireConfirmation` | sous-tâche abandonnée d'une tâche parente terminée : `CONFIRMATION_REQUISE REPRISE_SOUS_TACHE` ; décision : reprise (rang 0) et réouverture de la tâche parente (rang 1, cause 0) ; `CNF-REPRENDRE-SOUS-TACHE` avec `element` et `tacheParente` | CA-13, DEC-032 | NI |
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-025`.
 
@@ -221,7 +235,7 @@ Boîte d'abandon (`alertdialog`, « Annuler » focalisé, bouton non rouge) ; me
 1. Décisions (UT 01 à 10). 2. Cas d'usage (UT 11 à 13, 17). 3. Modèles de vue (UT 14 à 16). 4. Étapes du §12 ; scénarios du rang 8 et scénarios différés (US-001 S06, S15 ; US-002 S15, S20c, S20d ; US-003 S07, S09, S12 ; US-024 S05, S08, S10b, S15, S16, S16b, S18). 5. Écrans ; DoD.
 
 ## 16. Dette, hypothèses et points ouverts
-- **Question posée — Q-US-025-3** (Pepper, avis de Steeve ; peut compléter RG-027 et repasser par le commanditaire, comme Q-US-025-2) : *reprendre une sous-tâche abandonnée dont la tâche parente est terminée*.
+- **Question close — Q-US-025-3** (DEC-032, option a ; intégrée aux §4, §6.2, §6.3, §12, §13) (Pepper, avis de Steeve ; peut compléter RG-027 et repasser par le commanditaire, comme Q-US-025-2) : *reprendre une sous-tâche abandonnée dont la tâche parente est terminée*.
   Situation : « Chapitre 1 » a deux sous-tâches ; « Section A » est abandonnée seule, « Section B » est terminée ; « Chapitre 1 » est ensuite terminée, ce qui est permis puisqu'il ne lui reste aucune sous-tâche à faire (US-024 CA-8). L'utilisateur veut reprendre « Section A ». Aucune règle ne couvre ce cas : US-025 CA-8 vise une tâche parente **abandonnée**, US-003 CA-9 la **réouverture** d'une sous-tâche **terminée**. Sans règle, la reprise créerait sur un seul appareil l'incohérence de RG-049 (« tâche terminée avec une sous-tâche à faire »), qu'aucun appareil ne devrait produire seul. Options :
   - **a) ★** La reprise est proposée, avec une confirmation qui annonce la réouverture de « Chapitre 1 », et rouvre aussi « Chapitre 1 », dans la même opération (même comportement qu'US-003 CA-9 pour une sous-tâche terminée ; Steeve indique le code de confirmation, par exemple en étendant `CNF-ROUVRIR-SOUS-TACHE`).
   - b) La reprise n'est pas proposée : il faut d'abord rouvrir « Chapitre 1 » (même comportement que DEC-030 pour une tâche parente abandonnée).
@@ -233,5 +247,5 @@ Boîte d'abandon (`alertdialog`, « Annuler » focalisé, bouton non rouge) ; me
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes, cas temporels.
-- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 24 cas), sauf UT-US-025-18 (Q-US-025-3).
-- [ ] Q-US-025-3 répondue.
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 27 cas, dont UT-US-025-18).
+- [x] Q-US-025-3 répondue (DEC-032, option a).

@@ -78,4 +78,19 @@ describe('construireConfirmation (conventions.md §8.6, guide §6.6.7)', () => {
       variables: { element: 'Chapitre 1', n: 2 },
     });
   });
+
+  it('UT-US-025-18 construireConfirmation — REPRISE_SOUS_TACHE donne CNF-REPRENDRE-SOUS-TACHE avec la sous-tâche et la tâche parente (CA-13, guide v0.2.11 §6.6.7)', () => {
+    const modele = construireConfirmation({
+      type: 'REPRISE_SOUS_TACHE',
+      tacheId: idTache(2),
+      intitule: 'Section A',
+      tacheParenteId: idTache(1),
+      intituleTacheParente: 'Chapitre 1',
+    });
+
+    expect(modele).toMatchObject({
+      code: 'CNF-REPRENDRE-SOUS-TACHE',
+      variables: { element: 'Section A', tacheParente: 'Chapitre 1' },
+    });
+  });
 });
