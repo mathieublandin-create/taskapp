@@ -6,7 +6,7 @@
 | Préparé par | Pepper (business analyste), le 2026-10-22, pour Jarvis |
 | Référentiel | Décision DEC-034 ([`suivi-projet.md`](../suivi-projet.md)) · étude de Starck [ETU-002](../03-architecture/etude-pwa-unique.md) (§3, §5, §7, §10, §11) · [cahier des charges v0.13](../01-specification-fonctionnelle/cahier-des-charges.md) (§7.1) · US-017, US-018, US-022, US-031 · 279 scénarios de test, dont 10 marqués `@DEC-034` |
 | Lecture | Environ 8 minutes |
-| État | **À valider par le commanditaire** : 7 décisions, V-DEC034-1 à V-DEC034-7 |
+| État | **Validé par le commanditaire le 2026-10-22 (DEC-036, « Tout reco »)** : voir la section « Résultat » (§8). Le reste du document est conservé tel que présenté. |
 
 ---
 
@@ -190,10 +190,27 @@ Si non : précisez le point refusé ; une protection supplémentaire serait à �
 
 ## 8. Résultat
 
-*(à compléter par Jarvis à réception de la réponse du commanditaire)*
-
 | Élément | Valeur |
 |---|---|
-| Date de la réponse | |
-| Verbatim du commanditaire | |
-| Décision consignée | |
+| Date de la réponse | 2026-10-22 |
+| Verbatim du commanditaire | « Tout reco » |
+| Décision consignée | **DEC-036** dans [`suivi-projet.md`](../suivi-projet.md) |
+
+**Ce qui est validé :** les 7 recommandations ★, V-DEC034-1 à V-DEC034-7, avec tous leurs points (a, b, c) :
+- V-DEC034-1 : ENF-01 reformulée ; exclusion « iPhone » reformulée ; US-017 CA-1 précisé ;
+- V-DEC034-2 : ENF-07 reformulée ; US-017 CA-12 (« Mettre à jour ») ; **DEC-021 est remplacée** par DEC-034 ;
+- V-DEC034-3 : RG-017, exception de l'accès Google à renouveler étendue au téléphone ; US-017 CA-3 ;
+- V-DEC034-4 : ENF-04 ;
+- V-DEC034-5 : US-018 CA-4 et CA-8 ; US-022 CA-5 et CA-7 ;
+- V-DEC034-6 : RG-014 ; **Q-DEM001-38 close par a)** ; deux exclusions ajoutées (notifications de l'application, mise à jour en arrière-plan) ;
+- V-DEC034-7 : conditions du travail sans réseau sur le téléphone (application installée, première ouverture avec réseau, effacement des données du navigateur).
+
+**Réserve, conforme à DEC-034 et DEC-036 :** tous ces textes sont **retirés si la condition de DEC-034 échoue** (mesures **M-RED** et **M-PERSIST** du test technique). L'application Android (APK) est alors conservée et les textes « Avant » du §4 sont rétablis, sans nouvelle question.
+
+**Précision reçue ensuite (Q-DEC034-1, Starck, 2026-10-22 ; critère de la mesure M-RED) :** à l'ouverture, l'accès Google se renouvelle **sans aucun geste**, par une redirection silencieuse de 1 à 2 secondes, en **une seule tentative** ; sinon, « Reprendre la synchronisation » s'affiche. Ce geste n'est demandé que si l'accès expire pendant l'utilisation ou si la redirection échoue ; une saisie, seulement si la session Google de l'appareil a elle-même expiré. Cette précision est conforme à V-DEC034-3 (« jamais plus d'un geste, aucune saisie ») et ne demande pas de nouvelle validation.
+
+**Suites données par Pepper (2026-10-22) :**
+- cahier des charges **v0.14** : RG-014, RG-017, ENF-01, ENF-04, ENF-07 reformulées, avec la mention « retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST) » ; exclusions du §4.3 et glossaire (« Accès Google à renouveler », « Application installée ») établis ; statut « Proposée (DEC-034) » retiré ;
+- US-017, US-018 et US-022 de nouveau **« Prête »** ; US-031 reste « Validée », critères inchangés ; textes antérieurs conservés dans les US pour un éventuel rétablissement ;
+- `questions-ouvertes.md` : Q-DEM001-38 répondue (a) ;
+- tests métiers : **280 scénarios** ; tag `@DEC-034` conservé pour repérer les scénarios à retirer si la condition échoue ; réponse de Starck reportée (nouveau US-018 S06c ; US-017 S06 et US-022 S23 complétés par la précondition « redirection silencieuse en échec ») ; glossaire d'étapes **v1.8**.

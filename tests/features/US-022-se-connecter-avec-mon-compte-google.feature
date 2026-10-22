@@ -8,8 +8,8 @@
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 # DEC-034 (Pepper, 2026-10-22) : connexion dans l'application web sur les deux appareils (plus d'application Android).
-# Scénarios adaptés ou nouveaux, tag @DEC-034, à valider par le commanditaire (V-DEC034-3 et V-DEC034-5) : S11 (accès retiré seulement), S23b (nouveau).
-# Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
+# Scénarios adaptés ou nouveaux, tag @DEC-034, validés par le commanditaire le 2026-10-22 (DEC-036, « Tout reco ») (V-DEC034-3 et V-DEC034-5) : S11 (accès retiré seulement), S23 (redirection en échec à l'ouverture, Q-DEC034-1), S23b (nouveau).
+# Ils sont retirés, et la version précédente de ce fichier rétablie, si la condition de DEC-034 échoue (M-RED, M-PERSIST).
 # « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6).
 # Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive porte le même nom (V-13, DEC-018).
 # Motifs d'échec de la connexion : codes ERR-001 à ERR-006 du catalogue de Steeve (guide d'ergonomie §6.6.8), qui fait foi pour les libellés et les codes ; voir US-022, section « Motifs de connexion ».
@@ -328,17 +328,19 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors la connexion échoue avec le motif "ERR-004"
     Et les données du compte "A" sont toujours présentes sur le smartphone
 
-  @US-022 @RG-017 @RG-035 @LOT-001
-  Scénario: S23 — Sur le PC, session Google du navigateur expirée : l'application reste utilisable avec les données du PC
+  # DEC-034 (Q-DEC034-1, ADR-013) : à l'ouverture, une redirection silencieuse est tentée une fois ; SYN-SESSION n'apparaît que si elle échoue (précondition ajoutée).
+  @US-022 @RG-017 @RG-035 @LOT-001 @DEC-034
+  Scénario: S23 — Sur le PC, session Google du navigateur expirée et redirection silencieuse en échec : l'application reste utilisable avec les données du PC
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le PC
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que la session Google du navigateur du PC a expiré
+    Et que la redirection silencieuse vers Google échoue à l'ouverture sur le PC
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, aucune connexion n'est demandée avant d'afficher les données
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
 
-  # DEC-034 ; Q-DEC034-1 (Starck) fixe le mécanisme du renouvellement (bref passage par Google à l'ouverture ou geste) ; le scénario vaut pour les deux.
+# DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
   @US-022 @RG-017 @RG-035 @LOT-001 @DEC-034
   Scénario: S23b — Sur le smartphone, accès Google à renouveler à l'ouverture : données affichées sans écran de connexion, accès renouvelé sans saisie
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
@@ -351,6 +353,7 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" n'est pas affiché
     Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
     Alors sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-SESSION"
+    Et sur le smartphone, aucun bandeau n'est affiché
 
   # E8, Q-US-022-3 : en consultation seule (RG-058), aucune action de compte n'écrit dans le Drive.
   @US-022 @RG-055 @RG-058 @LOT-001

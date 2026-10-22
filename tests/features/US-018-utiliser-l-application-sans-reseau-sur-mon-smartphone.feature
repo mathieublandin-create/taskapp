@@ -8,9 +8,10 @@
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 # DEC-034 (Pepper, 2026-10-22) : le smartphone utilise l'application web installée depuis Chrome, et non plus une application Android (APK).
-# Scénarios nouveaux ou adaptés, tag @DEC-034, à valider par le commanditaire (V-DEC034-5 et V-DEC034-7) : S06 (accès Google valide),
-# S06b (accès Google à renouveler au retour du réseau), S09b (application installée), S11 (accès retiré seulement ; l'accès expiré relève de S06b),
-# S18 et S19 (cas limites du navigateur). Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
+# Scénarios nouveaux ou adaptés, tag @DEC-034, validés par le commanditaire le 2026-10-22 (DEC-036, « Tout reco ») (V-DEC034-5 et V-DEC034-7) : S06 (accès Google valide),
+# S06b (accès Google à renouveler au retour du réseau), S06c (redirection silencieuse en échec à l'ouverture, Q-DEC034-1), S09b (application installée),
+# S11 (accès retiré seulement ; l'accès expiré relève de S06b), S18 et S19 (cas limites du navigateur).
+# Ils sont retirés, et la version précédente de ce fichier rétablie, si la condition de DEC-034 échoue (M-RED, M-PERSIST).
 
 Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
   En tant qu'utilisateur,
@@ -144,6 +145,22 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" à l'état "terminée"
     Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
+    Et sur le smartphone, aucun élément ne porte la mention "MEN-ATTENTE"
+
+  # Réponse de Starck à Q-DEC034-1 : à l'ouverture, une seule tentative de redirection silencieuse ; en cas d'échec, SYN-SESSION et le geste.
+  @US-018 @RG-017 @RG-021 @LOT-001 @DEC-034
+  Scénario: S06c — À l'ouverture, accès Google à renouveler et redirection silencieuse en échec : données affichées, travail possible, enregistrement après le geste, aucune saisie
+    Étant donné que l'application est fermée sur le smartphone
+    Et que sur le smartphone, l'utilisateur a renommé la tâche "Chapitre 1" en "Chapitre 1 : contexte", pas encore enregistré dans le Drive
+    Et que la session Google du smartphone a expiré
+    Et que la redirection silencieuse vers Google échoue à l'ouverture sur le smartphone
+    Quand l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
+    Alors sur le smartphone, les données présentes sur le smartphone s'affichent aussitôt
+    Et sur le smartphone, aucune connexion n'est demandée avant d'afficher les données
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le smartphone, aucun bandeau n'est affiché
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
     Et sur le smartphone, aucun élément ne porte la mention "MEN-ATTENTE"
 
   @US-018 @RG-021 @RG-036 @RG-056 @LOT-001
@@ -359,7 +376,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
     Et sur le smartphone, un seul bandeau est affiché
 
-  # ---------------------------------------------------------------- Cas limites du navigateur (proposés, DEC-034 ; V-DEC034-7)
+  # ---------------------------------------------------------------- Cas limites du navigateur (DEC-034 ; V-DEC034-7, validée DEC-036)
 
   @US-018 @RG-021 @ihm @LOT-001 @DEC-034
   Scénario: S18 — Données du navigateur effacées sur le smartphone : les modifications non enregistrées sont perdues et les données sont rechargées depuis le Drive

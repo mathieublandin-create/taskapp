@@ -8,8 +8,8 @@
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
 # DEC-034 (Pepper, 2026-10-22) : même application web sur les deux appareils (plus d'application Android ni d'APK).
-# Scénarios adaptés ou nouveaux, tag @DEC-034, à valider par le commanditaire : S06b (V-DEC034-3), S30 (V-DEC034-2).
-# Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
+# Scénarios adaptés ou nouveaux, tag @DEC-034, validés par le commanditaire le 2026-10-22 (DEC-036, « Tout reco ») : S06 (redirection en échec à l'ouverture, Q-DEC034-1), S06b (V-DEC034-3), S30 (V-DEC034-2).
+# Ils sont retirés, et la version précédente de ce fichier rétablie, si la condition de DEC-034 échoue (M-RED, M-PERSIST).
 # Les délais d'une heure et d'une minute (CA-2, CA-3) se vérifient en faisant avancer l'horloge contrôlée du banc à deux appareils
 # (conventions §9.11, PT-04) : aucun scénario n'attend en temps réel (E7, ANT-3).
 # E7 : S12b (horodatages identiques), S13 scindé en S13a/S13b (seuil de 24 h, CA-13), S17 scindé en S17a/S17b, S30b (RG-058 : aucune écriture, dépôt après mise à jour).
@@ -95,10 +95,12 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et l'horloge avance de 1 minute depuis l'ouverture
     Alors sur le PC, les 3 modifications sont intégrées
 
-  @US-017 @RG-017 @RG-035 @LOT-001
-  Scénario: S06 — Sur le PC, session Google du navigateur expirée : données du PC affichées et utilisables, mise à jour après le geste de reconnexion
+  # DEC-034 (Q-DEC034-1, ADR-013) : à l'ouverture, une redirection silencieuse est tentée une fois ; le geste n'est demandé que si elle échoue (précondition ajoutée).
+  @US-017 @RG-017 @RG-035 @LOT-001 @DEC-034
+  Scénario: S06 — Sur le PC, session Google du navigateur expirée et redirection silencieuse en échec : données du PC affichées et utilisables, mise à jour après le geste de reconnexion
     Étant donné que l'application est fermée sur le PC
     Et que la session Google du navigateur du PC a expiré
+    Et que la redirection silencieuse vers Google échoue à l'ouverture sur le PC
     Et que sur le smartphone, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
     Quand l'utilisateur ouvre l'application sur le PC, connecté au réseau
     Alors sur le PC, les données présentes sur le PC s'affichent aussitôt
@@ -112,7 +114,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le PC, l'objectif "Publier le guide" existe
 
-  # DEC-034 ; Q-DEC034-1 (Starck) fixe le mécanisme du renouvellement (bref passage par Google à l'ouverture ou geste) ; le scénario vaut pour les deux.
+# DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
   @US-017 @RG-017 @RG-035 @LOT-001 @DEC-034
   Scénario: S06b — Sur le smartphone, accès Google à renouveler à l'ouverture : données du smartphone affichées aussitôt, mise à jour une minute au plus après un renouvellement sans saisie
     Étant donné que l'application est fermée sur le smartphone
@@ -601,7 +603,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le smartphone échange ses modifications avec le Drive
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
 
-  # DEC-034 (V-DEC034-2) : « Mettre à jour » n'ouvre plus une page de téléchargement d'APK ; il applique la dernière version de l'application web.
+  # DEC-034 (V-DEC034-2, validée DEC-036) : « Mettre à jour » n'ouvre plus une page de téléchargement d'APK ; il applique la dernière version de l'application web.
   @US-017 @RG-017 @RG-058 @LOT-001 @DEC-034
   Scénario: S30 — Un appareil qui ne sait pas lire le format des données enregistrées par une version plus récente passe en consultation seule et invite à se mettre à jour, sans rien perdre
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone

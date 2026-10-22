@@ -1,6 +1,6 @@
 # US-031 — Utiliser l'application sans réseau sur mon PC
 Demande d'origine : DEM-001 · Lot : LOT-001
-Statut : Validée (DEC-018) — révision de forme DEC-034 **proposée, à valider** (V-DEC034-2, 4, 6) ; aucun critère d'acceptation ni scénario modifié
+Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-22 (DEC-036, V-DEC034-2, 4, 6) ; aucun critère d'acceptation ni scénario modifié
 
 **En tant qu'**utilisateur, **je veux** consulter et saisir mes données sur mon PC sans réseau, mes modifications étant prises en compte au retour du réseau, **afin d'**avoir le même comportement sur mes deux appareils.
 
@@ -12,18 +12,18 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 **proposée, à valid
   - pour l'ouvrir sans réseau, il faut l'avoir ouverte au moins une fois avec le réseau, sur ce PC et dans ce navigateur ;
   - limite F14 : quand la session Google du navigateur a expiré, la mise à jour avec l'autre appareil attend un geste de reconnexion ; l'utilisation sur les données du PC continue ;
   - les données du PC sont conservées par le navigateur : si l'utilisateur efface les données de son navigateur, il efface aussi celles de l'application sur ce PC.
-- **DEC-034 (2026-10-22), proposé, à valider** : le comportement du PC ne change pas. Ce qui était propre au PC devient commun aux deux appareils : la limite F14 (accès Google à renouveler, RG-017 et ENF-04 proposées), l'installation comme une application et les cas limites du navigateur (repris dans US-018). ENF-07 est reformulée (plus d'APK sur le smartphone). La synchronisation en arrière-plan est exclue (Q-PWA-3). Les critères d'acceptation et les 28 scénarios sont inchangés.
+- **DEC-034 (2026-10-22), validé par DEC-036** (retiré si la condition de DEC-034 échoue (M-RED, M-PERSIST)) : le comportement du PC ne change pas. Ce qui était propre au PC devient commun aux deux appareils : la limite F14 (accès Google à renouveler, RG-017 et ENF-04 proposées), l'installation comme une application et les cas limites du navigateur (repris dans US-018). ENF-07 est reformulée (plus d'APK sur le smartphone). La synchronisation en arrière-plan est exclue (Q-PWA-3). Les critères d'acceptation et les 28 scénarios sont inchangés.
 - **Existant.** Aucune fonctionnalité livrée.
 
 ## Règles de gestion applicables (RG-xxx)
 - RG-057 : bandeau de rappel non bloquant quand la plus ancienne modification en attente date de plus de 24 h.
 - RG-021 : consultation et saisie sans réseau, sur le smartphone et sur le PC ; prise en compte au retour du réseau.
 - RG-035 : la perte de l'accès Google se comporte comme une coupure de réseau.
-- RG-017 : exception du PC quand la session Google du navigateur a expiré (F14) ; *reformulation proposée (DEC-034) : exception commune au smartphone et au PC (accès Google à renouveler)*.
+- RG-017 : exception du PC quand la session Google du navigateur a expiré (F14) ; *reformulée (DEC-034, validée DEC-036) : exception commune au smartphone et au PC (accès Google à renouveler)*.
 - RG-036 : la modification la plus récente l'emporte, information par information ; valeurs écartées signalées.
 - RG-047 à RG-049 : réparations après fusion.
 - RG-019 : la première connexion nécessite le compte Google, donc le réseau.
-- ENF-04, ENF-06 (validée), ENF-07 ; *ENF-04 et ENF-07 : reformulations proposées (DEC-034)*.
+- ENF-04, ENF-06 (validée), ENF-07 ; *ENF-04 et ENF-07 : reformulées (DEC-034, validées DEC-036)*.
 
 ## Critères d'acceptation
 1. **CA-1** — Sur le PC, l'utilisateur s'étant déjà connecté au moins une fois dans ce navigateur, l'application s'ouvre sans réseau, depuis son adresse web ou depuis l'application installée, et affiche les données présentes sur le PC.
@@ -52,7 +52,7 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 **proposée, à valid
 - Accès Google perdu depuis plus de 24 h avec des modifications en attente : un seul bandeau « Se reconnecter », complété du nombre de modifications (CA-10 c ; S22, S22b). La session Google expirée sur PC (CA-5) reste sans bandeau tant que la plus ancienne modification en attente a 24 h ou moins ; au-delà, le bandeau de rappel s'affiche, avec l'action « Reprendre la synchronisation » (CA-10, S22c).
 
 ## Hors périmètre
-- Synchronisation en arrière-plan, application fermée : **exclue** (DEC-034, Q-PWA-3 ; formulation à valider, V-DEC034-6).
+- Synchronisation en arrière-plan, application fermée : **exclue** (DEC-034, Q-PWA-3 ; formulation validée, V-DEC034-6, DEC-036 ; retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST)).
 - Renouvellement de la session Google sans geste de l'utilisateur après son expiration (impossible sans serveur, DEC-007).
 - Utilisation sur un PC partagé sans session personnelle.
 
@@ -156,9 +156,9 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 **proposée, à valid
 | Cas limite : mise à jour application fermée | US-017 S04 |
 
 ## Questions ouvertes
-- **V-DEC034-2, 4, 6** (commanditaire, via Jarvis) : reformulations de forme des règles citées par cette US (`docs/ceremonies/validation-DEC-034.md`) ; aucun critère de l'US n'en dépend.
+Aucune. V-DEC034-2, 4, 6 validées le 2026-10-22 (DEC-036).
 
-*Avant DEC-034* : aucune. Tous les critères sont validés par le commanditaire (DEC-018).
+*Antérieurement* : tous les critères sont validés par le commanditaire (DEC-018).
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -170,4 +170,5 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 **proposée, à valid
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : ANT-5 et ANT-6 (tag `@ihm` sur S01a, S01b, S08, S14, S15, S16, S17 ; S01 scindé ; résultat observable de S14 ; S17 reformulé en étapes successives), ANT-16 (convention de date des tâches de contexte : glossaire d'étapes), assertions de bandeaux, mentions et indicateur exprimées par les codes du catalogue (`SYN-`, `MEN-`, `BAN-`), PEP-8. RG-057 et les scénarios S19 et S20 sont inchangés dans l'attente des réponses Q-ERG-16 à 18. |
 | 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 intégrée à RG-057 et au CA-10 (24 h depuis la plus ancienne modification en attente ; accès perdu : un seul bandeau « Se reconnecter » complété ; bandeau fermé réapparaissant à la prochaine ouverture). Scénarios S19 et S20 réécrits avec `BAN-RAPPEL-24H` ; nouveaux S19b, S20b, S21, S21b, S22, S22b (le S19 d'origine est scindé : la disparition du bandeau est dans S21). |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-031-1 (réponse de Starck reflétée dans CA-9 : accès expiré = session expirée sur le PC), Q-US-031-2 (option a : rappel après 24 h aussi en session expirée, avec « Reprendre la synchronisation » ; S22c ajouté), Q-US-031-3 (renvoi de CA-10 c corrigé vers CA-9), Q-US-031-4 (formes au glossaire v1.2 ; sens observable de S14 confirmé, ANT-23), Q-US-018-1 (décompte), Q-US-017-7 (préfixes d'appareil, S10 et S11), Q-US-022-1 (forme unique « est affiché, avec l'action », S22 et S22b). Précisions sans changement de règle. |
-| 2026-10-22 | Révision de forme DEC-034 (Pepper), **proposée, à valider** (V-DEC034) : analyse d'écart, règles citées (RG-017, ENF-04, ENF-07 proposées), synchronisation en arrière-plan exclue, note à Starck. Critères et scénarios inchangés. |
+| 2026-10-22 | Révision de forme DEC-034 (Pepper), proposée (V-DEC034) : analyse d'écart, règles citées (RG-017, ENF-04, ENF-07 proposées), synchronisation en arrière-plan exclue, note à Starck. Critères et scénarios inchangés. |
+| 2026-10-22 | Révision de forme DEC-034 **validée** (DEC-036, « Tout reco ») ; retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST). |

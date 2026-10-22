@@ -14,14 +14,14 @@
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
 |---|---|---|---|---|---|---|
-| US-022 | Se connecter avec mon compte Google | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-022 | Se connecter avec mon compte Google | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) ; CA-5 et CA-7 précisés ; S23b ; révision DEC-034 validée le 2026-10-22 (DEC-036), retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST) ; E9 conditionnée à R11 et M-RED (ADR-013) |
+| US-017 | Retrouver mes données sur smartphone et PC | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) ; CA-1, CA-3 et CA-12 reformulés ; S06b ; révision DEC-034 validée le 2026-10-22 (DEC-036), retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST) ; E9 conditionnée à R11 et M-RED (ADR-013) |
 | US-001 | Créer et gérer un objectif | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 | US-023 | Organiser un objectif en sous-objectifs | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 | US-002 | Créer et gérer mes tâches | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 | US-024 | Décomposer une tâche en sous-tâches | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 | US-003 | Terminer ou rouvrir une tâche, atteinte d'un objectif | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
-| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
+| US-018 | Utiliser l'application sans connexion (smartphone) | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) ; CA-4 et CA-8 reformulés, Q-DEC034-1 répondue (S06c) ; révision DEC-034 validée le 2026-10-22 (DEC-036), retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST) |
 | US-031 | Utiliser l'application sans connexion sur PC | LOT-001 | Prête | E9 | anthony | Ajoutée par DEC-013 ; validée le 2026-10-21 (DEC-018) |
 | US-025 | Abandonner une tâche | LOT-001 | Prête | E9 | anthony | Validée le 2026-10-21 (DEC-018) |
 
