@@ -11,7 +11,8 @@ Projet piloté par une ferme d'agents (définis dans `.claude/agents/`), coordon
 | anthony | Responsable technique | `docs/04-specification-technique/`, tests unitaires |
 | benjamin | Développeur | `src/` |
 
-- Workflow (lots, étapes E0 à E17, validations du commanditaire, règle anti-boucle) : `docs/workflow.md`
+- Workflow (lots, étapes E-1 à E17, validations du commanditaire, règle anti-boucle) : `docs/workflow.md`
+- Backlog d'idées (étape E-1, tenu par Jarvis) : `docs/backlog-idees.md`
 - Lots / itérations : `docs/lots/`
 - Tests métiers Gherkin (Cucumber) : `tests/features/`
 - Cérémonies (refinement, lancement, arbitrages) : `docs/ceremonies/`

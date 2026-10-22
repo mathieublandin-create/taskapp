@@ -2,7 +2,7 @@
 
 > Les idées et épiques du commanditaire qui ne sont pas encore étudiées sont recueillies ici, en amont d'E0.
 > Une idée n'entre dans le workflow (E0, `DEM-xxx`) que lorsque le commanditaire l'a **priorisée**.
-> Le fonctionnement de ce backlog est une **proposition de Jarvis du 2026-10-22, en attente de validation du commanditaire** (voir « Fonctionnement proposé » en fin de document).
+> Fonctionnement : étape **E-1** de `docs/workflow.md`, validée par le commanditaire le 2026-10-22 (DEC-033).
 
 ## Tableau
 
@@ -78,9 +78,3 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - **M2-5** : Acceptez-vous que le contenu de vos objectifs et de vos tâches soit transmis à ce service ?
 
 **Critères de maturité remplis** : besoin, valeur, périmètre esquissé. **Il manque** : les réponses M2-1 à M2-5, l'avis de faisabilité et de coût de Starck, et le périmètre exclu.
-
----
-
-## Fonctionnement proposé (en attente de validation)
-
-Voir la proposition d'évolution du workflow : section « E-1 — Backlog d'idées » soumise au commanditaire le 2026-10-22.

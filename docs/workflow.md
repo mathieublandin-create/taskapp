@@ -1,6 +1,6 @@
 # Workflow de traitement des demandes
 
-> Version 2 — 2026-10-20. Jarvis lit ce fichier avant toute coordination et l'applique strictement.
+> Version 3 — 2026-10-22 (ajout d'E-1, backlog d'idées, DEC-033). Version 2 — 2026-10-20. Jarvis lit ce fichier avant toute coordination et l'applique strictement.
 
 ## Acteurs
 | Acteur | Rôle |
@@ -31,6 +31,7 @@ C'est le commanditaire qui valide la typologie de chaque lot.
 
 ```mermaid
 flowchart TD
+    EM1{{E-1 Backlog d'idées<br/>Jarvis qualifie · ★ commanditaire priorise}} -- idée priorisée --> E0
     E0[E0 Réception des demandes<br/>Jarvis] --> E1[E1 Analyse d'écart et rédaction des US<br/>Pepper]
     E1 --> E2{{E2 Constitution du lot<br/>Pepper propose · ★ commanditaire valide}}
     E2 --> E3[E3 Impacts sur le DAT<br/>Starck]
@@ -62,6 +63,33 @@ flowchart TD
 ★ = point de validation du commanditaire. Toute boucle entre agents est soumise à la **règle anti-boucle** (voir plus bas).
 
 ## Étapes
+
+### E-1 — Backlog d'idées (Jarvis qualifie, ★ le commanditaire priorise)
+Toute idée ou épique du commanditaire qui n'est pas destinée à être traitée tout de suite entre dans `docs/backlog-idees.md`, tenu par Jarvis. Elle n'entre en E0 que lorsque le commanditaire l'a priorisée.
+
+| Statut | Ce qui se passe | Qui |
+|---|---|---|
+| **Reçue** | Jarvis enregistre l'idée sous `EPI-xxx` (épique) ou `IDE-xxx` (petite idée), avec le texte du commanditaire mot pour mot. | Jarvis |
+| **Qualifiée** | Jarvis reformule l'idée, estime sa valeur, repère les conflits avec les règles de gestion et les décisions (`RG-`, `ENF-`, `DEC-`) et pose des questions de maturité fermées (`Mn-k`). | Jarvis |
+| **Mûre** | Les 6 critères de maturité sont remplis. Si besoin, Starck donne un avis de faisabilité de quelques lignes. | Jarvis, Starck si besoin |
+| **★ Priorisée** | Le commanditaire classe les idées mûres. Jarvis propose un ordre selon la valeur, la taille, les dépendances et le risque. | Commanditaire |
+| **Transformée** | L'idée devient une demande `DEM-xxx` et entre en E0. | Jarvis |
+
+Une idée peut aussi être **écartée** ou mise **en sommeil**, sur décision du commanditaire.
+
+**Critères de maturité** :
+1. besoin et bénéficiaire clairs ;
+2. valeur attendue ;
+3. périmètre esquissé, avec ce qui en est exclu ;
+4. conflits avec les décisions existantes repérés ;
+5. réponses aux questions de maturité ;
+6. taille pressentie (S, M, L ou XL) et dépendances.
+
+**Règles** :
+- Aucune idée n'occupe Pepper ni l'équipe avant sa priorisation : les agents restent concentrés sur le lot en cours. Seul un avis de faisabilité de Starck, court et ciblé, est possible avant.
+- Jarvis présente le backlog au commanditaire à chaque clôture de lot (E17) ou sur demande. La priorisation a lieu à ce moment-là.
+- Une idée qui remet en cause une décision définitive (`DEC-xxx`) le signale explicitement. La décision n'est rediscutée que si le commanditaire le choisit.
+- Une demande que le commanditaire veut voir traitée tout de suite passe directement en E0, sans passer par le backlog.
 
 ### E0 — Réception des demandes (Jarvis)
 - Enregistre chaque demande sous un identifiant `DEM-xxx` dans `docs/suivi-projet.md`.
@@ -219,6 +247,7 @@ Chaque agent produit son PV `docs/01-specification-fonctionnelle/recette/PV-LOT-
   - registre des anomalies.
 - Passe les US du lot au statut **Terminée** et le lot au statut **Clôturé**.
 - Adresse un bilan au commanditaire, qui comprend les anomalies mineures en attente de planification.
+- Présente le backlog d'idées (E-1) pour que le commanditaire priorise les idées mûres.
 
 ## Gravité des anomalies
 | Gravité | Définition |
@@ -265,6 +294,7 @@ La gravité est proposée par l'agent qui détecte l'anomalie. Une contestation 
 ## Points de validation du commanditaire
 | Moment | Objet |
 |---|---|
+| E-1 | Réponses aux questions de maturité ; priorisation du backlog d'idées |
 | E1 | Réponses aux questions ouvertes de Pepper |
 | E2 | Composition et typologie du lot |
 | E6 | Validation de chaque US avant le refinement |
