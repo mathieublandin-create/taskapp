@@ -9,7 +9,7 @@
 | Id | Titre | Reçue le | Statut | Maturité | Taille pressentie | Priorité |
 |---|---|---|---|---|---|---|
 | EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 4/6 critères (questions closes) | Très grande (XL) | — |
-| EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | Qualifiée | 4/6 critères | Grande (L) | — |
+| EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | **Mûre** | 6/6 critères | Moyenne (M) en v1, grande (L) pour l'épique complète | — |
 
 Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DEM-xxx` (ou Écartée, ou En sommeil).
 
@@ -39,6 +39,7 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
   - le suivi du temps (lot 3 indicatif) ;
   - les rappels et résumés du matin et du soir (lot 4).
 - Elle touche l'agenda : les créneaux du contributeur sont-ils posés dans **son** agenda ?
+- **iPhone (information du commanditaire, 2026-10-22)** : le second utilisateur aura un **iPhone**. Or l'iPhone est exclu de la v1 (ENF-01, DEC-001 A1), et l'application smartphone est un APK Android (ADR-012). Pistes à étudier par Starck : la PWA dans Safari sur iPhone, avec ses limites (stockage, notifications, connexion Google), ou une application iOS. Cette contrainte pèse probablement sur la taille.
 
 **Questions de maturité, pour le commanditaire** :
 - **M1-1** : Le contributeur a-t-il son propre compte Google et sa propre installation de Done Juan ?
@@ -185,3 +186,11 @@ Seuls le dialogue et l'objectif en cours sont transmis à l'IA (minimisation).
 
   *Reco : (a).*
 - **M2-9** : L'IA reçoit-elle aussi la liste de vos objectifs existants, pour éviter les doublons et proposer un rattachement ? *Reco : non en v1.*
+
+**Réponses du commanditaire (2026-10-22)** : recommandations retenues pour M2-6 à M2-9.
+- **M2-6** : (a) Mistral.
+- **M2-7** : non, pas d'offre gratuite. Le commanditaire signale qu'il dispose d'un abonnement « pro ». D'après l'avis de Starck, ni Le Chat Pro ni Claude Pro ne donnent accès à l'API : une clé API payante à l'usage reste nécessaire.
+- **M2-8** : (a) reconnaissance vocale d'Android.
+- **M2-9** : non en v1.
+
+**Statut : Mûre** (6/6 critères). Le périmètre exclu et la taille (M pour la v1) viennent de l'avis de Starck. EPI-002 sera présentée à la priorisation lors de la clôture de LOT-001 (E17), ou plus tôt sur demande.
