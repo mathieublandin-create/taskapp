@@ -49,9 +49,9 @@ Chaque étape est consignée au §5 avec la date, l'heure, l'appareil, le **mode
 3. **Chrome Android** : même adresse ; « Installer l'application » (menu de Chrome) ; ouvrir la PWA installée depuis l'écran d'accueil ; « Se connecter » ; mêmes observations.
 
 ### 3.6 M-RED : jeton par redirection à l'ouverture (Chrome Android, PWA installée ; PC en référence)
-1. Après 3.1.3, dans la PWA installée : « Remettre à zéro le compteur », puis « Jeton par redirection ». **Observer** : retour `JetonObtenu`, compteur à 1, durée. C'est la mesure « session fraîche ».
+1. Après 3.1.3, dans la PWA installée : « Remettre à zéro le compteur », puis « Jeton par redirection ». **Observer** : retour `JetonObtenu`, compteur à 1, durée, contexte `standalone` et `web-android`. C'est la mesure « session fraîche ». Puis **cocher « Redirection automatique à l'ouverture »**.
 2. Fermer la PWA en la retirant des applications récentes. **Attendre plus d'une heure.**
-3. Rouvrir la PWA depuis l'écran d'accueil. **Juste après l'ouverture**, « Jeton par redirection ». **Observer** :
+3. Rouvrir la PWA depuis l'écran d'accueil, **sans aucun appui** : le départ est automatique (entrée « Départ automatique à l'ouverture »). Si le journal indique « Non lancé », consigner la raison puis appuyer sur « Jeton par redirection ». **Observer** :
    - un écran Google s'affiche-t-il ? demande-t-il de **taper** quoi que ce soit (mot de passe, code) ? de choisir un compte ?
    - le journal montre-t-il `JetonObtenu`, le compteur a-t-il augmenté d'un seul, quelle durée ?
    - le retour se fait-il dans la fenêtre de la PWA (`standalone`), et non dans un onglet de Chrome ?
@@ -60,7 +60,7 @@ Chaque étape est consignée au §5 avec la date, l'heure, l'appareil, le **mode
 6. (Informatif, cas d'échec attendu) Se déconnecter de Google dans Chrome (ou retirer le compte du téléphone, si le commanditaire l'accepte), puis refaire 3 : un code `interaction_requise` (`login_required` ou `interaction_required`) est attendu, sans boucle de redirections.
 7. **PC** : refaire 2 et 3 avec la PWA installée du PC (référence pour l'adaptateur web unique).
 
-Si l'option « Redirection automatique à l'ouverture » existe dans le PoC (`poc-specification.md` §13.3), la cocher et refaire 3 sans appuyer sur le bouton : le résultat doit être identique.
+L'option « Redirection automatique à l'ouverture » (`poc-specification.md` §13.3, `62a010b`) est la voie de mesure principale de 3.6.3 à 3.6.7 ; le bouton n'est qu'un recours.
 
 ### 3.7 M-PERSIST et M-DUR : stockage
 1. **M-PERSIST** : dans la PWA installée sur Chrome Android, « Stockage persistant ? ». Relever `persisted()` avant l'appel et le résultat de `persist()`. Refaire dans un **onglet** Chrome ordinaire (même adresse) pour comparaison, puis sur le PC (R15).

@@ -3,6 +3,7 @@
 > **Version 3 du 2026-10-22.** Auteur : Starck. Destinataire : le commanditaire.
 > **Ce qui change en version 3** (votre décision DEC-034 du 2026-10-22) : on teste **une seule application web** (PWA), sur le PC et sur le téléphone Android, **sans application Android à installer, sans clé et sans mode développeur**. L'ancien volet Android est rangé en **annexe R « repli »** : il ne servira que si le test montre que la version web ne convient pas sur le téléphone. Deux nouvelles mesures sur le téléphone : la **connexion automatique à l'ouverture** (la condition que vous avez posée) et la **conservation des données** après un arrêt forcé ou un redémarrage. Une partie **facultative** (h) prépare le partage avec un contributeur sur iPhone (DEC-035).
 > Protocole technique de référence : `test-technique-R1-R2.md` v3.
+> Mise à jour du 2026-10-22 : case « Redirection automatique à l'ouverture », ligne de contexte (« standalone », « web-android »), exports avec contexte.
 > Statut : **prêt à l'emploi, jamais exécuté.**
 
 ## 0. Avant de commencer
@@ -226,7 +227,8 @@ Envoyez à Jarvis, par **message privé** :
 - Pour chaque étape, remplissez le tableau de résultats : heure, appareil, ce que vous avez vu, réussi ou non.
 - Ne cherchez pas à corriger une erreur. Notez-la : c'est un résultat utile.
 - **Installer l'application** sur le téléphone : dans Chrome, à l'adresse de l'application, menu **⋮**, puis **Installer l'application** (ou **Ajouter à l'écran d'accueil**, puis **Installer**). Une icône « Diagnostic » apparaît sur l'écran d'accueil. **Pendant la séance, ouvrez toujours l'application par cette icône**, jamais par un onglet de Chrome (sauf à l'étape 13).
-- Le journal de l'application affiche, pour chaque essai, « standalone » (application installée) ou « navigateur » (onglet) : vérifiez « standalone ».
+- Le journal de l'application et le haut de l'écran affichent une ligne de **contexte**, par exemple « mode d'affichage : standalone ; plateforme : web-android ; en ligne : true ». Sur le téléphone, vérifiez **« standalone »** (application installée, et non onglet) et **« web-android »**. Sur le PC : « standalone » et « web-pc ».
+- **Redirection automatique à l'ouverture** : une case de ce nom se trouve dans le groupe « Redirection ». Une fois cochée, l'application part d'elle-même chez Google **à chaque ouverture**, sans que vous touchiez quoi que ce soit, puis revient. C'est exactement ce que l'étape décisive (14) doit vérifier. Si le journal affiche « Départ automatique à l'ouverture : Non lancé », il indique la raison (pas de réseau, pas d'identité, départ précédent resté sans retour) : notez-la, puis touchez « Jeton par redirection ».
 
 ### Première partie (environ 30 min)
 
@@ -236,12 +238,12 @@ Envoyez à Jarvis, par **message privé** :
 | 2 | **Installer sur le PC.** Cliquez sur l'icône d'installation dans la barre d'adresse. | L'application s'ouvre dans sa propre fenêtre. | Oui/non. |
 | 3 | **Installer sur le téléphone.** Ouvrez l'adresse dans Chrome, puis **⋮ > Installer l'application**. Ouvrez l'icône « Diagnostic ». | Une fenêtre sans barre d'adresse. | Oui/non. |
 | 4 | **Consentement, téléphone.** Dans l'application installée, touchez « Se connecter », acceptez. | Même question qu'en 1. La fenêtre Google revient-elle dans l'application ? | Oui/non. Capture. |
-| 5 | **Connexion automatique, premier essai.** Touchez « Remettre à zéro le compteur », puis « Jeton par redirection ». | L'écran passe brièvement chez Google et revient. Le journal affiche « JetonObtenu », « redirection n° 1 » et une durée. | Le résultat, la durée, « standalone » ou non. Si un écran Google demande quelque chose : capture. |
+| 5 | **Connexion automatique, premier essai.** Touchez « Remettre à zéro le compteur », puis « Jeton par redirection ». Ensuite, **cochez la case « Redirection automatique à l'ouverture »**. | L'écran passe brièvement chez Google et revient. Le journal affiche « JetonObtenu », « redirection n° 1 », une durée, « standalone » et « web-android ». | Le résultat, la durée, « standalone » et « web-android » (oui/non). Si un écran Google demande quelque chose : capture. |
 | 6 | **Stockage, téléphone.** Touchez « Stockage persistant ? ». | Deux lignes : avant, puis après la demande. | « Stockage persistant » ou « non persistant ». |
-| 7 | **Stockage, PC.** Même bouton dans l'application installée du PC. | Idem. | Le résultat. |
-| 8 | **Conservation après arrêt forcé.** Sur le téléphone, touchez « Poser le marqueur » et notez les **8 premiers caractères** de l'identifiant. Ouvrez **Paramètres > Applications > Chrome > Forcer l'arrêt**, confirmez. Rouvrez l'icône « Diagnostic », touchez « Lire le marqueur ». | « Marqueur présent » avec le même identifiant, ou « Marqueur absent ». | Présent/absent. Identifiant identique ? |
+| 7 | **Stockage, PC.** Même bouton dans l'application installée du PC. Cochez aussi la case « Redirection automatique à l'ouverture » sur le PC. | Idem. | Le résultat. |
+| 8 | **Conservation après arrêt forcé.** Sur le téléphone, touchez « Poser le marqueur » et notez les **8 premiers caractères** de l'identifiant. Ouvrez **Paramètres > Applications > Chrome > Forcer l'arrêt**, confirmez. Rouvrez l'icône « Diagnostic » (elle passe d'elle-même chez Google, c'est normal), puis touchez « Lire le marqueur ». | « Marqueur présent » avec le même identifiant, ou « Marqueur absent ». | Présent/absent. Identifiant identique ? |
 | 9 | **Conservation après redémarrage.** Touchez « Poser le marqueur », notez l'identifiant, puis **redémarrez aussitôt** le téléphone (moins de 5 secondes après). Rouvrez l'icône, « Lire le marqueur ». | Idem. | Présent/absent. Identique ? |
-| 10 | **Hors ligne.** Activez le mode avion. Ouvrez l'icône « Diagnostic ». | L'application s'ouvre-t-elle ? Votre adresse e-mail s'affiche-t-elle ? Une erreur liée à Google ? | Oui/non. Texte de l'erreur. **Désactivez le mode avion.** |
+| 10 | **Hors ligne.** Activez le mode avion. Ouvrez l'icône « Diagnostic ». | L'application s'ouvre-t-elle ? Votre adresse e-mail s'affiche-t-elle ? Une erreur liée à Google ? (Le journal indique « Non lancé : réseau indisponible » : c'est attendu.) | Oui/non. Texte de l'erreur. **Désactivez le mode avion.** |
 | 11 | **Hors ligne, PC.** Coupez le Wi-Fi du PC, ouvrez l'application installée. | Idem. | Idem. Rallumez le Wi-Fi. |
 | 12 | **Avant la pause.** Notez l'heure. Fermez l'application sur le téléphone **en la retirant des applications récentes** (bouton carré ou geste de balayage vers le haut). Fermez aussi celle du PC. | — | L'heure de début de la pause. |
 
@@ -252,11 +254,11 @@ Envoyez à Jarvis, par **message privé** :
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
 |---|---|---|---|
 | 13 | **(Comparaison, optionnelle)** Dans un **onglet** Chrome ordinaire du téléphone, ouvrez l'adresse de l'application, touchez « Stockage persistant ? ». Fermez l'onglet. | Le résultat dans un onglet. | Le résultat. |
-| 14 | **Connexion automatique après plus d'une heure : l'étape décisive.** Ouvrez l'icône « Diagnostic ». **Tout de suite**, touchez « Jeton par redirection ». | Le passage chez Google : **devez-vous taper quelque chose** (mot de passe, code) ? **choisir un compte** ou **toucher un bouton** chez Google (par exemple « Continuer ») ? Combien de temps ? Le journal affiche-t-il « JetonObtenu » et « redirection n° 2 » ? Êtes-vous revenu dans l'application (pas dans un onglet de Chrome) ? | Les réponses. Capture de tout écran Google. La durée affichée. |
-| 15 | **Après redémarrage.** Redémarrez le téléphone. Ouvrez l'icône. Touchez « Jeton par redirection ». | Mêmes questions. | Les réponses. |
+| 14 | **Connexion automatique après plus d'une heure : l'étape décisive.** Ouvrez l'icône « Diagnostic » **et ne touchez plus à rien** : avec la case cochée (étape 5), l'application part seule chez Google. Si le journal affiche « Non lancé », notez la raison, puis touchez « Jeton par redirection ». | Le passage chez Google : **devez-vous taper quelque chose** (mot de passe, code) ? **choisir un compte** ou **toucher un bouton** chez Google (par exemple « Continuer ») ? Combien de temps ? Le journal affiche-t-il « Départ automatique à l'ouverture », puis « JetonObtenu », avec « standalone » et « web-android » ? Êtes-vous revenu dans l'application (pas dans un onglet de Chrome) ? | Les réponses. Capture de tout écran Google. La durée affichée. |
+| 15 | **Après redémarrage.** Redémarrez le téléphone. Ouvrez l'icône **sans rien toucher**. | Mêmes questions. | Les réponses. |
 | 16 | **Geste en cours d'usage (téléphone).** Toujours dans l'application, touchez « Synchroniser ». | Une fenêtre Google s'ouvre-t-elle et se ferme-t-elle seule ? Faut-il taper quelque chose ? | Les réponses. |
-| 17 | **PC après la pause.** Ouvrez l'application installée du PC. Cliquez sur « Jeton par redirection ». Puis sur « Synchroniser ». | Mêmes questions qu'en 14 et 16. | Les réponses. |
-| 18 | **Session Google fermée (PC).** Déconnectez-vous de Google dans Chrome sur le PC, puis cliquez sur « Jeton par redirection » dans l'application. | Le journal affiche une erreur (par exemple « login_required »). L'application ne doit **pas** repartir en boucle chez Google. | Le texte de l'erreur. Une boucle ? Reconnectez-vous ensuite à Google. |
+| 17 | **PC après la pause.** Ouvrez l'application installée du PC **sans rien cliquer** (case cochée à l'étape 7). Puis cliquez sur « Synchroniser ». | Mêmes questions qu'en 14 et 16. | Les réponses. |
+| 18 | **Session Google fermée (PC).** Déconnectez-vous de Google dans Chrome sur le PC, puis **rechargez** l'application (touche F5) : elle part seule chez Google. | Le journal affiche une erreur (par exemple « login_required »), puis « Non lancé : la page revient de Google ». L'application ne doit **pas** repartir en boucle chez Google. | Le texte de l'erreur. Une boucle ? Reconnectez-vous ensuite à Google. |
 | 19 | **Accès retiré, jeton encore valide (PC).** Cliquez sur « Se connecter ». **Ne rechargez pas la page** jusqu'à l'étape 20. Dans un autre onglet, `https://myaccount.google.com`, **Sécurité**, **Vos connexions à des applications tierces**, `Done Juan`, **Supprimer l'accès**. | La suppression est confirmée. | L'heure exacte. |
 | 20 | Dans l'application (PC), cliquez sur « Appeler Drive » **tout de suite**, puis 1, 5 et 15 minutes plus tard. | « 401 » (refus) ou accepté ? | Le résultat à chaque moment. |
 | 21 | Rechargez la page, cliquez sur « Demander un jeton ». Si un écran de consentement apparaît, acceptez **tous** les accès. | Écran de consentement ou erreur ? « Tous les accès accordés » : vrai ou faux ? | Le texte ou le code. La valeur. Capture. |
@@ -266,7 +268,7 @@ Envoyez à Jarvis, par **message privé** :
 ### Le lendemain (facultatif, 5 min)
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
 |---|---|---|---|
-| 22 | Plus de 24 h après l'étape 14, ouvrez l'icône « Diagnostic » sur le téléphone, puis « Jeton par redirection ». Puis « Lire le marqueur ». | Mêmes questions qu'en 14. Le marqueur est-il toujours là ? | Les réponses. |
+| 22 | Plus de 24 h après l'étape 14, ouvrez l'icône « Diagnostic » sur le téléphone, sans rien toucher, puis « Lire le marqueur ». | Mêmes questions qu'en 14. Le marqueur est-il toujours là ? | Les réponses. |
 
 ### Tableau de résultats
 Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir pendant la séance.
@@ -276,7 +278,8 @@ Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir
 | | | | | | | |
 
 ### Après la séance
-- Envoyez le tableau, les captures et l'export du journal (bouton « Exporter JSON ») à Jarvis, en message privé.
+- **Exportez le journal de chaque appareil** : bouton « Exporter JSON » sur le téléphone, puis sur le PC. Le fichier est téléchargé (sur le téléphone, dans « Téléchargements »). Chaque export commence par la ligne de **contexte** de l'appareil (mode d'affichage, plateforme) : inutile de renommer les fichiers. « Exporter CSV » donne la même chose pour un tableur, le contexte en première ligne.
+- Envoyez le tableau, les captures et les deux exports à Jarvis, en message privé.
 - L'équipe analyse les résultats. **Si l'étape 14 réussit sans rien taper et que le stockage est persistant (étape 6)**, la version web est retenue pour le téléphone, comme vous l'avez décidé ; sinon, on revient à l'application Android (annexe R), et l'équipe vous le dit avant toute action.
 
 ---
@@ -302,7 +305,7 @@ Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir
 | # | Qui | Ce que vous faites | Ce que vous notez |
 |---|---|---|---|
 | 1 | Contributeur | Sur l'iPhone, Safari, adresse de l'application. **Partager** (carré avec une flèche) > **Sur l'écran d'accueil** > **Ajouter**. Ouvrez l'icône. | L'application s'ouvre sans barre d'adresse ? |
-| 2 | Contributeur | « Connexion par redirection » ; connectez-vous avec **son** compte Google, acceptez. | Revenu dans l'application ? « JetonObtenu » ? Écran d'avertissement ? Captures. |
+| 2 | Contributeur | « Connexion par redirection » ; connectez-vous avec **son** compte Google, acceptez. Puis **cochez « Redirection automatique à l'ouverture »**. | Revenu dans l'application ? « JetonObtenu » ? « standalone » et « web-ios » ? Écran d'avertissement ? Captures. |
 | 3 | Contributeur | « Se connecter » (l'autre bouton). | La fenêtre Google s'ouvre-t-elle, et revient-elle ? |
 | 4 | Contributeur | « Stockage persistant ? », puis « Poser le marqueur ». | Les résultats, l'identifiant (8 caractères). |
 | 5 | Vous (PC) | « Se connecter », puis « Créer ». | — |
@@ -314,8 +317,8 @@ Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir
 | 11 | Contributeur | « Tenter une écriture ». | Le code (403 attendu). |
 | 12 | Contributeur | « Créer mon fichier », puis, dans l'application **Google Drive** de l'iPhone, partager ce fichier avec vous, rôle Lecteur. | — |
 | 13 | Vous (PC) | « Lire par identifiant » (identifiant dicté par l'équipe), puis sélecteur Google, puis de nouveau « Lire par identifiant ». | 404 puis lu ? |
-| 14 | Contributeur | Ferme l'application (balayage). **Plus d'une heure après**, la rouvre, touche « Jeton par redirection ». | Faut-il taper quelque chose ? « JetonObtenu » ? Capture de tout écran Google. |
-| 15 | Contributeur | Redémarre l'iPhone, rouvre l'icône, « Lire le marqueur », puis « Jeton par redirection ». | Marqueur présent ? Jeton sans saisie ? |
+| 14 | Contributeur | Ferme l'application (balayage). **Plus d'une heure après**, la rouvre **sans rien toucher** (départ automatique ; si « Non lancé », touche « Jeton par redirection »). | Faut-il taper quelque chose ? « JetonObtenu » ? Capture de tout écran Google. |
+| 15 | Contributeur | Redémarre l'iPhone, rouvre l'icône sans rien toucher, puis « Lire le marqueur ». | Marqueur présent ? Jeton sans saisie ? |
 | 16 | Contributeur | Le lendemain, puis (facultatif) après 7 jours sans l'ouvrir : même chose qu'en 15. | Idem. |
 
 Fin : retirez le partage du dossier dans Drive si vous le souhaitez.
@@ -332,7 +335,8 @@ Fin : retirez le partage du dossier dans Drive si vous le souhaitez.
 | Page blanche ou « 404 » à l'adresse de l'application | Vérifiez `VITE_BASE_PATH` = `/taskapp/` (a.3) et relancez la mise en ligne (d.2). |
 | « Configuration invalide : VITE_GOOGLE_WEB_CLIENT_ID est vide » | Ajoutez la variable (d.1) et relancez la mise en ligne (d.2). |
 | Pas de menu « Installer l'application » dans Chrome (téléphone) | Rechargez la page une fois, attendez 30 s, réessayez. Sinon : **⋮ > Ajouter à l'écran d'accueil**. Capture et message à Jarvis. |
-| Après « Jeton par redirection », l'application s'ouvre dans un onglet de Chrome | Notez-le : c'est un résultat important. Capture. |
+| Après « Jeton par redirection », l'application s'ouvre dans un onglet de Chrome | Notez-le : c'est un résultat important. Capture. Revenez ensuite dans l'icône « Diagnostic » et touchez « Jeton par redirection » une fois. |
+| « Non lancé : un départ est déjà en attente de retour », à chaque ouverture | Un passage précédent chez Google n'est pas revenu. Touchez « Jeton par redirection » une fois : la redirection automatique refonctionne aux ouvertures suivantes. |
 | Autre | Capture d'écran et message à Jarvis. |
 
 ---

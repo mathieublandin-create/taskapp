@@ -468,11 +468,11 @@ Une action destructrice ou qui touche plusieurs éléments est confirmée avant 
 
 ## 9. Sécurité, jetons OAuth, données personnelles et journalisation
 
-Référentiels : OWASP ASVS (PWA) et OWASP MASVS (Android) ; recommandations Google sur OAuth 2.0 pour les applications natives et web ; « Google API Services User Data Policy » (*Limited Use*) ; RGPD.
+Référentiels : OWASP ASVS (PWA, tous appareils) ; OWASP MASVS en repli seulement (§19) ; recommandations Google sur OAuth 2.0 pour les applications web côté client (flux implicite, DAT v0.11 §4.1.7) ; « Google API Services User Data Policy » (*Limited Use*) ; RGPD.
 
 ### 9.1 Secrets et configuration
 - Aucun secret dans le dépôt. L'application n'a **aucun secret client** : tous ses clients OAuth sont publics (DS-04).
-- Les identifiants de client OAuth (publics) sont injectés à la construction : `VITE_GOOGLE_CLIENT_ID_WEB` pour le web, configuration par variante de build pour Android. Un fichier `.env.example` documente les clés, sans valeur réelle ; les fichiers `.env*` réels ne sont pas versionnés.
+- L'identifiant du client OAuth Web (public) et l'adresse de la PWA sont injectés à la construction par les variables du dépôt (DAT v0.11 §7.5) : `VITE_GOOGLE_WEB_CLIENT_ID`, `VITE_BASE_PATH` (`/taskapp/` en production), `VITE_APP_ORIGIN` (`https://mathieublandin-create.github.io`). L'URI de redirection est `VITE_APP_ORIGIN` suivi de `VITE_BASE_PATH`, barre oblique finale comprise, construite en **un seul point** (`compte/infrastructure/auth/`) et déclarée à l'identique dans le client OAuth Web. Le nom `VITE_GOOGLE_CLIENT_ID_WEB` de DS-04 est remplacé par celui du DAT §7.5, déjà employé par le PoC et les variables du dépôt (ANT-27). Un fichier `.env.example` documente les clés, sans valeur réelle ; les fichiers `.env*` réels ne sont pas versionnés.
 - Toute variable préfixée `VITE_` est **publique** (incluse dans le paquet livré) : aucune valeur sensible ne doit en porter le préfixe.
 - **`.gitignore` avant toute clé** (ADR-012, point bloquant du suivi, BEN-13) : **fait** le 2026-10-22 (commit `60b5826`, « Ajout du .gitignore … avant tout code du PoC »), avant toute clé, y compris celle de la preuve de concept (P9). Le socle (rang 0) le **complète**, sans rien retirer, pour qu'il contienne au moins les motifs suivants (les lignes déjà présentes sont conservées) :
   ```
@@ -501,42 +501,57 @@ Référentiels : OWASP ASVS (PWA) et OWASP MASVS (Android) ; recommandations Goo
   android/app/build/
   android/app/release/
   ```
-  Un test de CI (`pnpm verifier:depot`, `scripts/verifier-depot.ts`) échoue si un fichier versionné correspond à l'un de ces motifs, ou si l'une de ces lignes manque au `.gitignore`. Le fichier d'exemple des variables s'appelle `.env.example` (nom déjà retenu par le PoC et le `.gitignore`), sans valeur.
-- **Clé de signature Android** (ADR-012, DEC-027, verbatim « Reco ») : une clé de publication par application (`fr.donejuan.app`, `fr.donejuan.app.recette`), RSA 4096 bits, PKCS12, 30 ans. Elle est conservée **dans les secrets chiffrés de GitHub Actions** (`ANDROID_KEYSTORE_<ENV>_B64`, `ANDROID_KEYSTORE_<ENV>_PASSWORD`, `ANDROID_KEY_<ENV>_ALIAS`, `ANDROID_KEY_<ENV>_PASSWORD`, avec `<ENV>` = `RELEASE` pour la production ou `RECETTE` ; même forme que les secrets `POC_*` du PoC), avec une **sauvegarde hors ligne chez le commanditaire** (support amovible et gestionnaire de mots de passe). Ces secrets ne sont exposés qu'au flux `publication.yml` (environnements GitHub `production` et `recette`, §14.3). La clé de débogage reste réservée au développement. Aucune clé n'est créée par un agent sans l'accord explicite du commanditaire, relayé par Jarvis.
-- **Nom de paquet Android** (requis par le prérequis P4 du test technique) : `fr.donejuan.app` (production), `fr.donejuan.app.recette` (recette, coexiste avec la production) ; la preuve de concept du test technique utilise déjà `fr.donejuan.poc` (`poc/capacitor.config.ts`). Le nom de paquet ne change plus après la première installation (ADR-012 : même paquet, même clé pour toute mise à jour).
-- **Vérification des développeurs Android** (DEC-028, verbatim « Reco ») : compte gratuit « distribution limitée » lié au compte Google du commanditaire, à créer par lui avant l'échéance française de 2027 ; le nom de paquet et l'empreinte de la clé y sont enregistrés. Aucun impact sur le code.
+  Un test de CI (`pnpm verifier:depot`, `scripts/verifier-depot.ts`) échoue si un fichier versionné correspond à l'un de ces motifs, ou si l'une de ces lignes manque au `.gitignore`. Le fichier d'exemple des variables s'appelle `.env.example` (nom déjà retenu par le PoC et le `.gitignore`), sans valeur. Les motifs propres à Android sont **conservés** en cible : ils ne coûtent rien et protègent le dépôt public si le repli est activé (§19).
+- **Aucune clé de signature en cible** : la PWA n'en a pas besoin (ADR-013). La clé de signature Android, ses secrets, le nom de paquet et la vérification des développeurs relèvent du **repli** (§19.3, DEC-027, DEC-028). La création de clés est différée (DEC-034, Q-PWA-5) : aucune clé n'est créée tant que la PWA unique n'est pas infirmée, et jamais par un agent sans l'accord explicite du commanditaire, relayé par Jarvis.
 - gitleaks s'exécute sur chaque commit poussé et dans les hooks locaux ; un secret détecté bloque la fusion et doit être **révoqué**, pas seulement retiré de l'historique.
 
-### 9.2 Jetons OAuth (DS-04, DS-06, ADR-004)
+### 9.2 Jetons OAuth (DS-04, DS-06, ADR-004, ADR-013)
 | Règle | Force |
 |---|---|
-| Le jeton d'accès est conservé **en mémoire uniquement**, dans `CoffreJetonsMemoire`. Il n'est jamais écrit dans IndexedDB, SQLite, `localStorage`, `sessionStorage`, `@capacitor/preferences`, un cookie, le Drive, une URL, un journal, un message d'erreur ni un fichier de test. | Doit |
-| Notre code ne manipule **aucun jeton de rafraîchissement** : le renouvellement est délégué à Google Identity Services (web), à Google Play services (Android) ou au SDK GoogleSignIn (iOS). | Doit |
-| `localStorage` et `sessionStorage` sont interdits dans `src/` (`no-restricted-globals`). | Doit |
+| Le jeton d'accès est conservé **en mémoire uniquement**, dans `CoffreJetonsMemoire`. Il n'est jamais écrit dans IndexedDB, `localStorage`, `sessionStorage`, le cache du service worker, un cookie, le Drive, une URL, un journal, un message d'erreur ni un fichier de test. **Seule exception** : sa présence, imposée par Google, dans le fragment de l'URL de retour de redirection, encadrée au §9.2.1. | Doit |
+| Notre code n'écrit **jamais** un jeton dans une URL : les appels aux API Google portent le jeton dans l'en-tête `Authorization: Bearer`, jamais dans un paramètre `access_token`. | Doit |
+| Notre code ne manipule **aucun jeton de rafraîchissement** : sans serveur, une page web n'en reçoit pas ; le jeton est obtenu à l'ouverture par redirection `prompt=none` et, en cours de session, par un geste (§9.2.1). *Repli* : Google Play services sur Android (§19). | Doit |
+| `localStorage` et `sessionStorage` sont interdits dans `src/` (`no-restricted-globals`), sauf l'exception du §9.2.1 (mémorisation du `state`, sans jeton), déclarée par un bloc `files` d'ESLint limité à un fichier. | Doit |
 | Les portées accordées sont vérifiées après chaque autorisation (`PorteeInsuffisante` sinon). Portées du lot 1 : `openid`, `email`, `drive.file` (DS-05). Toute nouvelle portée passe par Starck et figure dans la ST-US. | Doit |
 | Le compte est identifié par la claim `sub`, jamais par l'adresse e-mail. | Doit |
 | Le script Google Identity Services est chargé **à la demande et de façon non bloquante** (DAT §4.1.6, R12). | Doit |
 | Déconnexion (RG-043) : le jeton en mémoire et l'identifiant de compte actif sont effacés ; les données locales sont **conservées**. | Doit |
 
+#### 9.2.1 Retour de redirection OAuth : exception unique à la règle « aucun jeton dans une URL » (ADR-013, DAT v0.11 §4.1.7)
+Avec la PWA unique, le jeton est obtenu par une redirection pleine page vers Google (`response_type=token` ; `prompt=none` à l'ouverture, sans `prompt=none` pour une redirection interactive sur geste). Google renvoie le jeton dans le **fragment** de l'URL de retour (`#access_token=…&expires_in=…&scope=…&state=…`). Le fragment n'est jamais transmis au réseau, mais il reste visible de la page, de l'historique et des extensions tant qu'il n'est pas effacé. L'exception est **limitée** à ce fragment et soumise à toutes les règles suivantes.
+
+| Id | Règle | Force |
+|---|---|---|
+| RED-01 | **Périmètre.** L'exception ne couvre que le fragment de l'URL de retour, à l'URI de redirection exacte (§9.1), après une redirection émise par notre adaptateur. Tout autre jeton dans une URL reste interdit. | Doit |
+| RED-02 | **Effacement immédiat, avant tout rendu** (EC-3 de `poc-specification.md` §15). Le fragment est consommé par `consommerRetourRedirection` (`src/compte/infrastructure/auth/retour-redirection.ts`), appelée par la **première instruction** de `main.tsx`, avant la création de la racine React et tout rendu, avant l'enregistrement du service worker, avant le chargement de Google Identity Services et avant toute requête réseau. Elle copie le fragment dans une variable locale, l'**efface aussitôt** par `history.replaceState(history.state, '', pathname + search)`, puis l'analyse. L'effacement est **inconditionnel** : fragment mal formé, erreur Google, `state` rejeté ou absence de jeton. Aucun module de `src/` autre que `main.tsx` n'a d'effet de bord à l'évaluation (pas de rendu, de requête ni d'abonnement au niveau du module), afin qu'aucun code ne s'exécute avant cette consommation. | Doit |
+| RED-03 | **`state` à usage unique, avec une durée de validité** (EC-4). Avant chaque redirection : `state` de 128 bits tiré par `SourceAleatoire.octets(16)` (§7.4), encodé en base64url, mémorisé avec son instant d'expiration, calculé par `Horloge.maintenant()` + `VALIDITE_STATE_REDIRECTION` (`EcartTemps` de **10 min**, constante de `compte/infrastructure/auth/`, référence ADR-013). Au retour, l'enregistrement est **lu puis supprimé** avant toute comparaison (usage unique, y compris en cas d'échec). Le retour est **rejeté** (`RetourRedirectionRejete`, §8.3) si le `state` est absent, différent de celui mémorisé, déjà consommé ou expiré ; le jeton éventuel est alors ignoré. La comparaison porte sur la chaîne entière. | Doit |
+| RED-04 | **Mémorisation du `state`.** Elle ne contient **que** le `state` et son instant d'expiration : ni jeton, ni adresse e-mail, ni `sub`. Support : `sessionStorage` (clé `donejuan.oauth.redirection`), seule dérogation à `no-restricted-globals`, limitée au fichier `src/compte/infrastructure/auth/memoire-redirection-session.ts`, qui implémente un port interne au contexte `compte` (§2.3) doublé en test par une mémoire simple. **Sous réserve M-RED** : si la mesure montre que le retour n'a pas lieu dans le même contexte de navigation que le départ, ST-US-022 remplace ce support par une base IndexedDB technique hors espace de compte, derrière le même port. | Doit |
+| RED-05 | **Jeton gardé en mémoire seulement.** Le jeton extrait devient un `JetonAcces` (type marqué), remis au seul `FournisseurAuth`, qui le place dans `CoffreJetonsMemoire` après contrôle du `state` et des portées accordées (`scope`). Le fragment brut et le jeton ne sont conservés dans aucune variable de module, aucun magasin Zustand, aucun état React, aucun journal ni message d'erreur. Le service worker ne met jamais en cache une URL qui porte un fragment ou un jeton. | Doit |
+| RED-06 | **Journalisation.** Seuls sont journalisés : le code d'erreur Google (`error`), la catégorie du retour, le motif de rejet du `state`, la durée de l'aller-retour. Jamais le fragment, le jeton, le `state`, `login_hint` ni l'adresse e-mail. Le masquage défensif du §9.4 couvre en plus le motif `access_token=`. | Doit |
+| RED-07 | **Fuite par le référent et les ressources tierces.** `index.html` porte `<meta name="referrer" content="no-referrer">` (GitHub Pages ne permet pas d'en-tête) ; aucune ressource tierce n'est chargée avant l'effacement, ni ailleurs hors `accounts.google.com` (CSP du §9.3). | Doit |
+| RED-08 | **Une seule tentative automatique par ouverture** (ADR-013) : un retour en erreur ne relance aucune redirection dans la même ouverture ; aucune redirection automatique en cours de session (elle rechargerait la page). | Doit |
+
+Tests imposés (fournis en E10 avec ST-US-022) : effacement du fragment **avant** l'analyse et dans chacun des cas de RED-02 (ordre des appels vérifié sur une doublure de `history`) ; rejet d'un `state` absent, inconnu, rejoué et expiré à 10 min + 1 ms, acceptation à 10 min exactement ; suppression de l'enregistrement du `state` dans tous les cas ; absence du jeton dans le journal technique, dans `sessionStorage` et dans l'URL après consommation ; parcours Playwright : au premier rendu, `location.hash` est vide.
+
 ### 9.3 Données personnelles et stockage local (DS-07)
 Données concernées : objectifs, tâches, temps passés, adresse e-mail et identifiant de compte ; à partir des lots ultérieurs, contenu de l'agenda et réponses de bilan (données les plus sensibles).
 
-- **Espace local par compte** : une base IndexedDB ou un fichier SQLite par compte, nommé d'après l'**empreinte SHA-256 du `sub`** (en hexadécimal). Ni le `sub` en clair ni l'adresse e-mail n'apparaissent dans un nom de base, de fichier ou de clé. Un autre compte n'ouvre jamais l'espace du précédent (DEC-016).
-- **Pas de chiffrement au repos en v1** (DS-07) : bac à sable Android, profil de navigateur. Les données restent sur l'appareil après une déconnexion (RG-043). Cette situation est inscrite au registre de dette (**DT-001**) ; la parade fonctionnelle est l'action « Supprimer les données de cet appareil » (DEC-015, RG-055).
-- **Suppression des données de l'appareil** : suppression de l'espace complet du compte (base IndexedDB ou fichier SQLite), précédée du dépôt des modifications en attente (RG-055). Un test d'intégration vérifie qu'il ne reste **aucune** donnée de l'espace après l'opération.
+- **Espace local par compte** : une base IndexedDB par compte (*repli* : un fichier SQLite), nommée d'après l'**empreinte SHA-256 du `sub`** (en hexadécimal). Ni le `sub` en clair ni l'adresse e-mail n'apparaissent dans un nom de base, de fichier ou de clé. Un autre compte n'ouvre jamais l'espace du précédent (DEC-016).
+- **Pas de chiffrement au repos en v1** (DS-07) : IndexedDB du profil du navigateur, propre à l'origine, sur le PC et sur le téléphone (DAT v0.11 §7.1) ; *repli* : bac à sable Android. Les données restent sur l'appareil après une déconnexion (RG-043). Cette situation est inscrite au registre de dette (**DT-001**) ; la parade fonctionnelle est l'action « Supprimer les données de cet appareil » (DEC-015, RG-055).
+- **Suppression des données de l'appareil** : suppression de l'espace complet du compte (base IndexedDB ; *repli* : fichier SQLite), précédée du dépôt des modifications en attente (RG-055). Un test d'intégration vérifie qu'il ne reste **aucune** donnée de l'espace après l'opération.
 - **Drive** : protégé par le compte Google, sans chiffrement supplémentaire (DEC-010). Les titres, descriptions et participants des événements de l'utilisateur ne sont jamais écrits dans le Drive ni dans les journaux (DAT §4.4.4).
 - **Aucune transmission à un tiers** : ni analytique, ni télémétrie, ni outil de suivi d'erreurs (DAT §7.3).
 - **Validation de toutes les entrées** : saisies de l'utilisateur ; fichiers Drive (validation Zod et empreinte, §10.3) ; réponses des API Google.
-- **Web** (DAT §7.1) : CSP stricte sans `unsafe-inline` ni `unsafe-eval`, origines limitées à `accounts.google.com` et `*.googleapis.com` ; aucune ressource chargée depuis un CDN ; aucun `dangerouslySetInnerHTML` (`react/no-danger`) ; aucun `eval`, `new Function`, `innerHTML` ; Trusted Types si disponible.
-- `navigator.storage.persist()` est demandé au premier lancement sur PC ; l'état obtenu est exposé dans l'écran « État de la synchronisation » (DAT §4.1.6).
+- **Web** (DAT §7.1) : CSP stricte sans `unsafe-inline` ni `unsafe-eval`, origines limitées à `accounts.google.com` et `*.googleapis.com` (y compris la navigation de redirection vers `accounts.google.com`, DAT §4.1.7) ; `Referrer-Policy: no-referrer` (RED-07) ; aucune ressource chargée depuis un CDN ; aucun `dangerouslySetInnerHTML` (`react/no-danger`) ; aucun `eval`, `new Function`, `innerHTML` ; Trusted Types si disponible.
+- `navigator.storage.persist()` est demandé au premier lancement **sur tous les appareils** (ADR-013) ; l'état obtenu est exposé dans l'écran « État de la synchronisation » et un avertissement est affiché s'il est refusé (R15, DAT §4.1.6). Le hors ligne du téléphone n'est garanti que pour la PWA **installée**.
 
 ### 9.4 Journal technique (DAT §7.3)
 - Toute journalisation passe par le port `JournalTechnique`. Niveaux : `erreur`, `avertissement`, `info`, `debug` (désactivé en production).
 - Destination : **locale uniquement**, tampon circulaire de 7 jours ; export du diagnostic sur demande de l'utilisateur.
 - Format structuré : nom d'événement et champs.
 - **Autorisé** : identifiants techniques opaques (UUID, `appareilId`), codes d'erreur, noms de cas d'usage, durées, compteurs, codes de statut HTTP, versions de l'application et du schéma, plateforme.
-- **Interdit** : jetons, en-têtes `Authorization`, adresse e-mail, `sub` en clair, nom, titres et descriptions d'objectifs ou de tâches, contenu des fichiers Drive, contenu des événements d'agenda, corps des requêtes et réponses Google.
-- `JournalTechniqueLocal` applique un **masquage défensif** (motifs de jetons `ya29.`, `Bearer`, adresses e-mail). Un test unitaire vérifie ce masquage.
+- **Interdit** : jetons, en-têtes `Authorization`, fragment et `state` d'un retour de redirection (RED-06), adresse e-mail, `sub` en clair, nom, titres et descriptions d'objectifs ou de tâches, contenu des fichiers Drive, contenu des événements d'agenda, corps des requêtes et réponses Google.
+- `JournalTechniqueLocal` applique un **masquage défensif** (motifs de jetons `ya29.`, `Bearer`, `access_token=`, adresses e-mail). Un test unitaire vérifie ce masquage.
 
 ### 9.5 Chaîne d'approvisionnement
 - osv-scanner (vulnérabilités) et license-checker (licences autorisées : MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0, 0BSD, CC0-1.0 ; toute autre licence est soumise à Anthony) en CI. Une vulnérabilité haute ou critique bloque la fusion, sauf dérogation inscrite en dette avec un plan.
@@ -553,7 +568,8 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 - Chaque écriture porte un **contexte causal** (DAT §4.2.1) ; une pierre tombale porte le contexte au niveau de l'élément, étendu aux écritures qui pointent vers lui (DAT v0.10.1 §4.2.1). Le contexte n'est jamais lu par un autre contexte que `synchronisation`.
 - L'état d'une tâche et ses dates forment **un seul registre** (DAT §4.2). Les suppressions sont des **pierres tombales**, jamais des effacements physiques en v1.
 - Une modification n'est jamais retirée de l'appareil avant son dépôt confirmé dans le Drive (ENF-T-07). Le marqueur `deposeJusquA` n'est avancé **qu'après** la confirmation du Drive.
-- Les deux adaptateurs (`DepotLocalDexie`, `DepotLocalSqlite`) passent la **même suite de contrat** (§11.10). `DepotLocalSqlite` s'appuie sur une interface interne d'exécution SQL, implémentée par le module Capacitor en production et par `node:sqlite` en test.
+- **Un seul adaptateur en cible : `DepotLocalDexie`**, sur tous les appareils (ADR-013, DS-07 v0.11). Il passe la suite de contrat du §11.10. `DepotLocalSqlite` n'est pas réalisé (repli, §19.4).
+- **Durabilité stricte** (ADR-013, US-018 CA-5) : toute transaction d'écriture est ouverte avec la durabilité stricte (option `chromeTransactionDurability: 'strict'` de la base Dexie, ou `durability: 'strict'` sur une transaction IndexedDB native). Une écriture n'est **confirmée** au cas d'usage qu'à l'événement `complete` de la transaction ; `error` et `abort` produisent un `Echec<ErreurDepotLocal>`. Une promesse résolue au `success` d'une requête isolée ne vaut pas confirmation (EC-1 de `poc-specification.md` §15). Un test d'intégration vérifie l'option passée à l'ouverture de chaque transaction d'écriture.
 
 ### 10.2 Cycle de synchronisation
 - Constantes nommées, regroupées dans `src/synchronisation/domaine/parametres-synchronisation.ts`, chacune avec sa référence : `TEMPORISATION_DEPOT` = 5 s, `PERIODE_SYNCHRONISATION_PREMIER_PLAN` = 2 min (DAT §4.3) ; `SEUIL_RAPPEL_HORS_LIGNE` = 24 h, `PERIODE_EVALUATION_RAPPEL_HORS_LIGNE` = 1 min (RG-057, DAT §4.1.5 bis) ; `SEUIL_HORLOGE_DEREGLEE` = 24 h, avertissement si l'écart est **strictement supérieur** (US-017 CA-13). Toutes sont des `EcartTemps`.
@@ -564,7 +580,7 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 - Sur PC, un seul onglet synchronise (verrou `navigator.locks`, derrière un port interne au contexte, §2.3).
 
 ### 10.3 Format des données dans le Drive et versions (RG-044, RG-058)
-- **Sous réserve R1** : l'emplacement (dossier visible `Done Juan/`, portée `drive.file`, arbitrage A6), le nom et la compression des fichiers suivent le DAT §4.2 ; si le test R1 échoue, le repli `drive.appdata` change l'emplacement, pas le contenu logique (`ST-socle-ecriture.md` §5.3).
+- L'emplacement (dossier visible `Done Juan/`, portée `drive.file`, arbitrage A6), le nom et la compression des fichiers suivent le DAT §4.2. Avec un client OAuth Web unique, R1 est sans objet (DAT v0.11 §10.1) ; la réserve R1 ne revit qu'en repli (§19) : si le test R1 échouait alors, le repli `drive.appdata` changerait l'emplacement, pas le contenu logique (`ST-socle-ecriture.md` §5.3).
 - **Schémas Zod versionnés** : `src/synchronisation/infrastructure/drive/schemas/v<n>.ts`. La constante `SCHEMA_VERSION` est définie dans un seul fichier. Le **schéma 1** n'est publié qu'avec l'incrément 1 d'US-017 ; son contenu logique est figé dès le rang 0 (`ST-socle-ecriture.md` §5.3, condition 1 de Starck).
 - Chaque fichier lu est validé (Zod) et son **empreinte SHA-256** vérifiée (`crypto.subtle.digest`) avant toute fusion. L'empreinte est calculée sur une **sérialisation canonique** (clés triées, sans le champ d'empreinte), produite par une fonction unique utilisée à l'écriture et à la lecture.
 - Un fichier invalide ou d'empreinte incorrecte n'est **jamais** fusionné et n'écrase jamais l'état local (RG-044).
@@ -597,11 +613,11 @@ Les tests d'Anthony **font foi**. Benjamin ne les modifie, ne les désactive ni 
 | Unitaires des modèles de vue | Modèles de vue, formatage, catalogue | Vitest | Aucune (pur) | < 10 ms par test | Anthony, Benjamin |
 | Composants | Composants React | Vitest, `@testing-library/react` | Modèles de vue fournis | < 100 ms par test | Benjamin |
 | Contrat des ports | Même suite pour la doublure et l'adaptateur réel | Vitest, MSW | Réponses Google enregistrées | — | Anthony (suite), Benjamin (adaptateurs) |
-| Intégration | Adaptateurs Dexie, SQLite, sérialisation, migrations | Vitest, `fake-indexeddb`, `node:sqlite` | Stockage réel temporaire | < 1 s par test | Benjamin, revus par Anthony |
+| Intégration | Adaptateur Dexie (dont la durabilité stricte, §10.1), sérialisation, migrations | Vitest, `fake-indexeddb` | Stockage réel temporaire | < 1 s par test | Benjamin, revus par Anthony |
 | Acceptation | Scénarios `.feature`, sur la **couche application** (ADR-009) | cucumber-js | Banc de synchronisation (§11.11) | < 60 s pour la suite d'un lot | Pepper (`.feature`), Benjamin (steps) |
 | Acceptation via l'IHM | Scénarios `@ihm` | cucumber-js et Playwright (Chromium) | `composition/test-ihm.ts` | — | Benjamin, sur spécification d'Anthony |
 | Bout en bout | Démarrage de la PWA, hors ligne, accessibilité | Playwright, axe | Doublures Google | — | Benjamin |
-| Recette manuelle | Scénarios `@recette`, appareil réel, compte de recette | — | Aucune | — | Pepper, Steeve, Starck (E14) |
+| Recette manuelle | Scénarios `@recette`, appareil réel (PC et téléphone, PWA installée), compte de recette | — | Aucune | — | Pepper, Steeve, Starck (E14) |
 
 ### 11.3 Responsabilités
 | Acteur | Responsabilité |
@@ -754,7 +770,7 @@ Les API Google réelles ne sont **jamais** appelées par les tests automatisés 
 |---|---|---|
 | `FauxDrive` | `TransportSynchro` | Stockage **partagé** entre les appareils du banc ; `transportPour(appareil)` renvoie la vue d'un appareil, soumise à son `ReseauSimule` et à son `FauxFournisseurAuth`. Dépôt et lecture ; liste des changements ; manifeste, `generation`, `schemaVersion` ; fichier modifié, supprimé ou illisible « à la main » ; empreinte incorrecte ; dossier supprimé ; Drive plein ; Drive indisponible ; envoi interrompu n fois ; erreurs `401`, `403`, `404`, `429`, `5xx` ; en-tête `Date` piloté (§11.11) |
 | `FauxAgenda` | `PasserelleAgenda` | Lots avec agenda : erreurs `401`, `409`, `410`, `429`, `5xx` (ADR-009) ; événements de l'utilisateur ; déplacement « par l'utilisateur » sans toucher `posApp` (PT-05) |
-| `FauxFournisseurAuth` | `FournisseurAuth` | Connexion réussie, annulée ou interrompue ; portée refusée ; session expirée (PC) ; révocation ; changement de compte ; Drive désactivé pour le compte |
+| `FauxFournisseurAuth` | `FournisseurAuth` | Connexion réussie, annulée ou interrompue ; portée refusée ; session expirée (tous appareils) ; révocation ; changement de compte ; Drive désactivé pour le compte ; **à l'ouverture** (ADR-013) : jeton obtenu sans saisie par redirection, retour en erreur d'interaction (`SessionARenouveler`), erreur de configuration (`ConfigurationOAuthInvalide`), `state` rejeté (`RetourRedirectionRejete`) ; compteur des redirections automatiques par ouverture (API d'observation, RED-08) |
 | `HorlogeSimulee` | `Horloge` | §7.3 |
 | `ReseauSimule` | `EtatReseau` | Connecté, coupé, retour du réseau (émet l'événement) |
 | `PlanificateurSimule` | `Planificateur` | Exécute dans l'ordre les déclenchements échus quand le temps simulé avance ; aucune attente réelle |
@@ -850,8 +866,8 @@ Réf: US-xxx[, RG-xxx][, RC-US-xxx-n][, ANO-xxx][, DT-xxx]
 
 ### 13.3 Versions et livrables
 - Versionnement sémantique de l'application ; une étiquette `vX.Y.Z` est posée sur `main` à la clôture de chaque lot (E17). La version de l'application est distincte de `SCHEMA_VERSION` (DAT §7.4).
-- **Android** (ADR-012) : `versionName` = `X.Y.Z` ; `versionCode` = `X × 10 000 + Y × 100 + Z` (donc `Y` et `Z` < 100), calculé par `scripts/version-android.mjs` à partir de `package.json` et injecté dans `android/app/build.gradle` à la construction. Le `versionCode` doit être **strictement supérieur** à celui de la dernière version publiée (`derniere-version.json`) ; une version défectueuse se corrige par une nouvelle version, jamais par un retour arrière.
-- Versionnés : `pnpm-lock.yaml`, configurations des outils, `android/` (hors artefacts, propriétés locales et clés, §9.1). Non versionnés : `dist/`, `coverage/`, rapports, `.env*` réels, données locales, clés de signature, APK et AAB.
+- **PWA** : la version de l'application est injectée à la construction (`package.json`) et affichée dans « État de la synchronisation » ; la mise à jour se fait par le service worker sur tous les appareils (DAT v0.11 §7.4). Une version défectueuse se corrige par une nouvelle version, jamais par un retour arrière. *Repli* : `versionCode` Android (§19.5).
+- Versionnés : `pnpm-lock.yaml`, configurations des outils. Non versionnés : `dist/`, `coverage/`, rapports, `.env*` réels, données locales ; en repli, clés de signature, APK et AAB (§19.2).
 
 ## 14. Outillage et intégration continue
 
