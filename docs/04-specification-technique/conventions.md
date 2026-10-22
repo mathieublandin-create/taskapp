@@ -464,9 +464,9 @@ Référentiels : OWASP ASVS (PWA) et OWASP MASVS (Android) ; recommandations Goo
 
 ### 9.1 Secrets et configuration
 - Aucun secret dans le dépôt. L'application n'a **aucun secret client** : tous ses clients OAuth sont publics (DS-04).
-- Les identifiants de client OAuth (publics) sont injectés à la construction : `VITE_GOOGLE_CLIENT_ID_WEB` pour le web, configuration par variante de build pour Android. Un fichier `.env.exemple` documente les clés, sans valeur réelle ; les fichiers `.env*` réels ne sont pas versionnés.
+- Les identifiants de client OAuth (publics) sont injectés à la construction : `VITE_GOOGLE_CLIENT_ID_WEB` pour le web, configuration par variante de build pour Android. Un fichier `.env.example` documente les clés, sans valeur réelle ; les fichiers `.env*` réels ne sont pas versionnés.
 - Toute variable préfixée `VITE_` est **publique** (incluse dans le paquet livré) : aucune valeur sensible ne doit en porter le préfixe.
-- **`.gitignore` avant toute clé** (ADR-012, point bloquant du suivi, BEN-13) : le premier commit du socle crée `.gitignore`, **avant** la création de toute clé de signature (preuve de concept P9 du test technique comprise). Contenu minimal imposé :
+- **`.gitignore` avant toute clé** (ADR-012, point bloquant du suivi, BEN-13) : **fait** le 2026-10-22 (commit `60b5826`, « Ajout du .gitignore … avant tout code du PoC »), avant toute clé, y compris celle de la preuve de concept (P9). Le socle (rang 0) le **complète**, sans rien retirer, pour qu'il contienne au moins les motifs suivants (les lignes déjà présentes sont conservées) :
   ```
   # Clés et secrets de signature (ADR-012, DEC-027)
   *.jks
@@ -474,27 +474,28 @@ Référentiels : OWASP ASVS (PWA) et OWASP MASVS (Android) ; recommandations Goo
   *.p12
   *.pem
   keystore.properties
+  secrets/
   android/keystore/
   # Configuration locale
+  local.properties
   .env
   .env.*
-  !.env.exemple
-  android/local.properties
+  !.env.example
   # Artefacts
   node_modules/
   dist/
+  build/
   coverage/
   reports/
   *.apk
   *.aab
-  android/app/build/
-  android/build/
   android/.gradle/
+  android/app/build/
   android/app/release/
   ```
-  Un test de CI (`pnpm verifier:depot`, `scripts/verifier-depot.ts`) échoue si un fichier versionné correspond à l'un de ces motifs, ou si une ligne de cette liste manque au `.gitignore`.
-- **Clé de signature Android** (ADR-012, DEC-027, verbatim « Reco ») : une clé de publication par application (`fr.donejuan.app`, `fr.donejuan.app.recette`), RSA 4096 bits, PKCS12, 30 ans. Elle est conservée **dans les secrets chiffrés de GitHub Actions** (`ANDROID_CLE_<ENV>_BASE64`, `ANDROID_CLE_<ENV>_MOT_DE_PASSE`, `ANDROID_CLE_<ENV>_ALIAS`, avec `<ENV>` = `PRODUCTION` ou `RECETTE`), avec une **sauvegarde hors ligne chez le commanditaire** (support amovible et gestionnaire de mots de passe). Ces secrets ne sont exposés qu'au flux `publication.yml` (environnements GitHub `production` et `recette`, §14.3). La clé de débogage reste réservée au développement. Aucune clé n'est créée par un agent sans l'accord explicite du commanditaire, relayé par Jarvis.
-- **Nom de paquet Android** (requis par le prérequis P4 du test technique) : `fr.donejuan.app` (production), `fr.donejuan.app.recette` (recette, coexiste avec la production), `fr.donejuan.app.poc` (preuve de concept du test technique). Le nom de paquet ne change plus après la première installation (ADR-012 : même paquet, même clé pour toute mise à jour).
+  Un test de CI (`pnpm verifier:depot`, `scripts/verifier-depot.ts`) échoue si un fichier versionné correspond à l'un de ces motifs, ou si l'une de ces lignes manque au `.gitignore`. Le fichier d'exemple des variables s'appelle `.env.example` (nom déjà retenu par le PoC et le `.gitignore`), sans valeur.
+- **Clé de signature Android** (ADR-012, DEC-027, verbatim « Reco ») : une clé de publication par application (`fr.donejuan.app`, `fr.donejuan.app.recette`), RSA 4096 bits, PKCS12, 30 ans. Elle est conservée **dans les secrets chiffrés de GitHub Actions** (`ANDROID_KEYSTORE_<ENV>_B64`, `ANDROID_KEYSTORE_<ENV>_PASSWORD`, `ANDROID_KEY_<ENV>_ALIAS`, `ANDROID_KEY_<ENV>_PASSWORD`, avec `<ENV>` = `RELEASE` pour la production ou `RECETTE` ; même forme que les secrets `POC_*` du PoC), avec une **sauvegarde hors ligne chez le commanditaire** (support amovible et gestionnaire de mots de passe). Ces secrets ne sont exposés qu'au flux `publication.yml` (environnements GitHub `production` et `recette`, §14.3). La clé de débogage reste réservée au développement. Aucune clé n'est créée par un agent sans l'accord explicite du commanditaire, relayé par Jarvis.
+- **Nom de paquet Android** (requis par le prérequis P4 du test technique) : `fr.donejuan.app` (production), `fr.donejuan.app.recette` (recette, coexiste avec la production) ; la preuve de concept du test technique utilise déjà `fr.donejuan.poc` (`poc/capacitor.config.ts`). Le nom de paquet ne change plus après la première installation (ADR-012 : même paquet, même clé pour toute mise à jour).
 - **Vérification des développeurs Android** (DEC-028, verbatim « Reco ») : compte gratuit « distribution limitée » lié au compte Google du commanditaire, à créer par lui avant l'échéance française de 2027 ; le nom de paquet et l'empreinte de la clé y sont enregistrés. Aucun impact sur le code.
 - gitleaks s'exécute sur chaque commit poussé et dans les hooks locaux ; un secret détecté bloque la fusion et doit être **révoqué**, pas seulement retiré de l'historique.
 
@@ -628,7 +629,7 @@ Constituent un affaiblissement, refusé en revue avec une gravité **Bloquante**
 - Le **glossaire d'étapes** de Pepper (`tests/features/GLOSSAIRE-ETAPES.md`, v1.4) **fige** le vocabulaire : une phrase qui n'y figure pas n'a pas de définition. Anthony en tire la liste des définitions d'étapes de chaque ST-US (E9) ; Benjamin n'en crée pas d'autres. Un besoin nouveau passe par Pepper, via Jarvis.
 - **Conventions du glossaire v1.4 appliquées par les *step definitions*** :
   - « que » facultatif en tête d'une précondition : une seule définition (`etapeContexte`, §11.7) ;
-  - pluriel `modification(s)`, `tâche(s)`, `sous-tâche(s)`, `information(s)` : une seule définition, par le texte optionnel des expressions Cucumber (`tâche(s)` s'écrit `tâche(s)` dans l'expression, ce qui accepte « tâche », « tâches » et « tâche(s) ») ;
+  - pluriel `modification(s)`, `tâche(s)`, `sous-tâche(s)`, `information(s)`, `détachée(s)`… : une seule définition, qui accepte le singulier, le pluriel **et** la forme littérale entre parenthèses (« 1 tâche », « 2 tâches », « 2 tâche(s) ») ; dans une expression Cucumber, `(s)` désigne un texte facultatif et ne reconnaît pas les parenthèses littérales : ces définitions s'écrivent donc en **expression régulière**, avec le motif `s?(?:\(s\))?` après chaque mot variable (exemple : `/^l'objectif "([^"]*)" a (\d+) tâches?(?:\(s\))? à faire, …$/`) ;
   - préfixe d'appareil : sans préfixe dans un scénario à deux appareils, une **assertion** vaut « sur chacun des deux appareils » (Q-US-017-7) ; une **action** sans préfixe y est une erreur du scénario, sauf l'exception H-5 ci-dessous ;
   - assertion tabulaire : l'ordre n'est vérifié qu'avec « dans cet ordre », seules les colonnes présentes sont vérifiées ; l'historique (« contient, pour … : ») vérifie la liste complète, dans l'ordre chronologique ;
   - opération au passé (« que sur le <appareil>, l'utilisateur a créé … ») : rejoue l'opération du §5 sur cet appareil, à l'instant courant ;
@@ -781,7 +782,8 @@ Règle arrêtée au contrôle d'explicitation (`explicitation-LOT-001.md` §4.1)
 
 **Mise en œuvre** :
 - `tests/support/rangs-scenarios.json` : `{ "rangCourant": n, "scenarios": { "US-001 S06": 8, … } }`, une clé par scénario des dix fichiers (identifiant `US-xxx Snn` tiré du titre « Snn — … »). `rangCourant` est augmenté d'une unité dans la *pull request* qui livre le rang, et par elle seule.
-- `scripts/selection-scenarios.mjs` analyse les `.feature` avec `@cucumber/gherkin` et renvoie la liste `chemin:ligne` des scénarios dont le rang est inférieur ou égal à `rangCourant` ; `cucumber.mjs` l'utilise pour les profils `default`, `rapide` et `ihm`, et pour le contrôle des étapes inutilisées (`--dry-run --format usage`), qui porte sur la même sélection.
+- `scripts/selection-scenarios.mjs` analyse les `.feature` avec `@cucumber/gherkin` et renvoie la liste `chemin:ligne` des scénarios dont le rang est inférieur ou égal à `rangCourant` ; `cucumber.mjs` l'utilise pour les profils `default`, `rapide` et `ihm`.
+- Une *step definition* est livrée au rang de la **capacité** qu'elle appelle (cas d'usage, requête, modèle de vue), même si les scénarios qui l'utilisent ne sont exécutés que plus tard. Le contrôle des étapes inutilisées (`pnpm cucumber:steps-inutilises`) porte donc sur **tous** les scénarios du lot, hors sélection : `cucumber-js --dry-run --format usage-json`, sans `--strict`, et `scripts/verifier-etapes-inutilisees.mjs` échoue si une définition n'est utilisée par aucune étape d'aucun `.feature` (les étapes encore indéfinies des scénarios non sélectionnés n'y sont pas des erreurs).
 - `scripts/verifier-rangs.ts` (`pnpm verifier:rangs`, bloquant en CI) échoue si un scénario d'un `.feature` n'a pas de rang, si une clé ne correspond à aucun scénario, ou si `rangCourant` est inférieur au rang déjà atteint sur la branche de lot.
 - À la fin du lot (rang 13), tous les scénarios non tagués `@recette` sont sélectionnés ; la sélection n'a alors plus d'effet.
 
@@ -876,7 +878,7 @@ Le fuseau `Europe/Paris` n'est volontairement pas un fuseau de CI : il masquerai
 ### 14.3 Workflows
 - `.github/workflows/ci.yml` : sur poussée vers `us/**`, `ano/**`, `lot/**`, `main` et sur *pull request* ; jobs `qualite` (formatage, lint, types, architecture, catalogue, tags), `tests` (matrice des trois fuseaux, unitaires et Cucumber ; couverture dans le job `UTC`), `ihm` (build, Cucumber `@ihm`, Playwright), `securite` (Semgrep, gitleaks, osv-scanner, licences), `build` (PWA, APK). Durée cible inférieure à 10 minutes hors job `ihm`. `permissions: contents: read` par défaut.
 - `.github/workflows/hebdomadaire.yml` : Stryker, fast-check étendu, osv-scanner complet.
-- `.github/workflows/publication.yml` (ADR-012, DAT §7.4, §7.5 ; A2 et A3 tranchés) : déclenché par une étiquette `v*` **posée sur un commit de `main`** (le flux vérifie l'appartenance du commit à `main` et s'arrête sinon) ; aussi déclenchable à la main pour la **recette** (`workflow_dispatch`, environnement `recette`). Étapes : (1) tests et contrôles du §14.1 ; (2) construction de la PWA et déploiement sur l'hébergement statique ; (3) construction de l'APK de publication (`./gradlew assembleRelease`) ; (4) décodage de la clé depuis les secrets de l'environnement (fichier temporaire hors du dépôt, supprimé en fin de job), signature ; (5) **`apksigner verify --print-certs`** et comparaison de l'empreinte SHA-256 du certificat avec la variable d'environnement `ANDROID_EMPREINTE_<ENV>` (échec si elle diffère) ; (6) contrôle que le `versionCode` est strictement supérieur à celui de `derniere-version.json` déjà publié ; (7) publication dans `android/` de l'hébergement : `done-juan-<version>.apk` (recette : `done-juan-recette-<version>.apk`), son empreinte SHA-256, `derniere-version.json` (`versionName`, `versionCode`, `schemaVersion`, URL, empreinte, date) et la page `android/index.html` (lien, empreinte, procédure d'installation). Permissions : `contents: read`, plus celles du déploiement de l'hébergeur. Les secrets de signature ne sont accessibles qu'aux environnements GitHub `production` et `recette`, protégés (approbation du commanditaire pour `production`).
+- `.github/workflows/publication.yml` (ADR-012, DAT §7.4, §7.5 ; A2 et A3 tranchés) : déclenché par une étiquette `v*` **posée sur un commit de `main`** (le flux vérifie l'appartenance du commit à `main` et s'arrête sinon) ; aussi déclenchable à la main pour la **recette** (`workflow_dispatch`, environnement `recette`). Étapes : (1) tests et contrôles du §14.1 ; (2) construction de la PWA et déploiement sur l'hébergement statique ; (3) construction de l'APK de publication (`./gradlew assembleRelease`) ; (4) décodage de la clé depuis les secrets de l'environnement (fichier temporaire hors du dépôt, supprimé en fin de job), signature ; (5) **`apksigner verify --print-certs`** et comparaison de l'empreinte SHA-256 du certificat avec la variable du dépôt `ANDROID_CERT_SHA256_<ENV>` (échec si elle diffère) ; (6) contrôle que le `versionCode` est strictement supérieur à celui de `derniere-version.json` déjà publié ; (7) publication dans `android/` de l'hébergement : `done-juan-<version>.apk` (recette : `done-juan-recette-<version>.apk`), son empreinte SHA-256, `derniere-version.json` (`versionName`, `versionCode`, `schemaVersion`, URL, empreinte, date) et la page `android/index.html` (lien, empreinte, procédure d'installation). Permissions : `contents: read`, plus celles du déploiement de l'hébergeur. Les secrets de signature ne sont accessibles qu'aux environnements GitHub `production` et `recette`, protégés (approbation du commanditaire pour `production`).
 - **Hébergement (DAT §7.5, sous réserve R11)** : GitHub Pages si le dépôt est public à la date du test technique, Cloudflare Pages sinon ; le choix est figé au test R11 (prérequis P5) et inscrit dans ST-US-031. Le flux de publication isole l'étape de déploiement dans une action composite `.github/actions/deployer-hebergement/` pour que ce choix n'impacte qu'un fichier.
 - **Ordre de mise en place** : rang 0 : `ci.yml` (sans job Android) et protection de `main` ; rang 12 (US-018, BEN-13) : job `build` Android, `publication.yml`, environnements et secrets. La clé de production n'est créée qu'au rang 12, par le commanditaire ou avec son accord (DEC-027).
 - `.github/dependabot.yml` (npm, actions GitHub) et `.github/pull_request_template.md` (reprend la DoD du §15).
