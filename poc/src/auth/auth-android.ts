@@ -19,6 +19,7 @@ export function traduireErreurNative(erreur: unknown): EtatJeton {
     case 'HORS_LIGNE':
       return { etat: 'hors_ligne', codeErreur };
     default:
+      // `AUTRE` : cause non établie, état par défaut ; le code natif brut reste dans `codeErreur`.
       return { etat: 'interaction_requise', codeErreur };
   }
 }

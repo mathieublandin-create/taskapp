@@ -2,6 +2,7 @@ package __PACKAGE__
 
 import android.app.Activity
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.CancellationSignal
 import androidx.credentials.ClearCredentialStateRequest
@@ -110,7 +111,13 @@ class GoogleAuthNativePlugin : Plugin() {
                     scopesDemandes = scopes
                     appelAutorisationEnCours = call
                     bridge.saveCall(call)
-                    activity.startIntentSenderForResult(intention.intentSender, CODE_CONSENTEMENT, null, 0, 0, 0)
+                    try {
+                        activity.startIntentSenderForResult(intention.intentSender, CODE_CONSENTEMENT, null, 0, 0, 0)
+                    } catch (e: IntentSender.SendIntentException) {
+                        appelAutorisationEnCours = null
+                        bridge.releaseCall(call)
+                        rejeter(call, "AUTRE", e.message, e.javaClass.simpleName)
+                    }
                 } else {
                     resoudreAutorisation(call, resultat)
                 }
@@ -123,6 +130,7 @@ class GoogleAuthNativePlugin : Plugin() {
         if (requestCode != CODE_CONSENTEMENT) return
         val call = appelAutorisationEnCours ?: return
         appelAutorisationEnCours = null
+        bridge.releaseCall(call)
         if (resultCode != Activity.RESULT_OK || data == null) {
             rejeter(call, "AUTRE", "consentement annulé", "RESULT_CODE_$resultCode")
             return

@@ -72,16 +72,17 @@ export class Diagnostic {
       detail:
         etat.etat === 'jeton_obtenu'
           ? `scopes accordés : ${etat.scopesAccordes.join(' ')} ; jeton présent`
-          : '',
+          : `code brut : ${etat.codeErreur} (état par défaut si la cause n'est pas établie)`,
     });
     return etat;
   }
 
   async demarrage(): Promise<void> {
     const identite = this.d.auth.identiteEnCache();
+    const android = this.d.appareil === 'android';
     await this.d.journal.enregistrer({
-      mesure: 'R12',
-      etape: '3.4.3',
+      mesure: android ? 'R2' : 'R12',
+      etape: android ? '3.3.5' : '3.4.3',
       operation: 'Démarrage',
       resultat: identite ? 'Identité en cache' : 'Aucune identité en cache',
       detail: `en ligne : ${navigator.onLine} ; origine : ${this.d.config.origine} ; identité : ${identite?.email ?? '-'}`,

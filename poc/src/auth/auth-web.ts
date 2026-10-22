@@ -24,8 +24,13 @@ export function chargerScriptGis(): Promise<void> {
 
 type Prompt = '' | 'consent' | 'none';
 
+/**
+ * Seul `invalid_grant` établit une révocation. `access_denied` (refus dans la fenêtre) et les codes
+ * inconnus sont ramenés à `interaction_requise` par défaut : la cause n'est pas établie, le code brut
+ * (conservé dans `codeErreur`) fait foi pour interpréter le journal.
+ */
 function traduireErreur(codeErreur: string): EtatJeton {
-  if (codeErreur === 'invalid_grant' || codeErreur === 'access_denied') {
+  if (codeErreur === 'invalid_grant') {
     return { etat: 'acces_revoque', codeErreur };
   }
   return { etat: 'interaction_requise', codeErreur };

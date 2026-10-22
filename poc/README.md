@@ -25,6 +25,8 @@ npm run dev         # http://localhost:5173
 
 Toutes les valeurs viennent de l'environnement ; `.env.example` ne liste que les noms.
 Copier vers `.env.local` (ignoré par Git) pour le travail local. Sur GitHub : « Settings > Secrets and variables > Actions ».
+`VITE_BASE_PATH` doit valoir `/<nom-du-depot>/` pour GitHub Pages (sinon le site est construit en `/` et ne se charge pas) ;
+`VITE_APP_ORIGIN` ne porte que l'origine, sans chemin.
 `VITE_GOOGLE_WEB_CLIENT_ID` est obligatoire : sans lui l'application affiche une erreur de configuration au démarrage.
 
 ## Écran « Diagnostic » et journal

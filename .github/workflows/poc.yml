@@ -139,10 +139,11 @@ jobs:
         with:
           name: pwa-dist
           path: site
-      # Si la release n'a pas été produite (secret absent), aucun artefact ne correspond au motif.
+      # app-debug.apk (séance 1) et app-release.apk sont publiés côte à côte dans site/android/.
+      # Si un type n'a pas été produit (secret absent), aucun artefact ne correspond pour lui.
       - uses: actions/download-artifact@v4
         with:
-          pattern: poc-release-apk
+          pattern: poc-*-apk
           path: site/android
           merge-multiple: true
       - uses: actions/upload-artifact@v4
