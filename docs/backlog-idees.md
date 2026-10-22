@@ -100,3 +100,88 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - « Ouvert, interface MCP » : MCP est un protocole qui permet à une IA d'utiliser des outils. Il existe deux lectures possibles. Soit Done Juan **expose** ses fonctions (proposer un objectif, proposer des tâches) à n'importe quelle IA compatible. Soit Done Juan **appelle** une IA au choix de l'utilisateur. Le choix est à faire par Starck, compatible avec DEC-007 (aucun serveur) et avec la contrainte de coût.
 
 **Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité. **Il manque** : le périmètre exclu (par exemple : pas de réponse vocale, pas de PC en v1, pas d'action de l'IA sans validation) et la taille confirmée par un avis de faisabilité et de coût de Starck (fournisseur, MCP, reconnaissance vocale sur Android).
+
+### Avis de faisabilité de Starck (2026-10-22)
+
+> Avis E-1, court et non engageant. Aucun ADR créé, DAT inchangé. Prix relevés le 2026-10-22, à revérifier en E3.
+
+**1. Lecture de « MCP ».** La lecture « Done Juan **expose un serveur MCP** » n'est pas réaliste en v1. Une IA cliente (application Claude, Le Chat) ne joint un serveur MCP distant que par une URL HTTPS publique, ce qui contredit DEC-007. Un serveur MCP local (stdio) ne tourne qu'avec un client de bureau, pas sur Android. De plus, il devrait écrire dans les fichiers Drive en tant que troisième auteur du format CRDT (ADR-003). **Recommandation** : Done Juan est **client** d'un fournisseur interchangeable. On crée un port `AssistantIA` (couche application, ADR-010) avec deux opérations, `proposerObjectif` et `proposerTaches`. Ces opérations renvoient une proposition structurée, validée par un schéma JSON, et n'écrivent rien. L'ouverture voulue est assurée de deux façons :
+- par les **outils** (*function calling*), décrits en JSON Schema comme dans MCP ;
+- par un adaptateur **« compatible OpenAI »**, qui couvre Mistral, OpenRouter et un modèle local de type Ollama. Un adaptateur Anthropic natif est facultatif.
+
+La création passe ensuite par les cas d'usage existants, au geste de validation de l'utilisateur (M2-2), en une seule opération journalisée. **Pas de serveur MCP en v1.** Exposer un serveur MCP deviendra possible si l'hébergement sur Raspberry Pi est retenu (ETU-001). Ce serait un ajout, pas une refonte.
+
+**2. Clé d'API.** C'est la clé de l'utilisateur, saisie dans les paramètres :
+- sur Android, chiffrée par le Keystore ;
+- sur PC, dans IndexedDB, chiffrée par une clé WebCrypto non exportable.
+
+Elle n'est **jamais** déposée sur Drive. Sur Android, les appels passent par le HTTP natif de Capacitor, qui n'est pas soumis à CORS. En PWA, Anthropic accepte les appels depuis le navigateur ; pour Mistral, c'est à vérifier. **Risques** :
+- vol de la clé, par une faille XSS ou une dépendance compromise ;
+- dépenses abusives en cas de vol. Parade : plafond de dépense et clé dédiée chez le fournisseur.
+
+Autre option sans serveur : la connexion OAuth (PKCE) d'**OpenRouter**, qui délivre une clé sans copier-coller. Elle ajoute un intermédiaire.
+
+**3. Reconnaissance vocale.** Recommandation : celle du **système**.
+- Sur Android, `SpeechRecognizer` (plugin Capacitor communautaire), gratuit. `createOnDeviceSpeechRecognizer` (Android 12 et plus) fonctionne sans réseau si le pack français est installé. Sinon, l'audio part chez Google.
+- Dans Chrome sur PC, l'API Web Speech envoie l'audio aux serveurs de Google ; Firefox ne la prend pas en charge.
+- La transcription par le fournisseur (Voxtral, environ 0,003 $/min) envoie l'audio à un tiers de plus, pour un gain faible.
+
+Dans tous les cas, l'assistant exige le réseau pour l'IA. Il n'y a **pas d'assistant hors ligne** : le module est grisé, avec un message.
+
+**4. Coût indicatif.** Hypothèse : 20 sessions par mois, environ 15 000 jetons en entrée et 3 000 en sortie par session, soit 0,3 M en entrée et 0,06 M en sortie par mois.
+
+| Fournisseur et modèle | Prix (entrée / sortie, par M de jetons) | Par mois |
+|---|---|---|
+| Mistral Small | environ 0,1 à 0,2 $ / 0,3 à 0,6 $ | **moins de 0,10 $** |
+| Mistral Medium 3 | 0,4 $ / 2 $ | environ 0,25 $ |
+| Claude Haiku 4.5 | 1 $ / 5 $ | environ 0,60 $ |
+| Claude Sonnet 4.5 | 3 $ / 15 $ | environ 1,80 $ |
+
+Même avec une marge de 5, le coût reste **sous 5 € par mois**. Les abonnements Claude Pro et Le Chat Pro ne donnent pas accès à l'API.
+
+Offres gratuites :
+- le plan **Experiment** de Mistral est gratuit, sans carte bancaire. En contrepartie, les requêtes **peuvent servir à l'entraînement**, ce qui va au-delà de M2-5 ;
+- un **modèle local** (Ollama sur PC ou Raspberry Pi) est gratuit et sans cloud. Il relève d'ETU-001 et donne une qualité moindre avec un Pi.
+
+**5. Taille, dépendances et exclusions.**
+- **Taille** : **M** pour la v1 recommandée (Android, un adaptateur « compatible OpenAI », voix du système). **L** pour l'épique complète (PC, plusieurs adaptateurs).
+- **Dépendances** :
+  - LOT-001 livré (création d'objectifs et de tâches, hiérarchie, journal) ;
+  - application Android (ADR-012) ;
+  - consentement d'activation et exception à ENF-05 au cahier des charges.
+- **ADR à créer en E3** :
+  - ADR « Assistant IA : port, adaptateurs, format des propositions » ;
+  - ADR « Secrets de services tiers sur l'appareil ».
+- **Exclus de la v1** :
+  - réponse vocale ;
+  - PC ;
+  - serveur MCP ;
+  - modèle local ;
+  - toute écriture sans validation ;
+  - modification ou suppression d'éléments existants par l'IA ;
+  - pose de créneaux dans l'agenda ;
+  - historique des conversations synchronisé ;
+  - fonctionnement hors ligne.
+
+Seuls le dialogue et l'objectif en cours sont transmis à l'IA (minimisation).
+
+**6. Risques**
+- fuite de la clé ;
+- réponses mal formées ou inventées, à absorber par la validation de schéma et la relecture humaine ;
+- qualité de la dictée française selon les appareils ;
+- évolution des API et des prix des fournisseurs.
+
+**Questions fermées pour le commanditaire**
+- **M2-6** : Quel fournisseur pour la v1 ?
+  - (a) Mistral, payant à l'usage, hébergé dans l'UE ;
+  - (b) Anthropic ;
+  - (c) OpenRouter, pour un choix libre du modèle.
+
+  *Reco : (a).*
+- **M2-7** : Acceptez-vous l'offre gratuite de Mistral, dont les données peuvent servir à l'entraînement ? *Reco : non. L'offre payante coûte quelques centimes par mois.*
+- **M2-8** : Quelle reconnaissance vocale ?
+  - (a) celle du système Android, sur l'appareil si possible ;
+  - (b) celle du fournisseur d'IA.
+
+  *Reco : (a).*
+- **M2-9** : L'IA reçoit-elle aussi la liste de vos objectifs existants, pour éviter les doublons et proposer un rattachement ? *Reco : non en v1.*
