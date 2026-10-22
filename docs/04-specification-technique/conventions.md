@@ -445,7 +445,7 @@ Source de vérité : **guide d'ergonomie v0.2.8, §6.6** (Steeve, ANT-7), qui fa
 - **Attributs d'observabilité** (proposition de Steeve, **confirmée** par Anthony, noms définitifs) : tout élément qui porte un état expose son code dans `data-etat="CODE"` ; un message d'erreur ou d'alerte ajoute `data-message="ERR-xxx"` ou `data-message="ALR-xxx"` ; une variante de code (`ERR-030`, `BAN-ACCES-GOOGLE`, `BAN-RAPPEL-24H`, `ALR-010`) ajoute `data-variante="<variante>"` ; l'indicateur de synchronisation porte en outre `data-a-lire="{n}"`, absent si n = 0 (guide §6.6.2). Ces attributs sont posés par les composants à partir du modèle de vue ; ils servent aux tests Playwright et ne sont jamais affichés.
 - **Ordre de gravité de l'indicateur** (guide §6.6.2) : `SYN-ACTION` > `SYN-SESSION` > `SYN-RETENTATIVE` > `SYN-HORS-LIGNE` > `SYN-EN-COURS` > `SYN-ATTENTE` > `SYN-INFO` > `SYN-OK`, confirmé ; `SYN-INFO` est dérivé de `SYN-OK` et de `data-a-lire`.
 - **Dans le code** : `src/commun/presentation/messages/catalogue.fr.ts` exporte un objet `CATALOGUE` typé `as const satisfies Record<CodeCatalogue, GabaritLibelle>` ; `CodeCatalogue` est l'union des codes. Les variables du guide (`{n}`, `{appareil}`, `{élément}`, `{date}`, `{heure}`, ancienneté) sont interpolées par `libelle(code, variables)`, avec les règles de pluriel (0 et 1 au singulier, `Intl.PluralRules('fr')`) et de typographie (espaces insécables, guillemets « ») du guide §6.6.1. Les formats de date, d'heure et d'ancienneté sont dans `commun/presentation/format/`.
-- **Responsabilités** : le domaine et l'application renvoient des erreurs typées, sans code de catalogue ; la correspondance erreur ou état → code est faite **dans le modèle de vue**, qui fournit code et libellé ; les composants affichent le libellé et posent l'attribut. Un code de motif `CNX-…` est porté par l'erreur de connexion du contexte `compte` (`MotifRefus`), car il fait partie du contrat métier d'US-022.
+- **Responsabilités** : le domaine et l'application renvoient des erreurs typées, sans code de catalogue ; la correspondance erreur ou état → code est faite **dans le modèle de vue**, qui fournit code et libellé ; les composants affichent le libellé et posent l'attribut. Un code de motif de connexion (`ERR-001` à `ERR-006`) est porté par l'erreur de connexion du contexte `compte` (`MotifRefus`), car il fait partie du contrat métier d'US-022.
 - **Priorités d'affichage** : l'ordre de gravité de l'indicateur (`SYN-ACTION` > … > `SYN-OK`) et l'ordre des bandeaux (`BAN-ACCES-GOOGLE` > `BAN-CONSULTATION-SEULE` > `BAN-RAPPEL-24H`) du guide §6.6.2 et §6.6.3 sont implémentés par **une seule** fonction de sélection par élément, dans le modèle de vue, testée cas par cas.
 - **Entrées sous réserve** : les entrées marquées « sous réserve Q-ERG-xx » au guide ne sont implémentées qu'après la réponse du commanditaire ; leurs tests sont écrits en E10 sur la réponse retenue.
 - **Tests** : ils vérifient le **code** ; ils vérifient le libellé seulement lorsque le `.feature` cite le texte, et alors via `libelle()`.
@@ -466,7 +466,36 @@ Référentiels : OWASP ASVS (PWA) et OWASP MASVS (Android) ; recommandations Goo
 - Aucun secret dans le dépôt. L'application n'a **aucun secret client** : tous ses clients OAuth sont publics (DS-04).
 - Les identifiants de client OAuth (publics) sont injectés à la construction : `VITE_GOOGLE_CLIENT_ID_WEB` pour le web, configuration par variante de build pour Android. Un fichier `.env.exemple` documente les clés, sans valeur réelle ; les fichiers `.env*` réels ne sont pas versionnés.
 - Toute variable préfixée `VITE_` est **publique** (incluse dans le paquet livré) : aucune valeur sensible ne doit en porter le préfixe.
-- Secrets de CI (clé de signature Android, DAT §7.1) : uniquement dans les secrets GitHub Actions, avec une copie hors ligne chez le commanditaire.
+- **`.gitignore` avant toute clé** (ADR-012, point bloquant du suivi, BEN-13) : le premier commit du socle crée `.gitignore`, **avant** la création de toute clé de signature (preuve de concept P9 du test technique comprise). Contenu minimal imposé :
+  ```
+  # Clés et secrets de signature (ADR-012, DEC-027)
+  *.jks
+  *.keystore
+  *.p12
+  *.pem
+  keystore.properties
+  android/keystore/
+  # Configuration locale
+  .env
+  .env.*
+  !.env.exemple
+  android/local.properties
+  # Artefacts
+  node_modules/
+  dist/
+  coverage/
+  reports/
+  *.apk
+  *.aab
+  android/app/build/
+  android/build/
+  android/.gradle/
+  android/app/release/
+  ```
+  Un test de CI (`pnpm verifier:depot`, `scripts/verifier-depot.ts`) échoue si un fichier versionné correspond à l'un de ces motifs, ou si une ligne de cette liste manque au `.gitignore`.
+- **Clé de signature Android** (ADR-012, DEC-027, verbatim « Reco ») : une clé de publication par application (`fr.donejuan.app`, `fr.donejuan.app.recette`), RSA 4096 bits, PKCS12, 30 ans. Elle est conservée **dans les secrets chiffrés de GitHub Actions** (`ANDROID_CLE_<ENV>_BASE64`, `ANDROID_CLE_<ENV>_MOT_DE_PASSE`, `ANDROID_CLE_<ENV>_ALIAS`, avec `<ENV>` = `PRODUCTION` ou `RECETTE`), avec une **sauvegarde hors ligne chez le commanditaire** (support amovible et gestionnaire de mots de passe). Ces secrets ne sont exposés qu'au flux `publication.yml` (environnements GitHub `production` et `recette`, §14.3). La clé de débogage reste réservée au développement. Aucune clé n'est créée par un agent sans l'accord explicite du commanditaire, relayé par Jarvis.
+- **Nom de paquet Android** (requis par le prérequis P4 du test technique) : `fr.donejuan.app` (production), `fr.donejuan.app.recette` (recette, coexiste avec la production), `fr.donejuan.app.poc` (preuve de concept du test technique). Le nom de paquet ne change plus après la première installation (ADR-012 : même paquet, même clé pour toute mise à jour).
+- **Vérification des développeurs Android** (DEC-028, verbatim « Reco ») : compte gratuit « distribution limitée » lié au compte Google du commanditaire, à créer par lui avant l'échéance française de 2027 ; le nom de paquet et l'empreinte de la clé y sont enregistrés. Aucun impact sur le code.
 - gitleaks s'exécute sur chaque commit poussé et dans les hooks locaux ; un secret détecté bloque la fusion et doit être **révoqué**, pas seulement retiré de l'historique.
 
 ### 9.2 Jetons OAuth (DS-04, DS-06, ADR-004)
@@ -509,9 +538,10 @@ Données concernées : objectifs, tâches, temps passés, adresse e-mail et iden
 Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10, DS-11.
 
 ### 10.1 Écritures locales
-- Toute écriture métier passe par un **cas d'usage**, qui écrit **en une seule transaction** `DepotLocal` : les champs modifiés avec leur `Hlc`, les entrées du journal métier (RG-050, DS-19) et, le cas échéant, les pierres tombales. Aucune écriture partielle n'est possible.
-- Aucun module hors du contexte `synchronisation` ne manipule la représentation CRDT (champ, `Hlc`, appareil) : les autres contextes manipulent des entités du domaine, que `DepotLocal` traduit.
-- L'`Hlc` est produit **uniquement** par le service `HorlogeHybride` du contexte `synchronisation`, à partir de `Horloge.maintenant()` corrigé de l'écart mesuré avec l'en-tête `Date` de Google (ADR-011). Départage des égalités : `appareilId`, ordre lexicographique (DS-11).
+- Toute écriture métier passe par un **cas d'usage**, qui appelle **une fois** `ServiceEtatLocal.modifier(decision)`. Le service lit l'état, appelle la décision métier (fonction pure), puis écrit **en une seule transaction** `DepotLocal` : les écritures d'information avec leur `Hlc` et leur contexte causal, les pierres tombales, les entrées du journal métier (RG-050, DS-19) et les mises à jour de l'index des écritures en attente (DAT §4.1.5 bis). Aucune écriture partielle n'est possible. Modèle complet : `ST-socle-ecriture.md`.
+- Aucun module hors du contexte `synchronisation` ne manipule la représentation CRDT (`Ecriture`, `Hlc`, `ContexteCausal`, appareil) : les autres contextes lisent un `EtatMetier` et produisent des `Modification`, que le contexte `synchronisation` traduit.
+- L'`Hlc` est produit **uniquement** par la fonction `hlcSuivant` du domaine `synchronisation`, appelée par `ServiceEtatLocal`, à partir de `Horloge.maintenant()` corrigé de l'écart mesuré avec l'en-tête `Date` de Google (ADR-011). Départage des égalités : `appareilId`, ordre lexicographique (DS-11). Une `Modification` reçoit un `Hlc` ; toutes les écritures d'information qu'elle produit partagent cet `Hlc`, et son entrée de journal aussi.
+- Chaque écriture porte un **contexte causal** (DAT §4.2.1) ; une pierre tombale porte le contexte au niveau de l'élément, étendu aux écritures qui pointent vers lui (DAT v0.10.1 §4.2.1). Le contexte n'est jamais lu par un autre contexte que `synchronisation`.
 - L'état d'une tâche et ses dates forment **un seul registre** (DAT §4.2). Les suppressions sont des **pierres tombales**, jamais des effacements physiques en v1.
 - Une modification n'est jamais retirée de l'appareil avant son dépôt confirmé dans le Drive (ENF-T-07). Le marqueur `deposeJusquA` n'est avancé **qu'après** la confirmation du Drive.
 - Les deux adaptateurs (`DepotLocalDexie`, `DepotLocalSqlite`) passent la **même suite de contrat** (§11.10). `DepotLocalSqlite` s'appuie sur une interface interne d'exécution SQL, implémentée par le module Capacitor en production et par `node:sqlite` en test.
@@ -525,7 +555,8 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 - Sur PC, un seul onglet synchronise (verrou `navigator.locks`, derrière un port interne au contexte, §2.3).
 
 ### 10.3 Format des données dans le Drive et versions (RG-044, RG-058)
-- **Schémas Zod versionnés** : `src/synchronisation/infrastructure/drive/schemas/v<n>.ts`. La constante `SCHEMA_VERSION` est définie dans un seul fichier.
+- **Sous réserve R1** : l'emplacement (dossier visible `Done Juan/`, portée `drive.file`, arbitrage A6), le nom et la compression des fichiers suivent le DAT §4.2 ; si le test R1 échoue, le repli `drive.appdata` change l'emplacement, pas le contenu logique (`ST-socle-ecriture.md` §5.3).
+- **Schémas Zod versionnés** : `src/synchronisation/infrastructure/drive/schemas/v<n>.ts`. La constante `SCHEMA_VERSION` est définie dans un seul fichier. Le **schéma 1** n'est publié qu'avec l'incrément 1 d'US-017 ; son contenu logique est figé dès le rang 0 (`ST-socle-ecriture.md` §5.3, condition 1 de Starck).
 - Chaque fichier lu est validé (Zod) et son **empreinte SHA-256** vérifiée (`crypto.subtle.digest`) avant toute fusion. L'empreinte est calculée sur une **sérialisation canonique** (clés triées, sans le champ d'empreinte), produite par une fonction unique utilisée à l'écriture et à la lecture.
 - Un fichier invalide ou d'empreinte incorrecte n'est **jamais** fusionné et n'écrase jamais l'état local (RG-044).
 - **Compatibilité (RG-058)** : le `schemaVersion` est le **seul** critère de blocage. En conséquence :
@@ -533,7 +564,7 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
   - une évolution **incompatible** incrémente `SCHEMA_VERSION`. Elle exige : l'accord de Starck, l'annonce au commanditaire via Jarvis (elle bloque la saisie des appareils non mis à jour), une migration pure `migrerV<n>VersV<n+1>`, des fichiers d'exemple de chaque version antérieure dans `tests/fixtures/drive/v<n>/` et les tests de lecture correspondants ;
   - **consultation seule** (`FormatPlusRecent`) : l'appareil n'écrit **rien** dans le Drive, ne fusionne pas les fichiers plus récents et **n'efface rien** en local ; ses modifications en attente restent en base ; le contrôle de `generation` (RG-044 b) n'est effectué qu'**après** l'établissement de la compatibilité. Cette garde est implémentée **en un seul point** du cycle de synchronisation ;
   - tests obligatoires dès qu'une US touche au format : (a) lecture de chaque version antérieure ; (b) **coexistence** : un fichier de même `schemaVersion` contenant des champs inconnus est lu sans blocage et sans perte des données propres de l'appareil ; (c) consultation seule : aucune écriture Drive, aucun effacement local, modifications en attente conservées puis déposées après mise à jour.
-- La conservation ou non des champs inconnus lors de la réécriture du fichier de l'appareil est soumise à Starck (§17.2).
+- Champs inconnus de même `schemaVersion` : **conservés** à la réécriture du fichier de l'appareil, avec leur HLC, et fusionnés par champ (DAT v0.7, ANT-19). Un type d'événement de journal inconnu est conservé tel quel.
 
 ## 11. Stratégie de tests
 
@@ -594,8 +625,16 @@ Constituent un affaiblissement, refusé en revue avec une gravité **Bloquante**
 
 ### 11.6 Fichiers `.feature` et glossaire d'étapes
 - Emplacement et nommage fixés par le workflow : `tests/features/US-xxx-<titre>.feature`, `# language: fr`, tags `@US-xxx`, `@RG-xxx`, `@LOT-xxx` sur chaque scénario.
-- Le **glossaire d'étapes** de Pepper (`tests/features/GLOSSAIRE-ETAPES.md`, v1.0) **fige** le vocabulaire : une phrase qui n'y figure pas n'a pas de définition. Anthony en tire la liste des définitions d'étapes de chaque ST-US (E9) ; Benjamin n'en crée pas d'autres. Un besoin nouveau passe par Pepper, via Jarvis.
-- Attentes de testabilité à l'égard des `.feature`, satisfaites par le glossaire v1.0 et maintenues pour les lots suivants :
+- Le **glossaire d'étapes** de Pepper (`tests/features/GLOSSAIRE-ETAPES.md`, v1.4) **fige** le vocabulaire : une phrase qui n'y figure pas n'a pas de définition. Anthony en tire la liste des définitions d'étapes de chaque ST-US (E9) ; Benjamin n'en crée pas d'autres. Un besoin nouveau passe par Pepper, via Jarvis.
+- **Conventions du glossaire v1.4 appliquées par les *step definitions*** :
+  - « que » facultatif en tête d'une précondition : une seule définition (`etapeContexte`, §11.7) ;
+  - pluriel `modification(s)`, `tâche(s)`, `sous-tâche(s)`, `information(s)` : une seule définition, par le texte optionnel des expressions Cucumber (`tâche(s)` s'écrit `tâche(s)` dans l'expression, ce qui accepte « tâche », « tâches » et « tâche(s) ») ;
+  - préfixe d'appareil : sans préfixe dans un scénario à deux appareils, une **assertion** vaut « sur chacun des deux appareils » (Q-US-017-7) ; une **action** sans préfixe y est une erreur du scénario, sauf l'exception H-5 ci-dessous ;
+  - assertion tabulaire : l'ordre n'est vérifié qu'avec « dans cet ordre », seules les colonnes présentes sont vérifiées ; l'historique (« contient, pour … : ») vérifie la liste complète, dans l'ordre chronologique ;
+  - opération au passé (« que sur le <appareil>, l'utilisateur a créé … ») : rejoue l'opération du §5 sur cet appareil, à l'instant courant ;
+  - **H-5** (contrôle d'explicitation, É-5) : les préconditions `Étant donné` décrivent un **état**, pas une chronologie. Une précondition qui exige un échange avec le Drive est jouée avant une précondition de coupure du réseau du même appareil. Une action de confirmation sans préfixe (« l'utilisateur confirme », « l'utilisateur renonce ») s'applique à l'appareil qui a **une** confirmation en attente ; elle échoue s'il n'y en a aucune ou plusieurs ;
+  - **H-7** : les tableaux de contexte « les tâches suivantes : » appliquent la construction du glossaire §1 (création « à faire » dans l'ordre du tableau ; estimation technique de 30 min pour une tâche parente sans estimation ; états appliqués aux sous-tâches puis aux tâches parentes ; seule une sous-tâche « à faire » sous une tâche parente terminée ou abandonnée fait échouer l'étape).
+- Attentes de testabilité à l'égard des `.feature`, satisfaites par le glossaire v1.4 et maintenues pour les lots suivants :
   - chaque scénario dépendant du temps ancre la date, l'heure et le fuseau ; le temps ne passe que par les étapes du glossaire §4 ;
   - les délais exprimés en durée (« au plus tard 1 minute après ») sont vérifiés par l'avance de l'horloge simulée, jamais par une attente réelle ;
   - les états de Google sont décrits en termes métier ;
@@ -610,17 +649,20 @@ Constituent un affaiblissement, refusé en revue avec une gravité **Bloquante**
 | `commun/temps.steps.ts` | §4 : « nous sommes le … », « l'horloge avance de … », horloge en avance ou en retard |
 | `commun/appareils.steps.ts` | §1 et §2 : appareils du banc, installation, ouverture et fermeture, extinction, arrêt brutal, fuseau d'un appareil, onglets |
 | `commun/reseau.steps.ts` | §1 et §3 : réseau coupé, intermittent, rétabli |
-| `compte/connexion.steps.ts` | §1, §2, §6 : connexion, refus (codes `CNX-`), déconnexion, accès retiré ou expiré, session du navigateur, suppression des données de l'appareil, données locales présentes |
+| `compte/connexion.steps.ts` | §1, §2, §6 : connexion, refus (codes `ERR-001` à `ERR-006`), déconnexion, accès retiré ou expiré, session du navigateur, suppression des données de l'appareil, données locales présentes |
 | `objectifs-taches/objectifs.steps.ts` | §1, §5, §6, §7 : objectifs et sous-objectifs |
 | `objectifs-taches/taches.steps.ts` | §1, §5, §6, §7 : tâches, sous-tâches, états, estimations, alertes de délai |
-| `objectifs-taches/refus.steps.ts` | §6 : « l'enregistrement est refusé avec le motif … », « l'action est refusée … », confirmations |
+| `objectifs-taches/refus.steps.ts` | §6 : « l'enregistrement est refusé avec le motif … », « l'action est refusée … », « la modification est refusée … », « l'opération est acceptée », confirmations annoncées (`CNF-…` des objectifs et des tâches) |
+| `objectifs-taches/liste-taches.steps.ts` | §5, §6 : consultation et filtres de la liste « Tâches », contenu et ordre de la liste, tâches sans objectif |
+| `objectifs-taches/historique.steps.ts` | §11 : historique (RG-050), rendu par `tests/support/rendu-historique.ts` |
+| `commun/confirmations.steps.ts` | §2, §5 : « l'utilisateur confirme », « l'utilisateur renonce » (commandes en attente, §8.6) |
 | `synchronisation/echanges.steps.ts` | §3 : échanges avec le Drive, envois interrompus, modifications en attente |
 | `synchronisation/drive.steps.ts` | §1, §3, §6 : contenu du Drive, altérations, Drive plein ou indisponible, restauration, versions et consultation seule |
 | `synchronisation/modifications-non-retenues.steps.ts` | §3, §6 : liste des modifications non retenues, « Compris » |
 | `synchronisation/etat-affiche.steps.ts` | §6 : indicateur, bandeaux, mentions « non synchronisé », vérifiés par les modèles de vue |
 
 **Support** (`tests/support/`) :
-- `monde.ts` : classe `MondeDoneJuan` (étend `World` de cucumber-js) ; contient le `BancSynchro` (§11.11), les derniers résultats par appareil et les références nommées (intitulé → identifiant, nom de compte → compte simulé) ;
+- `monde.ts` : classe `MondeDoneJuan` (étend `World` de cucumber-js) ; contient le `BancSynchro` (§11.11), le dernier résultat par appareil, les commandes en attente de confirmation par appareil (§8.6) et les références nommées (intitulé → identifiant, nom de compte → compte simulé). **Résolution d'un intitulé** (`references.ts`) : parmi les éléments non supprimés du type demandé, l'unique élément qui porte cet intitulé ; s'il n'y en a aucun, l'élément mémorisé sous cet intitulé à sa création ou à son dernier renommage (pour « n'existe plus ») ; s'il y en a plusieurs, l'étape échoue (« intitulé ambigu ») ;
 - `hooks.ts` : un monde neuf par scénario (`Before`) ; en fin de scénario (`After`), échec si le journal technique d'un appareil contient une entrée de niveau `erreur` non attendue par le scénario ;
 - `types-parametres.ts` : types de paramètres communs ;
 - `prefixes.ts` : fonctions d'enregistrement des étapes à préfixe (ci-dessous) ;
@@ -641,8 +683,9 @@ Les intitulés, noms de compte, libellés et codes entre guillemets utilisent le
 **Préfixes** (glossaire d'étapes, conventions et §4). Une étape portée par un appareil est enregistrée **une seule fois** par une fonction de `prefixes.ts`, qui définit ses variantes :
 | Fonction | Variantes enregistrées | Comportement |
 |---|---|---|
-| `etapeAction(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `{ecart} plus tard, sur le {appareil}, <motif>` ; `{ecart} plus tard, <motif>` ; `au même instant exact, sur le {appareil}, <motif>` | Sans préfixe : valide seulement si le banc ne comporte qu'**un** appareil, sinon échec « appareil ambigu ». « … plus tard » avance d'abord le temps simulé. « Au même instant exact » rejoue l'étape à l'instant simulé de l'étape précédente. |
-| `etapeAssertion(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `sur les deux appareils, <motif>` ; `sur chacun des deux appareils, <motif>` | Les deux dernières variantes exécutent l'assertion sur chaque appareil du banc. |
+| `etapeContexte(motif, fn)` | `<motif>` ; `que <motif>` ; `sur le {appareil}, <motif>` ; `que sur le {appareil}, <motif>` | Précondition. Sans préfixe : valide seulement si le banc ne comporte qu'un appareil, ou si l'étape porte sur des données (dans un scénario « tous deux à jour », elle est jouée sur le smartphone puis échangée, comme le prévoit ST-US-017). |
+| `etapeAction(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `{ecart} plus tard, sur le {appareil}, <motif>` ; `{ecart} plus tard, <motif>` ; `au même instant exact, sur le {appareil}, <motif>` ; `au même instant exact, <motif>` | Sans préfixe : valide seulement si le banc ne comporte qu'**un** appareil, sinon échec « appareil ambigu » (exception H-5, §11.6). « … plus tard » avance d'abord le temps simulé. « Au même instant exact » rejoue l'étape à l'instant simulé de l'étape précédente. |
+| `etapeAssertion(motif, fn)` | `<motif>` ; `sur le {appareil}, <motif>` ; `sur les deux appareils, <motif>` ; `sur chacun des deux appareils, <motif>` | Les deux dernières variantes exécutent l'assertion sur chaque appareil du banc ; sans préfixe dans un banc à deux appareils, l'assertion vaut « sur chacun des deux appareils » (Q-US-017-7). |
 | `etapeOnglet(motif, fn)` | `dans le premier onglet, <motif>` ; `dans le second onglet, <motif>` | Profil `ihm` uniquement (`tests/steps-ihm/`). |
 
 L'accord « signalé(e) » du glossaire s'écrit avec le texte optionnel des expressions Cucumber : `signalé(e) comme non synchronisé(e)`.
@@ -660,7 +703,7 @@ L'accord « signalé(e) » du glossaire s'écrit avec le texte optionnel des exp
 |---|---|---|---|
 | `@US-xxx`, `@RG-xxx`, `@LOT-xxx` | Pepper | Traçabilité, filtrage ; obligatoires sur chaque scénario | — |
 | `@ihm` | Pepper | Le scénario ne peut se vérifier que par l'interface réelle : navigateur, installation, onglets, saisie en cours (7 scénarios au lot 1, tous dans US-031) | Profil `ihm` : cucumber-js avec les steps de `tests/steps-ihm/`, Playwright (Chromium) sur la PWA construite avec `composition/test-ihm.ts` ; assertions sur `data-etat`, `data-message` et rôles accessibles |
-| `@recette` | Pepper | Non automatisable : dépend d'un service extérieur que le banc ne simule pas (1 scénario au lot 1 : US-022 S13b) | Aucune exécution automatisée ; déroulé à la main en E14, tracé dans le procès-verbal de recette |
+| `@recette` | Pepper | Non automatisable : dépend d'un service extérieur que le banc ne simule pas, ou d'un comportement réel de l'appareil (2 scénarios au lot 1 : US-022 S13b, US-018 S09b) | Aucune exécution automatisée ; déroulé à la main en E14, tracé dans le procès-verbal de recette |
 | `@lent` | Pepper, sur demande d'Anthony | Scénario de plus de 2 s | Exclu du profil local `rapide` ; exécuté en CI |
 | `@google-reel` | Pepper, sur demande d'Anthony | Vérification contre l'API Google réelle et un compte de test | **Jamais en CI** ; exécution manuelle (profil `google-reel`), en recette technique |
 | `@wip` | — | — | **Interdit** dans une version fusionnée |
@@ -670,7 +713,7 @@ Le catalogue de Steeve étant paru, les bandeaux et les états de l'application 
 Profils cucumber-js (`cucumber.mjs`), tous en `strict`, `# language: fr`, steps chargés par `tsx` :
 | Profil | Filtre de tags | Steps | Où |
 |---|---|---|---|
-| `default` | `not @ihm and not @google-reel and not @recette` | `tests/steps/` | CI (chaque fuseau) |
+| `default` | `not @ihm and not @google-reel and not @recette`, restreint aux scénarios exécutables au rang courant (§11.13) | `tests/steps/` | CI (chaque fuseau) |
 | `rapide` | `default` et `not @lent` | `tests/steps/` | Poste de développement |
 | `ihm` | `@ihm and not @google-reel and not @recette` | `tests/steps-ihm/` | CI (job `ihm`) |
 | `google-reel` | `@google-reel` | `tests/steps/` avec adaptateurs réels | Manuel |
@@ -728,6 +771,20 @@ Le **banc** (`tests/support/banc/`) est le cœur des scénarios Cucumber et des 
 - Les composants sont testés avec `@testing-library/react` sur des modèles de vue fournis : rendu du libellé du catalogue, rôle ARIA, action déclenchée. Pas de test de style.
 - Playwright couvre les parcours `@ihm` et quelques parcours hors Cucumber (démarrage, hors ligne, accessibilité axe sans violation de niveau `serious` ou `critical`).
 
+### 11.13 Rattachement des scénarios aux rangs de réalisation (LOT-001)
+Règle arrêtée au contrôle d'explicitation (`explicitation-LOT-001.md` §4.1) ; elle s'impose à E10, E12 et E13 :
+1. Un scénario reste tracé sur son US : ses tags ne changent pas.
+2. Il est **exécuté et revu au rang de son dernier prérequis** : la dernière US, ou le dernier incrément d'US-017, dont il utilise une capacité. Les exemples d'un plan du scénario sont exécutés ensemble, au rang de l'exemple le plus exigeant.
+3. La revue E13 d'un rang couvre le code du rang et **tous** les scénarios qui deviennent exécutables à ce rang, y compris ceux, différés, d'US des rangs précédents. Une revue ne peut pas être approuvée si un scénario devenu exécutable est rouge.
+4. Une US n'est déclarée « En recette » que lorsque **tous** ses scénarios sont verts.
+5. La liste nominative des scénarios par rang est dans `docs/lots/LOT-001.md`, section « Ordre de réalisation ».
+
+**Mise en œuvre** :
+- `tests/support/rangs-scenarios.json` : `{ "rangCourant": n, "scenarios": { "US-001 S06": 8, … } }`, une clé par scénario des dix fichiers (identifiant `US-xxx Snn` tiré du titre « Snn — … »). `rangCourant` est augmenté d'une unité dans la *pull request* qui livre le rang, et par elle seule.
+- `scripts/selection-scenarios.mjs` analyse les `.feature` avec `@cucumber/gherkin` et renvoie la liste `chemin:ligne` des scénarios dont le rang est inférieur ou égal à `rangCourant` ; `cucumber.mjs` l'utilise pour les profils `default`, `rapide` et `ihm`, et pour le contrôle des étapes inutilisées (`--dry-run --format usage`), qui porte sur la même sélection.
+- `scripts/verifier-rangs.ts` (`pnpm verifier:rangs`, bloquant en CI) échoue si un scénario d'un `.feature` n'a pas de rang, si une clé ne correspond à aucun scénario, ou si `rangCourant` est inférieur au rang déjà atteint sur la branche de lot.
+- À la fin du lot (rang 13), tous les scénarios non tagués `@recette` sont sélectionnés ; la sélection n'a alors plus d'effet.
+
 ## 12. Couverture minimale
 
 Mesure : Vitest, `@vitest/coverage-v8`, seuils par motif de chemin (`coverage.thresholds`). Les scénarios Cucumber ne sont pas comptés dans la couverture de code (ils ont leur propre couverture fonctionnelle, ci-dessous).
@@ -764,7 +821,7 @@ Dépôt : **GitHub, `mathieublandin-create/taskapp`** (PO-7 tranché).
 - Une US livrée en **incréments internes** (Q-LOT-1, option b recommandée pour US-017) a une branche par incrément : `us/US-017-<n>-<slug>`, chacune soumise à sa propre revue E13.
 - Une branche d'US est rebasée sur la branche de lot avant la revue ; la fusion se fait par *pull request* en **commit de fusion** (pas d'écrasement ni de rebase à la fusion), pour garder la trace de l'US.
 - Les commits de tests rouges (E10) sont admis sur la branche d'US uniquement ; la branche de lot et `main` restent vertes.
-- **Protection des branches** `main` et `lot/*` (à configurer par le propriétaire du dépôt, action transmise à Jarvis) : *pull request* obligatoire, contrôles requis du §14.1 verts, branche à jour, historique sans réécriture forcée.
+- **Protection des branches** `main` et `lot/*` (DEC-029, accord de principe du commanditaire) : *pull request* obligatoire, contrôles requis du §14.1 verts, branche à jour, historique sans réécriture forcée. Elle est **activée dès que la CI existe**, c'est-à-dire à la fusion du rang 0 (socle) ; aucune action avant. Le réglage est fait par le propriétaire du dépôt (le commanditaire), sur demande de Jarvis ; Benjamin fournit la liste exacte des contrôles requis (noms des jobs du §14.3).
 - Les documents des agents (`docs/`, `tests/features/`) suivent le circuit défini par Jarvis ; ils ne sont pas soumis à la revue de code.
 
 ### 13.2 Convention de commits
@@ -783,7 +840,8 @@ Réf: US-xxx[, RG-xxx][, RC-US-xxx-n][, ANO-xxx][, DT-xxx]
 
 ### 13.3 Versions et livrables
 - Versionnement sémantique de l'application ; une étiquette `vX.Y.Z` est posée sur `main` à la clôture de chaque lot (E17). La version de l'application est distincte de `SCHEMA_VERSION` (DAT §7.4).
-- Versionnés : `pnpm-lock.yaml`, configurations des outils, `android/` (hors artefacts). Non versionnés : `dist/`, `coverage/`, rapports, `.env*` réels, données locales, clés de signature.
+- **Android** (ADR-012) : `versionName` = `X.Y.Z` ; `versionCode` = `X × 10 000 + Y × 100 + Z` (donc `Y` et `Z` < 100), calculé par `scripts/version-android.mjs` à partir de `package.json` et injecté dans `android/app/build.gradle` à la construction. Le `versionCode` doit être **strictement supérieur** à celui de la dernière version publiée (`derniere-version.json`) ; une version défectueuse se corrige par une nouvelle version, jamais par un retour arrière.
+- Versionnés : `pnpm-lock.yaml`, configurations des outils, `android/` (hors artefacts, propriétés locales et clés, §9.1). Non versionnés : `dist/`, `coverage/`, rapports, `.env*` réels, données locales, clés de signature, APK et AAB.
 
 ## 14. Outillage et intégration continue
 
@@ -795,7 +853,7 @@ Réf: US-xxx[, RG-xxx][, RC-US-xxx-n][, ANO-xxx][, DT-xxx]
 | Lint | `pnpm lint` (`eslint . --max-warnings 0`) | Oui |
 | Types | `pnpm types` (`tsc --noEmit`) | Oui |
 | Architecture | `pnpm architecture` (`depcruise src --config .dependency-cruiser.cjs`) | Oui |
-| Catalogue et tags | `pnpm verifier:catalogue` (§8.5), `pnpm verifier:tags` (§11.8) | Oui |
+| Catalogue, tags, rangs, dépôt | `pnpm verifier:catalogue` (§8.5), `pnpm verifier:tags` (§11.8), `pnpm verifier:rangs` (§11.13), `pnpm verifier:depot` (`.gitignore` et fichiers interdits, §9.1) | Oui |
 | Tests unitaires, contrat, intégration | `pnpm test` (`vitest run`), **dans chaque fuseau** `TZ=UTC`, `TZ=Pacific/Auckland`, `TZ=America/New_York` | Oui |
 | Couverture | `pnpm test:couverture`, une fois (job `TZ=UTC`), seuils du §12 | Oui |
 | Cucumber | `pnpm cucumber` (profil `default`), dans chacun des trois fuseaux ; `pnpm cucumber:steps-inutilises` | Oui |
@@ -803,7 +861,7 @@ Réf: US-xxx[, RG-xxx][, RC-US-xxx-n][, ANO-xxx][, DT-xxx]
 | SAST | Semgrep (règles `p/typescript`, `p/react`, `p/owasp-top-ten`, `p/secrets`) | Oui (gravité haute et critique) |
 | Secrets | gitleaks, sur les commits poussés | Oui |
 | Dépendances | osv-scanner ; license-checker (§9.5) | Oui (haute et critique) |
-| Build | PWA (`vite build`) ; APK de debug Android (`cap sync android`, Gradle, JDK 21) | Oui |
+| Build | PWA (`vite build`) ; APK de debug Android (`cap sync android`, `./gradlew assembleDebug`, JDK 21) — à partir du rang 12 (US-018), avant : PWA seule | Oui |
 | Mutation, propriétés étendues | Stryker ; fast-check à graines aléatoires | Non (hebdomadaire, indicateur) |
 
 Le fuseau `Europe/Paris` n'est volontairement pas un fuseau de CI : il masquerait un usage involontaire du fuseau système. Les postes de développement, généralement à Paris, l'exercent déjà.
@@ -818,7 +876,9 @@ Le fuseau `Europe/Paris` n'est volontairement pas un fuseau de CI : il masquerai
 ### 14.3 Workflows
 - `.github/workflows/ci.yml` : sur poussée vers `us/**`, `ano/**`, `lot/**`, `main` et sur *pull request* ; jobs `qualite` (formatage, lint, types, architecture, catalogue, tags), `tests` (matrice des trois fuseaux, unitaires et Cucumber ; couverture dans le job `UTC`), `ihm` (build, Cucumber `@ihm`, Playwright), `securite` (Semgrep, gitleaks, osv-scanner, licences), `build` (PWA, APK). Durée cible inférieure à 10 minutes hors job `ihm`. `permissions: contents: read` par défaut.
 - `.github/workflows/hebdomadaire.yml` : Stryker, fast-check étendu, osv-scanner complet.
-- `.github/workflows/publication.yml` : sur étiquette `v*` ; déploiement de la PWA et publication de l'AAB signé, selon les arbitrages A2 et A3 (hors périmètre de la CI de LOT-001 tant qu'ils ne sont pas tranchés).
+- `.github/workflows/publication.yml` (ADR-012, DAT §7.4, §7.5 ; A2 et A3 tranchés) : déclenché par une étiquette `v*` **posée sur un commit de `main`** (le flux vérifie l'appartenance du commit à `main` et s'arrête sinon) ; aussi déclenchable à la main pour la **recette** (`workflow_dispatch`, environnement `recette`). Étapes : (1) tests et contrôles du §14.1 ; (2) construction de la PWA et déploiement sur l'hébergement statique ; (3) construction de l'APK de publication (`./gradlew assembleRelease`) ; (4) décodage de la clé depuis les secrets de l'environnement (fichier temporaire hors du dépôt, supprimé en fin de job), signature ; (5) **`apksigner verify --print-certs`** et comparaison de l'empreinte SHA-256 du certificat avec la variable d'environnement `ANDROID_EMPREINTE_<ENV>` (échec si elle diffère) ; (6) contrôle que le `versionCode` est strictement supérieur à celui de `derniere-version.json` déjà publié ; (7) publication dans `android/` de l'hébergement : `done-juan-<version>.apk` (recette : `done-juan-recette-<version>.apk`), son empreinte SHA-256, `derniere-version.json` (`versionName`, `versionCode`, `schemaVersion`, URL, empreinte, date) et la page `android/index.html` (lien, empreinte, procédure d'installation). Permissions : `contents: read`, plus celles du déploiement de l'hébergeur. Les secrets de signature ne sont accessibles qu'aux environnements GitHub `production` et `recette`, protégés (approbation du commanditaire pour `production`).
+- **Hébergement (DAT §7.5, sous réserve R11)** : GitHub Pages si le dépôt est public à la date du test technique, Cloudflare Pages sinon ; le choix est figé au test R11 (prérequis P5) et inscrit dans ST-US-031. Le flux de publication isole l'étape de déploiement dans une action composite `.github/actions/deployer-hebergement/` pour que ce choix n'impacte qu'un fichier.
+- **Ordre de mise en place** : rang 0 : `ci.yml` (sans job Android) et protection de `main` ; rang 12 (US-018, BEN-13) : job `build` Android, `publication.yml`, environnements et secrets. La clé de production n'est créée qu'au rang 12, par le commanditaire ou avec son accord (DEC-027).
 - `.github/dependabot.yml` (npm, actions GitHub) et `.github/pull_request_template.md` (reprend la DoD du §15).
 - Pendant E10, la CI d'une branche `us/` est rouge par construction (tests rouges) : seuls les contrôles des *pull requests* vers `lot/*` et `main` sont requis.
 
@@ -847,7 +907,8 @@ Une US (ou un incrément d'US) est soumise à la revue (E13) seulement si **tous
 - [ ] Entrées externes validées ; erreurs Google traduites par les adaptateurs.
 
 **Données et compatibilité**
-- [ ] Toute écriture métier passe par un cas d'usage, en une transaction, avec son entrée de journal métier (RG-050).
+- [ ] Toute écriture métier passe par un cas d'usage, par un seul appel à `ServiceEtatLocal.modifier`, donc en une transaction, avec son entrée de journal métier (RG-050) et la mise à jour de l'index des écritures en attente.
+- [ ] Tous les scénarios exécutables au rang livré (§11.13) sont verts, y compris les scénarios différés des rangs précédents devenus exécutables ; `rangCourant` est augmenté dans la *pull request*.
 - [ ] Toute évolution du format Drive respecte §10.3 : compatible sans incrément de `SCHEMA_VERSION`, ou incompatible avec accord de Starck, annonce au commanditaire, migration et tests de lecture, de coexistence et de consultation seule.
 
 **Livraison**
@@ -876,7 +937,7 @@ Une US (ou un incrément d'US) est soumise à la revue (E13) seulement si **tous
 | PT-13 | Hors ligne et aucune perte | Transaction locale ; `deposeJusquA` avancé après confirmation ; injection de pannes dans le banc (§11.11) | Validée (DAT PT-13) |
 | PT-14 | Questions de bilan | — | Lot DEM-002 |
 | PT-15 | Alertes de délais dans les rappels | Gabarit exact et exemples chiffrés | Lot « Rappels » |
-| **PT-16** | Changements d'heure à Paris | Valeurs du §11.9 ; règle de conversion par défaut du §7.1 | Nouveau (DAT §11) ; applicable dès LOT-001 au calcul du jour et du retard (RG-045) |
+| **PT-16** | Changements d'heure à Paris | Valeurs du §11.9 ; règle de conversion par défaut du §7.1 ; au banc, heure ambiguë = première occurrence, heure inexistante interdite (glossaire v1.4 §4) | Applicable dès LOT-001 au calcul du jour, de la date de fin, de la date d'abandon et du retard (RG-045, RG-053) ; cas (3) sans objet au lot 1 (aucun créneau) |
 
 ## 17. Décisions de Starck et points ouverts
 
@@ -904,21 +965,36 @@ Une US (ou un incrément d'US) est soumise à la revue (E13) seulement si **tous
 
 Les seuils de couverture proposés au DAT §3.3 et à l'ADR-009 (90 % pour `domaine` et `synchro`, 80 % au global) sont remplacés par ceux du §12, plus exigeants, conformément à la délégation de l'ADR-009 (« seuils fixés par Anthony »).
 
-### 17.2 Points ouverts
-| Id | Point | Destinataire | Bloquant pour |
+### 17.2 Points ouverts et clos
+| Id | Point | Destinataire | État |
 |---|---|---|---|
-| ANT-17 (nouveau) | Ajout de `fuseauAppareil()` au port `Horloge`, utilisé seulement par le modèle de vue de la mention `MEN-HEURE-PARIS` (RG-054, §7.3). Le DAT v0.6 §2.4 ne mentionne pour les modèles de vue que « l'heure et le fuseau de référence ». | Starck | E9 d'US-017 et d'US-031 (mention « heure de Paris ») |
-| ANT-18 (nouveau) | Ports transverses complémentaires (`GenerateurIdentifiants`, `SourceAleatoire`, `JournalTechnique`, `EtatReseau`), placement de `DepotLocal` et `TransportSynchro` dans le contexte `synchronisation`, rôle du port `Planificateur` (§2.3) : pour information et confirmation | Starck | Non bloquant |
-| ANT-19 (nouveau) | RG-058 : un appareil conserve-t-il, en réécrivant son fichier, les champs inconnus de même `schemaVersion` reçus d'une version plus récente, ou les ignore-t-il ? (§10.3) | Starck | E9 d'US-017 |
-| ANT-20 (nouveau) | Exécution des scénarios `@ihm` par cucumber-js avec Playwright (profil `ihm`, §11.8), conforme à la définition de Pepper (« interface réelle »). L'ADR-009 réserve Playwright aux parcours bout en bout, et le DAT v0.6 §2.4 évoque des scénarios `@ihm` vérifiés « sans rendu » : confirmation demandée | Starck | E9 d'US-031 |
-| ANT-21 (nouveau) | Motifs de refus : certains `.feature` citent un code (`ERR-003`), d'autres un texte libre (« intitulé manquant », « tâche abandonnée », « 2 sous-tâches restantes »). Un motif vérifiable doit être un code stable du catalogue ou de la liste des motifs (§8.5, §11.6). Liste des motifs de refus d'objectifs et de tâches à fixer, avec leur code | Pepper et Steeve | E9 des US métier (US-001, 002, 003, 023, 024, 025) |
-| — | Protection des branches `main` et `lot/*` sur GitHub (§13.1) | Jarvis (propriétaire du dépôt) | E12 |
-| R1, R2, R11 | Test technique préalable | Jarvis, commanditaire | E9 d'US-022 et d'US-017 |
+| ANT-17 | `fuseauAppareil()` au port `Horloge` (RG-054, §7.3) | Starck | **Clos** : accepté (DAT v0.7) |
+| ANT-18 | Ports transverses complémentaires, placement de `DepotLocal` et `TransportSynchro`, rôle du `Planificateur` (§2.3) | Starck | **Clos** : confirmé (DAT v0.7) |
+| ANT-19 | Conservation des champs inconnus de même `schemaVersion` (§10.3) | Starck | **Clos** : conservés (DAT v0.7) |
+| ANT-20 | Scénarios `@ihm` exécutés par cucumber-js et Playwright (§11.8) | Starck | **Clos** : confirmé (DAT v0.7 §3.3, ADR-009 précisé) |
+| ANT-21 | Motifs de refus rattachés à des codes du catalogue (§8.5, §11.6) | Pepper et Steeve | **Clos** : guide v0.2.4 §6.6.10, glossaire v1.4 §9 |
+| ANT-22 | Alignement des conventions (DAT v0.10.1, ADR-012, CdC v0.11, glossaire v1.4, guide v0.2.8) | Anthony | **Clos** par la présente v0.3 |
+| ANT-25 (nouveau) | Format de l'identifiant d'une entrée du journal métier : `<UUID v7 de l'opération>:<rang>` (`ST-socle-ecriture.md` §5.1), au lieu d'un UUID par entrée (DAT §6.1, « id (UUID) »). Unicité et fusion par union inchangées. Validation de Starck demandée avant E11 ; si elle est refusée, seule la fonction `idEvenement` change, avant toute publication du schéma 1. | Starck | Non bloquant pour E10 |
+| — | Protection des branches `main` et `lot/*` sur GitHub (§13.1, DEC-029) | Commanditaire, sur demande de Jarvis | À la fusion du rang 0 |
+| R1, R2, R11 | Test technique préalable | Jarvis, commanditaire | Bloque l'E9 d'US-022, d'US-017, d'US-018 et d'US-031 ; les éléments qui en dépendent sont marqués « Sous réserve R1 » (ou R2, R11) |
+
+### 17.3 Hypothèses de conception du contrôle d'explicitation (H-1 à H-7)
+Elles sont appliquées dans les ST de LOT-001 ; leur propriétaire peut les modifier jusqu'à E11 sans nouvel échange (`explicitation-LOT-001.md`, contrôle final §3).
+| Id | Hypothèse | Où elle s'applique |
+|---|---|---|
+| H-1 | L'information « rattachement » est `LienTacheObjectif(tacheId, E).actif` ; le contexte de la pierre tombale de E couvre les liens dont `objectifId = E` (DAT v0.10.1 §4.2.1, aligné) | `ST-socle-ecriture.md` §6.4 ; incrément 2 d'US-017 |
+| H-2 | Rattachement ou placement non retenu : code `ALR-010`, variantes `rattachement` et `placement` (guide v0.2.8) ; l'élément exposé est l'enfant | Incrément 2 d'US-017 |
+| H-3 | L'estimation recopiée à la suppression de la dernière sous-tâche produit une entrée `MODIFICATION_ESTIMATION`, même si avant = après | ST-US-024 |
+| H-4 | À la suppression, les entrées en attente des descendants créés et non déposés, supprimés par dérivation, sont purgées (DAT v0.10.1 §4.1.5 bis, aligné) | `ST-socle-ecriture.md` §6.5 |
+| H-5 | Préconditions = état ; confirmation sans préfixe : l'appareil qui a une confirmation en attente | §11.6 ; `ST-socle-ecriture.md` §12 |
+| H-6 | `ALR-014` exclu de `data-a-lire`, retiré par le « Compris » de `ALR-008` | Incréments 2 et 3 d'US-017 |
+| H-7 | Construction des tableaux « les tâches suivantes : » (glossaire §1) | §11.6 ; ST-US-002 §12 |
 
 ## 18. Documents associés
 - `checklist-revue-code.md` : grille de revue de code (E13).
 - `modele-ST-US.md` : gabarit des spécifications techniques par US (E9).
 - `dette-technique.md` : registre de la dette technique.
-- `docs/03-architecture/DAT.md` (v0.6) et `docs/03-architecture/adr/` (ADR-001 à ADR-011).
-- `docs/02-ux/guide-ergonomie.md` (v0.2.3) : tokens, états, messages, catalogue des libellés et des codes d'état (§6.6).
-- `tests/features/GLOSSAIRE-ETAPES.md` (v1.0, Pepper) : vocabulaire figé des étapes Gherkin.
+- `ST-socle-ecriture.md` : modèle d'écriture synchronisable (rang 0 de LOT-001) ; `ST-US-xxx.md` : spécifications par US.
+- `docs/03-architecture/DAT.md` (v0.10.1) et `docs/03-architecture/adr/` (ADR-001 à ADR-012).
+- `docs/02-ux/guide-ergonomie.md` (v0.2.8) : tokens, états, messages, catalogue des libellés et des codes d'état (§6.6).
+- `tests/features/GLOSSAIRE-ETAPES.md` (v1.4, Pepper) : vocabulaire figé des étapes Gherkin.
