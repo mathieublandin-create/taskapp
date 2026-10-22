@@ -46,7 +46,10 @@ try {
       <PageDiagnostic diagnostic={diagnostic} journal={journal} config={config} auth={auth} />
     </StrictMode>,
   );
-  void diagnostic.traiterRetourRedirection().then(() => diagnostic.demarrage());
+  void diagnostic
+    .traiterRetourRedirection()
+    .then((retourTraite) => diagnostic.ouvertureAutomatique(retourTraite, navigator.onLine))
+    .then((lancee) => (lancee ? undefined : diagnostic.demarrage()));
 } catch (erreur) {
   const message = erreur instanceof ErreurConfiguration ? erreur.message : String(erreur);
   racine.render(<p role="alert">Configuration invalide : {message}</p>);

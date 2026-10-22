@@ -122,3 +122,22 @@ export function consommerContexte(stockage: Stockage): ContexteRedirection | nul
 export function reinitialiserCompteur(stockage: Stockage): void {
   stockage.removeItem(CLE_COMPTEUR);
 }
+
+const CLE_AUTO = 'poc.redirection.auto';
+
+/** Un départ est en attente de retour (contexte écrit, jamais consommé). */
+export function contexteEnAttente(stockage: Pick<Storage, 'getItem'>): boolean {
+  return stockage.getItem(CLE_CONTEXTE) !== null;
+}
+
+export function lireOptionAutomatique(stockage: Pick<Storage, 'getItem'>): boolean {
+  return stockage.getItem(CLE_AUTO) === 'true';
+}
+
+export function ecrireOptionAutomatique(
+  stockage: Pick<Storage, 'setItem' | 'removeItem'>,
+  actif: boolean,
+): void {
+  if (actif) stockage.setItem(CLE_AUTO, 'true');
+  else stockage.removeItem(CLE_AUTO);
+}

@@ -259,3 +259,65 @@ describe('contexte d’exécution (mode d’affichage, plateforme)', () => {
     expect(JSON.parse(exporterJson([]))).toEqual([]);
   });
 });
+
+describe('redirection automatique à l’ouverture (§13.3)', () => {
+  beforeEach(() => localStorage.clear());
+
+  /** L'identité en cache est lue à la construction du fournisseur : elle doit précéder `monter`. */
+  function monterAvecIdentite() {
+    localStorage.setItem('poc.identite', JSON.stringify({ email: 'a@b.test', nom: 'A' }));
+    const m = monter('');
+    m.diagnostic.reglerRedirectionAutomatique(true);
+    return m;
+  }
+
+  it('option inactive : rien ne part et rien n’est journalisé', async () => {
+    const m = monter('');
+    expect(await m.diagnostic.ouvertureAutomatique(false, true)).toBe(false);
+    expect(m.aller).toHaveLength(0);
+    expect(await m.journal.lire()).toHaveLength(0);
+  });
+
+  it('option active, identité, réseau : une redirection prompt=none est lancée et journalisée', async () => {
+    const m = monterAvecIdentite();
+    expect(await m.diagnostic.ouvertureAutomatique(false, true)).toBe(true);
+    expect(m.aller).toHaveLength(1);
+    const url = new URL(m.aller[0] ?? '');
+    expect(url.searchParams.get('prompt')).toBe('none');
+    expect(url.searchParams.get('login_hint')).toBe('a@b.test');
+    const e = (await m.journal.lire())[0];
+    expect(e?.mesure).toBe('Redirection');
+    expect(e?.operation).toContain('automatique');
+  });
+
+  it.each([
+    ['retour de Google', true, true, 'revient de Google'],
+    ['réseau indisponible', false, false, 'réseau indisponible'],
+  ])('refus : %s', async (_nom, retourTraite, enLigne, motif) => {
+    const m = monterAvecIdentite();
+    expect(await m.diagnostic.ouvertureAutomatique(retourTraite, enLigne)).toBe(false);
+    expect(m.aller).toHaveLength(0);
+    expect((await m.journal.lire())[0]?.detail).toContain(motif);
+  });
+
+  it('refus : aucune identité en cache', async () => {
+    const m = monter('');
+    m.diagnostic.reglerRedirectionAutomatique(true);
+    expect(await m.diagnostic.ouvertureAutomatique(false, true)).toBe(false);
+    expect((await m.journal.lire())[0]?.detail).toContain('aucune identité');
+  });
+
+  it('refus : un départ est déjà en attente, donc une seule tentative', async () => {
+    const m = monterAvecIdentite();
+    expect(await m.diagnostic.ouvertureAutomatique(false, true)).toBe(true);
+    expect(await m.diagnostic.ouvertureAutomatique(false, true)).toBe(false);
+    expect(m.aller).toHaveLength(1);
+  });
+
+  it('traiterRetourRedirection signale si la page revenait de Google', async () => {
+    expect(await monter('').diagnostic.traiterRetourRedirection()).toBe(false);
+    expect(
+      await monter('#error=login_required&state=x').diagnostic.traiterRetourRedirection(),
+    ).toBe(true);
+  });
+});

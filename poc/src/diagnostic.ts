@@ -3,6 +3,9 @@ import {
   analyserFragment,
   construireUrlRedirection,
   consommerContexte,
+  contexteEnAttente,
+  ecrireOptionAutomatique,
+  lireOptionAutomatique,
   demarrerContexte,
   reinitialiserCompteur,
 } from './auth/redirection';
@@ -172,13 +175,13 @@ export class Diagnostic {
   }
 
   /** Redirection : départ pleine page vers Google (`prompt=none`). Le retour est traité au chargement. */
-  async jetonParRedirection(): Promise<void> {
+  async jetonParRedirection(origine: 'bouton' | 'automatique' = 'bouton'): Promise<void> {
     const nav = this.d.navigation;
     if (!nav) return;
     const contexte = demarrerContexte(this.stockage, crypto.randomUUID(), this.maintenant());
     await this.enregistrerAvecContexte({
       mesure: 'Redirection',
-      operation: 'Départ vers Google',
+      operation: origine === 'bouton' ? 'Départ vers Google' : 'Départ automatique à l’ouverture',
       resultat: 'Redirection lancée',
       detail: `redirection n° ${contexte.numero} ; prompt=none ; login_hint : ${this.d.auth.identiteEnCache() ? 'oui' : 'non'}`,
     });
@@ -194,11 +197,12 @@ export class Diagnostic {
   }
 
   /** Redirection : à appeler au chargement. Journalise le retour sans jamais écrire le jeton. */
-  async traiterRetourRedirection(): Promise<void> {
+  /** Retourne vrai si la page revenait de Google (fragment présent). */
+  async traiterRetourRedirection(): Promise<boolean> {
     const nav = this.d.navigation;
-    if (!nav) return;
+    if (!nav) return false;
     const retour = analyserFragment(nav.fragment());
-    if (retour.type === 'aucun') return;
+    if (retour.type === 'aucun') return false;
     nav.effacerFragment();
     const contexte = consommerContexte(this.stockage);
     if (retour.type === 'jeton') this.d.journal.declarerSecret(retour.jeton);
@@ -212,7 +216,7 @@ export class Diagnostic {
         codeErreur: 'etat_invalide',
         detail: `paramètre state absent ou différent ; jeton ignoré ; aller-retour : ${duree}`,
       });
-      return;
+      return true;
     }
     if (retour.type === 'erreur') {
       await this.enregistrerAvecContexte({
@@ -222,7 +226,7 @@ export class Diagnostic {
         codeErreur: retour.code,
         detail: `catégorie : ${retour.categorie} ; aller-retour : ${duree} ; redirection ${numero}`,
       });
-      return;
+      return true;
     }
     this.d.auth.adopterJeton?.(retour.jeton);
     const echeance =
@@ -235,6 +239,45 @@ export class Diagnostic {
       echeanceJeton: iso(echeance),
       detail: `aller-retour : ${duree} ; redirection ${numero} ; durée de vie du jeton : ${retour.dureeSecondes ?? 'inconnue'} s ; scopes : ${retour.scopes.join(' ')} ; jeton présent`,
     });
+    return true;
+  }
+
+  redirectionAutomatiqueActive(): boolean {
+    return lireOptionAutomatique(this.stockage);
+  }
+
+  reglerRedirectionAutomatique(actif: boolean): void {
+    ecrireOptionAutomatique(this.stockage, actif);
+  }
+
+  /**
+   * Redirection automatique à l'ouverture (§13.3). À appeler une fois par chargement, après
+   * `traiterRetourRedirection`. Part seulement si l'option est active, si la page ne revient pas de
+   * Google (`retourTraite` faux, aucun contexte en attente), si une identité est en cache et si le
+   * réseau est disponible. Retourne vrai si la redirection est lancée.
+   */
+  async ouvertureAutomatique(retourTraite: boolean, enLigne: boolean): Promise<boolean> {
+    if (!this.d.navigation || !lireOptionAutomatique(this.stockage)) return false;
+    const refus = this.raisonRefusAutomatique(retourTraite, enLigne);
+    if (refus !== null) {
+      await this.enregistrerAvecContexte({
+        mesure: 'Redirection',
+        operation: 'Départ automatique à l’ouverture',
+        resultat: 'Non lancé',
+        detail: refus,
+      });
+      return false;
+    }
+    await this.jetonParRedirection('automatique');
+    return true;
+  }
+
+  private raisonRefusAutomatique(retourTraite: boolean, enLigne: boolean): string | null {
+    if (retourTraite) return 'la page revient de Google';
+    if (contexteEnAttente(this.stockage)) return 'un départ est déjà en attente de retour';
+    if (!this.d.auth.identiteEnCache()) return 'aucune identité en cache';
+    if (!enLigne) return 'réseau indisponible';
+    return null;
   }
 
   reinitialiserCompteurRedirections(): void {

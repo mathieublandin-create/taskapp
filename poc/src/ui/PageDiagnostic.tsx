@@ -1,4 +1,12 @@
-import { IonApp, IonButton, IonContent, IonInput, IonSelect, IonSelectOption } from '@ionic/react';
+import {
+  IonApp,
+  IonButton,
+  IonCheckbox,
+  IonContent,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/react';
 import { useCallback, useEffect, useState } from 'react';
 import type { FournisseurJeton } from '../auth/ports';
 import type { ConfigPoc } from '../config';
@@ -81,6 +89,7 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
   const [etape, setEtape] = useState('');
   const [commentaire, setCommentaire] = useState('');
   const [occupe, setOccupe] = useState(false);
+  const [auto, setAuto] = useState(diagnostic.redirectionAutomatiqueActive());
 
   const rafraichir = useCallback(async () => setEntrees(await journal.lire()), [journal]);
   useEffect(() => {
@@ -119,6 +128,17 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
             ))}
           </section>
         ))}
+        <section>
+          <IonCheckbox
+            checked={auto}
+            onIonChange={(e) => {
+              diagnostic.reglerRedirectionAutomatique(e.detail.checked);
+              setAuto(e.detail.checked);
+            }}
+          >
+            Redirection automatique à l’ouverture
+          </IonCheckbox>
+        </section>
         <section>
           <h2>Marquer l’étape</h2>
           <IonInput
