@@ -8,7 +8,7 @@
 
 | Id | Titre | Reçue le | Statut | Maturité | Taille pressentie | Priorité |
 |---|---|---|---|---|---|---|
-| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 4/6 critères | Très grande (XL) | — |
+| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 4/6 critères (questions closes) | Très grande (XL) | — |
 | EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | Qualifiée | 4/6 critères | Grande (L) | — |
 
 Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DEM-xxx` (ou Écartée, ou En sommeil).
@@ -54,11 +54,11 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - **M1-4** : dans un premier temps, le rôle d'administrateur ne peut pas être délégué.
 - **M1-5** : les résumés du contributeur portent sur les objectifs partagés et sur ses propres tâches.
 
-**Questions de suivi** :
-- **M1-6** : M1-3 parle d'un contributeur par tâche. Un même objectif peut-il donc être partagé avec **plusieurs** contributeurs, chacun ayant ses tâches ? Ou bien un seul contributeur par objectif ?
-- **M1-7** : les tâches créées par le contributeur sont-elles visibles et modifiables par l'administrateur ?
+**Questions de suivi, répondues le 2026-10-22**
+- **M1-6** : c'est l'objectif qui est partagé, et il peut l'être avec **plusieurs contributeurs**. Chaque tâche a au plus un contributeur, et chaque contributeur a ses propres tâches.
+- **M1-7** : les tâches créées par un contributeur sont toujours visibles et modifiables par l'administrateur.
 
-**Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité (sauf M1-6 et M1-7). **Il manque** : le périmètre exclu, la taille confirmée par un avis de faisabilité de Starck (partage Drive entre deux comptes sans serveur), et les réponses M1-6 et M1-7.
+**Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité. **Il manque** : le périmètre exclu et la taille confirmée par un avis de faisabilité de Starck. Cet avis porte sur le partage par Drive entre plusieurs comptes sans serveur, sur la fusion des écritures de plusieurs auteurs et sur le retrait d'un contributeur.
 
 ---
 
