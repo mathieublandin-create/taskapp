@@ -61,6 +61,79 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 
 **Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité. **Il manque** : le périmètre exclu et la taille confirmée par un avis de faisabilité de Starck. Cet avis porte sur le partage par Drive entre plusieurs comptes sans serveur, sur la fusion des écritures de plusieurs auteurs et sur le retrait d'un contributeur.
 
+### Avis de faisabilité de Starck (2026-10-22)
+
+> Avis E-1, court et non engageant. Aucun ADR créé, DAT inchangé. Les points marqués « à mesurer » ne sont pas documentés de façon fiable par Google ou Apple : ils demandent un essai avant E3. Question voisine : PWA unique, étudiée dans `03-architecture/etude-pwa-unique.md` (ETU-002).
+
+**1. Partage sans serveur : faisable, avec une réserve forte.** Sans serveur (DEC-007), seul le partage Drive entre comptes est possible. Mais `drive.file` n'ouvre à l'application que les fichiers **qu'elle a créés pour ce compte**, ou que l'utilisateur **a choisis** dans le sélecteur Google (Picker) ou par « Ouvrir avec ». Un fichier de l'administrateur partagé avec le contributeur est donc très probablement **invisible** (`404`) pour l'application du contributeur, tant qu'il ne l'a pas choisi dans le Picker. C'est le risque **R-P1**, à mesurer avec deux comptes : la sélection d'un dossier ouvre-t-elle ses fichiers ? Les scopes `drive` ou `drive.readonly` lèveraient l'obstacle, mais ils sont restreints et ouvriraient tout le Drive du contributeur (ENF-05) : je ne les recommande pas.
+
+**Conception pressentie, qui étend ADR-003 sans changer de mécanisme** :
+- un **fichier de partage par contributeur**, écrit par les appareils de l'administrateur. C'est une projection filtrée de son état CRDT : l'objectif et les tâches visibles par ce contributeur. Il est partagé **en lecture** avec lui ;
+- chaque appareil du contributeur écrit **son seul** fichier (ses tâches, ses temps) dans **son** Drive, partagé en lecture avec l'administrateur ;
+- la règle « un fichier, un écrivain » et la fusion LWW par champ avec HLC sont conservées ;
+- gestes dans le Picker : le contributeur en fait un à l'invitation ; l'administrateur en fait un à chaque nouvel appareil d'un contributeur. Ils disparaissent si R-P1 est favorable.
+
+**Droits.**
+- **Imposé par Google** :
+  - nul ne modifie le fichier d'un autre ;
+  - le contributeur ne reçoit que sa projection, donc jamais les autres objectifs de l'administrateur ;
+  - le retrait de l'autorisation Drive coupe la réception des mises à jour.
+- **Imposé par la fusion** : la règle est déterministe et appliquée par tous les appareils, donc convergente.
+  - Chaque écriture est attribuée au **propriétaire du fichier**, connu de Drive et non déclaré par le fichier.
+  - Les écritures du contributeur hors de son périmètre sont **ignorées et signalées** : champs de l'objectif, tâche d'un autre, attribution.
+  - Son HLC est plafonné par la date serveur du fichier : une horloge avancée ne gagne pas contre l'administrateur.
+- **Déclaratif seulement** :
+  - ce que le contributeur a déjà reçu reste sur son appareil après le retrait : aucun effacement à distance sans serveur ;
+  - la sincérité des temps imputés.
+
+**Retrait.** L'administrateur retire l'autorisation Drive et inscrit le retrait, horodaté, dans son état. Les écritures du contributeur postérieures au retrait sont ignorées. Ses tâches reviennent à l'administrateur (M1-9).
+
+**2. Contributeur sur iPhone : la PWA ajoutée à l'écran d'accueil depuis Safari est faisable, avec des limites.**
+- **Connexion.** La PWA a son propre espace, distinct de Safari : il faut se connecter à Google une fois dans la PWA. La fenêtre surgissante de Google y est réputée défaillante. Il faut une **redirection pleine page** (`prompt=none` si la session est active). Le jeton dure 1 h, sans jeton d'actualisation : il est renouvelé par un aller-retour vers Google à l'ouverture. La durée de la session Google dans la PWA est **à mesurer (R-P2)**.
+- **Stockage.** IndexedDB est hors de l'effacement après 7 jours sans visite, qui ne touche que Safari. `storage.persist()` est disponible depuis iOS 17 et favorise les applications de l'écran d'accueil. Une éviction reste possible si l'appareil manque d'espace. Supprimer l'icône efface les données. Seules les modifications non déposées sont exposées (comme R15).
+- **Notifications.** Web Push existe depuis iOS 16.4, mais exige un serveur émetteur, ce qui est exclu par DEC-007. Les rappels du contributeur passent donc par **son** Google Calendar (DEC-022).
+- **Arrière-plan.** Aucune synchronisation en arrière-plan : elle a lieu à l'ouverture et au premier plan.
+- **UE.** Apple a maintenu en 2024 les applications web de l'écran d'accueil, sur WebKit. Une décision contraire reste possible : à surveiller.
+- **Alternative.** Une application iOS Capacitor coûte environ 99 USD par an et exige un Mac ou une CI macOS. Je ne la recommande pas pour un contributeur.
+
+**3. Synthèse.**
+- **Taille : XL confirmée.**
+  - Partage et rôles : L.
+  - iPhone : M ; S si la PWA unique (ETU-002) est retenue.
+- **Dépendances** :
+  - LOT-001 livré (ADR-003) ;
+  - lot 3 (temps) ;
+  - lot 4 (rappels par Calendar) ;
+  - essai R-P1/R-P2 avant E3, avec deux comptes et l'iPhone ;
+  - décision sur ETU-002.
+- **ADR à créer en E3** : un ADR « partage multicomptes et rôles » ; un ADR « connexion par redirection ».
+- **Exclus de la v1 (recommandé)** :
+  - délégation de l'administration, ou plusieurs administrateurs ;
+  - contributeur sans compte Google ;
+  - partage d'un sous-objectif seul ;
+  - modification de l'objectif par le contributeur ;
+  - effacement à distance ;
+  - notifications push ;
+  - arrière-plan ;
+  - application iOS native ;
+  - temps réel : le délai d'une heure de RG-017 reste la règle.
+
+**Questions fermées pour le commanditaire**
+- **M1-8** : Le contributeur voit-il les tâches des autres participants de l'objectif ? (a) non, seulement l'objectif et ses tâches ; (b) oui, en lecture. *Reco : (a), par minimisation des données ; (b) ne coûte pas plus.*
+- **M1-9** : Au retrait d'un contributeur, que deviennent ses tâches ? (a) elles reviennent à l'administrateur, avec le temps imputé ; (b) elles sont supprimées. *Reco : (a).*
+- **M1-10** : Sur iPhone, quelle solution ? (a) la PWA depuis Safari, gratuite ; (b) une application iOS, environ 99 USD par an. *Reco : (a), sous réserve de R-P2.*
+- **M1-11** : Si R-P1 confirme l'invisibilité des fichiers partagés, que faire ? (a) un choix manuel dans le sélecteur Google, à l'invitation et à chaque nouvel appareil ; (b) un accès à tout le Drive des participants (scope restreint, écran d'avertissement) ; (c) mettre l'épique en sommeil. *Reco : (a).*
+- **M1-12** : Les créneaux et les rappels du contributeur sont-ils posés dans **son** agenda Google, et jamais dans celui de l'administrateur ? *Reco : oui.*
+- **M1-13** : Le contributeur peut-il aussi gérer dans Done Juan ses propres objectifs, non partagés, cloisonnés ? *Reco : oui, c'est la même application.*
+- **M1-14** : Acceptez-vous un essai technique de partage avant E3 (deux comptes Google, l'iPhone du contributeur, environ 1 h) ? *Reco : oui.*
+
+*Sources (2026-10-22) :*
+- *portée de `drive.file` : [Google, Choose Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [forum Google](https://discuss.google.dev/t/how-to-download-file-from-google-drive-with-drive-file-scope/332290) ;*
+- *connexion dans une PWA iOS : [Progressier](https://intercom.help/progressier/en/articles/9519381-google-oauth2-is-not-working-in-my-pwa-on-ios-why), [SpotLi PR #231](https://github.com/SaharAga/SpotLi/pull/231) ;*
+- *stockage : [WebKit, Storage Policy](https://webkit.org/?p=14403) ;*
+- *notifications : [WebKit, Web Push](https://webkit.org/?p=13878) ;*
+- *politique d'Apple dans l'UE : [Engadget](https://www.engadget.com/apple-backtracks-on-plans-to-get-rid-of-web-apps-on-iphones-in-the-eu-195232177.html).*
+
 ---
 
 ## EPI-002 — Assistant IA vocal pour définir un objectif et ses tâches
