@@ -10,10 +10,10 @@
 | RG couvertes | RG-001, RG-003, RG-004, RG-024, RG-028, RG-029, RG-045, RG-046, RG-047 (via ST-US-017 incrément 2), RG-050, RG-053 |
 | DAT / ADR | DAT v0.10.1 (§4.2, §6.1, §6.2) ; ADR-003, ADR-010, ADR-011 |
 | Maquettes | ECR-002 (L1 à L5), ECR-006 (guide §4.3), ECR-007 (A, B, C, E) ; guide v0.2.8 §5.7 |
-| Q-US traitées | Q-US-002-1, Q-US-002-2, Q-US-002-3, Q-US-001-2, Q-US-001-3, Q-US-024-1 (E8) ; concernée par **Q-US-001-6 (d)** |
+| Q-US traitées | Q-US-002-1, Q-US-002-2, Q-US-002-3, Q-US-001-2, Q-US-001-3, Q-US-024-1 (E8) ; Q-US-001-6 (d) (réponse de Steeve, guide v0.2.9 §5.8) ; **Q-US-002-4 posée (§16, non bloquante)** |
 | Prérequis | ST-US-001 (rang 2), ST-US-023 (rang 4) |
 | Version | 0.1 |
-| Statut | **Bloquée (partiellement) par Q-US-001-6 (d)** : seul l'ordre des tâches dans le détail d'un objectif attend la réponse ; le reste est prêt pour E10 |
+| Statut | **Prête pour E10** (Q-US-001-6 (d) répondue) ; Q-US-002-4 non bloquante, à lever avant E11 |
 | Auteur | Anthony |
 | Branche Git | `us/US-002-taches` |
 
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (d) (guide v0.2.9 §5.8) : sections `SEC-TACHES-*`, sous-tâches sous leur tâche parente ; §4.5, §6.6, §12, UT-US-002-33 ; statut levé ; Q-US-002-4 posée |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Saisie d'une tâche avec contrôles cumulables (`ERR-020` à `ERR-023`), rattachement n-n par `LienTacheObjectif` (H-1), modification de l'intitulé, du délai, de l'estimation (`ERR-033` pour une tâche parente) et des objectifs (`ERR-034` pour une sous-tâche), suppression avec confirmation, alertes de délai (`ALR-005`, RG-024), retard (RG-045), estimation en vigueur, liste « Tâches » avec filtres et tri du guide §5.7, détail d'une tâche, tâches dans le détail d'un objectif, journal RG-050. Livre aussi l'étape de contexte « les tâches suivantes : » (H-7), étendue aux rangs 6 à 8.
@@ -207,8 +208,17 @@ export type ModeleVueFormulaireTache = {
   readonly mentionsObligatoire: ReadonlyArray<{ readonly champ: 'DELAI' | 'ESTIMATION'; readonly code: 'MEN-OBLIGATOIRE' }>;
 };
 export const construireFormulaireTache = (donnees: { readonly objectifPreRempli?: IdObjectif }) => ModeleVueFormulaireTache;
-// ModeleVueDetailObjectif (ajout) : readonly taches: { readonly aFaire: ReadonlyArray<LigneTache>; readonly terminees: ReadonlyArray<LigneTache>; readonly abandonnees: ReadonlyArray<LigneTache> };
-//                                   readonly etatVide?: { readonly code: 'EVD-OBJECTIF-SANS-TACHE' }   // aucune tâche directe
+// ModeleVueDetailObjectif (ajouts) — guide v0.2.9 §5.8 d
+export type LigneDetailObjectif = LigneTache & { readonly niveau: 'TACHE' | 'SOUS_TACHE' };   // SOUS_TACHE : suit immédiatement sa tâche parente
+export type SectionTaches<C extends 'SEC-TACHES-A-FAIRE' | 'SEC-TACHES-TERMINEES' | 'SEC-TACHES-ABANDONNEES'> = {
+  readonly code: C; readonly n: number;            // n = nombre de tâches directes de la section (sous-tâches non comptées)
+  readonly libelle: string;                        // « Tâches à faire · {n} », « Terminées ({n}) », « Abandonnées ({n}) »
+  readonly replieeParDefaut: boolean;              // faux pour « à faire », vrai pour les deux autres
+  readonly lignes: ReadonlyArray<LigneDetailObjectif>;
+};
+// readonly taches: { readonly aFaire: SectionTaches<'SEC-TACHES-A-FAIRE'>; readonly terminees: SectionTaches<'SEC-TACHES-TERMINEES'>;
+//                    readonly abandonnees: SectionTaches<'SEC-TACHES-ABANDONNEES'> };
+// readonly etatVide?: { readonly code: 'EVD-OBJECTIF-SANS-TACHE' }   // aucune tâche directe
 ```
 
 | Écran | Maquette | Codes | Actions → cas d'usage | États |
@@ -276,8 +286,18 @@ Exemple de contrôle (S20b) : Relire (t₀), Zoom, écrire, Appeler (t₀ + 5 mi
 ### 6.5 Actions d'une tâche (rang 5)
 `RENOMMER`, `MODIFIER_DELAI`, `MODIFIER_ESTIMATION` (sauf si la tâche a des sous-tâches : champ verrouillé), `RATTACHER` et `DETACHER` (sauf pour une sous-tâche : objectifs verrouillés), `SUPPRIMER`. Les actions de cycle de vie et `CREER_SOUS_TACHE` sont ajoutées par ST-US-024, ST-US-003 et ST-US-025.
 
-### 6.6 Tâches dans le détail d'un objectif — ordre **en attente de Q-US-001-6 (d)**
-Réponse proposée : trois sections (à faire, terminées, abandonnées) triées comme le §6.4. Seul UT-US-002-33 en dépend.
+### 6.6 Tâches dans le détail d'un objectif (guide v0.2.9 §5.8 d, réponse à Q-US-001-6)
+```text
+tâches directes de l'objectif réparties par état :
+  SEC-TACHES-A-FAIRE   (« Tâches à faire · {n} », dépliée)  : comparerOrdreReference (ST-US-001 §6.6 ; délai, création, intitulé)
+  SEC-TACHES-TERMINEES (« Terminées ({n}) », repliée)       : dateFin décroissante, puis instantFin décroissant, puis creeLe, intitulé, id (§6.4)
+  SEC-TACHES-ABANDONNEES (« Abandonnées ({n}) », repliée)   : dateAbandon décroissante, puis instantAbandon décroissant, puis creeLe, intitulé, id
+  chaque section est présente même vide (n = 0) ; n ne compte que les tâches directes
+sous-tâches (rang 6) : sous une tâche parente de la section « à faire », ses sous-tâches non supprimées suivent immédiatement
+  la ligne de la tâche parente (niveau SOUS_TACHE), tous états, dans l'ordre de référence (§5.8 e) ;
+  sous une tâche parente terminée ou abandonnée : aucune ligne de sous-tâche, seul le compteur « t/n » de la ligne
+  (hypothèse retenue en attendant Q-US-002-4)
+```
 
 Temps et fuseaux : retard selon le jour de Paris (S16 : 2026-10-25 à 02:30 = première occurrence ; S17 : appareil en UTC ; S19 : New York).
 
@@ -328,7 +348,7 @@ Intitulés en texte ; aucune donnée métier journalisée.
 | 17 | `l'utilisateur supprime la tâche {string} et confirme` ; `… et renonce` ; `l'utilisateur demande la suppression de la tâche {string}` | Quand | Nouveau | 5 | `SupprimerTache` (`conventions.md` §8.6) |
 | 18 | `une confirmation est demandée, qui annonce {int} sous-tâche(s) supprimée(s) avec la tâche` | Alors (`refus.steps.ts`) | Nouveau | 5 | `CNF-SUPPR-TACHE`, variable `n` |
 | 19 | `la modification est refusée avec le motif {string}` | Alors (`refus.steps.ts`) | Nouveau | 5 | Comme ST-US-001 §12 n° 26 |
-| 20 | `le détail de l'objectif {string} présente la tâche {string}` ; `le détail présente les tâches {intitules}` | Alors | Nouveau | 5 | `ModeleVueDetailObjectif.taches` (union des trois sections) : appartenance ; égalité d'ensemble pour « les tâches » |
+| 20 | `le détail de l'objectif {string} présente la tâche {string}` ; `le détail présente les tâches {intitules}` | Alors | Nouveau | 5 | Lignes de niveau `TACHE` des trois sections de `ModeleVueDetailObjectif.taches` (les lignes de sous-tâches sont ignorées) : appartenance ; égalité d'ensemble pour « les tâches » |
 | 21 | `l'objectif {string} a toujours {int} tâche(s) rattachée(s)` | Alors | Nouveau | 5 | Nombre de tâches directes, tous états |
 | 22 | `l'utilisateur consulte la liste des tâches` | Quand (`liste-taches.steps.ts`) | Nouveau | 5 | `construireListeTaches` avec `FILTRE_ETAT_PAR_DEFAUT`, filtre d'objectif `TOUS` |
 | 23 | `l'utilisateur filtre les tâches sur l'état {string}` | Quand | Nouveau | 5 | « à faire » → `A_FAIRE`, « terminée » → `TERMINEE`, « abandonnée » → `ABANDONNEE` ; toute autre valeur fait échouer l'étape |
@@ -399,7 +419,8 @@ Avant le rang qui livre une capacité (7 : terminer ; 8 : abandonner ; 6 : sous-
 | UT-US-002-30 | `…/application/consulter-taches.test.ts` | `ConsulterTaches` | appareil en UTC, 2026-10-25 22:30 → pas en retard ; 23:30 → en retard (délai 2026-10-25) | RG-045, RG-053 | NI |
 | UT-US-002-31 | `…/application/supprimer-tache.test.ts` | `SupprimerTache.executer` | tâche et sous-tâches absentes à la lecture ; état de l'objectif recalculé | CA-12 | NI |
 | UT-US-002-32 | `…/presentation/detail-objectif.test.ts` | `construireDetailObjectif` | tâche rattachée à deux objectifs présente dans chaque détail ; `EVD-OBJECTIF-SANS-TACHE` | CA-6 | NI |
-| UT-US-002-33 | idem | ordre des tâches du détail | Q-US-001-6 (d) | — | **Écrit après la réponse** |
+| UT-US-002-33 | idem | `construireDetailObjectif` | sections `SEC-TACHES-A-FAIRE` (dépliée), `SEC-TACHES-TERMINEES` et `SEC-TACHES-ABANDONNEES` (repliées) avec n ; tris de chaque section ; sous-tâches d'une tâche parente à faire juste après elle, dans l'ordre de référence ; n ne compte pas les sous-tâches | Guide v0.2.9 §5.8 d (Q-US-001-6) | NI |
+| UT-US-002-35 | idem | `construireDetailObjectif` | sous-tâches d'une tâche parente terminée ou abandonnée | Q-US-002-4 | **Écrit après la réponse à Q-US-002-4** |
 | UT-US-002-34 | `…/application/consulter-detail-tache.test.ts` | `ConsulterDetailTache` | objectifs, alertes, `estimationCalculee` faux, actions d'édition | CA-8, CA-9 | NI |
 
 Cas temporels : PT-16 (S16), UTC (S17), New York (S19). Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-002`.
@@ -417,10 +438,15 @@ Composants `TaskRow`, `QuickAdd` (erreurs cumulées, focus, saisie conservée), 
 ## 16. Dette, hypothèses et points ouverts
 - **Concernée par Q-US-001-6 (d)** (ST-US-001 §16).
   - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (d) Oui** ; la proposition du §6.6 est retenue (sections « Tâches à faire · n », « Terminées (n) », « Abandonnées (n) », les deux dernières repliées ; tris du guide §5.7). Codes `SEC-TACHES-A-FAIRE`, `SEC-TACHES-TERMINEES`, `SEC-TACHES-ABANDONNEES` créés. Une sous-tâche affichée suit sa tâche parente. UT-US-002-33 peut être écrit en E10.
+- **Question posée — Q-US-002-4** (Steeve ; **non bloquante pour E10**, à lever avant E11) : le guide v0.2.9 §5.8 d dit qu'« une sous-tâche affichée suit immédiatement sa tâche parente », et ECR-003 D ne montre des sous-tâches que sous des tâches **à faire**. Rien ne dit ce qu'on voit sous une tâche parente **terminée** ou **abandonnée**, dans les sections repliées « Terminées » et « Abandonnées ». Proposition :
+  - a) ★ aucune ligne de sous-tâche sous une tâche parente terminée ou abandonnée, seulement le compteur « t/n » de sa ligne ; le détail de la tâche (ECR-007 F) montre ses sous-tâches et leurs étiquettes ;
+  - b) les sous-tâches sont listées sous la tâche parente dans toutes les sections, tous états, dans l'ordre de référence.
+  La conception applique a) en attendant (§6.6). Seul UT-US-002-35 en dépend ; aucun scénario n'est concerné (les étapes du détail ignorent les lignes de sous-tâches).
 - **Hypothèses** : H-1 (rattachement = `LienTacheObjectif.actif`), H-7 (construction des tableaux), appliquées.
 - **Dette** : aucune.
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes, construction des contextes.
 - [ ] Tests du §13 en phase rouge (E10).
-- [ ] Q-US-001-6 (d) répondue.
+- [x] Q-US-001-6 (d) répondue (Steeve, guide v0.2.9 §5.8).
+- [ ] Q-US-002-4 répondue (avant E11).

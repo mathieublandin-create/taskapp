@@ -10,10 +10,10 @@
 | RG couvertes | RG-002, RG-004, RG-022, RG-024 (sous-objectif), RG-025, RG-045, RG-046, RG-047 et RG-048 (via ST-US-017 incrément 2), RG-050 |
 | DAT / ADR | DAT v0.10.1 (§4.2 « hiérarchies », §6.1) ; ADR-003, ADR-010 |
 | Maquettes | ECR-008 (A, C, D), ECR-003 (E) ; guide v0.2.8 §4.28, §6.6.8, §6.6.9 |
-| Q-US traitées | Q-US-023-1, Q-US-023-2 (E8) ; Q-US-001-1 (DEC-030) ; concernée par **Q-US-001-6 (c)** |
+| Q-US traitées | Q-US-023-1, Q-US-023-2 (E8) ; Q-US-001-1 (DEC-030) ; Q-US-001-6 (c) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-001 (rang 2), ST-US-017 incrément 1 (rang 3) |
 | Version | 0.1 |
-| Statut | **Bloquée (partiellement) par Q-US-001-6 (c)** : seul l'ordre des sous-objectifs attend la réponse ; le reste est prêt pour E10 |
+| Statut | **Prête pour E10** (Q-US-001-6 (c) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-023-sous-objectifs` |
 
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (guide v0.2.9 §5.8) : ordre de référence, sections `SEC-SOUS-OBJECTIFS` et `SEC-OBJ-ATTEINTS` ; §6.5, §6.6, §12, UT-US-023-21 ; statut levé |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Création d'un sous-objectif (champ `parent` du socle, origine `CREATION`), placement sous un autre objectif ou retour au rang d'objectif principal (origine `DEPLACEMENT`, événement `CHANGEMENT_PARENT`), contrôles RG-022 à la saisie avec l'ordre de priorité de Q-US-023-1, alerte de délai d'un sous-objectif (`ALR-007`), sélecteur de parent (`ParentPicker`), sous-objectifs dans la liste et le détail. L'état d'un objectif tient déjà compte des sous-objectifs (ST-US-001 §6.2).
@@ -169,10 +170,10 @@ verifierPlacement(vue, X, C):
 `actionsObjectif(vue, o)` = `RENOMMER`, `MODIFIER_DESCRIPTION`, `MODIFIER_DELAI`, `RETIRER_DELAI` (si délai), `PLACER`, `CREER_SOUS_OBJECTIF` (seulement si o est principal), `SUPPRIMER`.
 
 ### 6.5 Sélecteur de parent
-Candidats : objectifs principaux actifs, plus l'objectif lui-même s'il est principal (indisponible, raison `ERR-031`). Si l'objectif a des sous-objectifs, `messageBloquant` = `ERR-030 objectif-a-des-sous-objectifs` et seules l'option `AUCUN` et la fermeture restent possibles (guide §4.28 : « le message l'explique avant tout choix »). Ordre des candidats : celui de Q-US-001-6 (a).
+Candidats : objectifs principaux actifs, plus l'objectif lui-même s'il est principal (indisponible, raison `ERR-031`). Si l'objectif a des sous-objectifs, `messageBloquant` = `ERR-030 objectif-a-des-sous-objectifs` et seules l'option `AUCUN` et la fermeture restent possibles (guide §4.28 : « le message l'explique avant tout choix »). Ordre des candidats : `comparerOrdreReference` (ST-US-001 §6.6, guide v0.2.9 §5.8 a).
 
-### 6.6 Ordre des sous-objectifs — **en attente de Q-US-001-6 (c)**
-Réponse proposée : délai croissant, sans délai à la fin, puis création, puis intitulé. Seul UT-US-023-21 en dépend.
+### 6.6 Ordre des sous-objectifs (guide v0.2.9 §5.8 c)
+Sous leur parent, dans la liste (section principale ou section « Atteints » selon l'état du parent principal, ST-US-001 §6.6) et dans le détail (section `SEC-SOUS-OBJECTIFS`) : `comparerOrdreReference` (délai croissant, sans délai à la fin, création, intitulé), atteints compris ; un sous-objectif ne change pas de place quand son état change. Un sous-objectif atteint sous un parent en cours reste sous lui ; un objectif principal atteint emmène ses sous-objectifs dans la section « Atteints ».
 
 ## 7. Intégration Google
 Sans objet.
@@ -204,11 +205,11 @@ Contrôle de placement en O(nombre d'objectifs).
 | 3 | `l'utilisateur place l'objectif {string} sous l'objectif {string}` | Quand | Nouveau | 4 | `PlacerObjectif` ; résultat mémorisé |
 | 4 | `l'utilisateur fait de l'objectif {string} un objectif principal` | Quand | Nouveau | 4 | `RendreObjectifPrincipal` |
 | 5 | `{string} est un objectif principal` ; `{string} est un sous-objectif de l'objectif {string}` | Alors | Nouveau | 4 | Parent effectif dans la vue de l'appareil |
-| 6 | `la liste présente {string} comme objectif principal` ; `… comme sous-objectif de {string}` | Alors | Nouveau | 4 | `LigneObjectif.niveau`, `parentId` dans le dernier modèle de liste consulté |
+| 6 | `la liste présente {string} comme objectif principal` ; `… comme sous-objectif de {string}` | Alors | Nouveau | 4 | `LigneObjectif.niveau`, `parentId`, cherchés dans la section principale et dans `sectionAtteints` du dernier modèle de liste consulté |
 | 7 | `l'action {string} n'est pas proposée pour l'objectif {string}` | Alors | Nouveau | 4 | « créer un sous-objectif » → `CREER_SOUS_OBJECTIF` absent de `construireDetailObjectif(…).actions` |
 | 8 | `l'objectif {string} porte une alerte de délai qui nomme l'objectif {string}` ; `l'objectif {string} ne porte aucune alerte de délai` | Alors | Nouveau | 4 | `LigneObjectif.alerteDelai` (`ALR-007`) et nom du parent |
-| 9 | `le détail présente les sous-objectifs :` + tableau (intitulé, délai, état, en retard) | Alors | Nouveau | 4 | `ModeleVueDetailObjectif.sousObjectifs` ; ordre non vérifié |
-| 10 | `le détail présente le sous-objectif {string}` | Alors | Nouveau | 4 | Présence dans `sousObjectifs` |
+| 9 | `le détail présente les sous-objectifs :` + tableau (intitulé, délai, état, en retard) | Alors | Nouveau | 4 | `ModeleVueDetailObjectif.sousObjectifs.lignes` (section `SEC-SOUS-OBJECTIFS`) ; ordre non vérifié |
+| 10 | `le détail présente le sous-objectif {string}` | Alors | Nouveau | 4 | Présence dans `sousObjectifs.lignes` |
 | 11 | `aucun changement de parent n'est enregistré pour l'objectif {string}` | Alors | Nouveau | 4 | Aucune entrée `CHANGEMENT_PARENT` dans `ConsulterHistorique` |
 | 12 | `aucun sous-objectif n'a de sous-objectif` | Alors | Nouveau | 4 | Pour tout objectif dont le parent effectif est défini, `sousObjectifsDe` est vide |
 | 13 | `les deux appareils présentent la même hiérarchie d'objectifs` | Alors | Nouveau | 4 | Égalité des couples (intitulé, intitulé du parent effectif) sur les deux appareils du banc |
@@ -242,7 +243,7 @@ Contrôle de placement en O(nombre d'objectifs).
 | UT-US-023-18 | idem | `PlacerObjectif` puis `ConsulterObjectifs` | ancien parent sans autre contenu → « à décliner » ; nouveau parent → « en cours » (S07, avec tâche de contexte créée par `Modification`) | CA-5 | NI |
 | UT-US-023-19 | `…/application/creer-sous-objectif.test.ts` | `CreerSousObjectif` | sous-objectif lu avec parent effectif ; « à décliner en tâches » | CA-1 | NI |
 | UT-US-023-20 | `…/presentation/detail-objectif.test.ts` | `construireDetailObjectif` | sous-objectif : niveau avec parent nommé ; principal : lignes des sous-objectifs | CA-2 | NI |
-| UT-US-023-21 | `…/presentation/detail-objectif.test.ts` | ordre des sous-objectifs | Q-US-001-6 (c) | — | **Écrit après la réponse** |
+| UT-US-023-21 | `…/presentation/detail-objectif.test.ts`, `liste-objectifs.test.ts` | `construireDetailObjectif`, `construireListeObjectifs` | sous-objectifs dans `SEC-SOUS-OBJECTIFS` et sous leur parent dans la liste, triés par l'ordre de référence ; un sous-objectif atteint reste à sa place sous un parent en cours ; les sous-objectifs d'un principal atteint sont dans `SEC-OBJ-ATTEINTS` | Guide v0.2.9 §5.8 c (Q-US-001-6) | NI |
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-023`.
 
@@ -265,4 +266,4 @@ Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa rai
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes.
 - [ ] Tests du §13 en phase rouge (E10).
-- [ ] Q-US-001-6 (c) répondue.
+- [x] Q-US-001-6 (c) répondue (Steeve, guide v0.2.9 §5.8).

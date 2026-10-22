@@ -11,10 +11,10 @@
 | ENF concernées | ENF-04, ENF-06, ENF-T-02 |
 | DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.2, §6.1, §6.2) ; ADR-003, ADR-010, ADR-011 |
 | Maquettes | ECR-008 (A, B, E, F), ECR-003 (C, D) ; guide d'ergonomie v0.2.8 |
-| Q-US traitées | Q-US-001-1 (DEC-030), Q-US-001-2, Q-US-001-3, Q-US-001-4, Q-US-001-5 (E8, 2026-10-21) ; **Q-US-001-6 posée (§16)** |
+| Q-US traitées | Q-US-001-1 (DEC-030), Q-US-001-2, Q-US-001-3, Q-US-001-4, Q-US-001-5 (E8, 2026-10-21) ; Q-US-001-6 (réponse de Steeve, guide v0.2.9 §5.8, 2026-10-22) |
 | Prérequis | `ST-socle-ecriture.md` (rang 0) ; ST-US-022 (rang 1 : étape de connexion) |
 | Version de la ST | 0.1 |
-| Statut | **Bloquée (partiellement) par Q-US-001-6** : seul l'ordre des lignes de la liste des objectifs (§6.6, UT-US-001-35) attend la réponse ; le reste est prêt pour E10 |
+| Statut | **Prête pour E10** (Q-US-001-6 répondue, guide v0.2.9 §5.8) |
 | Auteur | Anthony |
 | Branche Git | `us/US-001-objectifs` créée depuis `lot/LOT-001-socle-objectifs-taches` |
 
@@ -22,6 +22,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | Réponse de Steeve à Q-US-001-6 (guide v0.2.9 §5.8) : ordre de référence, section « Atteints » (`SEC-OBJ-ATTEINTS`), section `SEC-SOUS-OBJECTIFS` ; §4.5, §6.6, §12, UT-US-001-35 ; statut levé |
 
 ## 1. Résumé technique
 
@@ -81,12 +82,13 @@
 | 18 | `src/objectifs-taches/application/requetes/consulter-detail-objectif.ts` | Application | Créer | Requête `ConsulterDetailObjectif` (complétée par ST-US-023 et ST-US-002) | 15, 16 |
 | 19 | `src/objectifs-taches/application/requetes/consulter-historique.ts` | Application | Créer | Requête `ConsulterHistorique` (non exposée à l'interface au lot 1) | `ServiceEtatLocal` |
 | 20 | `src/objectifs-taches/presentation/modeles-de-vue/ligne-objectif.ts` | Modèle de vue | Créer | `construireLigneObjectif` (partagée par la liste et le détail) | 16, catalogue |
+| 20b | `src/objectifs-taches/presentation/modeles-de-vue/ordre-reference.ts` | Modèle de vue | Créer | `comparerOrdreReference` (guide v0.2.9 §5.8), partagé avec ST-US-023, ST-US-002 et ST-US-024 | — |
 | 21 | `src/objectifs-taches/presentation/modeles-de-vue/liste-objectifs.ts` | Modèle de vue | Créer | `construireListeObjectifs` (ECR-008) | 20 |
 | 22 | `src/objectifs-taches/presentation/modeles-de-vue/detail-objectif.ts` | Modèle de vue | Créer | `construireDetailObjectif` (ECR-003) | 20 |
 | 23 | `src/objectifs-taches/presentation/modeles-de-vue/confirmation.ts` | Modèle de vue | Créer | `construireConfirmation` (`CNF-…` ; complété par les rangs suivants) | 5, catalogue |
 | 24 | `src/objectifs-taches/presentation/modeles-de-vue/messages-de-refus.ts` | Modèle de vue | Créer | `messagesDeRefus` (`conventions.md` §8.5 ; complété par les rangs suivants) | 3 |
 | 25 | `src/objectifs-taches/presentation/modeles-de-vue/vues-exposees.ts` | Modèle de vue | Créer | `VUES_EXPOSEES` (liste fermée des vues offertes à l'interface) | — |
-| 26 | `src/commun/presentation/messages/catalogue.fr.ts`, `libelle.ts`, `codes.ts` | Modèle de vue | Créer | Catalogue **complet** du guide v0.2.8 §6.6 (tous les codes, `conventions.md` §8.5) ; `libelle(code, variables)` | — |
+| 26 | `src/commun/presentation/messages/catalogue.fr.ts`, `libelle.ts`, `codes.ts` | Modèle de vue | Créer | Catalogue **complet** du guide v0.2.9 §6.6 (codes `SEC-` compris) (tous les codes, `conventions.md` §8.5) ; `libelle(code, variables)` | — |
 | 27 | `src/commun/presentation/format/date.ts` | Modèle de vue | Créer | `formaterDate(d, aujourdhui)` : « 19 oct. », année si différente (guide §6.6.1) | date-fns (`fr`) |
 | 28 | `src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx` | UI | Créer | Écran ECR-008 (cadres A, E) | 21 |
 | 29 | `src/objectifs-taches/presentation/ui/ecrans/detail-objectif.tsx` | UI | Créer | Écran ECR-003 (cadres C, D) | 22 |
@@ -234,7 +236,12 @@ export type LigneObjectif = {
   readonly nomAccessible: string;       // « {intitulé}, {état}, {t} tâches sur {n} terminées, délai {date} » (guide §6.6.4)
 };
 export type ModeleVueListeObjectifs = {
-  readonly lignes: ReadonlyArray<LigneObjectif>;   // sous-objectifs juste après leur parent ; ordre : §6.6 (Q-US-001-6)
+  readonly lignes: ReadonlyArray<LigneObjectif>;   // objectifs principaux non atteints, chacun suivi de ses sous-objectifs ; ordre : §6.6
+  readonly sectionAtteints?: {                     // absente si aucun objectif principal atteint (guide v0.2.9 §5.8 b)
+    readonly code: 'SEC-OBJ-ATTEINTS'; readonly n: number; readonly libelle: string;   // « Atteints ({n}) »
+    readonly replieeParDefaut: true;
+    readonly lignes: ReadonlyArray<LigneObjectif>;  // objectifs principaux atteints, chacun suivi de ses sous-objectifs
+  };
   readonly mentionHeureParis?: { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
   readonly etatVide?: { readonly code: 'EVD-OBJECTIFS' };   // aucun objectif
 };
@@ -243,7 +250,7 @@ export type ModeleVueDetailObjectif = {
   readonly id: IdObjectif; readonly intitule: string; readonly description?: string; readonly delai: ModeleVueDelai;
   readonly niveau: { readonly type: 'PRINCIPAL' } | { readonly type: 'SOUS_OBJECTIF'; readonly parent: { readonly id: IdObjectif; readonly intitule: string } };
   readonly etat: LigneObjectif['etat']; readonly compteur: LigneObjectif['compteur']; readonly enRetard?: LigneObjectif['enRetard'];
-  readonly sousObjectifs: ReadonlyArray<LigneObjectif>;
+  readonly sousObjectifs: { readonly code: 'SEC-SOUS-OBJECTIFS'; readonly libelle: string; readonly lignes: ReadonlyArray<LigneObjectif> }; // ordre : §6.6
   readonly actions: ReadonlyArray<ActionObjectif>;
   readonly mentionHeureParis?: { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
 };
@@ -328,8 +335,23 @@ compteurObjectif(vue, o) = { terminees : |{t ∈ D | TERMINEE}|, nonAbandonnees 
 - `construireConfirmation(SUPPRESSION_OBJECTIF)` : code `CNF-SUPPR-OBJECTIF`, variables `{ element: intitulé, taches: tachesDetachees, sousObjectifs: sousObjectifsPromus }`.
 - `messagesDeRefus` : `SaisieInvalide` → un message par défaut, dans l'ordre (`INTITULE_VIDE` → `ERR-020`, `DELAI_ABSENT` → `ERR-021`, `ESTIMATION_ABSENTE` → `ERR-022`, `ESTIMATION_INVALIDE` → `ERR-023`) ; `ElementIntrouvable`, `ActionNonDisponible` → liste vide.
 
-### 6.6 Ordre des lignes de la liste des objectifs — **en attente de Q-US-001-6**
-Aucun CA ni scénario ne fixe l'ordre ; le guide et ECR-008 ne le disent pas. Réponse proposée (★ de Q-US-001-6) : objectifs principaux par délai croissant, sans délai à la fin, puis date de création croissante, puis intitulé (`Intl.Collator('fr', { sensitivity: 'base' })`) ; chaque sous-objectif juste après son parent, dans le même ordre ; pas de section « Atteints ». UT-US-001-35 sera écrit en E10 sur la réponse retenue.
+### 6.6 Ordre et sections de la liste des objectifs (guide v0.2.9 §5.8, réponse à Q-US-001-6)
+```text
+comparerOrdreReference(a, b) :                                  // ordre de référence (§5.8), partagé par toutes les listes concernées
+  1. délai croissant ; un élément sans délai vient après tout élément avec délai
+  2. à délai égal (ou tous deux sans délai) : creeLe croissant
+  3. puis intitulé : Intl.Collator('fr', { sensitivity: 'base' }).compare
+  4. puis id (comparaison ordinale), pour un ordre total
+
+construireListeObjectifs :
+  principaux ← objectifs dont le parent effectif est absent
+  section principale (lignes) : principaux NON atteints, triés par comparerOrdreReference ;
+      chacun immédiatement suivi de ses sous-objectifs, triés de même, atteints compris (aucun déplacement quand l'état change, §5.8 c)
+  sectionAtteints (SEC-OBJ-ATTEINTS, « Atteints ({n}) », repliée par défaut) : principaux ATTEINTS, même tri,
+      chacun suivi de ses sous-objectifs ; n = nombre de principaux atteints ; absente si n = 0 (§5.8 b)
+  un sous-objectif atteint dont le parent n'est pas atteint reste sous son parent, dans la section principale
+```
+Détail d'un objectif : section `SEC-SOUS-OBJECTIFS` (« Sous-objectifs » + nombre), lignes triées par `comparerOrdreReference`, atteints compris. Aucune règle de gestion n'est touchée (affichage seulement).
 
 ### 6.7 Rendu de l'historique dans les tests (`tests/support/rendu-historique.ts`, glossaire v1.4 §11)
 `rendreEntree(evenement, intitules): { evenement: string; journee: string; avant: string; apres: string }` :
@@ -397,7 +419,7 @@ Intitulés et descriptions : affichés comme texte (React échappe), jamais en H
 | 19 | `l'objectif {string} est en retard` ; `l'objectif {string} n'est pas en retard` | Alors (aussi en précondition) | Nouveau | 2 | `LigneObjectif.enRetard` |
 | 20 | `l'objectif {string} porte la mention {string}` | Alors | Nouveau | 2 | Codes de mention de la ligne : `MEN-SANS-DELAI` (rang 2), `MEN-ATTENTE` (ajouté par ST-US-017 incrément 1) |
 | 21 | `l'utilisateur consulte la liste des objectifs` | Quand | Nouveau | 2 | `construireListeObjectifs` ; modèle mémorisé dans le monde |
-| 22 | `la liste des objectifs présente :` + tableau | Alors | Nouveau | 2 | Colonnes présentes seulement, ordre non vérifié ; `délai` : date ou « sans délai » ; `en retard` : « oui »/« non » |
+| 22 | `la liste des objectifs présente :` + tableau | Alors | Nouveau | 2 | Lignes de la section principale **et** de la section « Atteints » ; colonnes présentes seulement, ordre non vérifié ; `délai` : date ou « sans délai » ; `en retard` : « oui »/« non » |
 | 23 | `l'utilisateur consulte le détail de l'objectif {string}` | Quand | Nouveau | 2 | `construireDetailObjectif` mémorisé |
 | 24 | `le détail présente l'intitulé {string}, la description {string} et le délai {date}` | Alors | Nouveau | 2 | Égalité des trois valeurs |
 | 25 | `aucune action ne permet à l'utilisateur de saisir l'état de l'objectif {string}` | Alors | Nouveau | 2 | `detail.actions ⊆ ACTIONS_OBJECTIF` (aucune action d'état) et aucun export de `objectifs-taches/index.ts` dont le nom contient « Etat » et désigne une commande |
@@ -457,7 +479,7 @@ Intitulés et descriptions : affichés comme texte (React échappe), jamais en H
 | UT-US-001-32 | `…/presentation/confirmation.test.ts` | `construireConfirmation` | `SUPPRESSION_OBJECTIF` → `CNF-SUPPR-OBJECTIF`, variables | CA-9 | NI |
 | UT-US-001-33 | `…/presentation/messages-de-refus.test.ts` | `messagesDeRefus` | `[INTITULE_VIDE]` → `ERR-020` ; `ElementIntrouvable` → liste vide | CA-1 | NI |
 | UT-US-001-34 | `…/presentation/vues-exposees.test.ts` | `VUES_EXPOSEES` | ne contient aucune vue d'historique | CA-11 | NI |
-| UT-US-001-35 | `…/presentation/liste-objectifs.test.ts` | `construireListeObjectifs` | ordre des lignes | Q-US-001-6 | **Écrit après la réponse à Q-US-001-6** |
+| UT-US-001-35 | `…/presentation/liste-objectifs.test.ts` | `construireListeObjectifs` | ordre de référence (délai croissant, sans délai à la fin, puis création, puis intitulé sans casse ni accents) ; principaux atteints dans `SEC-OBJ-ATTEINTS` avec n et leurs sous-objectifs ; section absente si n = 0 ; sous-objectif atteint sous un parent en cours resté sous lui ; `SEC-SOUS-OBJECTIFS` dans le détail | Guide v0.2.9 §5.8 (Q-US-001-6) | NI |
 
 Suites de contrat : aucune nouvelle. Cas temporels couverts : minuit de Paris (S13), PT-16 (S13 à 02:30), appareil hors du fuseau de Paris (UT-US-001-26, 29).
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-001`.
@@ -495,9 +517,9 @@ Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- 
 - [x] Chaque RG est reliée à un élément de domaine et à un test (§2.2).
 - [x] Fichiers, couches, signatures, erreurs (§3, §4, §8).
 - [x] Modèle de données sans migration (§5).
-- [x] Algorithmes déterministes (§6), sauf l'ordre des lignes (Q-US-001-6).
+- [x] Algorithmes déterministes (§6), ordre des lignes compris (guide v0.2.9 §5.8).
 - [x] Interactions Google : sans objet (§7).
 - [x] Patterns et sécurité (§9, §10).
 - [x] Chaque phrase du `.feature` a une ligne au §12.
 - [ ] Tests du §13 en phase rouge (E10).
-- [ ] Q-US-001-6 répondue.
+- [x] Q-US-001-6 répondue (Steeve, guide v0.2.9 §5.8).

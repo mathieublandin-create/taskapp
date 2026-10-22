@@ -10,10 +10,10 @@
 | RG couvertes | RG-003, RG-023, RG-026, RG-028, RG-029, RG-045, RG-046, RG-047 (via ST-US-017 incrément 2), RG-049, RG-050 |
 | DAT / ADR | DAT v0.10.1 (§4.2 « suppressions », « incohérences d'état », §6.1, §6.2) ; ADR-003, ADR-010 |
 | Maquettes | ECR-007 (A, H, I, J), ECR-003 D, ECR-002 ; guide v0.2.8 §4.22, §4.23, §6.6.9 |
-| Q-US traitées | Q-US-024-1, Q-US-024-2, Q-US-024-3, Q-US-001-2 (E8) ; hypothèse H-3 ; concernée par **Q-US-001-6 (e)** |
+| Q-US traitées | Q-US-024-1, Q-US-024-2, Q-US-024-3, Q-US-001-2 (E8) ; hypothèse H-3 ; Q-US-001-6 (e) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-002 (rang 5) |
 | Version | 0.1 |
-| Statut | **Bloquée (partiellement) par Q-US-001-6 (e)** : seul l'ordre des sous-tâches dans le détail attend la réponse ; le reste est prêt pour E10 |
+| Statut | **Prête pour E10** (Q-US-001-6 (e) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-024-sous-taches` (rang 6) ; la partie RG-049 est livrée sur la branche de l'incrément 2 d'US-017 |
 
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (e) (guide v0.2.9 §5.8) : section `SEC-SOUS-TACHES`, ordre de référence ; §4.5, §6.7, UT-US-024-23 ; statut levé |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Création d'une sous-tâche (un seul niveau ; refus `ERR-032` sous une tâche abandonnée ; confirmation `CNF-AJOUT-SOUS-TACHE-TERMINEE` et réouverture de la tâche parente sous une tâche terminée), estimation calculée de la tâche parente (somme des sous-tâches non abandonnées, 0 h admis), information `ALR-012` avant la première sous-tâche, objectifs hérités (`ERR-034`, ST-US-002), alerte `ALR-006`, détail d'une tâche parente (sous-tâches, compteur, `ALR-013`), recopie de l'estimation à la suppression de la dernière sous-tâche (H-3). Au rang 9 : incohérences dérivées RG-049 (`MEN-INCOHERENCE`, `ALR-003`, `ALR-004`).
@@ -99,9 +100,10 @@ Sans objet.
 ### 4.5 Présentation
 ```ts
 // ModeleVueDetailTache (ajouts)
-readonly sousTaches?: {
+readonly sousTaches?: {                                   // section SEC-SOUS-TACHES (guide v0.2.9 §5.8 e)
+  readonly code: 'SEC-SOUS-TACHES'; readonly libelle: string;   // « Sous-tâches » + compteur « {t} / {n} »
   readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: DateCalendaire; readonly estimation: { readonly minutes: number; readonly libelle: string };
-                                  readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'] }>;   // ordre : Q-US-001-6 (e)
+                                  readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'] }>;   // une seule liste, tous états, ordre de référence (§6.7)
   readonly compteur: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string };   // « 1 / 3 »
 };
 readonly infoFinImpossible?: { readonly code: 'ALR-013'; readonly n: number; readonly libelle: string };   // n = sous-tâches à faire ; absent si n = 0
@@ -166,8 +168,8 @@ S10 : 3 h saisies, Section A 1 h 30 → 1 h 30 recopiée, puis modifiable (2 h).
 ### 6.6 Incohérence (RG-049, rang 9)
 `incoherenceDe(vue, t)` : t sans tâche parente, t `TERMINEE` ou `ABANDONNEE`, et au moins une sous-tâche `A_FAIRE` → `{ etatParent, sousTachesAFaire }` ; sinon `undefined`. Jamais écrite ni corrigée ; elle disparaît quand la sous-tâche est terminée ou abandonnée, ou la tâche parente rouverte ou reprise. Tant qu'elle existe, les objectifs ne sont pas atteints (déjà assuré par `etatObjectif`, ST-US-001 §6.2, étape 3).
 
-### 6.7 Ordre des sous-tâches dans le détail — **en attente de Q-US-001-6 (e)**
-Réponse proposée : une seule liste, délai croissant, puis création, puis intitulé. Seul UT-US-024-23 en dépend.
+### 6.7 Ordre des sous-tâches dans le détail (guide v0.2.9 §5.8 e, réponse à Q-US-001-6)
+Une seule liste, section `SEC-SOUS-TACHES` (« Sous-tâches » + compteur « {t} / {n} »), tous états confondus, triée par `comparerOrdreReference` (ST-US-001 §6.6 : délai croissant, création, intitulé, id). Une sous-tâche terminée ou abandonnée reste à sa place : la progression se lit sur la liste entière. Le même ordre s'applique aux sous-tâches affichées sous leur tâche parente dans le détail d'un objectif (ST-US-002 §6.6).
 
 ## 7. Intégration Google
 Sans objet.
@@ -240,7 +242,7 @@ Agrégations en O(nombre de sous-tâches).
 | UT-US-024-20 | `…/application/supprimer-tache.test.ts` | `SupprimerTache.executer` | dernière sous-tâche : estimation initiale de la tâche parente persistée, entrée d'historique | S10 | NI |
 | UT-US-024-21 | `…/domaine/incoherence.test.ts` (rang 9) | `incoherenceDe` | terminée + sous-tâche à faire → `TERMINEE` ; abandonnée → `ABANDONNEE` ; résolue après fin, abandon de la sous-tâche ou réouverture de la tâche parente | RG-049 | NI |
 | UT-US-024-22 | `…/presentation/liste-taches.test.ts`, `detail-tache.test.ts` (rang 9) | modèles de vue | `MEN-INCOHERENCE` sur la ligne ; `ALR-003` / `ALR-004` avec n dans le détail | RG-049 | NI |
-| UT-US-024-23 | `…/presentation/detail-tache.test.ts` | ordre des sous-tâches | Q-US-001-6 (e) | — | **Écrit après la réponse** |
+| UT-US-024-23 | `…/presentation/detail-tache.test.ts` | `construireDetailTache` | section `SEC-SOUS-TACHES` avec compteur ; une seule liste, tous états, ordre de référence ; une sous-tâche terminée garde sa place | Guide v0.2.9 §5.8 e (Q-US-001-6) | NI |
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-024`.
 
@@ -263,4 +265,4 @@ Composants `LockedField` (lecture de l'explication, non focalisable en saisie), 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes.
 - [ ] Tests du §13 en phase rouge (E10) ; UT 21 et 22 rattachés au rang 9.
-- [ ] Q-US-001-6 (e) répondue.
+- [x] Q-US-001-6 (e) répondue (Steeve, guide v0.2.9 §5.8).
