@@ -258,6 +258,7 @@ Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa rai
 
 ## 16. Dette, hypothèses et points ouverts
 - **Concernée par Q-US-001-6 (c)** (ST-US-001 §16) : ordre des sous-objectifs.
+  - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (c) Oui** ; la proposition du §6.6 est retenue telle quelle (délai croissant, sans délai à la fin, création, intitulé ; atteints non déplacés). Même ordre pour les candidats du sélecteur de parent (a). UT-US-023-21 peut être écrit en E10.
 - **Hypothèses** : H-2 (signalement `ALR-010` variante `placement`) relève de l'incrément 2 d'US-017. Forme de l'étape « crée un sous-objectif … » sans suffixe (US-001 S20) lue comme « sans délai », par analogie avec la précondition du glossaire §1 : signalée à Pepper pour inscription au glossaire, sans effet sur le sens.
 - **Dette** : aucune.
 

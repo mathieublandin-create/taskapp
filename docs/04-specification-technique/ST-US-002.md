@@ -416,6 +416,7 @@ Composants `TaskRow`, `QuickAdd` (erreurs cumulées, focus, saisie conservée), 
 
 ## 16. Dette, hypothèses et points ouverts
 - **Concernée par Q-US-001-6 (d)** (ST-US-001 §16).
+  - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (d) Oui** ; la proposition du §6.6 est retenue (sections « Tâches à faire · n », « Terminées (n) », « Abandonnées (n) », les deux dernières repliées ; tris du guide §5.7). Codes `SEC-TACHES-A-FAIRE`, `SEC-TACHES-TERMINEES`, `SEC-TACHES-ABANDONNEES` créés. Une sous-tâche affichée suit sa tâche parente. UT-US-002-33 peut être écrit en E10.
 - **Hypothèses** : H-1 (rattachement = `LienTacheObjectif.actif`), H-7 (construction des tableaux), appliquées.
 - **Dette** : aucune.
 

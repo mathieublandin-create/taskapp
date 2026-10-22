@@ -256,6 +256,7 @@ Composants `LockedField` (lecture de l'explication, non focalisable en saisie), 
 
 ## 16. Dette, hypothèses et points ouverts
 - **Concernée par Q-US-001-6 (e)** (ST-US-001 §16).
+  - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (e) Oui** ; la proposition du §6.6.7 est retenue (une seule liste, tous états confondus, délai croissant, sans délai à la fin, création, intitulé). Code `SEC-SOUS-TACHES` créé. UT-US-024-23 peut être écrit en E10.
 - **Hypothèses** : H-3 et H-7 appliquées.
 - **Dette** : aucune.
 
