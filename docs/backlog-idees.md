@@ -8,7 +8,7 @@
 
 | Id | Titre | Reçue le | Statut | Maturité | Taille pressentie | Priorité |
 |---|---|---|---|---|---|---|
-| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 4/6 critères (questions closes) | Très grande (XL) | — |
+| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | **Mûre** (essai R-P1/R-P2 à faire avant E3) | 6/6 critères | Très grande (XL) | — |
 | EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | **Mûre** | 6/6 critères | Moyenne (M) en v1, grande (L) pour l'épique complète | — |
 
 Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DEM-xxx` (ou Écartée, ou En sommeil).
@@ -126,6 +126,17 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - **M1-12** : Les créneaux et les rappels du contributeur sont-ils posés dans **son** agenda Google, et jamais dans celui de l'administrateur ? *Reco : oui.*
 - **M1-13** : Le contributeur peut-il aussi gérer dans Done Juan ses propres objectifs, non partagés, cloisonnés ? *Reco : oui, c'est la même application.*
 - **M1-14** : Acceptez-vous un essai technique de partage avant E3 (deux comptes Google, l'iPhone du contributeur, environ 1 h) ? *Reco : oui.*
+
+**Réponses du commanditaire (2026-10-22, DEC-035)**
+- **M1-8** : réponse propre au commanditaire, ni (a) ni (b) strict. Le contributeur a une **vue synthétique, en lecture seule**, des tâches des autres contributeurs de l'objectif. Le contenu exact de cette vue est à préciser en E1.
+- **M1-9** : (a), les tâches reviennent à l'administrateur avec le temps imputé.
+- **M1-10** : (a), PWA depuis Safari.
+- **M1-11** : (a), choix manuel dans le sélecteur Google.
+- **M1-12** : oui, créneaux et rappels dans l'agenda du contributeur.
+- **M1-13** : oui, le contributeur peut avoir ses propres objectifs, cloisonnés.
+- **M1-14** : oui, essai technique de partage **à faire** avant E3. Starck l'intègre comme volet optionnel du protocole de test technique v3 (deux comptes Google et l'iPhone du contributeur).
+
+**Statut : Mûre** (6/6 critères). Elle sera priorisée à la clôture de LOT-001. Une seule réserve : l'essai R-P1/R-P2 doit précéder E3.
 
 *Sources (2026-10-22) :*
 - *portée de `drive.file` : [Google, Choose Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [forum Google](https://discuss.google.dev/t/how-to-download-file-from-google-drive-with-drive-file-scope/332290) ;*

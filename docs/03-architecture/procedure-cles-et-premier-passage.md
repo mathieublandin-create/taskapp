@@ -1,5 +1,7 @@
 # Procédure du commanditaire : clés de test, secrets GitHub et premier passage du workflow
 
+> **SUSPENDUE le 2026-10-22 (DEC-034, Q-PWA-5).** Ne créez pas les clés de signature. Seul le volet web du test technique est maintenu. Cette procédure ne reprendra que si la mesure de la PWA sur Chrome Android échoue et qu'on garde l'APK. Les étapes 3 (dépôt public et GitHub Pages) et 4 (premier passage, sans clé) seront reprises dans le guide v3 du test technique.
+
 > Rédigée par Jarvis le 2026-10-22 à la suite de DEC-032 (H-1 A, H-2 oui).
 > L'équipe ne peut pas faire ces actions depuis sa session, car l'écriture de secrets et le lancement de workflows GitHub lui sont interdits. Cette procédure remplace donc, pour les clés, la « méthode recommandée » du guide du test technique (§c.2) : c'est vous qui créez les clés.
 > Ce document ne contient aucun secret et ne doit jamais en contenir.
