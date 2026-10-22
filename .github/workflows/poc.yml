@@ -14,6 +14,10 @@ on:
         description: "Déployer sur GitHub Pages (dépôt public uniquement)"
         type: boolean
         default: false
+      android:
+        description: "Construire les APK (repli ADR-012 seulement, DEC-034)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,8 +49,10 @@ jobs:
           path: poc/dist
           retention-days: 3
 
+  # Volet Android : repli seulement (DEC-034, ADR-013). Sauté sauf si l'entrée « android » vaut true.
   apk:
     needs: pwa
+    if: ${{ inputs.android }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -133,6 +139,8 @@ jobs:
 
   site:
     needs: [pwa, apk]
+    # S'exécute aussi quand les jobs apk sont sautés (android = false), jamais s'ils ont échoué.
+    if: ${{ !cancelled() && needs.pwa.result == 'success' && (needs.apk.result == 'success' || needs.apk.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -141,7 +149,8 @@ jobs:
           path: site
       # app-debug.apk (séance 1) et app-release.apk sont publiés côte à côte dans site/android/.
       # Si un type n'a pas été produit (secret absent), aucun artefact ne correspond pour lui.
-      - uses: actions/download-artifact@v4
+      - if: ${{ needs.apk.result == 'success' }}
+        uses: actions/download-artifact@v4
         with:
           pattern: poc-*-apk
           path: site/android
@@ -157,7 +166,7 @@ jobs:
           path: site
 
   deploy-pages:
-    if: ${{ inputs.deploy_pages }}
+    if: ${{ !cancelled() && inputs.deploy_pages && needs.site.result == 'success' }}
     needs: site
     runs-on: ubuntu-latest
     permissions:

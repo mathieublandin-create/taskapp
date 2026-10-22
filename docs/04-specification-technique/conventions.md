@@ -577,7 +577,7 @@ Références : DAT §4.2, §4.3, §6 ; ADR-003, ADR-010, ADR-011 ; DS-07, DS-10,
 - Tous les déclenchements différés ou périodiques passent par le `Planificateur` : `setTimeout`, `setInterval` et `requestIdleCallback` sont interdits hors `PlanificateurNavigateur`.
 - La fusion est une fonction **pure** du domaine `synchronisation` : commutative, associative, idempotente (propriétés vérifiées par fast-check, §11.4). La passe de réparation (RG-047 à RG-049) est pure et déterministe.
 - `dernierContactDrive` et les jetons de pagination (`pageToken`) sont des données **locales non synchronisées** (DAT §6.1).
-- Sur PC, un seul onglet synchronise (verrou `navigator.locks`, derrière un port interne au contexte, §2.3).
+- Sur chaque appareil, un seul onglet ou une seule fenêtre de la PWA synchronise (verrou `navigator.locks`, derrière un port interne au contexte, §2.3) ; la règle, écrite pour le PC, vaut aussi pour le téléphone (ADR-013).
 
 ### 10.3 Format des données dans le Drive et versions (RG-044, RG-058)
 - L'emplacement (dossier visible `Done Juan/`, portée `drive.file`, arbitrage A6), le nom et la compression des fichiers suivent le DAT §4.2. Avec un client OAuth Web unique, R1 est sans objet (DAT v0.11 §10.1) ; la réserve R1 ne revit qu'en repli (§19) : si le test R1 échouait alors, le repli `drive.appdata` changerait l'emplacement, pas le contenu logique (`ST-socle-ecriture.md` §5.3).
@@ -905,7 +905,7 @@ Le fuseau `Europe/Paris` n'est volontairement pas un fuseau de CI : il masquerai
 - `.github/workflows/deploiement.yml` (ADR-013, DAT v0.11 §7.4, §7.5) : déclenché par une étiquette `v*` **posée sur un commit de `main`** (le flux vérifie l'appartenance du commit à `main` et s'arrête sinon) ; aussi déclenchable à la main pour la **recette** (`workflow_dispatch`, environnement `recette`). Étapes : (1) tests et contrôles du §14.1 ; (2) construction de la PWA avec les variables du dépôt (§9.1) ; (3) déploiement sur GitHub Pages (`actions/upload-pages-artifact`, `actions/deploy-pages`, environnement `github-pages`). Permissions : `contents: read` par défaut ; `pages: write` et `id-token: write` sur le seul job de déploiement. **Aucun secret** : l'identifiant du client OAuth est une variable publique du dépôt. L'environnement `production` est protégé (approbation du commanditaire).
 - **Hébergement : GitHub Pages, retenu** (DEC-023, DEC-032 H-1, ADR-013) : `https://mathieublandin-create.github.io/taskapp/`, dépôt public, Pages en source « GitHub Actions ». Cloudflare Pages n'est plus qu'un recours si le dépôt redevenait privé ; changer d'hébergeur change l'origine, donc la base locale (DAT §7.5). L'étape de déploiement reste isolée dans une action composite `.github/actions/deployer-hebergement/`, pour que ce recours n'impacte qu'un fichier. R11 ne porte plus sur le choix de l'hébergeur mais sur l'écran de consentement avec cette origine (**sous réserve R11**, ST-US-022).
 - **Adresse de recette** (DAT v0.11 §7.4, E16) : son emplacement sur GitHub Pages est un point ouvert (**ANT-26**, §17.2), à trancher par Starck avant l'E9 d'US-031.
-- **Ordre de mise en place** : rang 0 : `ci.yml` et protection de `main` (DEC-029) ; rang 12 (US-018) ou rang d'US-031 selon `docs/lots/LOT-001.md` : `deploiement.yml` et environnements. En repli, `publication.yml`, le job Android et les secrets de signature s'ajoutent au rang 12 (§19.6).
+- **Ordre de mise en place** : rang 0 : `ci.yml` et protection de `main` (DEC-029) ; rang 13 (US-031, service worker) : `deploiement.yml` et environnements `recette` et `production`. En repli, `publication.yml`, le job Android et les secrets de signature s'ajoutent au rang 12 (US-018, §19.6). Le contenu des rangs 1, 12 et 13 de `docs/lots/LOT-001.md` est revu à l'E9 d'US-022, une fois M-RED connue (l'adaptateur `FournisseurAuth` web, prévu au rang 13, est nécessaire dès le rang 1).
 - `.github/dependabot.yml` (npm, actions GitHub) et `.github/pull_request_template.md` (reprend la DoD du §15).
 - Pendant E10, la CI d'une branche `us/` est rouge par construction (tests rouges) : seuls les contrôles des *pull requests* vers `lot/*` et `main` sont requis.
 
@@ -972,11 +972,11 @@ Une US (ou un incrément d'US) est soumise à la revue (E13) seulement si **tous
 | DS | Objet | Intégré au |
 |---|---|---|
 | DS-01 | TypeScript 5.x, options strictes, Node 24 LTS, idiomes | §3, §6.2 |
-| DS-02 | Base de code unique, PWA et Capacitor, composition par plateforme | §2.2, §4.2 |
+| DS-02 | v0.11 : une seule PWA, une composition `web.ts` (ADR-013) ; *repli* : PWA et Capacitor | §2.2, §4.2, §19 |
 | DS-03 | Aucun serveur | §9 |
-| DS-04, DS-05 | Clients publics, portées du lot 1, autorisation incrémentale | §9.1, §9.2 |
+| DS-04, DS-05 | Clients publics, portées du lot 1, autorisation incrémentale ; v0.11 : client Web unique, redirection `prompt=none` à l'ouverture | §9.1, §9.2, §9.2.1 |
 | DS-06 | `CoffreJetons` en mémoire, aucun jeton de rafraîchissement | §2.3, §9.2 |
-| DS-07 | `DepotLocal` Dexie et SQLite, transaction par cas d'usage, espace par compte, pas de chiffrement au repos | §9.3, §10.1 ; dette DT-001 |
+| DS-07 | `DepotLocal` Dexie en durabilité stricte sur tous les appareils (v0.11) ; *repli* : SQLite ; transaction par cas d'usage, espace par compte, pas de chiffrement au repos | §9.3, §10.1, §19.4 ; dette DT-001 |
 | DS-08 | UUID v7 | §7.5 |
 | DS-09 | Délégation à Calendar et rattrapage | §2.4 |
 | DS-10, DS-11 | Format Drive, CRDT par champ, HLC, pas de file d'opérations | §10 |
@@ -1003,10 +1003,14 @@ Les seuils de couverture proposés au DAT §3.3 et à l'ADR-009 (90 % pour `doma
 | ANT-22 | Alignement des conventions (DAT v0.10.1, ADR-012, CdC v0.11, glossaire v1.4, guide v0.2.8) | Anthony | **Clos** par la présente v0.3 |
 | ANT-25 | Format de l'identifiant d'une entrée du journal métier : `<UUID v7 de l'opération>:<rang>`, rang décimal sans zéros de tête, identifiant opaque (`ST-socle-ecriture.md` §6.7) | Starck | **Validé, DAT v0.10.2** (§6.1, DS-08) |
 | — | Protection des branches `main` et `lot/*` sur GitHub (§13.1, DEC-029) | Commanditaire, sur demande de Jarvis | À la fusion du rang 0 |
-| R1, R2, R11 | Test technique préalable | Jarvis, commanditaire | Bloque l'E9 d'US-022, d'US-017, d'US-018 et d'US-031 ; les éléments qui en dépendent sont marqués « Sous réserve R1 » (ou R2, R11) |
+| R11, M-RED, M-PERSIST | Test technique v3, volet web (DAT PO-11) ; R1 et R2 ne valent qu'en repli | Jarvis, commanditaire | R11 et M-RED bloquent l'E9 d'US-022 et d'US-017 ; M-RED et M-PERSIST décident entre la cible et le repli (§19), donc l'E9 d'US-018 et d'US-031 ; les éléments qui en dépendent sont marqués « Sous réserve R11 » ou « Sous réserve M-RED » |
+| ANT-26 | **Adresse de recette sur GitHub Pages** (DAT v0.11 §7.4, §7.5). Un dépôt n'a qu'un site Pages, déployé d'un seul tenant. Un sous-chemin (`/taskapp/recette/`) partage l'**origine** de la production (même IndexedDB, distinguée seulement par le compte de recette) et se trouve dans la **portée du service worker** de production (`/taskapp/`), dont le `navigateFallback` servirait la page de production. Options : (a) sous-chemin, avec un service worker de production dont la portée et le `navigateFallback` excluent `/recette/`, et un déploiement qui assemble les deux versions ; (b) un second dépôt public dédié à la recette (autre chemin, même origine `github.io`) ; (c) recette sur Cloudflare Pages (autre origine). | Starck | Ouvert ; à trancher avant l'E9 d'US-031 |
+| ANT-27 | Nom de la variable du client OAuth Web : `VITE_GOOGLE_CLIENT_ID_WEB` (DAT DS-04) ou `VITE_GOOGLE_WEB_CLIENT_ID` (DAT §7.5, PoC, variables du dépôt). Les conventions retiennent le second (§9.1). | Starck | Ouvert ; alignement de DS-04 demandé |
 
 ### 17.3 Hypothèses de conception du contrôle d'explicitation (H-1 à H-7)
 Elles sont appliquées dans les ST de LOT-001 ; leur propriétaire peut les modifier jusqu'à E11 sans nouvel échange (`explicitation-LOT-001.md`, contrôle final §3).
+
+**Revue v0.4 (DEC-034)** : aucune de ces hypothèses ne dépend de la plateforme ; elles portent sur le modèle d'écriture, la fusion et les étapes Gherkin, communs à la cible et au repli. Elles sont **maintenues sans changement**. Elles ne doivent pas être confondues avec les hypothèses H-1 et H-2 de **DEC-032**, propres à la préparation du test technique, traitées au §17.4.
 | Id | Hypothèse | Où elle s'applique |
 |---|---|---|
 | H-1 | L'information « rattachement » est `LienTacheObjectif(tacheId, E).actif` ; le contexte de la pierre tombale de E couvre les liens dont `objectifId = E` (DAT v0.10.1 §4.2.1, aligné) | `ST-socle-ecriture.md` §6.4 ; incrément 2 d'US-017 |
@@ -1017,11 +1021,63 @@ Elles sont appliquées dans les ST de LOT-001 ; leur propriétaire peut les modi
 | H-6 | `ALR-014` exclu de `data-a-lire`, retiré par le « Compris » de `ALR-008` | Incréments 2 et 3 d'US-017 |
 | H-7 | Construction des tableaux « les tâches suivantes : » (glossaire §1) | §11.6 ; ST-US-002 §12 |
 
+### 17.4 Décisions du commanditaire liées à la plateforme et à la distribution
+| Décision | Objet | Effet sur les conventions depuis DEC-034 |
+|---|---|---|
+| DEC-023 | Code public, GitHub Pages possible | **Applicable** : hébergement de la PWA (§14.3) |
+| DEC-027 | Clé de signature Android dans les secrets GitHub, sauvegarde hors ligne | **Repli seulement** (§19.3) ; aucune clé en cible |
+| DEC-028 | Vérification des développeurs Android : compte « distribution limitée » | **Repli seulement** (§19.3) ; sans objet pour la PWA |
+| DEC-029 | Protection de `main` dès la CI | **Inchangée** : activée à la fusion du rang 0 (§13.1). La liste des contrôles requis ne comporte aucun job Android en cible |
+| DEC-032 H-1 | Version PC hébergée sur GitHub Pages, dépôt rendu public par le commanditaire | **Applicable et étendue** à tous les appareils : GitHub Pages reste retenu (ADR-013, §14.3) |
+| DEC-032 H-2 | Deux clés de signature de test et premier passage du workflow `poc` | **Suspendue** (DEC-034, Q-PWA-5) : le workflow `poc` s'exécute sans clé et sans les jobs `apk` (entrée `android` à `false`, §19.6) |
+| DEC-034 | PWA unique sous condition | Objet de la v0.4 ; §19 pour le repli |
+
 ## 18. Documents associés
 - `checklist-revue-code.md` : grille de revue de code (E13).
 - `modele-ST-US.md` : gabarit des spécifications techniques par US (E9).
 - `dette-technique.md` : registre de la dette technique.
 - `ST-socle-ecriture.md` : modèle d'écriture synchronisable (rang 0 de LOT-001) ; `ST-US-xxx.md` : spécifications par US.
-- `docs/03-architecture/DAT.md` (v0.10.1) et `docs/03-architecture/adr/` (ADR-001 à ADR-012).
+- `docs/03-architecture/DAT.md` (v0.11) et `docs/03-architecture/adr/` (ADR-001 à ADR-013 ; ADR-012 remplacé sous condition par ADR-013).
+- `docs/03-architecture/poc-specification.md` (v2, §15 : écarts EC-1 à EC-7, dont EC-3 et EC-4 reportés au §9.2.1).
 - `docs/02-ux/guide-ergonomie.md` (v0.2.8) : tokens, états, messages, catalogue des libellés et des codes d'état (§6.6).
 - `tests/features/GLOSSAIRE-ETAPES.md` (v1.4, Pepper) : vocabulaire figé des étapes Gherkin.
+
+## 19. Repli (ADR-012), si la condition de DEC-034 échoue
+
+**Statut : en sommeil.** Cette section ne s'applique que si la mesure M-RED ou M-PERSIST échoue sur Chrome Android (ADR-013, « Condition et repli »). Elle redevient alors applicable **pour Android seulement**, avec ADR-012, les volets « repli » du DAT v0.11 et l'annexe A du test technique v3 ; tout le reste de ce document continue de s'appliquer, au PC comme au téléphone. Elle reprend sans changement de fond les règles de la v0.3. Rien n'en est réalisé avant la décision ; la réactivation est annoncée par Jarvis et donne lieu à une v0.5 de ce document.
+
+### 19.1 Pile complémentaire
+| Domaine | Outil | Règle de version |
+|---|---|---|
+| Coque mobile | Capacitor ; `@capacitor-community/sqlite` ; `@capacitor/network` ; `@capacitor/local-notifications` (notifications de secours, lots ultérieurs) | Version exacte ; une mise à jour majeure de Capacitor passe par Starck |
+| Construction Android | JDK 21 (Temurin), Gradle par l'enveloppe `android/gradlew` versionnée, Android SDK Build-Tools (dont `apksigner` et `zipalign`) | JDK : version majeure figée dans la CI (`actions/setup-java`) ; Gradle : fixé par `gradle-wrapper.properties` ; `compileSdk`, `targetSdk` et version des Build-Tools figés dans `android/variables.gradle` au démarrage d'E12 (ST-US-018) |
+
+### 19.2 Organisation du code
+- `android/` : projet Android généré par Capacitor puis versionné, hors artefacts, propriétés locales et clés (motifs du §9.1) ; pas d'iPhone en v1 (DEC-001).
+- `src/composition/capacitor.ts` : composition Android, à côté de `web.ts` (DS-02, texte antérieur).
+- `tests/integration/` : `DepotLocalSqlite` sur `node:sqlite`.
+- Versionnés en plus : `android/` (hors artefacts, propriétés locales et clés). Non versionnés en plus : clés de signature, APK et AAB.
+
+### 19.3 Signature, nom de paquet et vérification des développeurs
+- **Clé de signature Android** (ADR-012, DEC-027, verbatim « Reco ») : une clé de publication par application (`fr.donejuan.app`, `fr.donejuan.app.recette`), RSA 4096 bits, PKCS12, 30 ans. Elle est conservée **dans les secrets chiffrés de GitHub Actions** (`ANDROID_KEYSTORE_<ENV>_B64`, `ANDROID_KEYSTORE_<ENV>_PASSWORD`, `ANDROID_KEY_<ENV>_ALIAS`, `ANDROID_KEY_<ENV>_PASSWORD`, avec `<ENV>` = `RELEASE` pour la production ou `RECETTE` ; même forme que les secrets `POC_*` du PoC), avec une **sauvegarde hors ligne chez le commanditaire** (support amovible et gestionnaire de mots de passe). Ces secrets ne sont exposés qu'au flux `publication.yml` (environnements GitHub `production` et `recette`, §19.6). La clé de débogage reste réservée au développement. Aucune clé n'est créée par un agent sans l'accord explicite du commanditaire, relayé par Jarvis ; la création est différée tant que la PWA unique n'est pas infirmée (Q-PWA-5).
+- **Nom de paquet Android** : `fr.donejuan.app` (production), `fr.donejuan.app.recette` (recette, coexiste avec la production) ; la preuve de concept utilise `fr.donejuan.poc` (`poc/capacitor.config.ts`). Le nom de paquet ne change plus après la première installation (ADR-012 : même paquet, même clé pour toute mise à jour).
+- **Vérification des développeurs Android** (DEC-028, verbatim « Reco ») : compte gratuit « distribution limitée » lié au compte Google du commanditaire, à créer par lui avant l'échéance française de 2027 ; le nom de paquet et l'empreinte de la clé y sont enregistrés. Aucun impact sur le code.
+- **Client OAuth Android** : configuration par variante de build ; client restreint au nom de paquet et à l'empreinte SHA-1 (DAT §4.1.2, *repli*). Le test R1 (visibilité croisée des fichiers `drive.file` entre clients Android et Web) redevient un prérequis de l'E9 d'US-017 ; la réserve R1 du §10.3 revit.
+- Référentiel de sécurité complémentaire : OWASP MASVS ; permissions Android minimales (CR-58 de `checklist-revue-code.md`).
+
+### 19.4 Adaptateurs Android
+- **`DepotLocalSqlite`** : passe la **même suite de contrat** que `DepotLocalDexie` (§11.10) ; il s'appuie sur une interface interne d'exécution SQL, implémentée par le module Capacitor en production et par `node:sqlite` en test. Un fichier SQLite par compte, nommé d'après l'empreinte SHA-256 du `sub` (§9.3).
+- **Horloge** : sur Android, l'horloge monotone ancrée sur `SystemClock.elapsedRealtime` et l'identifiant de démarrage sont fournis par l'extension native prévue au DAT §6.4 ; `HorlogeSysteme` les utilise sur cette plateforme.
+- **Authentification** : Credential Manager et AuthorizationClient (Google Play services), renouvellement silencieux du jeton ; aucun jeton de rafraîchissement manipulé par notre code ; jeton en mémoire uniquement, jamais dans `@capacitor/preferences`.
+- **Réseau** : `@capacitor/network` derrière `EtatReseau`.
+- **Notifications de secours** (Q-38 b) : `@capacitor/local-notifications` derrière `Notifieur`, si le commanditaire les réactive.
+- Importations : `@capacitor/*` est admis dans `src/*/infrastructure/` et `src/composition/capacitor.ts` seulement (`no-restricted-imports`, dependency-cruiser).
+
+### 19.5 Versions Android
+`versionName` = `X.Y.Z` ; `versionCode` = `X × 10 000 + Y × 100 + Z` (donc `Y` et `Z` < 100), calculé par `scripts/version-android.mjs` à partir de `package.json` et injecté dans `android/app/build.gradle` à la construction. Le `versionCode` doit être **strictement supérieur** à celui de la dernière version publiée (`derniere-version.json`) ; une version défectueuse se corrige par une nouvelle version, jamais par un retour arrière.
+
+### 19.6 Intégration continue et publication
+- **Contrôle `build`** (§14.1) : en plus de la PWA, APK de debug Android (`cap sync android`, `./gradlew assembleDebug`, JDK 21), à partir du rang 12 (US-018) ; avant, PWA seule.
+- **`.github/workflows/publication.yml`** (ADR-012, DAT §7.4, §7.5) : remplace `deploiement.yml` (§14.3), dont il reprend les étapes PWA. Déclenché par une étiquette `v*` **posée sur un commit de `main`** (le flux vérifie l'appartenance du commit à `main` et s'arrête sinon) ; aussi déclenchable à la main pour la **recette** (`workflow_dispatch`, environnement `recette`). Étapes : (1) tests et contrôles du §14.1 ; (2) construction de la PWA et déploiement sur l'hébergement statique ; (3) construction de l'APK de publication (`./gradlew assembleRelease`) ; (4) décodage de la clé depuis les secrets de l'environnement (fichier temporaire hors du dépôt, supprimé en fin de job), signature ; (5) **`apksigner verify --print-certs`** et comparaison de l'empreinte SHA-256 du certificat avec la variable du dépôt `ANDROID_CERT_SHA256_<ENV>` (échec si elle diffère) ; (6) contrôle que le `versionCode` est strictement supérieur à celui de `derniere-version.json` déjà publié ; (7) publication dans `android/` de l'hébergement : `done-juan-<version>.apk` (recette : `done-juan-recette-<version>.apk`), son empreinte SHA-256, `derniere-version.json` (`versionName`, `versionCode`, `schemaVersion`, URL, empreinte, date) et la page `android/index.html` (lien, empreinte, procédure d'installation). Permissions : `contents: read`, plus celles du déploiement de l'hébergeur. Les secrets de signature ne sont accessibles qu'aux environnements GitHub `production` et `recette`, protégés (approbation du commanditaire pour `production`).
+- **Ordre de mise en place** : rang 12 (US-018, BEN-13) : job `build` Android, `publication.yml`, environnements et secrets. La clé de production n'est créée qu'au rang 12, par le commanditaire ou avec son accord (DEC-027).
+- **Workflow `poc`** (`.github/workflows/poc.yml`, préparation du test technique) : les jobs `apk` ne s'exécutent que si l'entrée booléenne `android` vaut `true` (par défaut `false`, DEC-034 Q-PWA-4) ; déclenchement par `workflow_dispatch` uniquement.
