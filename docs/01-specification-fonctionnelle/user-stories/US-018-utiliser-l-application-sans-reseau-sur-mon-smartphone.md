@@ -64,41 +64,42 @@ Statut : En analyse — révision DEC-034 **proposée, à valider** (V-DEC034-1,
 
 ## Impacts architecture
 
-*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-001, ADR-003, ADR-010.*
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-001, ADR-003, ADR-010. **Révisé le 2026-10-22 (DEC-034)** : DAT v0.11 (§4.1.6, §4.1.7), ADR-013.*
 
-> **À réviser par Starck (DEC-034).** Cette section décrit encore l'application Capacitor Android (SQLite, `@capacitor/network`, renouvellement silencieux R2). Si DEC-034 est confirmée, elle sera alignée sur ETU-002 §2 et §7.1 et sur le nouvel ADR. Pepper ne la modifie pas.
+> **Révision DEC-034 (Starck, 2026-10-22).** Le smartphone utilise la **PWA installée sur Chrome Android**, comme le PC (US-031). Les mentions « repli » ne valent que si la condition de DEC-034 échoue (on garde alors l'APK, ADR-012). **Q-DEC034-1 (réponse de Starck, 2026-10-22)** : à l'ouverture, le renouvellement se fait **sans geste** : l'application part d'elle-même chez Google (redirection `prompt=none`, 1 à 2 s derrière un écran d'attente) et revient avec l'accès, sans saisie ni appui, si la session Google du téléphone est active (DAT v0.11 §4.1.7, ADR-013). Un geste (« Reprendre la synchronisation ») n'est nécessaire que si l'accès expire **pendant** l'usage, ou si ce retour automatique échoue (une seule tentative par ouverture, puis `SYN-SESSION`). Une saisie n'est demandée que si la session Google elle-même a expiré. Cette réponse est **sous réserve de la mesure M-RED** du test technique v3, dont c'est le critère.
 
 - **Composants touchés** :
-  - application Capacitor Android : les ressources de l'application sont embarquées, donc l'ouverture sans réseau est native ;
-  - `@capacitor/network`, pour détecter la connectivité et lancer la synchronisation au retour du réseau ;
-  - adaptateur `DepotLocal` SQLite ;
+  - **PWA installée sur Chrome Android** : le service worker précache toute l'application, l'ouverture sans réseau ne dépend ni de GitHub Pages ni du script Google (comme US-031, R12) ; *repli* : application Capacitor ;
+  - événements `online` / `offline` du navigateur et échec des requêtes, pour détecter la connectivité et lancer la synchronisation au retour du réseau ; *repli* : `@capacitor/network` ;
+  - adaptateur `DepotLocal` **IndexedDB (Dexie)**, le même que sur le PC ; `navigator.storage.persist()` au premier lancement, état affiché, avertissement s'il est refusé ; *repli* : SQLite ;
   - contexte `synchronisation` : marqueur « déposé jusqu'à HLC x », d'où sont tirés l'indicateur « non synchronisé » (CA-3) et la reprise (CA-4) ;
   - `compte` : ouverture de la session sans jeton, à partir de l'identité mise en cache ; l'état « hors ligne » est distinct de l'état « accès perdu » (CA-8).
 - **Données** :
   - aucune donnée nouvelle ;
   - le volume local hors ligne n'a pas de limite pratique (CA-6) : quelques Mo au maximum.
 - **Garanties (CA-5, PT-13)** :
-  - chaque cas d'usage écrit en **une transaction** SQLite ;
+  - chaque cas d'usage écrit en **une transaction** IndexedDB ouverte en **durabilité stricte** (`durability: 'strict'`), confirmée à son événement `complete` : une écriture confirmée survit à un arrêt forcé et à l'extinction (CA-5 ; mesure M-DUR du test technique v3) ; *repli* : une transaction SQLite ;
   - le dépôt dans Drive est idempotent : le fichier entier est réécrit ;
   - le marqueur n'avance qu'après la confirmation de Drive ;
   - un arrêt brutal à n'importe quelle étape ne fait que rejouer le dépôt (cas limite « réseau intermittent » : pas de double enregistrement).
-- **Accès Google** : aucun pendant la période hors ligne. Au retour du réseau, renouvellement silencieux du jeton (R2).
-- **Sécurité** : comme US-022 ; données dans le bac à sable de l'application Android.
+- **Accès Google** : aucun pendant la période hors ligne. Au retour du réseau, application ouverte : dépôt immédiat si le jeton en mémoire est encore valide ; sinon, l'accès est à renouveler et le dépôt attend le geste « Reprendre la synchronisation » ou la prochaine ouverture, où il est renouvelé sans geste (Q-DEC034-1). C'est la précision de CA-4 voulue par DEC-034 (Q-PWA-2). *Repli* : renouvellement silencieux du jeton (R2).
+- **Sécurité** : comme US-022 ; données dans l'IndexedDB du profil Chrome, propre à l'origine de l'application ; la désinstallation de la PWA ou l'effacement des données du site peuvent les supprimer (seules les modifications non déposées sont alors perdues, R15) ; *repli* : bac à sable de l'application Android.
 - **Exigences non fonctionnelles** :
   - ouverture à froid hors ligne en moins de 2 s (ENF-T-01) ;
   - action locale en moins de 100 ms (ENF-T-02) ;
   - synchronisation lancée au retour du réseau en moins de 10 s.
 - **Risques** :
-  - R13 : maturité et performances du module SQLite pour Capacitor. Parade : adaptateur derrière un port, et repli possible sur l'IndexedDB de la WebView, acceptable sur Android ;
-  - R2 : renouvellement silencieux du jeton.
+  - R15 étendu au téléphone : éviction si la persistance est refusée ; parade : hors ligne garanti pour la PWA installée seulement, avertissement, mesure M-PERSIST (condition de DEC-034) ;
+  - R19 : politiques de Chrome (persistance, installation) ;
+  - *repli seulement* : R13 (SQLite) et R2 (renouvellement silencieux).
 - **PC** : le hors ligne du PC relève de US-031, entrée dans le lot par DEC-013. Le noyau est le même ; les spécificités du PC sont décrites dans les impacts architecture de US-031.
 - **RG-057 (rappel après 24 h hors ligne, établie, V-12)** :
   - calcul **purement local**, sans réseau ni donnée synchronisée : le bandeau est affiché si la **plus ancienne modification en attente** (marqueur « déposé jusqu'à HLC x » en retard) date de plus de 24 h (DEC-025) ; ce sont les 24 h de la donnée présente seulement sur l'appareil qui comptent ;
   - l'instant de cette modification est déduit du journal local des modifications non déposées ; il est remis à zéro par un dépôt confirmé. Il n'est pas synchronisé et ne change pas le format Drive. Il est évalué à l'ouverture, au retour au premier plan et chaque minute tant que l'application est ouverte ; il est comparé à l'horloge de l'appareil (écart d'horloge sans conséquence grave : bandeau non bloquant) ;
   - le bandeau disparaît dès que le marqueur rejoint la dernière modification, c'est-à-dire après un dépôt confirmé par Drive ;
-  - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007) ;
+  - aucune limite de durée imposée à l'usage hors ligne (RG-021), aucune notification système (pas de serveur ni de tâche de fond : DEC-007 ; arrière-plan abandonné, DEC-034 Q-PWA-3) ;
   - impact : un champ local de plus, un sélecteur dans `synchronisation`, aucune migration du format Drive.
-- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010.
+- **ADR applicables** : ADR-001, ADR-002, ADR-003, ADR-004, ADR-010, ADR-013.
 
 ## Impacts ergonomie
 

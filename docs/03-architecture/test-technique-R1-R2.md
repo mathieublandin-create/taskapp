@@ -107,7 +107,7 @@ Comptes : **A** (administrateur, le commanditaire) et **B** (contributeur). Appa
 | Mesure | Succès si | Bloquant pour |
 |---|---|---|
 | R11 | Aucun écran d'avertissement aux étapes 3.1.2 et 3.1.3 | **E9 d'US-022 et d'US-017** ; sinon, arbitrage du commanditaire |
-| **M-RED** | Aux étapes 3.6.3 et 3.6.4 : `JetonObtenu`, **aucune saisie**, compteur augmenté de **1 au plus**, retour en mode `standalone`. 3.6.5 à 3.6.7 informatives. | **E9 d'US-022 et d'US-017** ; **condition de DEC-034** |
+| **M-RED** | Aux étapes 3.6.3 et 3.6.4 : `JetonObtenu`, **aucune saisie et aucun appui chez Google** (ni mot de passe, ni code, ni choix de compte, ni bouton « Continuer »), compteur augmenté de **1 au plus**, retour en mode `standalone`. Le bouton du PoC ne fait que déclencher la mesure ; si l'option « redirection automatique à l'ouverture » existe, l'étape est refaite sans bouton et doit donner le même résultat. 3.6.5 à 3.6.7 informatives. **Ce critère fixe aussi la réponse à Q-DEC034-1** (renouvellement à l'ouverture sans geste) et le sens de l'étape Gherkin « l'accès à Google est renouvelé sans saisie ». | **E9 d'US-022 et d'US-017** ; **condition de DEC-034** |
 | **M-PERSIST** | `persist()` (ou `persisted()`) vaut vrai dans la PWA installée sur Chrome Android | **Condition de DEC-034** |
 | M-DUR | Même identifiant relu aux étapes 3.7.2 et 3.7.3 | E9 d'US-018 |
 | R3 | Au plus un geste, sans saisie | Non |

@@ -89,41 +89,47 @@ Chaque échec ou refus de connexion porte un code, que les tests vérifient. **L
 
 ## Impacts architecture
 
-*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-004, ADR-005, ADR-010, ADR-011.*
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-004, ADR-005, ADR-010, ADR-011. **Révisé le 2026-10-22 (DEC-034)** : DAT v0.11 (§4.1.2, §4.1.6 bis, §4.1.7), ADR-013.*
 
-> **À réviser par Starck (DEC-034).** Cette section décrit encore l'authentification native Android (Credential Manager, AuthorizationClient, composition `capacitor.ts`, client OAuth Android, risque R2). Si DEC-034 est confirmée, elle sera alignée sur ETU-002 §3 et §7.1 et sur le nouvel ADR. Pepper ne la modifie pas.
+> **Révision DEC-034 (Starck, 2026-10-22).** Un seul adaptateur d'authentification, web, sur tous les appareils. Les mentions « repli » ne valent que si la condition de DEC-034 échoue (on garde alors l'APK, ADR-012). Pour CA-5, CA-7 et S23b : **Q-DEC034-1 (réponse de Starck, 2026-10-22)** : à l'ouverture, le renouvellement se fait **sans geste** : l'application part d'elle-même chez Google (redirection `prompt=none`, 1 à 2 s derrière un écran d'attente) et revient avec l'accès, sans saisie ni appui, si la session Google du téléphone est active (DAT v0.11 §4.1.7, ADR-013). Un geste (« Reprendre la synchronisation ») n'est nécessaire que si l'accès expire **pendant** l'usage, ou si ce retour automatique échoue (une seule tentative par ouverture, puis `SYN-SESSION`). Une saisie n'est demandée que si la session Google elle-même a expiré. Cette réponse est **sous réserve de la mesure M-RED** du test technique v3, dont c'est le critère.
 
 - **Composants touchés** :
   - contexte `compte` : cas d'usage `SeConnecter`, `SeDeconnecter` et `ReprendreSession` ; état de session ;
-  - port `FournisseurAuth`, avec deux adaptateurs :
-    - web : Google Identity Services, modèle « jeton », script chargé à la demande ;
-    - Android : Credential Manager et AuthorizationClient ;
+  - port `FournisseurAuth`, avec **un seul adaptateur web** (DEC-034, ADR-013) :
+    - à l'ouverture : **redirection pleine page** vers Google (`response_type=token`, `prompt=none`, `login_hint`, `state`), une seule tentative par ouverture, fragment de retour lu puis effacé avant tout autre traitement ;
+    - sur geste (« Reprendre la synchronisation », « Se reconnecter ») et à la première connexion : Google Identity Services, modèle « jeton », script chargé à la demande, ou redirection interactive (iPhone, ou si la fenêtre GIS échoue) ;
+    - *repli* : Android natif, Credential Manager et AuthorizationClient ;
   - `CoffreJetons` : jeton d'accès conservé en mémoire seulement ;
   - adaptateur Drive dans `infrastructure-google` : création ou recherche du dossier de l'application et de `manifeste.json` ;
-  - `composition/web.ts` et `composition/capacitor.ts`.
+  - `composition/web.ts` seulement ; *repli* : aussi `composition/capacitor.ts` ;
+  - écran d'attente de la redirection (Steeve).
 - **Données** :
-  - **base locale cloisonnée par compte** : un espace de stockage par `sub` Google (base IndexedDB, ou fichier SQLite, nommé d'après une empreinte du `sub`). Ce cloisonnement satisfait CA-1 et CA-9 sans rien effacer (RG-043) ;
+  - **base locale cloisonnée par compte** : un espace de stockage par `sub` Google (base IndexedDB nommée d'après une empreinte du `sub` ; *repli* : fichier SQLite). Ce cloisonnement satisfait CA-1 et CA-9 sans rien effacer (RG-043) ;
   - identité mise en cache localement (`sub`, adresse) : elle permet de rouvrir la session sans réseau (CA-5, US-018) ;
-  - aucun jeton n'est persisté par notre code ;
+  - aucun jeton n'est persisté par notre code ; le contexte de redirection (`state`, instant) est conservé localement sans jeton, 10 min au plus, à usage unique ;
   - **première connexion** : le dossier est recherché par `appProperties` avant d'être créé. Si deux dossiers sont créés en même temps sur les deux appareils, l'application conserve le plus ancien (`createdTime`) et y fusionne le contenu de l'autre (DAT §4.2).
 - **Accès Google** :
   - scopes `openid`, `email` et `drive.file`, tous non sensibles. Aucun accès à l'agenda (CA-8, ENF-05) ;
-  - projet OAuth publié en production, sans logo, pour qu'aucun écran d'avertissement ne s'affiche (ENF-08). À confirmer par le test technique R1/R2 (risque R11) ;
+  - projet OAuth publié en production, sans logo, pour qu'aucun écran d'avertissement ne s'affiche (ENF-08). À confirmer par le test technique v3 (risque R11) ;
+  - client OAuth Web : origines autorisées **et URI de redirection autorisés** (`https://mathieublandin-create.github.io/taskapp/` ; adresse de recette ; `http://localhost:5173/`) ;
+  - retours de redirection en erreur : `interaction_required`, `login_required`, `consent_required` donnent « session à reprendre » (`SYN-SESSION`, sans bandeau) ; `redirect_uri_mismatch` et erreurs de configuration : `SYN-SESSION` et anomalie journalisée ;
   - erreurs traduites : refus ou annulation, `PorteeInsuffisante`, `AccesGoogleRevoque` ; Drive désactivé ou indisponible : `403` puis message explicite.
 - **Sécurité** :
-  - clients OAuth publics, restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines autorisées sur le web ;
+  - client OAuth public, sans secret, restreint aux origines et aux URI de redirection autorisés ; *repli* : nom de paquet et empreinte SHA-1 sur Android ;
+  - redirection : `state` d'au moins 128 bits vérifié, fragment effacé (`history.replaceState`) avant tout traitement, `Referrer-Policy: no-referrer`, aucune ressource tierce, jeton jamais journalisé ni persisté (exception à `conventions.md` §9 limitée au fragment de retour) ;
   - aucun jeton dans les journaux ni dans le stockage persistant ;
-  - **RG-043** : après une déconnexion, les données restent au repos sur l'appareil, non chiffrées. Elles sont protégées par le bac à sable Android sur le smartphone, et seulement par le profil du navigateur sur PC. Le commanditaire a traité cette tension avec ENF-05 par l'action distincte « Supprimer les données de cet appareil » (DEC-015) ;
+  - **RG-043** : après une déconnexion, les données restent au repos sur l'appareil, non chiffrées. Elles sont protégées par le profil du navigateur, sur le smartphone (Chrome) comme sur le PC ; *repli* : bac à sable Android sur le smartphone. Le commanditaire a traité cette tension avec ENF-05 par l'action distincte « Supprimer les données de cet appareil » (DEC-015) ;
   - **DEC-015** : cas d'usage `SupprimerDonneesAppareil`. Il tente un dépôt ; si c'est impossible, il demande une confirmation qui indique le nombre de modifications perdues (garde-fou établi : V-09, RG-055) ; puis il supprime l'espace de stockage du compte connecté et ferme la session.
-  - la déconnexion efface la session et les jetons en mémoire. Sur Android, elle efface aussi l'état d'identification du Credential Manager. Ce n'est pas une révocation.
+  - la déconnexion efface la session, le jeton en mémoire, l'identité en cache servant au `login_hint` et tout contexte de redirection ; elle ne déclenche aucune redirection à l'ouverture suivante. *Repli* : sur Android, elle efface aussi l'état d'identification du Credential Manager. Ce n'est pas une révocation.
 - **Exigences non fonctionnelles** :
   - réouverture d'une session existante sans aucun appel réseau bloquant (ENF-T-01) ;
   - première connexion jusqu'à l'état vide en moins de 10 s, sur un réseau 4G.
 - **Risques** :
-  - R2 : renouvellement silencieux du jeton sur Android ;
-  - R3 et CA-5 sur PC : la session logique est conservée localement, mais le jeton d'accès doit être obtenu de nouveau. C'est silencieux si la session Google du navigateur est active, et demande un geste sinon (F14) ;
+  - R3 et CA-5, **sur tous les appareils** (DEC-034) : la session logique est conservée localement, mais le jeton d'accès doit être obtenu de nouveau ; à l'ouverture, par redirection sans geste si la session Google est active ; en cours d'usage, par un geste ; saisie seulement si la session Google a expiré (F14). Mesure M-RED, condition de DEC-034 et d'E9 ;
+  - R18 : flux OAuth implicite susceptible d'évoluer chez Google ; parade : adaptateur isolé, repli au geste seul ;
+  - *repli seulement* : R2 (renouvellement silencieux sur Android) ;
   - R11 : l'origine de la PWA, sans domaine propre (DEC-006), doit être acceptée par l'écran de consentement en production.
-- **ADR applicables** : ADR-002, ADR-004, ADR-005, ADR-010.
+- **ADR applicables** : ADR-002, ADR-004, ADR-005, ADR-010, ADR-013.
 - **Décisions prises en compte** : DEC-015 (deux actions distinctes) et DEC-016 (données du premier compte conservées à part, invisibles pour l'autre compte). Le cloisonnement par `sub` réalise DEC-016 sans traitement supplémentaire.
 
 ## Impacts ergonomie

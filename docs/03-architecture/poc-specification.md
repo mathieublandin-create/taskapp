@@ -456,7 +456,7 @@ API **Google Picker** activée dans le projet `objectifs-taches-dev` ; clé d'AP
 | EC-2 | Mode d'affichage et plateforme non journalisés | §13.5 | Le journal ne porte que `pc \| <agent utilisateur>` ; sur Chrome Android, `typeAppareil()` vaut `pc` | **Bloquant pour la condition** : rien ne prouve que la mesure a eu lieu dans la PWA installée | Benjamin : ajouter `display-mode` et `web-android` / `web-ios` / `web-pc` aux entrées `Redirection` et `R15` (environ 30 min) |
 | EC-3 | Ordre d'effacement du fragment | Avant tout appel réseau de l'application | Effacé dans `traiterRetourRedirection()`, appelé juste après `racine.render(...)` | Mineur pour le PoC (aucun appel réseau au rendu, GIS chargé à la demande) ; **exigence de production** (ADR-013) | Aucune pour le PoC. Anthony : en production, consommer le fragment avant le rendu |
 | EC-4 | Validité du `state` | 10 min en production (ADR-013) | Pas de limite | Mineur pour le PoC | Aucune pour le PoC ; exigence de production |
-| EC-5 | Redirection automatique à l'ouverture | Souhaitable (§13.3) | Absente | Non bloquant | Facultatif |
+| EC-5 | Redirection automatique à l'ouverture | Souhaitable (§13.3) | Absente | Non bloquant, **recommandé** depuis Q-DEC034-1 : il prouve sans discussion le « sans geste » à l'ouverture | Benjamin, si possible avant la séance (environ 1 h) |
 | EC-6 | Connexion par redirection interactive | Nécessaire pour R-P2 (§14.2) | Absente | Non bloquant pour la séance web ; **bloquant pour R-P2** | À faire avec le volet partage (§14) |
 | EC-7 | `access_denied` classé `interaction_requise` | Conforme pour `prompt=none` (§13.2) | Idem | Aucun | En production, après un geste, `access_denied` donne « accès perdu » (DAT §4.1.6 bis, ADR-013) |
 

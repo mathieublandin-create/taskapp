@@ -91,9 +91,9 @@ Statut : En analyse — révision DEC-034 **proposée, à valider** (V-DEC034-1,
 
 ## Impacts architecture
 
-*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-003, ADR-010, ADR-011.*
+*Rédigé par Starck (E3, 2026-10-21). Référentiel : DAT v0.4, ADR-003, ADR-010, ADR-011. **Révisé le 2026-10-22 (DEC-034)** : DAT v0.11, ADR-013 (PWA unique, sous condition de mesure).*
 
-> **À réviser par Starck (DEC-034).** Les mentions de l'application Android (publication de la PWA avant l'application Android, client Android du risque R1) deviennent sans objet si DEC-034 est confirmée. Pepper ne modifie pas cette section.
+> **Révision DEC-034 (Starck, 2026-10-22).** La même PWA tourne sur les deux appareils : un seul client OAuth Web, une seule base locale (IndexedDB), mises à jour automatiques partout. Le mécanisme de synchronisation, le format Drive et RG-044 sont **inchangés**. Pour CA-3 et S06b : **Q-DEC034-1 (réponse de Starck, 2026-10-22)** : à l'ouverture, le renouvellement se fait **sans geste** : l'application part d'elle-même chez Google (redirection `prompt=none`, 1 à 2 s derrière un écran d'attente) et revient avec l'accès, sans saisie ni appui, si la session Google du téléphone est active (DAT v0.11 §4.1.7, ADR-013). Un geste (« Reprendre la synchronisation ») n'est nécessaire que si l'accès expire **pendant** l'usage, ou si ce retour automatique échoue (une seule tentative par ouverture, puis `SYN-SESSION`). Une saisie n'est demandée que si la session Google elle-même a expiré. Cette réponse est **sous réserve de la mesure M-RED** du test technique v3, dont c'est le critère. Si la condition de DEC-034 échoue, l'application Android est conservée (ADR-012) et le texte d'origine ci-dessous s'applique de nouveau.
 
 - **Composants touchés** :
   - contexte `synchronisation` :
@@ -111,7 +111,7 @@ Statut : En analyse — révision DEC-034 **proposée, à valider** (V-DEC034-1,
   - **Réponse au cas limite « versions différentes »** :
     - seule une différence de **version de schéma** gêne : l'appareil dont le schéma est le plus ancien passe en lecture seule et invite à mettre l'application à jour ;
     - deux versions de l'application qui partagent le même schéma coexistent sans restriction ;
-    - le comportement « bloquer la saisie dès que la version de l'application diffère » est déconseillé, car il bloquerait le PC à chaque publication de la PWA avant l'application Android.
+    - le comportement « bloquer la saisie dès que la version de l'application diffère » est déconseillé. Avec la PWA unique (DEC-034), les deux appareils se mettent à jour seuls et le décalage devient rare ; en repli (APK), il bloquerait le PC à chaque publication de la PWA avant l'application Android.
 - **RG-044** :
   - **restaurer** : l'appareil réécrit son fichier et le manifeste ;
   - **repartir de zéro** (b, établie : V-01) : l'appareil crée un nouveau manifeste avec une nouvelle `generation` ;
@@ -131,7 +131,8 @@ Statut : En analyse — révision DEC-034 **proposée, à valider** (V-DEC034-1,
   - état de moins de 5 Mo non compressé ;
   - convergence garantie : fusion commutative, associative et idempotente, vérifiée par des tests de propriétés.
 - **Risques** :
-  - R1 : visibilité de `drive.file` entre le client Android et le client web (test technique préalable) ;
+  - R1 : visibilité de `drive.file` entre le client Android et le client web : **sans objet avec la PWA unique** (un seul client Web, DEC-034) ; reste valable en repli ;
+  - R18 (flux OAuth implicite) et R19 (politiques des navigateurs), DAT v0.11 ;
   - R4 : horloge déréglée ;
   - R5 : versions de schéma ;
   - R6 : modifications manuelles dans le Drive ;
@@ -142,7 +143,7 @@ Statut : En analyse — révision DEC-034 **proposée, à valider** (V-DEC034-1,
   - RG-054 : affichage seulement ;
   - RG-056 : l'état « lu / non lu » des modifications non retenues est une donnée synchronisée (lecture valable sur les deux appareils, signalement unique à identifiant déterministe), mais le point « à lire » de l'indicateur est calculé localement, sans réseau ;
   - **RG-058 (V-06 option 2) : seul un `schemaVersion` plus récent que celui de l'appareil le met en consultation seule.** Les versions d'application qui partagent le même schéma coexistent, saisie comprise. En consultation seule : aucune écriture dans le Drive, les modifications en attente restent dans la base locale (ENF-06) et sont déposées après la mise à jour ; la lecture des fichiers plus récents n'est pas fusionnée. Toute évolution du modèle de données doit donc distinguer évolution compatible (sans incrément) et incrément de `schemaVersion` (DAT §4.2, DS-10). L'application affiche la version de schéma bloquante (message de ECR-011).
-- **ADR applicables** : ADR-002, ADR-003, ADR-009, ADR-010, ADR-011.
+- **ADR applicables** : ADR-002, ADR-003, ADR-009, ADR-010, ADR-011, ADR-013.
 
 ## Impacts ergonomie
 
