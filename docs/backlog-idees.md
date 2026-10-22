@@ -8,8 +8,8 @@
 
 | Id | Titre | Reçue le | Statut | Maturité | Taille pressentie | Priorité |
 |---|---|---|---|---|---|---|
-| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 3/6 critères | Très grande (XL) | — |
-| EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | Qualifiée | 3/6 critères | Grande (L) | — |
+| EPI-001 | Partage d'un objectif avec un autre utilisateur, rôles « administrateur des tâches » et « contributeur » | 2026-10-22 | Qualifiée | 4/6 critères | Très grande (XL) | — |
+| EPI-002 | Assistant IA vocal pour définir et raffiner un objectif et créer les tâches | 2026-10-22 | Qualifiée | 4/6 critères | Grande (L) | — |
 
 Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DEM-xxx` (ou Écartée, ou En sommeil).
 
@@ -47,7 +47,18 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - **M1-4** : Le rôle d'administrateur peut-il être confié à quelqu'un d'autre que vous ? Pourquoi distinguer ce rôle, alors que vous seriez le seul à le détenir au départ ?
 - **M1-5** : Les résumés du matin et du soir du contributeur portent-ils seulement sur les tâches partagées ?
 
-**Critères de maturité remplis** : besoin, valeur, rôles esquissés. **Il manque** : le périmètre exclu, les réponses M1-1 à M1-5 et l'avis de faisabilité de Starck.
+**Réponses du commanditaire (2026-10-22, transcrites de sa dictée)**
+- **M1-1** : le contributeur a son propre compte Google.
+- **M1-2** : le contributeur peut créer des tâches.
+- **M1-3** : un seul contributeur **par tâche** (verbatim : « Il peut y avoir un seul contributeur par tâche »).
+- **M1-4** : dans un premier temps, le rôle d'administrateur ne peut pas être délégué.
+- **M1-5** : les résumés du contributeur portent sur les objectifs partagés et sur ses propres tâches.
+
+**Questions de suivi** :
+- **M1-6** : M1-3 parle d'un contributeur par tâche. Un même objectif peut-il donc être partagé avec **plusieurs** contributeurs, chacun ayant ses tâches ? Ou bien un seul contributeur par objectif ?
+- **M1-7** : les tâches créées par le contributeur sont-elles visibles et modifiables par l'administrateur ?
+
+**Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité (sauf M1-6 et M1-7). **Il manque** : le périmètre exclu, la taille confirmée par un avis de faisabilité de Starck (partage Drive entre deux comptes sans serveur), et les réponses M1-6 et M1-7.
 
 ---
 
@@ -77,4 +88,15 @@ Statuts : Reçue → Qualifiée → Mûre → Priorisée → Transformée en `DE
 - **M2-4** : Sur quels appareils : smartphone seulement, ou aussi PC ?
 - **M2-5** : Acceptez-vous que le contenu de vos objectifs et de vos tâches soit transmis à ce service ?
 
-**Critères de maturité remplis** : besoin, valeur, périmètre esquissé. **Il manque** : les réponses M2-1 à M2-5, l'avis de faisabilité et de coût de Starck, et le périmètre exclu.
+**Réponses du commanditaire (2026-10-22, transcrites de sa dictée)**
+- **M2-1** : l'IA et le budget sont à déterminer. Une IA assez simple, peut-être Mistral ou Claude. Le commanditaire veut une solution **ouverte**, donc probablement une interface **MCP**, pour ne pas dépendre d'un fournisseur.
+- **M2-2** : l'IA **suggère** et ne fait pas à la place de l'utilisateur. L'utilisateur valide les propositions, et c'est sa validation qui crée les objectifs et les tâches.
+- **M2-3** : pas de réponse vocale dans un premier temps. L'entrée reste vocale.
+- **M2-4** : plutôt sur smartphone que sur PC dans un premier temps.
+- **M2-5** : oui, les données seront nécessairement envoyées au service d'IA.
+
+**Conséquences notées par Jarvis**
+- M2-5 restreint ENF-05 pour ce module. Il faudra le dire explicitement dans le cahier des charges et prévoir un consentement à l'activation du module.
+- « Ouvert, interface MCP » : MCP est un protocole qui permet à une IA d'utiliser des outils. Il existe deux lectures possibles. Soit Done Juan **expose** ses fonctions (proposer un objectif, proposer des tâches) à n'importe quelle IA compatible. Soit Done Juan **appelle** une IA au choix de l'utilisateur. Le choix est à faire par Starck, compatible avec DEC-007 (aucun serveur) et avec la contrainte de coût.
+
+**Critères de maturité remplis** : besoin, valeur, conflits repérés, réponses de maturité. **Il manque** : le périmètre exclu (par exemple : pas de réponse vocale, pas de PC en v1, pas d'action de l'IA sans validation) et la taille confirmée par un avis de faisabilité et de coût de Starck (fournisseur, MCP, reconnaissance vocale sur Android).
