@@ -1,6 +1,6 @@
 # Guide pas à pas du test technique (R1, R2, R11)
 
-> Version 1 du 2026-10-22. Auteur : Starck. Destinataire : le commanditaire.
+> Version 2 du 2026-10-22 (alignée sur le PoC réel, revue RV-POC). Auteur : Starck. Destinataire : le commanditaire.
 > Contexte : décision DEC-031. Protocole technique de référence : `test-technique-R1-R2.md`.
 > Statut : **prêt à l'emploi, jamais exécuté.**
 
@@ -39,7 +39,7 @@ Jarvis vous les envoie. Notez-les ici (sans les publier) :
 
 | Valeur | Rôle | Reçue ? |
 |---|---|---|
-| `<NOM_DE_PAQUET>` | Nom technique de l'application Android de test (exemple de forme : `fr.exemple.poc`). Anthony le fixe. | |
+| `<NOM_DE_PAQUET>` | Nom technique de l'application Android de test : **`fr.donejuan.poc`** (valeur définitive du PoC, à recopier telle quelle). | |
 | `<SHA1_DEBUG>` | Empreinte de la clé de test « débogage » | |
 | `<SHA1_PUBLICATION>` | Empreinte de la clé de test « publication » | |
 
@@ -165,6 +165,8 @@ Résultat attendu : une fenêtre « Client OAuth créé » affiche un **ID clien
 
 ## c) Identifiant OAuth Android
 
+**Important** : seuls comptent les APK construits avec les clés de test de l'équipe. Un APK construit sans ces clés est signé par une clé automatique dont l'empreinte change à chaque construction : il ne peut pas s'authentifier. L'équipe ne vous remettra que des APK dont elle a vérifié l'empreinte (affichée par la construction) contre `<SHA1_DEBUG>` ou `<SHA1_PUBLICATION>`. Si vous recevez un APK sans cette confirmation, ne l'installez pas.
+
 L'équipe vous demande **deux** identifiants Android : un pour la clé de test « débogage », un pour la clé de test « publication » (prérequis P9). Le nom de paquet est le même ; seule l'empreinte change.
 
 ### c.1 Ce qu'est l'empreinte SHA-1
@@ -241,7 +243,7 @@ Pensez à la désactiver après les séances.
 6. Pour installer : `adb install -r chemin\vers\poc.apk`. Résultat attendu : `Success`.
 
 ### d.7 Méthode 2 : installation par fichier APK
-1. Sur le téléphone, ouvrez Chrome et allez à l'adresse que l'équipe vous donne pour l'APK.
+1. Sur le téléphone, ouvrez Chrome et allez à l'adresse que l'équipe vous donne pour l'APK voulu (« débogage » ou « publication » : deux adresses distinctes, ne les confondez pas).
 2. Touchez le lien de l'APK. Acceptez le téléchargement si Chrome avertit que « ce type de fichier peut être dangereux ».
 3. Touchez **Ouvrir** quand le téléchargement est terminé, puis **Installer**.
 4. Si Android ou Google Play Protect affiche un avertissement, **ne cliquez pas tout de suite** : notez le texte exact, faites une capture d'écran, puis suivez la consigne de la séance (g).
@@ -324,14 +326,14 @@ Matériel : PC, téléphone chargé, câble, accès aux comptes. Prérequis : pa
 | 13 | **R3 (PC).** Rouvrez l'application installée. Cliquez sur « Synchroniser ». | Combien de clics ? Une fenêtre qui se ferme seule ? Un mot de passe demandé ? | Les trois réponses. |
 | 14 | **R3, session fermée.** Déconnectez-vous de Google dans Chrome, puis refaites 13. | Une fenêtre de connexion est attendue. | Ce qui s'affiche. |
 | 15 | **R12 (PC).** Coupez le réseau du PC (Wi-Fi), ouvrez l'application installée. | S'ouvre-t-elle ? L'adresse e-mail est-elle affichée ? Une erreur liée à Google ? | Oui/non. Texte de l'erreur. |
-| 16 | **Diagnostic (PC).** Dans l'écran « Diagnostic », lisez la ligne « Stockage persistant ». | Vrai ou faux. | La valeur. |
+| 16 | **Diagnostic (PC).** Dans l'écran « Diagnostic », touchez « Stockage persistant ? » puis lisez la ligne du journal (mesure R15). | « Stockage persistant » ou « Stockage non persistant ». | Le résultat. |
 | 17 | **R2, redémarrage.** Redémarrez le téléphone. Rouvrez l'application. Touchez « Jeton silencieux ». | Même question qu'en 12. | Oui/non. |
 | 18 | **Mode avion.** Activez le mode avion. Ouvrez l'application. | L'adresse e-mail en cache est affichée, sans erreur bloquante. | Oui/non. Texte de l'erreur. Désactivez le mode avion. |
 | 19 | **APK de publication (R16-T).** Désinstallez d'abord l'application de test « débogage » (appui long sur l'icône, **Désinstaller**). Installez ensuite le premier APK « publication » par fichier (d.7). | Les autorisations demandées. Un avertissement Play Protect ? | Texte exact. Capture. |
 | 20 | Connectez-vous, touchez « Créer », puis « Jeton silencieux ». | Cela fonctionne-t-il avec ce second identifiant ? | Oui/non. |
-| 21 | Installez **par-dessus** le second APK « publication » (version supérieure), par câble : `adb install -r` (d.6). | Succès ? Votre identité est-elle conservée ? Faut-il se reconnecter ou consentir de nouveau ? | Oui/non pour chaque question. |
+| 21 | Installez **par-dessus** le second APK « publication » (version supérieure), par câble : `adb install -r` (d.6). Rouvrez l'application, touchez « Signature et version », puis « Jeton silencieux ». | Succès ? Votre identité est-elle conservée ? Faut-il se reconnecter ou consentir de nouveau ? Le journal affiche-t-il le nouveau `versionCode` et la même empreinte SHA-1 ? | Oui/non pour chaque question. |
 | 22 | (facultatif) Installez par-dessus un APK « débogage ». | Android refuse l'installation. | Le message. |
-| 23 | **R2, tâche de fond (facultatif).** Si l'équipe l'a prévue : laissez le téléphone allumé, application fermée, pendant 3 h. | — | Rien à faire, l'application note les résultats. |
+| 23 | **R2, tâche de fond.** Non disponible dans cette application de test (mesure informative, reportée à un lot ultérieur). | — | Rien à faire. |
 
 **Important : ne retirez pas l'accès de l'application dans votre compte Google pendant cette séance.** Cela rendrait le test du lendemain impossible.
 
@@ -342,13 +344,13 @@ Avant de finir : l'équipe vérifie avec vous que le téléphone et l'applicatio
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
 |---|---|---|---|
 | 1 | **R2, après 24 h.** Ouvrez l'application sur le téléphone. Touchez « Jeton silencieux ». | Un jeton est-il obtenu **sans aucune fenêtre** ? | Oui/non. Heure. Capture si fenêtre. |
-| 2 | Si l'étape 23 de la séance 1 a été faite : lisez le journal de la tâche de fond. | Réussites et échecs, toutes les 30 min. | Les nombres. |
-| 3 | **Accès retiré, jeton encore valide (§3.5, point 2).** Connectez-vous sur le PC. Dans le journal, vérifiez que le jeton expire dans plus de 2 minutes. Dans un autre onglet, ouvrez `https://myaccount.google.com`, **Sécurité**, **Vos connexions à des applications tierces** (nom possible : « Applications tierces avec accès au compte »), choisissez `Done Juan`, **Supprimer l'accès**. | La suppression est confirmée. | L'heure exacte de la suppression. |
+| 2 | (Sans objet : la tâche de fond n'existe pas dans cette application de test.) | — | — |
+| 3 | **Accès retiré, jeton encore valide (§3.5, point 2).** Connectez-vous sur le PC (touchez « Se connecter »). **Ne rechargez pas la page** jusqu'à l'étape 4 : le jeton n'est gardé qu'en mémoire. Dans le journal, vérifiez que le jeton expire dans plus de 2 minutes. Dans un autre onglet, ouvrez `https://myaccount.google.com`, **Sécurité**, **Vos connexions à des applications tierces** (nom possible : « Applications tierces avec accès au compte »), choisissez `Done Juan`, **Supprimer l'accès**. | La suppression est confirmée. | L'heure exacte de la suppression. |
 | 4 | Dans l'application de test (PC), cliquez sur « Appeler Drive » **tout de suite**, puis 1, 5 et 15 minutes plus tard. | Drive répond-il « 401 » (refus) ou accepte-t-il ? | Le résultat à chaque moment. |
-| 5 | **Demande de jeton après retrait (§3.5, point 3).** Cliquez sur « Se connecter » (PC). | L'écran de consentement revient-il, ou une erreur ? | Le texte exact ou le code. Capture. |
-| 6 | Acceptez **tous** les accès. Regardez le journal. | « Tous les accès accordés » : vrai ou faux. | La valeur. |
-| 7 | Recommencez 5 puis 6, mais **décochez** un accès à la demande de Google, si Google le permet. | La valeur change-t-elle ? | La valeur. |
-| 8 | **R2, retrait de l'accès sur le téléphone.** Retirez de nouveau l'accès (comme en 3). Sur le téléphone, touchez « Jeton silencieux ». | Une erreur est affichée (attendu : « Accès Google révoqué »). | Le texte exact. |
+| 5 | **Demande de jeton après retrait (§3.5, point 3).** Rechargez la page, puis cliquez sur « Demander un jeton » (PC). | L'écran de consentement revient-il, ou une erreur ? | Le texte exact ou le code. Capture. |
+| 6 | Si un écran de consentement apparaît, acceptez **tous** les accès. Regardez le journal. | « Tous les accès accordés » : vrai ou faux. | La valeur. |
+| 7 | Recommencez 5 puis 6 (retirez d'abord l'accès comme en 3), mais **décochez** un accès à la demande de Google, si Google le permet. | La valeur change-t-elle ? | La valeur. |
+| 8 | **R2, retrait de l'accès sur le téléphone.** Retirez de nouveau l'accès (comme en 3). Sur le téléphone, touchez « Jeton silencieux ». | Le journal affiche un résultat (selon le comportement de Google : `AccesGoogleRevoque`, ou `InteractionRequise` avec un écran de consentement). Les deux sont des résultats utiles. | Le texte exact du résultat et le code d'erreur affiché dans le journal. Capture. |
 | 9 | **Fin.** Désactivez « Sources inconnues » (d.5). Si vous le souhaitez, supprimez le dossier `Done Juan (POC)` dans Drive. | — | — |
 
 ### Tableau de résultats
