@@ -1,0 +1,27 @@
+# Clés de signature et secrets (ADR-012)
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+local.properties
+.env
+.env.*
+!.env.example
+secrets/
+
+# Dépendances et constructions
+node_modules/
+dist/
+build/
+coverage/
+poc/android/
+android/.gradle/
+android/app/build/
+*.apk
+*.aab
+
+# Éditeurs et système
+.idea/
+.vscode/
+.DS_Store
