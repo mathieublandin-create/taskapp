@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8 terminée** : 10 US explicites ; **E9** à lancer ; ordre : socle, US-022, US-001, US-017 incr. 1, US-023, 002, 024, 003, 025, US-017 incr. 2 à 4, US-018, US-031 ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8 terminée** : 10 US explicites ; **E9 en cours** (US métier, Anthony) et préparation du test technique (Starck) ; ordre : socle, US-022, US-001, US-017 incr. 1, US-023, 002, 024, 003, 025, US-017 incr. 2 à 4, US-018, US-031 ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
@@ -47,6 +47,7 @@
 ## Décisions (arbitrages du commanditaire — définitives)
 | Décision | Date | Sujet | Décision |
 |---|---|---|---|
+| DEC-031 | 2026-10-22 | Démarrage d'E9 | Verbatim « Les deux en parallèle » : préparation du test technique R1/R2/R11 et, en parallèle, E9 des US métier (US-001, 023, 002, 024, 003, 025), les parties dépendant du format Drive étant marquées « sous réserve R1 » |
 | DEC-030 | 2026-10-21 | E8 LOT-001 : 4 questions au commanditaire | Verbatim « Reco ». A8/Q-US-017-4 : limite de CA-13 acceptée (heure changée hors ligne, application fermée ou appareil redémarré : la valeur non retenue est signalée jusqu'au retour du réseau) ; Q-US-017-3 a) : « Repartir de zéro » l'emporte toujours sur « Restaurer » (complète RG-044) ; Q-US-001-1 a) : rattachement et placement non retenus après suppression concurrente d'un objectif signalés dans « Modifications non retenues » (complète RG-047) ; Q-US-025-2 a) : une sous-tâche terminée sous une tâche parente abandonnée ne se rouvre pas directement, il faut reprendre la tâche parente d'abord. Ces points valent validation E6 des compléments correspondants. |
 | DEC-026 | 2026-10-21 | RG-057 « prochaine ouverture » (Q-ERG-18) | Lancement de l'application ou rechargement de la PWA ; pas un simple retour au premier plan (verbatim « Reco ») |
 | DEC-027 | 2026-10-21 | QC-8 Clé de signature Android | Conservée dans les secrets chiffrés GitHub, avec une sauvegarde hors ligne chez le commanditaire (verbatim « Reco ») |
