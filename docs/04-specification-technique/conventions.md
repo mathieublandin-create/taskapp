@@ -1,10 +1,12 @@
 # Conventions techniques
 
-> **Version 0.3 — 2026-10-22 — Anthony (responsable technique).** E9 de LOT-001 (ANT-22) : alignement sur le DAT v0.10.1 et les ADR-001 à ADR-012 (statut « Proposé », stables pour E9 selon l'en-tête du DAT), sur le cahier des charges v0.11, le glossaire d'étapes v1.4 et le guide d'ergonomie v0.2.8 ; distribution Android par APK (DEC-021, ADR-012, DEC-027, DEC-028) ; protection de `main` (DEC-029) ; conception en parallèle du test technique (DEC-031).
+> **Version 0.4 — 2026-10-22 — Anthony (responsable technique).** Alignement sur **ADR-013** (PWA unique sur tous les appareils, statut « Proposé », sous condition de DEC-034) et sur le **DAT v0.11**. La cible est une seule PWA (`composition/web.ts`, IndexedDB par Dexie en durabilité stricte, connexion par redirection `prompt=none` à l'ouverture). Capacitor, SQLite, le module natif, l'APK, sa signature, `publication.yml` et les secrets de signature sont regroupés au **§19 « Repli (ADR-012), si la condition de DEC-034 échoue »**, sans être supprimés. La v0.3 (E9 de LOT-001, ANT-22) reste la base de toutes les autres règles.
 >
-> **Statut : brouillon applicable.** Les règles de ce document s'appliquent dès maintenant à LOT-001. La version 1.0 sera publiée à la revue de lancement de LOT-001 (E11), une fois connu le résultat du test technique R1, R2 et R11 (§17.2). Les règles qui dépendent de ce résultat portent la mention **« Sous réserve R1 »** (ou R2, R11), avec l'hypothèse retenue, tirée du DAT.
+> **Condition de DEC-034** : mesures M-RED et M-PERSIST du test technique v3 sur Chrome Android (DAT PO-11). Tant qu'elle n'est pas mesurée, la cible s'applique et le §19 reste en sommeil. Si elle échoue, le §19 redevient applicable pour Android, la cible restant valable pour le PC.
 >
-> **Entrées** : `docs/workflow.md` ; cahier des charges v0.11 (RG-001 à RG-058) ; DAT v0.10.1 et ADR-001 à ADR-012 ; guide d'ergonomie v0.2.8, dont le catalogue des libellés et des codes d'état (§6.6) ; glossaire d'étapes v1.4 (`tests/features/GLOSSAIRE-ETAPES.md`) ; décisions DEC-010, DEC-012, DEC-015 à DEC-031 (`docs/suivi-projet.md`) ; contrôle d'explicitation de LOT-001 et ses hypothèses de conception H-1 à H-7 (`docs/ceremonies/explicitation-LOT-001.md`) ; fichiers `.feature` de LOT-001 (**270 scénarios**).
+> **Statut : brouillon applicable.** Les règles de ce document s'appliquent dès maintenant à LOT-001. La version 1.0 sera publiée à la revue de lancement de LOT-001 (E11), une fois connu le résultat du test technique v3 (R11, M-RED, M-PERSIST ; §17.2). Les règles qui dépendent de ce résultat portent la mention **« Sous réserve R11 »** ou **« Sous réserve M-RED »**, avec l'hypothèse retenue, tirée du DAT. La mention « Sous réserve R1 » ne vaut plus qu'en repli (§19) : avec un client OAuth Web unique, R1 est sans objet (DAT v0.11 §10.1).
+>
+> **Entrées** : `docs/workflow.md` ; cahier des charges v0.11 (RG-001 à RG-058) ; DAT v0.11 et ADR-001 à ADR-013 ; `poc-specification.md` v2 §15 (écarts EC-3 et EC-4) ; guide d'ergonomie v0.2.8, dont le catalogue des libellés et des codes d'état (§6.6) ; glossaire d'étapes v1.4 (`tests/features/GLOSSAIRE-ETAPES.md`) ; décisions DEC-010, DEC-012, DEC-015 à DEC-035 (`docs/suivi-projet.md`) ; contrôle d'explicitation de LOT-001 et ses hypothèses de conception H-1 à H-7 (`docs/ceremonies/explicitation-LOT-001.md`) ; fichiers `.feature` de LOT-001 (**270 scénarios**).
 >
 > **Documents de conception de LOT-001** : `ST-socle-ecriture.md` (modèle d'écriture synchronisable, commun à US-001 et à l'incrément 1 d'US-017) et les `ST-US-xxx.md`. L'ordre de réalisation est dans `docs/lots/LOT-001.md`, section « Ordre de réalisation ».
 >
@@ -17,6 +19,7 @@
 | 0.1 | 2026-10-20 | Anthony | Création : principes, organisation conceptuelle, règles de codage, erreurs, sécurité, stratégie de tests, Git, outillage par catégorie, DoD technique, points de testabilité, décisions attendues de Starck. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001, section 3 de l'avis de refinement (points 1 à 18), sur la base du DAT v0.6, du guide d'ergonomie v0.2.3 et du glossaire d'étapes v1.0. Marqueurs « En attente du DAT » retirés. Stack, versions figées et idiomes TypeScript (§3, §5.3, §6.2). Arborescence physique `src/<contexte>/<couche>/` (§4). Ports et doublures du DAT et de l'ADR-009 (§2.3, §11.10). Outillage complet et CI GitHub Actions (§13, §14 ; PO-7 : dépôt `mathieublandin-create/taskapp`). Seuils de couverture, dont 95 % pour la synchronisation (§12). Dates et temps selon DEC-012 et ADR-011 : `FUSEAU_REFERENCE`, date-fns et @date-fns/tz, fuseaux de CI, PT-16 (§7, §11.9). UUID v7 (§7.5). Sécurité DS-06 et DS-07 (§9). Nouvelle section stockage et synchronisation, dont RG-058 (§10). Banc de synchronisation (§11.11). Types de paramètres, organisation des steps, tags `@ihm`, `@lent`, `@google-reel`, `@recette` (§11.6 à §11.8). Couche de modèles de vue (§2.2, §4.3, §11.12). Catalogue de messages (§8.5). Glossaire code aligné sur le CdC v0.8 et le DAT §6.1 (§5.2) ; `Duree.saisie` et `Duree.calculee`, `EcartTemps` (§7.1). Points de testabilité mis à jour (§16). Dette DT-001 (données locales non chiffrées). |
 | 0.3 | 2026-10-22 | Anthony | E9 de LOT-001, ANT-22. Entrées : DAT v0.10.1, ADR-012, CdC v0.11, glossaire v1.4, guide v0.2.8, 270 scénarios. Port `Horloge` : horloge monotone (DS-11 v0.9, §7.3). Écriture synchronisable : `ServiceEtatLocal`, contexte causal, index des écritures en attente, décompte par élément, journal métier typé (§10.1, §5.2 ; détail dans `ST-socle-ecriture.md`). Commandes avec confirmation (§8.6). Catalogue v0.2.8 : `data-a-lire`, `data-variante`, motifs `ERR-001` à `ERR-006` (§8.5). Distribution Android par APK : nom de paquet, `.gitignore` posé avant toute clé, secrets de signature (DEC-027), `versionCode`, flux de publication, vérification des développeurs (DEC-028) (§3.1, §9.1, §13.3, §14). Protection de `main` dès la CI (DEC-029, §13.1). Glossaire d'étapes v1.4 : conventions d'écriture, hypothèses H-5 et H-7, heure ambiguë (§11.6, §11.7). Rattachement des scénarios aux rangs de réalisation et sélection des scénarios exécutables (§11.13). Points ouverts ANT-17 à ANT-21 clos (§17.2). |
+| 0.4 | 2026-10-22 | Anthony | DEC-034, ADR-013 (Proposé), DAT v0.11. Pile allégée : PWA seule, une composition `web.ts`, IndexedDB en durabilité stricte (§3.1, §4.2, §10.1). Connexion par redirection `prompt=none` à l'ouverture : exception unique à la règle « aucun jeton dans une URL », encadrée (effacement du fragment avant tout rendu, EC-3 ; `state` à usage unique valable 10 min, EC-4 ; jeton en mémoire seulement) (§9.2). Erreurs de retour de redirection (§8.3), doublure `FauxFournisseurAuth` étendue (§11.10). Persistance du stockage sur tous les appareils (§9.3). Horloge monotone par `performance.now()` partout (§7.3). Hébergement : GitHub Pages retenu (DEC-023, DEC-032 H-1, ADR-013) ; flux `deploiement.yml` (§14.3). DEC-027 et DEC-028 passées en repli, DEC-029 inchangée (§17.4). Nouveau §19 « Repli (ADR-012) » : Capacitor, SQLite, module natif, APK, signature, `publication.yml`, secrets, nom de paquet, `versionCode`, vérification des développeurs. Points ouverts ANT-26 (recette sur GitHub Pages) et ANT-27 (nom de la variable du client OAuth) (§17.2). |
 
 ## Sommaire
 
@@ -38,6 +41,7 @@
 16. Points de testabilité
 17. Décisions de Starck et points ouverts
 18. Documents associés
+19. Repli (ADR-012), si la condition de DEC-034 échoue
 
 ---
 
@@ -71,10 +75,10 @@ Le code est organisé en **architecture hexagonale (ports et adaptateurs)**. Les
 |---|---|---|---|
 | `domaine` | Entités, objets-valeurs, règles de gestion (RG), services de domaine purs, erreurs métier | Le domaine de son contexte, `commun/domaine`, le domaine public d'un autre contexte (§4.2) ; `date-fns` et `@date-fns/tz` dans `commun/domaine/temps` seulement (§7.2) | Application, infrastructure, présentation, React, Ionic, Zustand, Dexie, Capacitor, Zod, `fetch`, horloge système, aléatoire système, stockage, variables d'environnement |
 | `application` | Cas d'usage (un par intention de l'utilisateur ou par traitement de rattrapage), **requêtes de lecture**, ports (interfaces), orchestration, transactions | `domaine`, `commun/application` | Infrastructure, présentation, framework d'IHM, Zod, API Google |
-| `infrastructure` | Adaptateurs des ports : Dexie, SQLite, Drive REST, Calendar REST, Google Identity Services, authentification native, notifications locales, horloge et aléatoire système, journal technique | `application` (ports), `domaine` (mapping), bibliothèques tierces | Présentation |
+| `infrastructure` | Adaptateurs des ports : Dexie, Drive REST, Calendar REST, Google Identity Services et redirection OAuth (§9.2), horloge et aléatoire système, journal technique ; *repli* (§19) : SQLite, authentification native, notifications locales | `application` (ports), `domaine` (mapping), bibliothèques tierces | Présentation |
 | `presentation/modeles-de-vue` | **Modèles de vue** (DAT v0.6 §2.4) : requêtes de présentation pures qui transforment le résultat des requêtes de l'application en structures prêtes à afficher (listes triées et regroupées, libellés et **codes** du catalogue §8.5, compteurs, états vides, activation des actions) ; testables en Vitest et en Cucumber sans React | `application` (requêtes, types de résultat), `domaine` (types), `commun/presentation` (formatage, catalogue) ; ports `Horloge` et `DepotLocal` **en lecture seule, par injection** (DAT §2.4) | React, Ionic, Zustand, DOM, toute écriture, `TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Notifieur`, `Planificateur` |
 | `presentation/ui` | Écrans et composants React et Ionic « bêtes », magasins Zustand, crochets (*hooks*) : ils lient un modèle de vue à l'écran et déclenchent des cas d'usage | `presentation/modeles-de-vue`, `application` (cas d'usage, via la composition) | Infrastructure ; toute règle métier ou mise en forme calculée |
-| `composition` | Point d'assemblage : instancie les adaptateurs et les injecte dans les cas d'usage, une configuration par plateforme (`web.ts`, `capacitor.ts`, DS-02) | Tout | — |
+| `composition` | Point d'assemblage : instancie les adaptateurs et les injecte dans les cas d'usage. **Une seule composition de production, `web.ts`**, pour tous les appareils (ADR-013, DS-02 v0.11) ; `test-ihm.ts` pour les scénarios `@ihm` ; *repli* : `capacitor.ts` (§19) | Tout | — |
 
 Règles impératives :
 - Le domaine **doit** être pur : aucune entrée-sortie, aucune lecture de l'heure courante, aucun tirage aléatoire, aucun accès à une variable d'environnement. L'heure et le hasard lui sont **passés en paramètre** par la couche application, qui les obtient des ports `Horloge` et `SourceAleatoire`.
@@ -91,10 +95,10 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 | `DepotLocal` | `synchronisation/application/ports` | Lecture et écriture **transactionnelles** de l'état local : écritures par information (valeur, HLC, contexte causal), pierres tombales, journal métier, index des écritures en attente, métadonnées locales ; espace cloisonné par compte ; abonnement aux changements. Contrat : `ST-socle-ecriture.md` §4.3 | Adaptateur réel `DepotLocalDexie` sur `fake-indexeddb` (pas de doublure en mémoire, §11.10) | DS-07, DS-11, ADR-010 |
 | `TransportSynchro` | `synchronisation/application/ports` | Échanges avec le Drive : manifeste, liste des changements, lecture des fichiers des autres appareils, dépôt du fichier de l'appareil | `FauxDrive` | DS-10, DS-11, ADR-003 |
 | `PasserelleAgenda` | Contexte agenda, fixé dans la ST du premier lot qui utilise l'agenda | Événements de l'application (séries de rappels, créneaux), lecture incrémentale, intervalles occupés | `FauxAgenda` | DS-18, ADR-006 |
-| `FournisseurAuth` | `compte/application/ports` | Connexion et déconnexion Google, identité (`sub`), jeton d'accès valide, portées accordées, détection de la révocation et de la session expirée | `FauxFournisseurAuth` | DS-04, DS-05, ADR-004 |
+| `FournisseurAuth` | `compte/application/ports` | Connexion et déconnexion Google, identité (`sub`), jeton d'accès valide, portées accordées, détection de la révocation et de la session expirée. Adaptateur web unique (ADR-013), deux stratégies : redirection `prompt=none` à l'ouverture, Google Identity Services ou redirection interactive sur geste (§9.2) | `FauxFournisseurAuth` | DS-04, DS-05, ADR-004, ADR-013, DAT §4.1.7 |
 | `CoffreJetons` | `compte/application/ports` | Conservation **en mémoire** du jeton d'accès ; aucun jeton de rafraîchissement (DS-06) | `CoffreJetonsMemoire` (l'adaptateur réel est déjà en mémoire) | DS-06 |
 | `Horloge` | `commun/application/ports` | Instant courant de l'appareil ; horloge monotone (DS-11 v0.9, DAT §6.4) ; fuseau de référence ; fuseau de l'appareil pour la seule mention RG-054 (§7.3) | `HorlogeSimulee` | ADR-011 |
-| `Notifieur` | `commun/application/ports` | Notifications locales programmées (smartphone, lots ultérieurs) | `NotifieurMemoire` | DAT §5 |
+| `Notifieur` | `commun/application/ports` | Notifications locales programmées. **Sans adaptateur réel en cible** : les notifications de secours sont abandonnées (Q-PWA-3, DAT v0.11 §5) ; le port n'est créé que par la ST d'un lot qui en a l'usage, ou en repli (§19) | `NotifieurMemoire` | DAT §5 |
 | `Planificateur` | `commun/application/ports` | Déclenchements différés et périodiques : temporisation de dépôt de 5 s, synchronisation toutes les 2 min, évaluation du bandeau RG-057 chaque minute, attentes entre tentatives | `PlanificateurSimule` | DAT §4.3, §4.1.5 bis |
 | `GenerateurIdentifiants` | `commun/application/ports` | Identifiants UUID v7 (§7.5) | `GenerateurIdentifiantsSequentiel` | DS-08 |
 | `SourceAleatoire` | `commun/application/ports` | Tirages aléatoires (graine des fun facts) | `SourceAleatoireDeterministe` | DS-20, ADR-008 |
@@ -117,17 +121,18 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 
 ## 3. Stack et versions figées
 
-### 3.1 Pile (DAT §3.2, DS-01, DS-14, DS-16)
+### 3.1 Pile (DAT v0.11 §3.2, DS-01, DS-14, DS-16, ADR-013)
+Cible : **une seule PWA** pour le PC, Chrome Android (application installée) et, pour EPI-001, Safari sur iPhone. Les outils de la coque Android (Capacitor, SQLite, JDK, Gradle, Build-Tools) sont au §19.1.
+
 | Domaine | Outil | Règle de version |
 |---|---|---|
 | Exécution de l'outillage | **Node.js 24 LTS** | `.nvmrc` = `24` ; `package.json` : `"engines": { "node": ">=24 <25" }` ; `engine-strict=true` dans `.npmrc` |
 | Gestionnaire de paquets | **pnpm** | Dernière version stable au démarrage d'E12 de LOT-001, figée dans le champ `packageManager` de `package.json` (`pnpm@x.y.z`) ; `pnpm install --frozen-lockfile` en CI |
 | Langage | **TypeScript 5.x** | Dernière version 5.x stable au démarrage d'E12, figée **exactement** ; un passage en 6.x ou plus passe par Starck |
 | Interface | React, Ionic React | Version exacte |
-| Construction et PWA | Vite, vite-plugin-pwa (Workbox) | Version exacte |
-| Coque mobile | Capacitor ; `@capacitor-community/sqlite` ; `@capacitor/network` ; `@capacitor/local-notifications` (lots ultérieurs) | Version exacte |
-| Construction Android | JDK 21 (Temurin), Gradle par l'enveloppe `android/gradlew` versionnée, Android SDK Build-Tools (dont `apksigner` et `zipalign`) | JDK : version majeure figée dans la CI (`actions/setup-java`) ; Gradle : fixé par `gradle-wrapper.properties` ; `compileSdk`, `targetSdk` et version des Build-Tools figés dans `android/variables.gradle` au démarrage d'E12 (ST-US-018) |
-| Base locale web | Dexie | Version exacte |
+| Construction et PWA | Vite, vite-plugin-pwa (Workbox) : précache, `navigateFallback` (sert aussi le retour de redirection OAuth hors ligne, DAT §4.1.7), invite « nouvelle version » | Version exacte |
+| Base locale (tous appareils) | Dexie, transactions d'écriture en durabilité stricte (§10.1) | Version exacte ; la version retenue doit exposer l'option `chromeTransactionDurability` |
+| Connexion Google | Google Identity Services, chargé à la demande depuis `accounts.google.com` (aucun paquet npm) ; redirection OAuth `prompt=none` sans bibliothèque (§9.2) | Sans objet |
 | État de l'interface | Zustand | Version exacte |
 | Dates et fuseaux | **date-fns 4.x** et **@date-fns/tz** | Version exacte ; la version 4 est requise pour l'option `in` (§7.2) |
 | Validation des fichiers Drive | Zod | Version exacte |
@@ -137,7 +142,7 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 
 ### 3.2 Règles de version
 - **Versions exactes** : `save-exact=true` dans `.npmrc` ; aucune plage `^` ou `~` dans `package.json`. Le fichier `pnpm-lock.yaml` est versionné.
-- Mises à jour par **Dependabot** (paquets npm et actions GitHub), regroupées chaque semaine. Une mise à jour majeure est une demande de revue à part, examinée par Anthony ; une mise à jour majeure de Node, TypeScript, React, Capacitor, Dexie ou d'une bibliothèque de stockage passe aussi par Starck.
+- Mises à jour par **Dependabot** (paquets npm et actions GitHub), regroupées chaque semaine. Une mise à jour majeure est une demande de revue à part, examinée par Anthony ; une mise à jour majeure de Node, TypeScript, React, Dexie, vite-plugin-pwa ou d'une bibliothèque de stockage passe aussi par Starck.
 - Toute nouvelle dépendance est justifiée dans la demande de revue : besoin, maintenance, licence, sécurité (RCD-16).
 
 ## 4. Organisation du code
@@ -159,14 +164,14 @@ Un seul paquet pnpm, sans monodépôt.
 /
   .gitignore                  premier fichier versionné du socle, avant toute clé de signature (§9.1)
   .github/                    workflows GitHub Actions, dependabot.yml, modèle de pull request
-  android/                    projet Android généré par Capacitor puis versionné (hors artefacts et clés, §9.1) ; pas d'iPhone en v1 (DEC-001)
-  public/                     ressources statiques (dont fun-facts.fr.json, lot DEM-002)
+  index.html                  balise meta Referrer-Policy no-referrer et CSP (§9.2, §9.3)
+  public/                     ressources statiques (manifeste de la PWA, icônes ; fun-facts.fr.json, lot DEM-002)
   scripts/                    scripts d'outillage (contrôle du catalogue, des tags, des rangs ; sélection des scénarios exécutables, §11.13)
   cucumber.mjs                profils cucumber-js (§11.8, §11.13)
   src/
     commun/
       domaine/                type Resultat, objets-valeurs, temps/ (seul usage de date-fns, §7.2)
-      application/ports/      Horloge, Planificateur, GenerateurIdentifiants, SourceAleatoire, JournalTechnique, EtatReseau, Notifieur
+      application/ports/      Horloge, Planificateur, GenerateurIdentifiants, SourceAleatoire, JournalTechnique, EtatReseau (Notifieur : §2.3)
       infrastructure/         HorlogeSysteme, PlanificateurNavigateur, GenerateurUuidV7, SourceAleatoireCrypto, JournalTechniqueLocal, EtatReseauNavigateur
       presentation/           format/ (durées, dates, ancienneté), messages/ (catalogue, §8.5), ui/ (composants partagés)
     <contexte>/
@@ -181,8 +186,8 @@ Un seul paquet pnpm, sans monodépôt.
           etat/               magasins Zustand
       index.ts                interface publique du contexte (seul point d'import depuis un autre contexte)
     infrastructure-google/    client HTTP Google partagé : fetch, traduction des erreurs, attente exponentielle, lecture de l'en-tête Date
-    composition/              web.ts, capacitor.ts, test-ihm.ts (assemblage avec doublures pour @ihm)
-    main.tsx                  point d'entrée
+    composition/              web.ts (seule composition de production), test-ihm.ts (assemblage avec doublures pour @ihm)
+    main.tsx                  point d'entrée ; sa première instruction consomme le retour de redirection OAuth (§9.2)
   tests/
     features/                 fichiers .feature (Pepper)
     steps/                    step definitions au niveau application (§11.7)
@@ -191,7 +196,7 @@ Un seul paquet pnpm, sans monodépôt.
     doublures/                doublures des ports (§11.10)
     contrats/                 suites de contrat des ports
     unitaires/                tests unitaires, en miroir de src/ (non colocalisés, DS-15)
-    integration/              adaptateurs réels : Dexie sur fake-indexeddb, SQLite sur node:sqlite, REST Google avec MSW
+    integration/              adaptateurs réels : Dexie sur fake-indexeddb, REST Google avec MSW
     e2e/                      parcours Playwright hors Cucumber (accessibilité axe, démarrage PWA)
     fixtures/                 données de test versionnées : drive/v<n>/, reponses-google/ (anonymisées)
 ```
@@ -200,6 +205,7 @@ Règles :
 - Un contexte n'importe un autre contexte **que par son `index.ts`**. Aucun autre fichier « baril » (`index.ts` de réexport) n'est admis.
 - `commun` ne contient que des éléments utilisés par au moins deux contextes. Il ne doit pas devenir un fourre-tout.
 - Les tests unitaires reproduisent le chemin de `src/` : `src/objectifs-taches/domaine/tache.ts` → `tests/unitaires/objectifs-taches/domaine/tache.test.ts`.
+- Aucun dossier `android/` ni `ios/` en cible (DS-15 v0.11). En repli, `android/` est créé selon le §19.2.
 
 ### 4.3 Requêtes et modèles de vue
 - Une **requête** (`application/requetes/`) lit l'état local et renvoie des données métier typées, sans formatage. Exemple : `listerTachesAFaire(depot, jour)`.
@@ -378,9 +384,9 @@ export interface Horloge {
   fuseauAppareil(): Fuseau;              // usage exclusif : mention « heure de Paris » (RG-054)
 }
 ```
-- Adaptateur : `HorlogeSysteme`, seul fichier autorisé à lire l'heure, l'horloge monotone (`performance.now()` sur le web) et le fuseau système. Sur Android, l'horloge monotone ancrée sur `SystemClock.elapsedRealtime` et l'identifiant de démarrage sont fournis par l'extension native prévue au DAT §6.4 (ST-US-018).
+- Adaptateur : `HorlogeSysteme`, seul fichier autorisé à lire l'heure, l'horloge monotone (`performance.now()`) et le fuseau système. **Même adaptateur sur tous les appareils** (ADR-013, DAT v0.11 §6.4) : ancrage monotone par `performance.now()` et détection des sauts d'horloge ; la limite résiduelle acceptée par DEC-030 (heure changée application fermée) vaut aussi pour le téléphone. *Repli* : extension native `SystemClock.elapsedRealtime` (§19.4).
 - Doublure : `HorlogeSimulee` (`tests/doublures/`), construite sur le `TempsSimule` du banc (§11.11), seule source de temps des tests (DAT v0.6 §3.3) : `positionner(instant)`, `avancer(ecart: EcartTemps)` (fait avancer l'horloge murale et l'horloge monotone), `dereglerDe(ecart: EcartTemps)` (avance ou retard propre à l'appareil, sans effet sur la monotone), `changerHeureMurale(ecart)` (saut de l'horloge murale seule, DAT §6.4 point 3), `redemarrer()` (nouvelle origine de la monotone), `reglerFuseauAppareil(fuseau)`.
-- `fuseauAppareil()` est accepté par Starck (DAT v0.7, ANT-17) ; `monotone()` est demandé par le DAT (DS-11 v0.9). Seul l'incrément 4 d'US-017 et US-018 l'utilisent au lot 1.
+- `fuseauAppareil()` est accepté par Starck (DAT v0.7, ANT-17) ; `monotone()` est demandé par le DAT (DS-11 v0.9). Seuls l'incrément 4 d'US-017 et US-018 l'utilisent au lot 1.
 
 ### 7.4 Hasard
 - Tout tirage passe par `SourceAleatoire` (`entierEntre(min, max)`, `octets(n)`). Adaptateur : `SourceAleatoireCrypto` (`crypto.getRandomValues`). Doublure : `SourceAleatoireDeterministe` (graine ou séquence imposée).
@@ -404,7 +410,7 @@ export type Resultat<T, E> = Succes<T> | Echec<E>;
 ```
 - Défini dans `src/commun/domaine/resultat.ts`, avec `succes(valeur)` et `echec(erreur)`. Aucune bibliothèque.
 - Les erreurs métier et les erreurs techniques attendues sont des **valeurs** de type union discriminée par `type`. Les exceptions (`throw`) sont réservées aux erreurs de programmation (invariant violé, état impossible).
-- Un adaptateur **capture** les exceptions de ses bibliothèques (fetch, Dexie, SQLite, GIS) et les traduit en `Echec<ErreurPort>`. Aucune exception de bibliothèque ne sort d'un adaptateur.
+- Un adaptateur **capture** les exceptions de ses bibliothèques (fetch, Dexie, GIS ; *repli* : SQLite) et les traduit en `Echec<ErreurPort>`. Aucune exception de bibliothèque ne sort d'un adaptateur.
 
 ### 8.2 Catégories
 | Catégorie | Exemples | Traitement |
@@ -420,8 +426,10 @@ Liste de référence ; la liste exacte et le comportement de chaque erreur sont 
 | Erreur | Port | Situation | Comportement attendu |
 |---|---|---|---|
 | `ReseauIndisponible` | Tous les ports distants | Pas de réseau, délai dépassé | Pas d'erreur pour l'utilisateur : état hors ligne, modifications conservées (RG-021, ENF-06). |
-| `SessionARenouveler` | `FournisseurAuth` | Jeton d'accès expiré sur PC, renouvellement soumis à un geste (DAT §4.1.2, F14) | Indicateur « Reprendre la synchronisation », sans bandeau (guide §6.4). |
-| `AccesGoogleRevoque` | `FournisseurAuth`, ports distants | `401` après un renouvellement, `invalid_grant`, révocation | État « accès Google perdu », utilisation comme hors ligne (RG-035, PT-12). |
+| `SessionARenouveler` | `FournisseurAuth` | Sur **tous les appareils** (DAT v0.11 §4.1.6 bis) : jeton d'accès expiré en cours de session, renouvellement soumis à un geste (DAT §4.1.2, F14) ; retour de redirection `prompt=none` en erreur d'interaction (`interaction_required`, `login_required`, `consent_required`, `account_selection_required`) | Indicateur « Reprendre la synchronisation » (`SYN-SESSION`), sans bandeau (guide §6.4). Aucune nouvelle redirection automatique dans la même ouverture. |
+| `ConfigurationOAuthInvalide` | `FournisseurAuth` | Retour de redirection `redirect_uri_mismatch`, `invalid_request`, `invalid_client`, `origin_mismatch` (DAT v0.11 §4.1.6 bis) | Affiché comme `SessionARenouveler` (`SYN-SESSION`) ; journalisé en `erreur` avec le seul code Google ; constitue une anomalie. |
+| `RetourRedirectionRejete` | `FournisseurAuth` | Retour de Google dont le `state` est absent, inconnu, déjà consommé ou expiré (§9.2) | Le jeton éventuel est **ignoré** et jamais placé dans `CoffreJetons` ; journalisé en `avertissement` sans le fragment ; l'application s'ouvre comme sans jeton (`SYN-SESSION`). |
+| `AccesGoogleRevoque` | `FournisseurAuth`, ports distants | `401` après un renouvellement, `invalid_grant`, révocation ; `access_denied` **après un geste** ; portées du lot 1 accordées partiellement au retour (ADR-013 ; une portée propre à une fonction d'un lot ultérieur relève de `PorteeInsuffisante`) | État « accès Google perdu », utilisation comme hors ligne (RG-035, PT-12). |
 | `ConnexionAnnulee` | `FournisseurAuth` | Fenêtre de consentement fermée, refus | Rien n'est créé (US-022). |
 | `PorteeInsuffisante` | `FournisseurAuth` | Portée refusée | Fonction concernée dégradée, les autres intactes (DS-05). |
 | `DriveIndisponible` | `TransportSynchro` | Drive désactivé pour le compte | Message dédié (guide §6.3). |
