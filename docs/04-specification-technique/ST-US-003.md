@@ -212,4 +212,4 @@ Composants : case « Terminer » (`checkbox`, cible 44 px, annonce `role="status
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes, cas temporels.
-- [ ] Tests du §13 en phase rouge (E10).
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 25 cas).

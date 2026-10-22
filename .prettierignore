@@ -1,0 +1,10 @@
+poc/
+docs/
+tests/features/
+pnpm-lock.yaml
+coverage/
+dist/
+# Documents des agents (circuit de Jarvis, conventions.md §13.1) et fichiers du POC
+.claude/
+*.md
+.github/workflows/poc.yml

@@ -246,6 +246,8 @@ Agrégations en O(nombre de sous-tâches).
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-024`.
 
+**Précisions de l'E10 (2026-10-22)** : `new CreerSousTache(service, generateur)` ; `construireFormulaireSousTache(detail: DetailTache)` ; les lignes de sous-tâches du détail sont de type `LigneSousTache` (`detail-tache.ts`). UT-US-024-21 et 22 (rang 9) sont écrits et rouges dès maintenant.
+
 ## 14. Tests attendus de Benjamin
 Composants `LockedField` (lecture de l'explication, non focalisable en saisie), variante « sous-tâche » de `QuickAdd`, `InconsistencyCard` (rang 9) ; extension des tests de `construction-taches.ts` (colonne « tâche parente », estimation technique de 30 min).
 
@@ -264,5 +266,5 @@ Composants `LockedField` (lecture de l'explication, non focalisable en saisie), 
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes.
-- [ ] Tests du §13 en phase rouge (E10) ; UT 21 et 22 rattachés au rang 9.
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 32 cas) ; UT 21 et 22 rattachés au rang 9.
 - [x] Q-US-001-6 (e) répondue (Steeve, guide v0.2.9 §5.8).

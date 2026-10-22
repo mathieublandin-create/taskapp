@@ -300,8 +300,9 @@ export type IndexEnAttente = ReadonlyMap<CleTexte, { readonly cle: CleInformatio
 export const enregistrerEnAttente: (index: IndexEnAttente, cle: CleInformation, hlc: Hlc, instantCorrige: Instant) => IndexEnAttente;
 export const aCreationNonDeposee: (index: IndexEnAttente, element: RefElementMetier) => boolean; // entrée (type, id, 'creation') présente
 export const retirerEntreesDeElement: (index: IndexEnAttente, element: RefElementMetier) => IndexEnAttente; // champs de l'élément et, pour une tâche, ses liens
-export const purgerPourSuppression: (index: IndexEnAttente, element: RefElementMetier,
-  descendantsSupprimes: ReadonlyArray<RefElementMetier>, hlc: Hlc, instantCorrige: Instant) => IndexEnAttente; // §6.5
+export type PurgeSuppression = { readonly element: RefElementMetier; readonly descendantsSupprimes: ReadonlyArray<RefElementMetier>;
+  readonly hlc: Hlc; readonly instantCorrige: Instant };                                    // objet nommé (RCD-02, précision E10)
+export const purgerPourSuppression: (index: IndexEnAttente, purge: PurgeSuppression) => IndexEnAttente; // §6.5
 export const decompterModificationsEnAttente: (index: IndexEnAttente) => number;
 export const plusAncienneModificationEnAttente: (index: IndexEnAttente) => Instant | undefined;
 export const elementsEnAttente: (index: IndexEnAttente) => ReadonlySet<string /* id d'objectif ou de tâche */>;
@@ -725,6 +726,16 @@ Scénarios `@ihm` : aucun. Scénarios `@recette` : aucun.
 | UT-SOC-43 | `tests/unitaires/synchronisation/domaine/contexte-causal.proprietes.test.ts` (fast-check) | `fusionnerContextes` | commutative, associative, idempotente | DAT §4.2.1 | NI |
 
 Suites de contrat : `DepotLocal` → `tests/contrats/depot-local.contrat.ts` (écrite par Anthony en E10, exécutée sur `DepotLocalDexie`).
+
+**Précisions de l'E10 (2026-10-22)** — les squelettes font foi pour les signatures suivantes, absentes ou ajustées par rapport au §4 :
+- `purgerPourSuppression(index, purge: PurgeSuppression)`, avec `PurgeSuppression = { element, descendantsSupprimes, hlc, instantCorrige }` : la signature à cinq paramètres du §4.1.5 enfreignait RCD-02 (quatre au plus) ;
+- `planifierEcritures(etat, modifications, contexte: ContextePlanification)` : type nommé du troisième paramètre ;
+- `new ServiceEtatLocalTransactionnel({ depot, horloge, generateur }: DependancesServiceEtatLocal)` ;
+- doublures (`tests/doublures/`) et `TempsSimule` livrés en squelettes, avec leur contrat en commentaire : `new TempsSimule(depart)`, `new HorlogeSimulee(temps)`, `new GenerateurIdentifiantsSequentiel(prefixeAppareil = '00')` (UUID `00000000-0000-7000-80<pp>-<n sur 12 chiffres>`) ;
+- suite de contrat : identifiants `CT-DEPOT-01` à `CT-DEPOT-07` ; les observateurs de l'instance qui écrit sont appelés au plus tard à la résolution de la promesse d'`appliquer` (CT-DEPOT-05) ;
+- squelettes : `nonImplemente(…)` importé par l'alias `@non-implemente` (`tsconfig.json`, `vitest.config.ts`) ; plus aucun import de cet alias dans `src/` à la revue E13 du rang ;
+- `Resultat`, `succes`, `echec`, `Marque`, `assertNever`, `ErreurProgrammation`, `FUSEAU_REFERENCE`, `COMPTEUR_HLC_MAX`, `CONTEXTE_VIDE`, `PAS_DUREE_MINUTES` sont livrés complets (types fondateurs et constantes).
+- Support de test livré par Anthony : `tests/support/valeurs.ts`, `fabriques/etat-local.ts`, `environnement.ts`, `modifications.ts`, `plans.ts`, `fast-check.ts` (graine `FC_SEED`, défaut 20261022).
 Cas temporels couverts : minuit de Paris, PT-16 (hiver et été), fin d'année, année bissextile.
 Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation tests/integration/synchronisation tests/contrats/depot-local.contrat.ts`.
 
@@ -759,5 +770,5 @@ Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation 
 - [x] Chaque erreur a un comportement, un code de message et un test (§8).
 - [x] Les patterns imposés et interdits sont listés (§9) ; la sécurité est explicite (§10).
 - [x] Les étapes communes sont listées (§12).
-- [ ] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10).
+- [x] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10, 2026-10-22 : 68 cas UT-SOC et 7 cas CT-DEPOT, tous « NI »).
 - [x] ANT-25 validé par Starck (DAT v0.10.2 §6.1).

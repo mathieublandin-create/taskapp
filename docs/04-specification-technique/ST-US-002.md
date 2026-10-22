@@ -10,10 +10,10 @@
 | RG couvertes | RG-001, RG-003, RG-004, RG-024, RG-028, RG-029, RG-045, RG-046, RG-047 (via ST-US-017 incrément 2), RG-050, RG-053 |
 | DAT / ADR | DAT v0.10.1 (§4.2, §6.1, §6.2) ; ADR-003, ADR-010, ADR-011 |
 | Maquettes | ECR-002 (L1 à L5), ECR-006 (guide §4.3), ECR-007 (A, B, C, E) ; guide v0.2.8 §5.7 |
-| Q-US traitées | Q-US-002-1, Q-US-002-2, Q-US-002-3, Q-US-001-2, Q-US-001-3, Q-US-024-1 (E8) ; Q-US-001-6 (d) (réponse de Steeve, guide v0.2.9 §5.8) ; **Q-US-002-4 posée (§16, non bloquante)** |
+| Q-US traitées | Q-US-002-1, Q-US-002-2, Q-US-002-3, Q-US-001-2, Q-US-001-3, Q-US-024-1 (E8) ; Q-US-001-6 (d) (réponse de Steeve, guide v0.2.9 §5.8) ; Q-US-002-4 (réponse de Steeve, option a, guide v0.2.10 §5.8 d) |
 | Prérequis | ST-US-001 (rang 2), ST-US-023 (rang 4) |
 | Version | 0.1 |
-| Statut | **Prête pour E10** (Q-US-001-6 (d) répondue) ; Q-US-002-4 non bloquante, à lever avant E11 |
+| Statut | **Prête pour E10** ; tests du §13 en phase rouge (E10) |
 | Auteur | Anthony |
 | Branche Git | `us/US-002-taches` |
 
@@ -22,6 +22,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (d) (guide v0.2.9 §5.8) : sections `SEC-TACHES-*`, sous-tâches sous leur tâche parente ; §4.5, §6.6, §12, UT-US-002-33 ; statut levé ; Q-US-002-4 posée |
+| 0.3 | 2026-10-22 | Anthony | E10 : réponse à Q-US-002-4 (option a) intégrée au §6.6 et à UT-US-002-35 ; précisions de signatures (§13) |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Saisie d'une tâche avec contrôles cumulables (`ERR-020` à `ERR-023`), rattachement n-n par `LienTacheObjectif` (H-1), modification de l'intitulé, du délai, de l'estimation (`ERR-033` pour une tâche parente) et des objectifs (`ERR-034` pour une sous-tâche), suppression avec confirmation, alertes de délai (`ALR-005`, RG-024), retard (RG-045), estimation en vigueur, liste « Tâches » avec filtres et tri du guide §5.7, détail d'une tâche, tâches dans le détail d'un objectif, journal RG-050. Livre aussi l'étape de contexte « les tâches suivantes : » (H-7), étendue aux rangs 6 à 8.
@@ -296,7 +297,7 @@ tâches directes de l'objectif réparties par état :
 sous-tâches (rang 6) : sous une tâche parente de la section « à faire », ses sous-tâches non supprimées suivent immédiatement
   la ligne de la tâche parente (niveau SOUS_TACHE), tous états, dans l'ordre de référence (§5.8 e) ;
   sous une tâche parente terminée ou abandonnée : aucune ligne de sous-tâche, seul le compteur « t/n » de la ligne
-  (hypothèse retenue en attendant Q-US-002-4)
+  (Q-US-002-4, option a, guide v0.2.10 §5.8 d)
 ```
 
 Temps et fuseaux : retard selon le jour de Paris (S16 : 2026-10-25 à 02:30 = première occurrence ; S17 : appareil en UTC ; S19 : New York).
@@ -420,10 +421,12 @@ Avant le rang qui livre une capacité (7 : terminer ; 8 : abandonner ; 6 : sous-
 | UT-US-002-31 | `…/application/supprimer-tache.test.ts` | `SupprimerTache.executer` | tâche et sous-tâches absentes à la lecture ; état de l'objectif recalculé | CA-12 | NI |
 | UT-US-002-32 | `…/presentation/detail-objectif.test.ts` | `construireDetailObjectif` | tâche rattachée à deux objectifs présente dans chaque détail ; `EVD-OBJECTIF-SANS-TACHE` | CA-6 | NI |
 | UT-US-002-33 | idem | `construireDetailObjectif` | sections `SEC-TACHES-A-FAIRE` (dépliée), `SEC-TACHES-TERMINEES` et `SEC-TACHES-ABANDONNEES` (repliées) avec n ; tris de chaque section ; sous-tâches d'une tâche parente à faire juste après elle, dans l'ordre de référence ; n ne compte pas les sous-tâches | Guide v0.2.9 §5.8 d (Q-US-001-6) | NI |
-| UT-US-002-35 | idem | `construireDetailObjectif` | sous-tâches d'une tâche parente terminée ou abandonnée | Q-US-002-4 | **Écrit après la réponse à Q-US-002-4** |
+| UT-US-002-35 | idem | `construireDetailObjectif` | sous une tâche parente terminée ou abandonnée : aucune ligne de sous-tâche, compteur « t / n » sur la ligne de la tâche parente | Q-US-002-4 a (guide v0.2.10 §5.8 d) | NI |
 | UT-US-002-34 | `…/application/consulter-detail-tache.test.ts` | `ConsulterDetailTache` | objectifs, alertes, `estimationCalculee` faux, actions d'édition | CA-8, CA-9 | NI |
 
 Cas temporels : PT-16 (S16), UTC (S17), New York (S19). Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-002`.
+
+**Précisions de l'E10 (2026-10-22)** : `DetailObjectif` porte aussi `sousTachesPar: ReadonlyMap<IdTache, ReadonlyArray<ResumeTache>>` (sous-tâches des tâches directes, nécessaires au §6.6) ; `construireLigneTache(resume, aujourdhui: DateCalendaire)` ; `resumerTache(vue, tache, jour)` ; constructeurs : `new CreerTache(service, generateur)`, les autres cas d'usage de tâche `new …(service)`, requêtes `new …(service, horloge)`. `construireListeTaches` exclut aussi une ligne de sous-tâche reçue en entrée (UT-US-002-22).
 
 ## 14. Tests attendus de Benjamin
 Composants `TaskRow`, `QuickAdd` (erreurs cumulées, focus, saisie conservée), `DurationStepper` (`spinbutton`, pas de 30 min), `FieldRow` / `LockedField` ; test de performance indicatif de `construireListeTaches` (5 000 tâches, < 100 ms) ; tests de `tests/support/construction-taches.ts` (cas (a), (b), (c) de H-7).
@@ -448,6 +451,6 @@ Composants `TaskRow`, `QuickAdd` (erreurs cumulées, focus, saisie conservée), 
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes, construction des contextes.
-- [ ] Tests du §13 en phase rouge (E10).
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 49 cas, dont UT-US-002-35).
 - [x] Q-US-001-6 (d) répondue (Steeve, guide v0.2.9 §5.8).
-- [ ] Q-US-002-4 répondue (avant E11).
+- [x] Q-US-002-4 répondue (Steeve, option a, guide v0.2.10 §5.8 d).

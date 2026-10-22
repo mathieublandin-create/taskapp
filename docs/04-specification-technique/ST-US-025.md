@@ -232,5 +232,5 @@ Boîte d'abandon (`alertdialog`, « Annuler » focalisé, bouton non rouge) ; me
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes, cas temporels.
-- [ ] Tests du §13 en phase rouge (E10).
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 24 cas), sauf UT-US-025-18 (Q-US-025-3).
 - [ ] Q-US-025-3 répondue.

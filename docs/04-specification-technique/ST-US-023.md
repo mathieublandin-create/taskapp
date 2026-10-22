@@ -247,6 +247,8 @@ Contrôle de placement en O(nombre d'objectifs).
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-023`.
 
+**Précisions de l'E10 (2026-10-22)** : `ConsulterSelecteurParent.executer({ objectifId })` ; ses `candidats` comprennent l'objectif lui-même s'il est principal, que le modèle de vue rend indisponible (`ERR-031`) ; `construireSelecteurParent` ordonne les candidats (UT-US-023-15). Constructeurs : ST-US-001 §13.
+
 ## 14. Tests attendus de Benjamin
 Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa raison) ; écran de détail d'un sous-objectif (absence de l'action, carte d'alerte).
 
@@ -265,5 +267,5 @@ Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa rai
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes.
-- [ ] Tests du §13 en phase rouge (E10).
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 27 cas).
 - [x] Q-US-001-6 (c) répondue (Steeve, guide v0.2.9 §5.8).

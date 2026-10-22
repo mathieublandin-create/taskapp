@@ -482,6 +482,14 @@ Intitulés et descriptions : affichés comme texte (React échappe), jamais en H
 | UT-US-001-35 | `…/presentation/liste-objectifs.test.ts` | `construireListeObjectifs` | ordre de référence (délai croissant, sans délai à la fin, puis création, puis intitulé sans casse ni accents) ; principaux atteints dans `SEC-OBJ-ATTEINTS` avec n et leurs sous-objectifs ; section absente si n = 0 ; sous-objectif atteint sous un parent en cours resté sous lui ; `SEC-SOUS-OBJECTIFS` dans le détail | Guide v0.2.9 §5.8 (Q-US-001-6) | NI |
 
 Suites de contrat : aucune nouvelle. Cas temporels couverts : minuit de Paris (S13), PT-16 (S13 à 02:30), appareil hors du fuseau de Paris (UT-US-001-26, 29).
+
+**Précisions de l'E10 (2026-10-22)** — les squelettes font foi pour :
+- constructeurs : `new CreerObjectif(service, generateur)`, `new CreerSousObjectif(service, generateur)` ; les autres cas d'usage d'objectif : `new …(service)` ; `executer(entree)` (et `evaluer(entree)` pour une commande avec confirmation) renvoient `Promise<Resultat<…, RefusMetier | ErreurDepotLocal>>` ;
+- types des décisions : `DecisionSurVue<T> = (vue, contexte) => Resultat<Decision<T>, RefusMetier>` et `EvaluationSurVue = (vue) => Resultat<Evaluation, RefusMetier>` (`vue-metier.ts`) ; `avecVue<T>(decision: DecisionSurVue<T>): DecisionMetier<T, RefusMetier>` ; `lireVueCourante(service, horloge): Promise<Resultat<{ vue, jour }, ErreurDepotLocal>>` ;
+- `resumerObjectif(vue, objectif, jour)`, `construireLigneObjectif(resume, aujourdhui: DateCalendaire)`, `comparerOrdreReference(a, b)` sur `ElementOrdonnable = { id, intitule, delai?, creeLe }` ;
+- les actions d'un objectif sont calculées dès le rang 2 par `actionsObjectif(vue, id)` (domaine, ST-US-023 §6.4) et recopiées par la requête puis par le modèle de vue : UT-US-001-31 vérifie `actionsObjectif` (avec ou sans délai) et la recopie par `construireDetailObjectif` ;
+- `VUES_EXPOSEES` est livré vide : UT-US-001-34 échoue sur l'assertion (comportement absent), non sur « NI » ;
+- `CodeCatalogue` (`commun/presentation/messages/codes.ts`) est livré complet (codes du guide v0.2.10 §6.6) ; `libelle()`, `formaterDate()`, `formaterDuree()` et `CATALOGUE` restent à réaliser.
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-001`.
 
 ## 14. Tests attendus de Benjamin
@@ -521,5 +529,5 @@ Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- 
 - [x] Interactions Google : sans objet (§7).
 - [x] Patterns et sécurité (§9, §10).
 - [x] Chaque phrase du `.feature` a une ligne au §12.
-- [ ] Tests du §13 en phase rouge (E10).
+- [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 46 cas).
 - [x] Q-US-001-6 répondue (Steeve, guide v0.2.9 §5.8).
