@@ -227,6 +227,7 @@ Boîte d'abandon (`alertdialog`, « Annuler » focalisé, bouton non rouge) ; me
   - b) La reprise n'est pas proposée : il faut d'abord rouvrir « Chapitre 1 » (même comportement que DEC-030 pour une tâche parente abandonnée).
   - c) La reprise est faite sans rien changer à « Chapitre 1 », qui est alors signalée incohérente (`ALR-003`).
   *Pourquoi a)* : c'est le cas le plus proche déjà tranché (même état de la tâche parente, même retour à « à faire » de la sous-tâche) ; aucune incohérence n'est créée ; l'utilisateur obtient ce qu'il demande en un geste. Seuls §6.2 (étape 4), §6.3 et UT-US-025-18 en dépendent ; un scénario sera à ajouter par Pepper.
+- **Réponse Q-US-025-3 (Steeve, 2026-10-22, DEC-032)** : option a) retenue par le commanditaire. Code `CNF-REPRENDRE-SOUS-TACHE` (guide v0.2.11, §6.6.7 ; ECR-007 D3), distinct de `CNF-ROUVRIR-SOUS-TACHE`. Titre « Reprendre « {sous-tâche} » ? » ; texte « « {tâche parente} » est terminée : elle sera rouverte aussi. » ; boutons « Annuler » (focalisé) et « Reprendre les deux » (non rouge). Confirmer : sous-tâche et tâche parente redeviennent « à faire » ; annuler : rien ne change. À Anthony : UT-US-025-18 et §6.2 étape 4 peuvent être écrits ; le modèle de vue `confirmation.ts` porte une variante `REPRISE_SOUS_TACHE` → ce code.
 - **Hypothèses** : H-5, H-7 appliquées.
 - **Dette** : aucune.
 
