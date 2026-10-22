@@ -113,14 +113,14 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">État des lieux · 21 octobre 2026 · rapport de Jarvis</div>
+    <div class="eyebrow">État des lieux · 22 octobre 2026 · rapport de Jarvis</div>
     <h1>Done <span>Juan</span>, lot 1 en préparation</h1>
-    <p class="lede">Le socle documentaire est posé et le premier lot (socle, objectifs et tâches) a franchi 9 étapes sur 19 : les 10 US sont validées, prêtes et strictement explicites. La conception détaillée (E9) peut commencer ; celle de la connexion et de la synchronisation attend le test technique sur vrais appareils. </p>
+    <p class="lede">Le socle documentaire est posé et le premier lot (socle, objectifs et tâches) avance en parallèle sur deux fronts (DEC-031). Pour le socle d'écriture et les six US métier, la conception détaillée est faite et 278 tests unitaires sont écrits, rouges comme prévu en TDD. La connexion, la synchronisation et le hors ligne attendent le test technique sur vrais appareils, lui-même suspendu à vos réponses H-1 et H-2.</p>
     <div class="kpis">
       <div class="kpi"><b>10</b><small>US dans le lot 1, sur 36 au backlog</small></div>
-      <div class="kpi"><b>29</b><small>décisions du commanditaire (DEC-001 à 029)</small></div>
-      <div class="kpi"><b>0</b><small>question bloquante ouverte pour le lot 1</small></div>
-      <div class="kpi"><b>9</b><small>maquettes d'écrans · 11 ADR proposés</small></div>
+      <div class="kpi"><b>31</b><small>décisions du commanditaire (DEC-001 à 031)</small></div>
+      <div class="kpi"><b>3</b><small>réponses attendues de vous : Q-US-025-3, H-1, H-2</small></div>
+      <div class="kpi"><b>9</b><small>maquettes d'écrans · 12 ADR proposés</small></div>
     </div>
   </header>
 
@@ -153,8 +153,8 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
         <h3><span>Réalisation</span><span>E8 – E13b</span></h3>
         <ol class="steps">
           <li class="step done"><span class="id">E8</span><span class="lbl">Contrôle d'explicitation (10 US explicites)</span><span class="who">Anthony</span></li>
-          <li class="step doing risk"><span class="id">E9</span><span class="lbl">Conception détaillée<span class="here">ici</span><span class="flag">Requiert le test technique R1/R2</span></span><span class="who">Anthony</span></li>
-          <li class="step"><span class="id">E10</span><span class="lbl">Tests unitaires (TDD)</span><span class="who">Anthony</span></li>
+          <li class="step doing risk"><span class="id">E9</span><span class="lbl">Conception détaillée (6 US métier et socle faits)<span class="flag">US-022, 017, 018, 031 : requiert le test technique</span></span><span class="who">Anthony</span></li>
+          <li class="step doing"><span class="id">E10</span><span class="lbl">Tests unitaires (TDD) : 278 écrits<span class="here">ici</span></span><span class="who">Anthony</span></li>
           <li class="step"><span class="id">E11</span><span class="lbl">Revue de lancement</span><span class="who">Tous</span></li>
           <li class="step"><span class="id">E12</span><span class="lbl">Développement</span><span class="who">Benjamin</span></li>
           <li class="step"><span class="id">E13</span><span class="lbl">Revue de code</span><span class="who">Anthony</span></li>
@@ -182,13 +182,13 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
           <li><span class="dot done"></span><span>Cahier des charges v0.11, US validées et précisées (E8)</span></li>
           <li><span class="dot done"></span><span>Backlog v0.5 : 36 US, 6 lots indicatifs</span></li>
           <li><span class="dot done"></span><span>10 US détaillées du lot 1</span></li>
-          <li><span class="dot done"></span><span>270 scénarios <span class="mono">.feature</span>, glossaire d'étapes v1.3</span></li>
+          <li><span class="dot done"></span><span>270 scénarios <span class="mono">.feature</span>, glossaire d'étapes v1.5</span></li>
         </ul>
       </article>
       <article class="agent">
         <header><b>Steeve</b><small>UX / UI · sonnet</small></header>
         <ul>
-          <li><span class="dot done"></span><span>Guide d'ergonomie v0.2</span></li>
+          <li><span class="dot done"></span><span>Guide d'ergonomie v0.2.10, ordre des listes fixé</span></li>
           <li><span class="dot done"></span><span>Parcours utilisateurs v0.2 (P-01 à P-13)</span></li>
           <li><span class="dot done"></span><span>9 maquettes, dont 4 du lot 1</span></li>
           <li><span class="dot"></span><span>Guide utilisateur : plan seulement</span></li>
@@ -197,24 +197,24 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
       <article class="agent">
         <header><b>Starck</b><small>Architecte · opus</small></header>
         <ul>
-          <li><span class="dot done"></span><span>DAT v0.4 : sans serveur, synchronisation par Drive</span></li>
-          <li><span class="dot done"></span><span>11 ADR au statut « Proposé »</span></li>
+          <li><span class="dot done"></span><span>DAT v0.10.2 : sans serveur, synchronisation par Drive</span></li>
+          <li><span class="dot done"></span><span>12 ADR au statut « Proposé »</span></li>
           <li><span class="dot done"></span><span>Impacts architecture du lot 1</span></li>
-          <li><span class="dot risk"></span><span>Test technique R1/R2 : protocole prêt, non exécuté</span></li>
+          <li><span class="dot risk"></span><span>PoC du test technique corrigé ; premier passage en attente de H-2</span></li>
         </ul>
       </article>
       <article class="agent">
         <header><b>Anthony</b><small>Responsable technique · opus</small></header>
         <ul>
-          <li><span class="dot done"></span><span>Conventions v0.1, TDD, couverture 85 %</span></li>
-          <li><span class="dot done"></span><span>Grille de revue, registre de dette, modèle de ST</span></li>
-          <li><span class="dot"></span><span>Conventions à aligner sur la stack du DAT</span></li>
+          <li><span class="dot done"></span><span>Conventions v0.3, socle d'écriture et 6 ST métier</span></li>
+          <li><span class="dot done"></span><span>Outillage et 278 tests unitaires (E10)</span></li>
+          <li><span class="dot risk"></span><span>ST d'US-022, 017, 018, 031 : après le test technique</span></li>
         </ul>
       </article>
-      <article class="agent idle">
+      <article class="agent">
         <header><b>Benjamin</b><small>Développeur · sonnet</small></header>
         <ul>
-          <li><span class="dot"></span><span>Pas encore sollicité</span></li>
+          <li><span class="dot done"></span><span>PoC du test technique, corrections de revue</span></li>
           <li><span class="dot"></span><span>Intervient en E7, puis E11 à E15</span></li>
         </ul>
       </article>
@@ -247,7 +247,7 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
         </ul>
       </article>
       <article class="card">
-        <span class="tag risk">Avant E9</span>
+        <span class="tag risk">À débloquer : H-1, H-2</span>
         <h3>Test technique sur vrais appareils</h3>
         <ul>
           <li>Créer le projet Google Cloud (environ 30 min, guidé)</li>
