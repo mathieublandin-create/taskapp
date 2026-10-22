@@ -1,55 +1,81 @@
-# Guide pas à pas du test technique (R1, R2, R11)
+# Guide pas à pas du test technique (version web)
 
-> Version 2 du 2026-10-22 (alignée sur le PoC réel, revue RV-POC). Auteur : Starck. Destinataire : le commanditaire.
-> Contexte : décision DEC-031. Protocole technique de référence : `test-technique-R1-R2.md`.
+> **Version 3 du 2026-10-22.** Auteur : Starck. Destinataire : le commanditaire.
+> **Ce qui change en version 3** (votre décision DEC-034 du 2026-10-22) : on teste **une seule application web** (PWA), sur le PC et sur le téléphone Android, **sans application Android à installer, sans clé et sans mode développeur**. L'ancien volet Android est rangé en **annexe R « repli »** : il ne servira que si le test montre que la version web ne convient pas sur le téléphone. Deux nouvelles mesures sur le téléphone : la **connexion automatique à l'ouverture** (la condition que vous avez posée) et la **conservation des données** après un arrêt forcé ou un redémarrage. Une partie **facultative** (h) prépare le partage avec un contributeur sur iPhone (DEC-035).
+> Protocole technique de référence : `test-technique-R1-R2.md` v3.
 > Statut : **prêt à l'emploi, jamais exécuté.**
 
 ## 0. Avant de commencer
 
 ### Ce que ce guide vous demande
-Vous créez un petit projet chez Google, un téléphone de test et un compte d'hébergement gratuit. Puis vous faites deux séances d'essai avec l'équipe. Aucune compétence technique n'est nécessaire.
+Vous mettez en ligne l'application de test sur GitHub, vous créez un petit projet chez Google, puis vous faites **une séance d'essai d'environ 1 h** avec l'équipe, coupée par une pause d'au moins une heure. Aucune compétence technique n'est nécessaire.
 
 ### Durée estimée
 | Partie | Durée |
 |---|---|
-| a) Projet Google Cloud | 30 min |
-| b) Identifiant Web | 10 min |
-| c) Identifiant Android | 10 min |
-| d) Téléphone Android | 15 min |
-| e) Compte d'hébergement | 10 min |
+| a) Rendre le dépôt public et activer GitHub Pages | 10 min |
+| b) Projet Google Cloud | 30 min |
+| c) Identifiant Web | 10 min |
+| d) Mettre l'application de test en ligne | 5 min, plus 10 min d'attente |
+| e) Préparer le téléphone | 5 min |
 | f) Transmission à l'équipe | 5 min |
-| **Préparation totale** | **environ 1 h 30**, à faire en une ou plusieurs fois |
-| g) Séance 1 (jour J) | 1 h 30, plus des temps d'attente |
-| g) Séance 2 (jour J+1) | 1 h |
+| **Préparation totale** | **environ 1 h**, en une ou plusieurs fois |
+| g) Séance d'essai | 1 h, plus une pause d'au moins 1 h ; un contrôle de 5 min le lendemain (facultatif) |
+| h) Partage avec un contributeur (facultatif, plus tard) | 1 h, plus des attentes |
 
 ### Ce qu'il vous faut
 - Un PC avec Chrome ou Edge à jour.
-- Un téléphone Android 10 ou plus, avec un câble USB.
-- Un compte Google. Conseil : créez un compte Gmail **de test** (gmail.com). Ainsi, rien n'est écrit dans votre Drive personnel.
-- Une adresse e-mail que vous consultez.
+- Votre téléphone Android, avec **Chrome à jour** et votre compte Google connecté dans Chrome (c'est le cas habituel).
+- Un compte Google. Conseil : un compte Gmail **de test** évite d'écrire dans votre Drive personnel. Si vous en créez un, connectez-le aussi dans Chrome sur le téléphone.
+- Votre compte GitHub.
+
+**Vous n'avez plus besoin** : de câble USB, du mode développeur, d'installer un fichier APK, de Java ni de clés de signature.
 
 ### Règles à respecter
-- **Ne publiez jamais** un identifiant, une adresse ou un fichier de clé dans le dépôt GitHub, dans un ticket ou dans un message public. Envoyez-les à l'équipe par le canal prévu par Jarvis.
-- Les noms de menus ci-dessous sont ceux de la console Google en octobre 2026. **Google les change souvent.** Si un nom est introuvable, cherchez le mot le plus proche, ou utilisez la barre de recherche en haut de la console. En cas de doute, faites une capture d'écran et envoyez-la à l'équipe.
-- Tout ce qui est noté `<comme ceci>` est une valeur que l'équipe vous donne ou que vous choisissez.
+- **Ne publiez jamais** un mot de passe ou un code reçu par SMS. Les identifiants que vous allez créer ne sont pas secrets, mais envoyez-les à Jarvis par message privé.
+- Les noms de menus sont ceux d'octobre 2026. **Google et GitHub les changent souvent.** Si un nom est introuvable, cherchez le mot le plus proche, ou faites une capture d'écran et envoyez-la à l'équipe.
 - Si vous bloquez plus de 10 minutes, arrêtez-vous et prévenez Jarvis. Rien ne se perd.
 
-### Valeurs que l'équipe doit vous donner avant de commencer
-Jarvis vous les envoie. Notez-les ici (sans les publier) :
-
-| Valeur | Rôle | Reçue ? |
+### Les trois adresses à recopier telles quelles
+| Nom | Valeur | Où elle sert |
 |---|---|---|
-| `<NOM_DE_PAQUET>` | Nom technique de l'application Android de test : **`fr.donejuan.poc`** (valeur définitive du PoC, à recopier telle quelle). | |
-| `<SHA1_DEBUG>` | Empreinte de la clé de test « débogage » | |
-| `<SHA1_PUBLICATION>` | Empreinte de la clé de test « publication » | |
+| **Origine** | `https://mathieublandin-create.github.io` | c.2 (origines JavaScript), a.3 |
+| **Adresse de l'application** (URI de redirection) | `https://mathieublandin-create.github.io/taskapp/` | c.2 (URI de redirection), séance |
+| **Chemin** | `/taskapp/` | a.3 |
 
-Si l'équipe ne vous donne pas ces empreintes, voir l'étape c.2.
+Attention aux barres obliques : l'**origine** n'en a **pas** à la fin ; l'**adresse de l'application** en a **une** à la fin.
 
 ---
 
-## a) Projet Google Cloud
+## a) Rendre le dépôt public et activer GitHub Pages
+L'équipe a vérifié l'historique du dépôt le 2026-10-22 : aucun fichier de clé, aucun mot de passe ni jeton n'y figure. Vous avez autorisé le passage en public (DEC-023, DEC-032).
 
-### a.1 Ouvrir la console
+### a.1 Rendre le dépôt public
+1. Sur GitHub, ouvrez le dépôt `mathieublandin-create/taskapp`.
+2. **Settings** (« Paramètres »), tout en bas : **Danger Zone**, **Change repository visibility**, **Make public**. Suivez les confirmations.
+
+Résultat attendu : le mot « Public » s'affiche à côté du nom du dépôt.
+
+### a.2 Activer GitHub Pages
+1. **Settings > Pages** (menu de gauche).
+2. Sous « Build and deployment », réglez **Source** sur **GitHub Actions**.
+
+### a.3 Créer deux variables
+1. **Settings > Secrets and variables > Actions**, onglet **Variables** (pas « Secrets »), puis **New repository variable**.
+2. Créez ces deux variables, une par une :
+
+   | Nom (exact) | Valeur (exacte) |
+   |---|---|
+   | `VITE_BASE_PATH` | `/taskapp/` (avec les deux barres obliques, sinon le site ne se charge pas) |
+   | `VITE_APP_ORIGIN` | `https://mathieublandin-create.github.io` (sans barre oblique finale) |
+
+Une troisième variable sera ajoutée en d.1, après la création de l'identifiant Google.
+
+---
+
+## b) Projet Google Cloud
+
+### b.1 Ouvrir la console
 1. Sur votre PC, ouvrez Chrome.
 2. Connectez-vous avec le compte Google de test.
 3. Allez à l'adresse `https://console.cloud.google.com`.
@@ -59,7 +85,7 @@ Résultat attendu : la page d'accueil de la console s'affiche, avec un bandeau b
 
 Aucune facturation n'est nécessaire. Si Google propose un « essai gratuit » ou demande une carte bancaire, **refusez**. Fermez la fenêtre et continuez.
 
-### a.2 Créer le projet
+### b.2 Créer le projet
 1. En haut à gauche, à côté du logo « Google Cloud », cliquez sur le **sélecteur de projet** (il affiche le nom d'un projet ou « Sélectionner un projet »).
 2. Dans la fenêtre, cliquez sur **Nouveau projet** (« New project »).
 3. Dans « Nom du projet », saisissez : `objectifs-taches-dev`.
@@ -70,7 +96,7 @@ Aucune facturation n'est nécessaire. Si Google propose un « essai gratuit » o
 
 Résultat attendu : le nom `objectifs-taches-dev` s'affiche en haut de la console.
 
-### a.3 Activer l'API Google Drive
+### b.3 Activer l'API Google Drive
 1. Ouvrez le menu principal (trois traits, en haut à gauche).
 2. Cliquez sur **API et services** (« APIs & Services »), puis sur **Bibliothèque** (« Library »).
 3. Dans la barre de recherche, tapez `Google Drive API`.
@@ -79,7 +105,7 @@ Résultat attendu : le nom `objectifs-taches-dev` s'affiche en haut de la consol
 
 Résultat attendu : une page « Présentation de l'API » avec le texte « API activée » (« API enabled »).
 
-### a.4 Écran de consentement OAuth
+### b.4 Écran de consentement OAuth
 Dans la console récente, cette partie s'appelle **Google Auth Platform**. Dans l'ancienne console, elle s'appelle **API et services > Écran de consentement OAuth**. Le contenu est le même.
 
 1. Ouvrez le menu principal, puis **Google Auth Platform** (ou, à défaut, utilisez la barre de recherche et tapez `Google Auth Platform`).
@@ -107,7 +133,7 @@ Résultat attendu : le tableau de bord de Google Auth Platform s'affiche, avec u
       - `.../auth/drive.file` (affiché comme « Afficher, modifier, créer et supprimer uniquement les fichiers Google Drive spécifiques que vous utilisez avec cette application »)
    3. Si `drive.file` n'apparaît pas dans la liste, saisissez `https://www.googleapis.com/auth/drive.file` dans « Ajouter manuellement des niveaux d'accès », puis cliquez sur **Ajouter à la table**.
    4. Cliquez sur **Mettre à jour**, puis sur **Enregistrer**.
-   5. **Ne cochez aucun autre accès.** Pas de « drive » tout court, pas de « calendar » pour ce test.
+   5. **Ne cochez aucun autre accès.** Pas de « drive » tout court, pas de « calendar » pour ce test. (Le volet facultatif de partage, partie h, ajoutera l'API « Google Picker », qui n'est pas un niveau d'accès.)
 
 Résultat attendu : le tableau affiche exactement trois lignes, dans la section « Niveaux d'accès non sensibles » (« Non-sensitive scopes »). Aucune ligne dans « sensibles » ni « restreints ».
 
@@ -127,52 +153,205 @@ Résultat attendu : l'état devient **En production** (« In production »). Auc
 
 ---
 
-## b) Identifiant OAuth Web
+## c) Identifiant OAuth Web
 
-### b.1 Choisir l'hébergement (cas A ou B)
-L'hébergement est figé au moment du test (décision DEC-023). L'adresse de la page web doit être déclarée dans l'identifiant. Deux cas existent :
+### c.1 Ce que vous allez déclarer
+Google n'accepte de connecter l'application que depuis des adresses déclarées à l'avance. Il y en a deux sortes : les **origines** (d'où l'application parle à Google) et les **adresses de retour** (où Google renvoie après la connexion). Les deux sont nécessaires pour ce test.
 
-| Cas | Quand | Adresse de la forme |
-|---|---|---|
-| **A. GitHub Pages** | Le dépôt GitHub est **public** à la date du test | `https://<votre-nom-github>.github.io` |
-| **B. Cloudflare Pages** | Le dépôt est encore **privé** | `https://<nom-du-projet>.pages.dev` |
-
-Jarvis vous dit quel cas s'applique. Si l'adresse n'est pas encore connue, créez l'identifiant avec seulement `http://localhost:5173`. Ajoutez l'adresse plus tard (étape b.3).
-
-Attention : l'adresse d'une origine ne contient **ni chemin, ni barre oblique finale**. Écrivez `https://exemple.github.io`, jamais `https://exemple.github.io/` ni `https://exemple.github.io/mon-depot`.
-
-### b.2 Créer l'identifiant
+### c.2 Créer l'identifiant
 1. Dans **Google Auth Platform**, ouvrez le menu **Clients**.
 2. Cliquez sur **Créer un client** (« Create client »).
-3. « Type d'application » : choisissez **Application Web**.
-4. « Nom » : saisissez `Done Juan POC Web`.
-5. Section **Origines JavaScript autorisées** (« Authorized JavaScript origins »). Cliquez sur **Ajouter un URI** et saisissez :
+3. « Type d'application » : **Application Web**.
+4. « Nom » : `Done Juan POC Web`.
+5. Section **Origines JavaScript autorisées** (« Authorized JavaScript origins ») : cliquez sur **Ajouter un URI** et saisissez, une ligne chacune :
    - `http://localhost:5173`
-   - puis, une seconde ligne : l'adresse du cas A ou B (voir b.1), si elle est connue.
-6. Section **URI de redirection autorisés** : **laissez vide**.
+   - `https://mathieublandin-create.github.io`
+6. Section **URI de redirection autorisés** (« Authorized redirect URIs ») : cliquez sur **Ajouter un URI** et saisissez, une ligne chacune :
+   - `https://mathieublandin-create.github.io/taskapp/` (avec la barre oblique finale)
+   - `http://localhost:5173/`
 7. Cliquez sur **Créer**.
 
-Résultat attendu : une fenêtre « Client OAuth créé » affiche un **ID client** (se termine par `.apps.googleusercontent.com`). Pour une application Web de ce type, il n'y a rien d'autre à recopier. Si un « code secret du client » est affiché, **ne le copiez pas et ne l'envoyez pas** : l'application ne l'utilise pas.
+Résultat attendu : une fenêtre « Client OAuth créé » affiche un **ID client** (il se termine par `.apps.googleusercontent.com`). Si un « code secret du client » est affiché, **ne le copiez pas** : l'application ne l'utilise pas.
 
-8. Copiez l'**ID client** dans un fichier texte privé sur votre PC. Cliquez sur **OK**.
+8. Copiez l'**ID client** dans un fichier texte privé. Cliquez sur **OK**.
 
-### b.3 Ajouter l'adresse d'hébergement plus tard
-1. Menu **Clients**, cliquez sur le nom `Done Juan POC Web`.
-2. Dans « Origines JavaScript autorisées », cliquez sur **Ajouter un URI**, saisissez l'adresse, puis cliquez sur **Enregistrer**.
-3. Google indique que le changement peut prendre de quelques minutes à quelques heures. En général, c'est moins de 5 minutes.
+Google indique qu'un changement peut prendre de quelques minutes à quelques heures. En général, moins de 5 minutes.
+
+### c.3 Si vous avez déjà créé cet identifiant (version 2 du guide)
+Ouvrez **Clients > Done Juan POC Web**, ajoutez les deux **URI de redirection** de l'étape c.2.6 (la v2 disait de laisser vide), puis **Enregistrer**. Les éventuels identifiants « Android » créés avec la v2 peuvent rester : ils ne gênent pas.
 
 ---
 
-## c) Identifiant OAuth Android
+## d) Mettre l'application de test en ligne
+
+### d.1 Ajouter l'ID client
+1. GitHub, **Settings > Secrets and variables > Actions**, onglet **Variables**, **New repository variable**.
+2. Nom : `VITE_GOOGLE_WEB_CLIENT_ID`. Valeur : l'**ID client** copié en c.2.8.
+
+### d.2 Lancer la mise en ligne
+1. Onglet **Actions** du dépôt, workflow **poc** (colonne de gauche), puis **Run workflow**.
+2. Gardez les valeurs proposées. **Cochez « Déployer sur GitHub Pages »**.
+3. Cliquez sur **Run workflow**. Attendez la fin (pastille verte), environ 10 minutes.
+
+Résultat attendu : une pastille **verte**. Une ligne « apk (release) » peut apparaître comme **sautée** (grisée) : c'est normal, aucune clé n'est nécessaire pour ce test.
+
+4. Ouvrez `https://mathieublandin-create.github.io/taskapp/` sur le PC. Résultat attendu : l'écran « Diagnostic » de l'application de test.
+
+Si la pastille est rouge, notez le nom de la ligne en rouge et prévenez Jarvis.
+
+---
+
+## e) Préparer le téléphone
+1. Ouvrez le **Play Store**, cherchez **Chrome** ; si un bouton **Mettre à jour** s'affiche, touchez-le.
+2. Ouvrez Chrome, touchez votre photo en haut à droite (ou **⋮ > Paramètres**) : vérifiez que le compte Google du test est **connecté**.
+3. Vérifiez qu'il reste au moins 1 Go d'espace libre (**Paramètres > Stockage**).
+
+---
+
+## f) Informations à transmettre à l'équipe
+Envoyez à Jarvis, par **message privé** :
+- l'ID client Web (non secret) ;
+- « dépôt public, Pages activé, mise en ligne verte » (ou le nom de la ligne rouge) ;
+- tout message inattendu vu chez Google (capture).
+
+**Ne transmettez jamais** votre mot de passe Google ou GitHub, un code reçu par SMS, ni un « code secret du client ».
+
+---
+
+## g) Séance d'essai (environ 1 h, plus une pause d'au moins 1 h)
+
+### Règles
+- Un membre de l'équipe est joint par visio ou par message. Il vous dit quoi toucher. Vous notez ce que vous voyez.
+- Prenez une **capture d'écran** à chaque fois que Google affiche quelque chose (choix de compte, consentement, avertissement, erreur).
+- Pour chaque étape, remplissez le tableau de résultats : heure, appareil, ce que vous avez vu, réussi ou non.
+- Ne cherchez pas à corriger une erreur. Notez-la : c'est un résultat utile.
+- **Installer l'application** sur le téléphone : dans Chrome, à l'adresse de l'application, menu **⋮**, puis **Installer l'application** (ou **Ajouter à l'écran d'accueil**, puis **Installer**). Une icône « Diagnostic » apparaît sur l'écran d'accueil. **Pendant la séance, ouvrez toujours l'application par cette icône**, jamais par un onglet de Chrome (sauf à l'étape 13).
+- Le journal de l'application affiche, pour chaque essai, « standalone » (application installée) ou « navigateur » (onglet) : vérifiez « standalone ».
+
+### Première partie (environ 30 min)
+
+| # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
+|---|---|---|---|
+| 1 | **Consentement, PC.** Ouvrez l'adresse de l'application dans Chrome. Cliquez sur « Se connecter » et acceptez. | Un écran « Google n'a pas validé cette application » apparaît-il ? Quels accès sont listés ? | Oui/non pour l'écran. Les accès (capture). |
+| 2 | **Installer sur le PC.** Cliquez sur l'icône d'installation dans la barre d'adresse. | L'application s'ouvre dans sa propre fenêtre. | Oui/non. |
+| 3 | **Installer sur le téléphone.** Ouvrez l'adresse dans Chrome, puis **⋮ > Installer l'application**. Ouvrez l'icône « Diagnostic ». | Une fenêtre sans barre d'adresse. | Oui/non. |
+| 4 | **Consentement, téléphone.** Dans l'application installée, touchez « Se connecter », acceptez. | Même question qu'en 1. La fenêtre Google revient-elle dans l'application ? | Oui/non. Capture. |
+| 5 | **Connexion automatique, premier essai.** Touchez « Remettre à zéro le compteur », puis « Jeton par redirection ». | L'écran passe brièvement chez Google et revient. Le journal affiche « JetonObtenu », « redirection n° 1 » et une durée. | Le résultat, la durée, « standalone » ou non. Si un écran Google demande quelque chose : capture. |
+| 6 | **Stockage, téléphone.** Touchez « Stockage persistant ? ». | Deux lignes : avant, puis après la demande. | « Stockage persistant » ou « non persistant ». |
+| 7 | **Stockage, PC.** Même bouton dans l'application installée du PC. | Idem. | Le résultat. |
+| 8 | **Conservation après arrêt forcé.** Sur le téléphone, touchez « Poser le marqueur » et notez les **8 premiers caractères** de l'identifiant. Ouvrez **Paramètres > Applications > Chrome > Forcer l'arrêt**, confirmez. Rouvrez l'icône « Diagnostic », touchez « Lire le marqueur ». | « Marqueur présent » avec le même identifiant, ou « Marqueur absent ». | Présent/absent. Identifiant identique ? |
+| 9 | **Conservation après redémarrage.** Touchez « Poser le marqueur », notez l'identifiant, puis **redémarrez aussitôt** le téléphone (moins de 5 secondes après). Rouvrez l'icône, « Lire le marqueur ». | Idem. | Présent/absent. Identique ? |
+| 10 | **Hors ligne.** Activez le mode avion. Ouvrez l'icône « Diagnostic ». | L'application s'ouvre-t-elle ? Votre adresse e-mail s'affiche-t-elle ? Une erreur liée à Google ? | Oui/non. Texte de l'erreur. **Désactivez le mode avion.** |
+| 11 | **Hors ligne, PC.** Coupez le Wi-Fi du PC, ouvrez l'application installée. | Idem. | Idem. Rallumez le Wi-Fi. |
+| 12 | **Avant la pause.** Notez l'heure. Fermez l'application sur le téléphone **en la retirant des applications récentes** (bouton carré ou geste de balayage vers le haut). Fermez aussi celle du PC. | — | L'heure de début de la pause. |
+
+**Pause d'au moins 1 h 05.** N'ouvrez pas l'application de test pendant ce temps. Vous pouvez utiliser votre téléphone normalement.
+
+### Seconde partie, après la pause (environ 30 min)
+
+| # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
+|---|---|---|---|
+| 13 | **(Comparaison, optionnelle)** Dans un **onglet** Chrome ordinaire du téléphone, ouvrez l'adresse de l'application, touchez « Stockage persistant ? ». Fermez l'onglet. | Le résultat dans un onglet. | Le résultat. |
+| 14 | **Connexion automatique après plus d'une heure : l'étape décisive.** Ouvrez l'icône « Diagnostic ». **Tout de suite**, touchez « Jeton par redirection ». | Le passage chez Google : **devez-vous taper quelque chose** (mot de passe, code) ? **choisir un compte** ? Combien de temps ? Le journal affiche-t-il « JetonObtenu » et « redirection n° 2 » ? Êtes-vous revenu dans l'application (pas dans un onglet de Chrome) ? | Les réponses. Capture de tout écran Google. La durée affichée. |
+| 15 | **Après redémarrage.** Redémarrez le téléphone. Ouvrez l'icône. Touchez « Jeton par redirection ». | Mêmes questions. | Les réponses. |
+| 16 | **Geste en cours d'usage (téléphone).** Toujours dans l'application, touchez « Synchroniser ». | Une fenêtre Google s'ouvre-t-elle et se ferme-t-elle seule ? Faut-il taper quelque chose ? | Les réponses. |
+| 17 | **PC après la pause.** Ouvrez l'application installée du PC. Cliquez sur « Jeton par redirection ». Puis sur « Synchroniser ». | Mêmes questions qu'en 14 et 16. | Les réponses. |
+| 18 | **Session Google fermée (PC).** Déconnectez-vous de Google dans Chrome sur le PC, puis cliquez sur « Jeton par redirection » dans l'application. | Le journal affiche une erreur (par exemple « login_required »). L'application ne doit **pas** repartir en boucle chez Google. | Le texte de l'erreur. Une boucle ? Reconnectez-vous ensuite à Google. |
+| 19 | **Accès retiré, jeton encore valide (PC).** Cliquez sur « Se connecter ». **Ne rechargez pas la page** jusqu'à l'étape 20. Dans un autre onglet, `https://myaccount.google.com`, **Sécurité**, **Vos connexions à des applications tierces**, `Done Juan`, **Supprimer l'accès**. | La suppression est confirmée. | L'heure exacte. |
+| 20 | Dans l'application (PC), cliquez sur « Appeler Drive » **tout de suite**, puis 1, 5 et 15 minutes plus tard. | « 401 » (refus) ou accepté ? | Le résultat à chaque moment. |
+| 21 | Rechargez la page, cliquez sur « Demander un jeton ». Si un écran de consentement apparaît, acceptez **tous** les accès. | Écran de consentement ou erreur ? « Tous les accès accordés » : vrai ou faux ? | Le texte ou le code. La valeur. Capture. |
+
+**Fin de la séance.** Si vous le souhaitez, supprimez le dossier `Done Juan (POC)` dans Drive. Gardez l'application installée sur le téléphone jusqu'au retour de l'équipe.
+
+### Le lendemain (facultatif, 5 min)
+| # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
+|---|---|---|---|
+| 22 | Plus de 24 h après l'étape 14, ouvrez l'icône « Diagnostic » sur le téléphone, puis « Jeton par redirection ». Puis « Lire le marqueur ». | Mêmes questions qu'en 14. Le marqueur est-il toujours là ? | Les réponses. |
+
+### Tableau de résultats
+Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir pendant la séance.
+
+| Étape | Date et heure | Appareil | « standalone » ? | Ce que j'ai vu | Réussi ? (oui/non) | Capture |
+|---|---|---|---|---|---|---|
+| | | | | | | |
+
+### Après la séance
+- Envoyez le tableau, les captures et l'export du journal (bouton « Exporter JSON ») à Jarvis, en message privé.
+- L'équipe analyse les résultats. **Si l'étape 14 réussit sans rien taper et que le stockage est persistant (étape 6)**, la version web est retenue pour le téléphone, comme vous l'avez décidé ; sinon, on revient à l'application Android (annexe R), et l'équipe vous le dit avant toute action.
+
+---
+
+## h) Facultatif, plus tard : essai de partage avec un contributeur sur iPhone (EPI-001)
+**À faire avant que l'équipe ne commence l'analyse du partage (étape E3 d'EPI-001), pas avant.** L'équipe vous prévient quand l'application de test est prête pour cette partie.
+
+### h.1 Ce qu'il faut
+- Le **contributeur**, avec son compte Google et son **iPhone** (iOS 17 ou plus).
+- Vous, avec votre PC et le compte du test (le compte « administrateur »).
+- Environ 1 h ensemble, puis deux brefs contrôles du contributeur : 1 h après, et le lendemain.
+
+### h.2 Préparation (vous, 10 min)
+1. Console Google, projet `objectifs-taches-dev` : **API et services > Bibliothèque**, cherchez `Google Picker API`, **Activer**.
+2. **API et services > Identifiants > Créer des identifiants > Clé API**. Puis **Modifier la clé** :
+   - « Restrictions relatives aux applications » : **Sites web** ; ajoutez `https://mathieublandin-create.github.io/*` et `http://localhost:5173/*` ;
+   - « Restrictions relatives aux API » : **Restreindre la clé**, cochez seulement **Google Picker API** ;
+   - **Enregistrer**.
+3. Notez la clé et le **numéro du projet** (page d'accueil de la console, « Numéro du projet »). Envoyez-les à Jarvis en message privé. Ce ne sont pas des secrets, grâce aux restrictions.
+4. Aucun réglage n'est nécessaire pour le compte du contributeur : l'application est « En production ».
+
+### h.3 Déroulé
+| # | Qui | Ce que vous faites | Ce que vous notez |
+|---|---|---|---|
+| 1 | Contributeur | Sur l'iPhone, Safari, adresse de l'application. **Partager** (carré avec une flèche) > **Sur l'écran d'accueil** > **Ajouter**. Ouvrez l'icône. | L'application s'ouvre sans barre d'adresse ? |
+| 2 | Contributeur | « Connexion par redirection » ; connectez-vous avec **son** compte Google, acceptez. | Revenu dans l'application ? « JetonObtenu » ? Écran d'avertissement ? Captures. |
+| 3 | Contributeur | « Se connecter » (l'autre bouton). | La fenêtre Google s'ouvre-t-elle, et revient-elle ? |
+| 4 | Contributeur | « Stockage persistant ? », puis « Poser le marqueur ». | Les résultats, l'identifiant (8 caractères). |
+| 5 | Vous (PC) | « Se connecter », puis « Créer ». | — |
+| 6 | Vous | Sur drive.google.com, clic droit sur `Done Juan (POC)` > **Partager** : adresse du contributeur, rôle **Lecteur**, **Envoyer**. | — |
+| 7 | Contributeur | « Lire par identifiant » (l'équipe lui dicte l'identifiant). | Le code affiché (404 attendu). |
+| 8 | Contributeur | « Choisir dans le sélecteur Google », onglet **Partagés avec moi**, choisissez le **dossier** `Done Juan (POC)`. Puis « Lister le dossier choisi », puis « Lire par identifiant ». | Combien de fichiers listés ? Lu ou 404 ? |
+| 9 | Vous (PC) | « Créer » de nouveau (un second fichier, l'équipe vous guide). | — |
+| 10 | Contributeur | « Lister le dossier choisi », **sans** repasser par le sélecteur. | Le nouveau fichier apparaît-il ? |
+| 11 | Contributeur | « Tenter une écriture ». | Le code (403 attendu). |
+| 12 | Contributeur | « Créer mon fichier », puis, dans l'application **Google Drive** de l'iPhone, partager ce fichier avec vous, rôle Lecteur. | — |
+| 13 | Vous (PC) | « Lire par identifiant » (identifiant dicté par l'équipe), puis sélecteur Google, puis de nouveau « Lire par identifiant ». | 404 puis lu ? |
+| 14 | Contributeur | Ferme l'application (balayage). **Plus d'une heure après**, la rouvre, touche « Jeton par redirection ». | Faut-il taper quelque chose ? « JetonObtenu » ? Capture de tout écran Google. |
+| 15 | Contributeur | Redémarre l'iPhone, rouvre l'icône, « Lire le marqueur », puis « Jeton par redirection ». | Marqueur présent ? Jeton sans saisie ? |
+| 16 | Contributeur | Le lendemain, puis (facultatif) après 7 jours sans l'ouvrir : même chose qu'en 15. | Idem. |
+
+Fin : retirez le partage du dossier dans Drive si vous le souhaitez.
+
+---
+
+## Annexe : en cas de problème
+
+| Symptôme | Que faire |
+|---|---|
+| « redirect_uri_mismatch » | L'adresse de l'application n'est pas dans les **URI de redirection** (c.2.6), ou il manque la barre oblique finale. Corrigez, attendez 5 minutes. |
+| « origin_mismatch » | L'origine n'est pas dans les **origines JavaScript** (c.2.5), ou elle a une barre oblique finale. |
+| « Accès bloqué : cette application n'a pas été validée » | Notez-le : c'est un résultat. Vérifiez que l'état est « En production » (b.4, point 9). |
+| Page blanche ou « 404 » à l'adresse de l'application | Vérifiez `VITE_BASE_PATH` = `/taskapp/` (a.3) et relancez la mise en ligne (d.2). |
+| « Configuration invalide : VITE_GOOGLE_WEB_CLIENT_ID est vide » | Ajoutez la variable (d.1) et relancez la mise en ligne (d.2). |
+| Pas de menu « Installer l'application » dans Chrome (téléphone) | Rechargez la page une fois, attendez 30 s, réessayez. Sinon : **⋮ > Ajouter à l'écran d'accueil**. Capture et message à Jarvis. |
+| Après « Jeton par redirection », l'application s'ouvre dans un onglet de Chrome | Notez-le : c'est un résultat important. Capture. |
+| Autre | Capture d'écran et message à Jarvis. |
+
+---
+
+## Annexe R — Repli : application Android (à ne faire que si l'équipe vous le demande)
+Cette annexe reprend la version 2 du guide. Elle ne servira que si la séance g) montre que la version web ne convient pas sur le téléphone (votre décision DEC-034). Elle suppose aussi la création des clés de test (`procedure-cles-et-premier-passage.md`, aujourd'hui suspendue). **Ne faites rien de cette annexe sans l'accord de Jarvis.**
+
+Le nom de paquet est `fr.donejuan.poc`. Les empreintes `<SHA1_DEBUG>` et `<SHA1_PUBLICATION>` sont celles de la procédure des clés. Les renvois « d.5 », « d.6 », « d.7 » ci-dessous désignent R.2.5, R.2.6 et R.2.7 ; « c.2 » désigne R.1.2 ; « (g) » désigne R.3. Les prérequis de cette annexe s'ajoutent aux parties a) à f).
+
+### R.1 Identifiants OAuth Android
 
 **Important** : seuls comptent les APK construits avec les clés de test de l'équipe. Un APK construit sans ces clés est signé par une clé automatique dont l'empreinte change à chaque construction : il ne peut pas s'authentifier. L'équipe ne vous remettra que des APK dont elle a vérifié l'empreinte (affichée par la construction) contre `<SHA1_DEBUG>` ou `<SHA1_PUBLICATION>`. Si vous recevez un APK sans cette confirmation, ne l'installez pas.
 
 L'équipe vous demande **deux** identifiants Android : un pour la clé de test « débogage », un pour la clé de test « publication » (prérequis P9). Le nom de paquet est le même ; seule l'empreinte change.
 
-### c.1 Ce qu'est l'empreinte SHA-1
+#### R.1.1 Ce qu'est l'empreinte SHA-1
 C'est une suite de 20 paires de caractères séparées par deux-points, par exemple de la forme `AA:BB:CC:...`. Elle identifie la clé qui signe l'application. Ce n'est pas un secret : on peut la transmettre. **Le fichier de clé, lui, est secret.**
 
-### c.2 Comment obtenir l'empreinte
+#### R.1.2 Comment obtenir l'empreinte
 **Méthode recommandée : l'équipe vous la donne.**
 L'équipe crée elle-même les deux clés de test et vous envoie les deux empreintes (`<SHA1_DEBUG>` et `<SHA1_PUBLICATION>`). Vous n'avez rien à installer. Vous ne recevez pas les fichiers de clé.
 
@@ -187,7 +366,7 @@ L'équipe crée elle-même les deux clés de test et vous envoie les deux emprei
 4. Dans le résultat, repérez la ligne qui commence par `SHA1:`. Copiez la suite de caractères.
 5. Gardez le fichier `poc-test.jks` hors du dépôt GitHub. L'équipe vous dira comment le lui transmettre, si nécessaire.
 
-### c.3 Créer l'identifiant (à faire deux fois)
+#### R.1.3 Créer l'identifiant (à faire deux fois)
 1. **Google Auth Platform > Clients > Créer un client**.
 2. « Type d'application » : **Android**.
 3. « Nom » : `Done Juan POC Android debogage` (première fois), puis `Done Juan POC Android publication` (seconde fois).
@@ -202,30 +381,30 @@ Si Google refuse : « Un client Android avec ce nom de package et cette empreint
 
 ---
 
-## d) Téléphone Android
+### R.2 Téléphone Android en mode développeur
 
-### d.1 Vérifier la version
+#### R.2.1 Vérifier la version
 1. Ouvrez **Paramètres**.
 2. Cherchez **À propos du téléphone** (ou **Informations sur le téléphone**), puis **Informations sur le logiciel**.
 3. Vérifiez que « Version d'Android » est **10 ou plus**.
 
-### d.2 Activer les options pour les développeurs
+#### R.2.2 Activer les options pour les développeurs
 1. Dans **À propos du téléphone**, trouvez **Numéro de build** (parfois dans **Informations sur le logiciel**).
 2. Touchez 7 fois de suite **Numéro de build**.
 3. Saisissez votre code de verrouillage si le téléphone le demande.
 
 Résultat attendu : un message « Vous êtes maintenant développeur ».
 
-### d.3 Activer le débogage USB
+#### R.2.3 Activer le débogage USB
 1. Revenez dans **Paramètres**. Ouvrez **Options pour les développeurs** (souvent tout en bas, ou dans **Système**).
 2. Activez l'interrupteur en haut de la page, si besoin.
 3. Activez **Débogage USB**. Confirmez par **OK**.
 
-### d.4 Mettre à jour Google Play services
+#### R.2.4 Mettre à jour Google Play services
 1. Ouvrez l'application **Play Store**.
 2. Cherchez `Services Google Play`, ouvrez la fiche. Si un bouton **Mettre à jour** s'affiche, touchez-le.
 
-### d.5 Autoriser l'installation d'un fichier APK
+#### R.2.5 Autoriser l'installation d'un fichier APK
 Cette autorisation sert pour la méthode par fichier (d.7). Les noms varient selon la marque.
 1. Ouvrez **Paramètres** et tapez `sources inconnues` ou `installer des applications inconnues` dans la recherche.
 2. Choisissez le navigateur que vous utiliserez (**Chrome**).
@@ -233,7 +412,7 @@ Cette autorisation sert pour la méthode par fichier (d.7). Les noms varient sel
 
 Pensez à la désactiver après les séances.
 
-### d.6 Méthode 1 : installation par câble (ADB)
+#### R.2.6 Méthode 1 : installation par câble (ADB)
 À faire seulement si l'équipe vous le demande. La méthode 2 est plus simple.
 1. Téléchargez « SDK Platform-Tools » sur `https://developer.android.com/tools/releases/platform-tools`. Décompressez le dossier.
 2. Branchez le téléphone au PC par câble USB.
@@ -242,7 +421,7 @@ Pensez à la désactiver après les séances.
 5. Résultat attendu : une ligne avec un numéro suivi de `device`. Si c'est écrit `unauthorized`, revenez à l'étape 3.
 6. Pour installer : `adb install -r chemin\vers\poc.apk`. Résultat attendu : `Success`.
 
-### d.7 Méthode 2 : installation par fichier APK
+#### R.2.7 Méthode 2 : installation par fichier APK
 1. Sur le téléphone, ouvrez Chrome et allez à l'adresse que l'équipe vous donne pour l'APK voulu (« débogage » ou « publication » : deux adresses distinctes, ne les confondez pas).
 2. Touchez le lien de l'APK. Acceptez le téléchargement si Chrome avertit que « ce type de fichier peut être dangereux ».
 3. Touchez **Ouvrir** quand le téléchargement est terminé, puis **Installer**.
@@ -250,63 +429,7 @@ Pensez à la désactiver après les séances.
 
 ---
 
-## e) Compte d'hébergement gratuit
-
-### Cas A : GitHub Pages (dépôt public)
-1. Vous avez déjà un compte GitHub. Il n'y a rien à créer.
-2. Rendre le dépôt public est **une décision à confirmer avec Jarvis le jour du test**. Ne le faites pas avant son accord.
-3. Quand Jarvis le confirme : sur la page du dépôt, **Settings** (« Paramètres »), tout en bas **Danger Zone** (« Zone de danger »), **Change repository visibility** (« Changer la visibilité du dépôt »), **Make public**. Suivez les confirmations.
-4. Ensuite, **Settings > Pages**. Sous « Build and deployment », « Source » doit indiquer **GitHub Actions**. Choisissez-le s'il ne l'est pas.
-
-Résultat attendu : l'adresse `https://<votre-nom-github>.github.io` est l'origine à déclarer à l'étape b.
-
-### Cas B : Cloudflare Pages (dépôt privé)
-1. Allez sur `https://dash.cloudflare.com/sign-up`.
-2. Saisissez votre adresse e-mail et un mot de passe. Cliquez sur **Sign up**.
-3. Ouvrez le courriel de vérification et cliquez sur le lien.
-4. Dans le tableau de bord, ouvrez **Workers & Pages** (menu à gauche), puis **Créer** (« Create »), onglet **Pages**.
-5. Choisissez **Charger des ressources** (« Upload assets »).
-6. « Nom du projet » : choisissez un nom court, en minuscules, sans espace (par exemple `donejuan-poc`). Notez-le : il fait partie de l'adresse. Cliquez sur **Créer un projet**.
-7. Vous n'avez pas encore de fichiers à charger. Laissez cette étape. L'équipe vous fournira un dossier compressé le jour J.
-
-Résultat attendu : l'adresse sera `https://<nom-du-projet>.pages.dev`. Le plan gratuit suffit. **Ne saisissez aucune carte bancaire.**
-
----
-
-## f) Informations à transmettre à l'équipe
-
-### Ce qui peut être transmis
-| Information | Secret ? | Exemple de forme |
-|---|---|---|
-| ID client Web | Non | `...apps.googleusercontent.com` |
-| ID client Android « débogage » | Non | idem |
-| ID client Android « publication » | Non | idem |
-| Adresse d'hébergement (origine) | Non | `https://...` |
-| Nom du projet Cloudflare (cas B) | Non | un mot |
-
-### Ce qui ne doit **jamais** être transmis
-- Votre mot de passe Google ou Cloudflare.
-- Un code de sécurité à usage unique.
-- Un fichier de clé (`.jks`, `.keystore`, `.p12`) et son mot de passe, sauf demande explicite de Jarvis par un canal privé.
-- Tout « code secret du client », si la console en affiche un.
-
-### Comment les transmettre
-1. Envoyez les valeurs dans **un message privé** à Jarvis (pas dans un ticket du dépôt, pas dans un commentaire).
-2. Ces valeurs ne seront **pas** enregistrées dans le dépôt. L'équipe les place dans des variables du dépôt GitHub (« Settings > Secrets and variables > Actions > Variables ») ou dans un fichier local ignoré par Git.
-3. Attendez la réponse de Jarvis : « reçu, l'application de test est prête ».
-
----
-
-## g) Déroulé des deux séances
-
-### Règles pour les deux séances
-- Un membre de l'équipe est joint par visio ou par message. Il vous dit quoi cliquer. Vous notez ce que vous voyez.
-- Prenez une **capture d'écran** à chaque fois que Google affiche une fenêtre (consentement, avertissement, erreur).
-- Pour chaque étape, remplissez le tableau de résultats de la fin de ce guide : heure, appareil, ce que vous avez vu, réussi ou non.
-- Ne cherchez pas à corriger une erreur. Notez-la telle quelle : une erreur est un résultat utile.
-- Si le texte d'un écran est long, copiez-le ou photographiez-le.
-
-### Séance 1, jour J (environ 1 h 30, plus des attentes)
+### R.3 Séance Android, jour J (version 2) (environ 1 h 30, plus des attentes)
 Matériel : PC, téléphone chargé, câble, accès aux comptes. Prérequis : parties a à f terminées, application de test installée.
 
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
@@ -339,7 +462,7 @@ Matériel : PC, téléphone chargé, câble, accès aux comptes. Prérequis : pa
 
 Avant de finir : l'équipe vérifie avec vous que le téléphone et l'application de test restent connectés. Laissez le téléphone intact jusqu'au lendemain (pas de réinitialisation, pas de désinstallation).
 
-### Séance 2, jour J+1 (environ 1 h, au moins 24 h après la dernière connexion, étape 20 de la séance 1)
+### R.4 Séance Android, jour J+1 (version 2) (environ 1 h, au moins 24 h après la dernière connexion, étape 20 de la séance 1)
 
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
 |---|---|---|---|
@@ -353,27 +476,3 @@ Avant de finir : l'équipe vérifie avec vous que le téléphone et l'applicatio
 | 8 | **R2, retrait de l'accès sur le téléphone.** Retirez de nouveau l'accès (comme en 3). Sur le téléphone, touchez « Jeton silencieux ». | Le journal affiche un résultat (selon le comportement de Google : `AccesGoogleRevoque`, ou `InteractionRequise` avec un écran de consentement). Les deux sont des résultats utiles. | Le texte exact du résultat et le code d'erreur affiché dans le journal. Capture. |
 | 9 | **Fin.** Désactivez « Sources inconnues » (d.5). Si vous le souhaitez, supprimez le dossier `Done Juan (POC)` dans Drive. | — | — |
 
-### Tableau de résultats
-Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir pendant la séance.
-
-| Séance | Étape | Date et heure | Appareil | Ce que j'ai vu | Réussi ? (oui/non) | Capture |
-|---|---|---|---|---|---|---|
-| | | | | | | |
-
-### Après les séances
-- Envoyez le tableau et les captures à Jarvis, dans un message privé.
-- L'équipe analyse les résultats et vous propose une décision (aucune action de votre part).
-- Si un résultat est mauvais, l'équipe vous soumet un choix. Aucun de ces choix n'est irréversible.
-
----
-
-## Annexe : en cas de problème
-
-| Symptôme | Que faire |
-|---|---|
-| « redirect_uri_mismatch » ou « origin_mismatch » | L'adresse n'est pas dans les origines de l'identifiant Web (b.3). Vérifiez l'absence de `/` final. Attendez 5 minutes. |
-| Erreur « 400 invalid_request » à la connexion Android | Le nom de paquet ou l'empreinte est faux (c.3). Recopiez-les. |
-| « Accès bloqué : cette application n'a pas été validée » | Notez-le : c'est un résultat R11. Vérifiez que l'état est « En production » (a.4, point 9). |
-| Le téléphone n'apparaît pas dans `adb devices` | Changez de câble. Refaites d.3. |
-| L'application n'est pas installable | Désinstallez l'ancienne version signée par une autre clé, puis réessayez. |
-| Autre | Capture d'écran et message à Jarvis. |

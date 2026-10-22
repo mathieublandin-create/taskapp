@@ -1,8 +1,9 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.10.2 (brouillon), 2026-10-22.** Auteur : Starck, architecte logiciel.
+> **Version 0.11 (brouillon), 2026-10-22.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
-> **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-012 sont au statut **Proposé** et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique R1, R2, R11, qui peut modifier ADR-004 (jetons du PC) et ADR-003 (format Drive) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
+> **PWA unique sous condition (v0.11, DEC-034, ADR-013).** La cible est désormais **une seule PWA** sur le PC, sur Android (Chrome, application installée) et, pour EPI-001, sur iPhone. Tout ce qui relève de Capacitor, du module natif d'authentification, de SQLite, de l'APK et de sa signature est marqué **« repli si la condition échoue »** : ce n'est plus la cible, mais cela redevient applicable, avec ADR-012, si la mesure M-RED ou M-PERSIST échoue sur Chrome Android. Le §4.1.7 décrit la connexion par redirection.
+> **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-013 sont au statut **Proposé** (ADR-012 : remplacé sous condition par ADR-013) et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique v3 (R11, M-RED, M-PERSIST, M-DUR), qui confirme ou non la PWA unique (ADR-013, condition de DEC-034) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
 
 ## Historique
 
@@ -20,6 +21,7 @@
 | 0.10 | 2026-10-21 | Starck | Suite de E8 de LOT-001 : alignement sur le guide d'ergonomie §6.6.1 et US-018 S05c ; **DEC-030** (commanditaire, « Reco ») : CA-13 limité, Q-US-017-3 a), Q-US-001-1 a) ; protocole du test technique (Q-US-031-1) | **§4.1.5 bis** : un élément créé puis supprimé hors ligne avant tout dépôt de sa création **n'est plus compté** (marqueur `creationNonDeposee`, purge de ses entrées d'index à la suppression) ; la suppression d'un élément déjà déposé compte pour un. **A8 tranché** : option (a), formulation acceptée (§6.4, §9, PO-9 clos, R4). **Q-US-017-3 a)** : « Repartir de zéro » l'emporte toujours sur « Restaurer », règle arrêtée ; une restauration ne crée pas de génération (§4.2.2). **Q-US-001-1 a)** : le rattachement d'une tâche et le placement d'un sous-objectif écartés par la suppression de l'objectif sont signalés comme valeurs non retenues ; le §4.2.1 ne le permettait pas tel quel (ces écritures sont des informations de l'enfant) et est **étendu** : le contexte de la pierre tombale couvre aussi les écritures de rattachement et de placement pointant vers l'élément supprimé. Aucun changement de format Drive (schéma 1). Test technique : 3 points de protocole ajoutés (§3.5). Aucun ADR modifié dans sa décision. |
 | 0.10.1 | 2026-10-21 | Starck | Contrôle final d'Anthony sur LOT-001 (itération 2/2, `explicitation-LOT-001.md`, section « Contrôle final ») : É-2 et É-4 | **§4.1.5 bis (É-4)** : à la suppression d'un élément, les entrées de ses descendants (à tout niveau) qui portent `creationNonDeposee` et que la suppression rend supprimés par dérivation sont purgées, même si l'élément supprimé est déjà déposé. Le décompte appliqué est celui du guide d'ergonomie §6.6.1 (cas : sous-tâche créée hors ligne sous un objectif déjà déposé, puis objectif supprimé hors ligne : décompte 1). **§4.2.1 (É-2)** : la reformulation du rattachement utilise le modèle du §6.1, c'est-à-dire l'entité `LienTacheObjectif` (relation n-n), et non un champ `objectifId` de la tâche. Aucun changement de format Drive, aucune décision d'ADR modifiée. |
 | 0.10.2 | 2026-10-22 | Starck | E9 de LOT-001 : **ANT-25** (`conventions.md` v0.3 §17.2, `ST-socle-ecriture.md` §6.7) | **§6.1 et DS-08** : l'identifiant d'une entrée de `EvenementJournal` écrite par un cas d'usage prend la forme `<UUID v7 de l'opération>:<rang>` (rang décimal, à partir de 0, unique dans l'opération), au lieu d'un UUID par entrée. Unicité globale, fusion par union et dédoublonnage inchangés ; `cause` désigne une entrée de la même opération. Les entrées des réparations RG-048 gardent l'identifiant déterministe `hash(élément, HLC du déplacement annulé)`, dont l'encodage ne contient pas le caractère `:`. Ordre d'un historique : HLC croissant, puis `id` en comparaison ordinale. Correctif sans effet sur le format publié (aucun schéma 1 encore publié). |
+| 0.11 | 2026-10-22 | Starck | **DEC-034** (ETU-002, « prendre les recos de Stark » : Q-PWA-1 a à Q-PWA-5) ; **DEC-035** (M1-14, essai de partage) | **PWA unique sur tous les appareils, sous condition de mesure** : nouvel **ADR-013** (Proposé), qui **remplace ADR-012 sous condition** ; notes de portée dans ADR-001, ADR-004 et ADR-010. Capacitor, module natif d'authentification, SQLite, notifications locales, arrière-plan, APK et chaîne de signature : marqués **« repli si la condition échoue »** (§2.2, §2.3, §2.4, §3.2, §4.1.2, §4.2, §5, §6.4, §7.1, §7.4, §7.5, §9 A2, DS-02, DS-06, DS-07, DS-09, DS-15, DS-17). **Nouveau §4.1.7** : connexion par **redirection pleine page** (`prompt=none`) à l'ouverture, une tentative par ouverture, `state`, effacement du fragment, URI de redirection déclarée, geste en cours de session. §4.1.6 et §4.1.6 bis étendus au téléphone (Q-PWA-2) ; IndexedDB en **durabilité stricte** (US-018 CA-5) ; persistance exigée pour la PWA installée ; ancrage monotone par `performance.now()` sur tous les appareils (limite A8 étendue au téléphone). Q-38 b et arrière-plan abandonnés (Q-PWA-3, §5, F2, F6). Risques : R1, R2, R13, R16, R17 sans objet sauf repli ; R3, R15 étendus ; nouveaux **R18** (flux implicite OAuth) et **R19** (politiques navigateur) ; PO-11 (condition de DEC-034), PO-12 (EPI-001, R-P1/R-P2). Test technique v3 : volet web, M-RED, M-PERSIST, M-DUR, volet optionnel R-P1/R-P2 ; **condition d'E9 d'US-022 et d'US-017 : R11 et M-RED**. Les modifications de RG-017, ENF-01, ENF-04, ENF-07, US-018 CA-4 et Q-38 b relèvent de Pepper (en cours). |
 
 ## Sommaire
 1. Contexte et exigences structurantes
@@ -97,8 +99,7 @@ flowchart TB
     GDR["Google Drive<br/>(espace personnel de l'utilisateur)"]
     GCA["Google Calendar<br/>(agenda principal)"]
     GCAPP["Application Google Agenda<br/>(notifications)"]
-    HOST["Hébergement statique<br/>(fichiers de la PWA et de l'APK)"]
-    STORE["Page de téléchargement de l'APK<br/>(sur l'hébergement statique, ADR-012)"]
+    HOST["Hébergement statique GitHub Pages<br/>(fichiers de la PWA)"]
 
     U -- "gère objectifs, tâches, temps, bilans" --> APP
     APP -- "authentification, autorisations" --> GID
@@ -106,45 +107,41 @@ flowchart TB
     APP -- "crée rappels et créneaux, lit les événements" --> GCA
     GCA -- "notifications 8 h / 21 h et créneaux" --> GCAPP
     GCAPP -- "notifie" --> U
-    HOST -- "distribue la PWA (PC)" --> APP
-    STORE -- "APK signé, installé par l'utilisateur<br/>(fichier ou ADB)" --> APP
+    HOST -- "distribue la PWA (PC, Android, iPhone)" --> APP
 ```
+
+*Repli si la condition de DEC-034 échoue (ADR-012)* : l'hébergement distribue aussi l'APK Android signé, installé par l'utilisateur (fichier ou ADB).
 
 ### 2.3 C4 niveau 2 : conteneurs
 
+**Cible (v0.11, ADR-013)** : la même PWA sur tous les appareils.
+
 ```mermaid
 flowchart TB
-    subgraph PHONE["Smartphone : application Capacitor (Android ; iOS selon arbitrage A1)"]
-        UI1["Interface<br/>React + Ionic"]
-        CORE1["Noyau applicatif TS<br/>domaine, cas d'usage,<br/>moteur de synchro,<br/>réconciliateur Calendar"]
-        DB1[("Base locale<br/>SQLite")]
-        NAT1["Modules natifs<br/>auth Google, notifications locales,<br/>tâche d'arrière-plan"]
-        UI1 --> CORE1 --> DB1
-        CORE1 --> NAT1
-    end
-    subgraph PC["PC : PWA installable (Chrome / Edge)"]
-        UI2["Interface<br/>React + Ionic"]
-        CORE2["Noyau applicatif TS<br/>(même code)"]
-        DB2[("Base locale<br/>IndexedDB")]
-        SW["Service worker<br/>(cache de l'application)"]
-        UI2 --> CORE2 --> DB2
-        SW -.-> UI2
+    subgraph DEV["Chaque appareil : PWA installée<br/>(PC : Chrome / Edge ; smartphone : Chrome Android ; iPhone : Safari, EPI-001)"]
+        UI["Interface<br/>React + Ionic"]
+        CORE["Noyau applicatif TS<br/>domaine, cas d'usage,<br/>moteur de synchro,<br/>réconciliateur Calendar"]
+        DB[("Base locale<br/>IndexedDB (Dexie),<br/>durabilité stricte")]
+        AUTH["Adaptateur FournisseurAuth web<br/>redirection prompt=none à l'ouverture,<br/>GIS ou redirection sur geste"]
+        SW["Service worker<br/>(cache de l'application, mises à jour)"]
+        UI --> CORE --> DB
+        CORE --> AUTH
+        SW -.-> UI
     end
     subgraph GOOGLE["Services Google (compte de l'utilisateur)"]
         GID["Google Identity<br/>OAuth 2.0"]
         DRIVE[("Drive : dossier « Done Juan »<br/>un fichier d'état par appareil")]
         CAL[("Calendar : agenda principal<br/>séries de rappels, créneaux")]
     end
-    HOST["Hébergement statique<br/>(HTTPS, aucune donnée)"]
+    HOST["GitHub Pages<br/>(HTTPS, aucune donnée)"]
 
-    CORE1 -- "REST Drive v3" --> DRIVE
-    CORE2 -- "REST Drive v3" --> DRIVE
-    CORE1 -- "REST Calendar v3" --> CAL
-    CORE2 -- "REST Calendar v3" --> CAL
-    NAT1 -- "jeton d'accès" --> GID
-    CORE2 -- "Google Identity Services (web)" --> GID
+    CORE -- "REST Drive v3" --> DRIVE
+    CORE -- "REST Calendar v3" --> CAL
+    AUTH -- "redirection OAuth / GIS" --> GID
     HOST -- "HTTPS" --> SW
 ```
+
+**Repli si la condition de DEC-034 échoue** (ADR-001 option 2, ADR-012) : sur Android, l'application Capacitor des versions 0.1 à 0.10.2, avec base SQLite, module natif d'authentification (Credential Manager, AuthorizationClient), et, dans des lots ultérieurs, notifications locales et tâche d'arrière-plan ; la PWA ci-dessus reste celle du PC et de l'iPhone.
 
 ### 2.4 Découpage logique du noyau (architecture hexagonale, ADR-010)
 
@@ -153,7 +150,7 @@ flowchart TB
 | `domaine` | Entités, valeurs (durée par pas de 30 min, date de journée), règles RG : priorisation, planification, reste à faire, vélocité, backlog, rotation des fun facts | Aucune (TypeScript pur, sans entrée-sortie) |
 | `application` | Cas d'usage (créer une tâche, saisir du temps, proposer un planning…), **ports** : `DepotLocal`, `TransportSynchro`, `PasserelleAgenda`, `FournisseurAuth`, `Horloge`, `Notifieur`, `Planificateur` | `domaine` |
 | `synchro` | Moteur CRDT (fusion par champ, horloge HLC), cycle de synchronisation, journal des valeurs écartées | `domaine`, ports |
-| `infrastructure` | Adaptateurs : IndexedDB (Dexie), SQLite, Drive REST, Calendar REST, GIS web, authentification native, notifications locales | `application` (implémente les ports) |
+| `infrastructure` | Adaptateurs : IndexedDB (Dexie), Drive REST, Calendar REST, authentification web (redirection et GIS) ; *repli (ADR-012)* : SQLite, authentification native, notifications locales | `application` (implémente les ports) |
 | `presentation/modeles-de-vue` | **Modèles de vue** (ANT-8) : fonctions pures qui transforment le résultat des cas d'usage et des requêtes en structures prêtes à afficher (listes triées et regroupées, libellés, codes d'état de l'indicateur et des bandeaux, compteurs « 3/3 en cours », états vides, activation des actions) | `application` (requêtes, types de résultat) et ports `Horloge` (heure et fuseau de référence) et `DepotLocal` en lecture seule, **par injection**. Aucune dépendance à React, Ionic, au DOM ni à une entrée-sortie |
 | `presentation/ui` | Écrans React et Ionic : composants « bêtes » qui affichent un modèle de vue et déclenchent des cas d'usage. Aucune règle métier ni mise en forme calculée | `presentation/modeles-de-vue`, `application` (cas d'usage) |
 
@@ -187,8 +184,8 @@ Section de référence pour Anthony (`conventions.md`). Les versions sont celles
 
 | Option | Avantages | Inconvénients | Verdict |
 |---|---|---|---|
-| A. PWA seule (smartphone et PC) | Un seul livrable, aucun store, coût nul | Sur iOS : pas de notification locale programmée, stockage pouvant être purgé, connexion Google par fenêtre surgissante fragile en mode installé. Pas de tâche d'arrière-plan fiable. Jeton d'accès d'une heure sans renouvellement silencieux. | Rejetée pour le smartphone, retenue pour le PC |
-| **B. Code web unique : PWA (PC) et Capacitor (smartphone)** | Un seul code TypeScript et React. Sur smartphone : modules natifs (connexion Google native, notifications locales, arrière-plan, SQLite). Écosystème éprouvé. | Une application mobile à construire et à distribuer (store ou installation directe) | **Recommandée** |
+| **A. PWA seule (smartphone et PC)** | Un seul livrable, aucun store, coût nul, mises à jour automatiques ; l'iPhone d'EPI-001 couvert | Pas de notification locale programmée ni d'arrière-plan (abandonnés, Q-PWA-3). Jeton d'accès d'une heure sans renouvellement silencieux : passage par Google à l'ouverture (accepté, Q-PWA-2). | **Retenue pour tous les appareils sous condition de mesure (v0.11, DEC-034, ADR-013)** ; v0.1 à v0.10.2 : retenue pour le PC seulement |
+| B. Code web unique : PWA (PC) et Capacitor (smartphone) | Un seul code TypeScript et React. Sur smartphone : modules natifs (connexion Google native, notifications locales, arrière-plan, SQLite). Écosystème éprouvé. | Une application mobile à construire, signer et distribuer (installation directe, ADR-012) | Recommandée jusqu'à v0.10.2 ; **repli si la condition de DEC-034 échoue** |
 | C. Flutter (mobile, bureau, web) | Une base de code, bonnes performances, bon hors ligne | Dart moins répandu. Outillage Cucumber en Gherkin français peu mature. Cible web moins solide. | Rejetée |
 | D. React Native et Expo (avec react-native-web pour le PC) | Natif, une base de code | Rendu web secondaire pour le PC, double paradigme. Gain faible par rapport à B pour une application de formulaires et de listes. | Écartée (alternative crédible) |
 | E. Natif pur (Kotlin ou Swift) et web séparé | Intégration système maximale | Deux ou trois bases de code : disproportionné pour un utilisateur unique | Rejetée |
@@ -202,25 +199,25 @@ Section de référence pour Anthony (`conventions.md`). Les versions sont celles
 | Exécution et paquets | Node.js LTS, **pnpm** | Standard, reproductible (fichier de verrouillage) | npm |
 | Interface | **React** et **Ionic React** | Ionic fournit des composants mobiles accessibles, adaptatifs sur PC et intégrés à Capacitor | MUI, shadcn/ui |
 | Construction | **Vite** et **vite-plugin-pwa** (Workbox) | Rapide, PWA et service worker inclus | — |
-| Coque mobile | **Capacitor** (Android ; iOS selon l'arbitrage A1) | Réutilise le code web, accès aux modules natifs | Expo (ADR-001) |
-| Base locale (web) | **IndexedDB via Dexie** | Standard, transactionnel, testable avec `fake-indexeddb` | — |
-| Base locale (mobile) | **SQLite** (`@capacitor-community/sqlite`) | Le stockage web d'une WebView iOS peut être purgé par le système ; SQLite est durable | IndexedDB de la WebView (acceptable sur Android seulement) |
+| Coque mobile | *Repli si la condition de DEC-034 échoue* : Capacitor (Android) | Réutilise le code web, accès aux modules natifs | Expo (ADR-001) |
+| Base locale (tous appareils) | **IndexedDB via Dexie**, transactions d'écriture en **durabilité stricte** (`chromeTransactionDurability: 'strict'`), écriture confirmée à `complete` (v0.11, ADR-013) | Standard, transactionnel, testable avec `fake-indexeddb` ; persistance demandée par `navigator.storage.persist()` | — |
+| Base locale (mobile natif) | *Repli si la condition échoue* : SQLite (`@capacitor-community/sqlite`) | Durable dans la coque native | IndexedDB de la WebView |
 | Gestion d'état de l'interface | **Zustand** | Léger, sans code répétitif | Redux Toolkit |
 | Dates et fuseaux | **date-fns** et **@date-fns/tz** | Fuseaux explicites, fonctions pures | Luxon, Temporal (prothèse) |
 | Validation des fichiers Drive et migrations | **Zod** | Schémas versionnés, validation à la lecture | — |
 | Appels Google | **REST direct** (`fetch`) derrière les ports, sans la bibliothèque `gapi` | Léger, maîtrisé, simulable dans les tests | `googleapis` (Node uniquement) |
-| Authentification (web) | **Google Identity Services**, modèle « jeton » | Pas de secret ni de serveur ; autorisation incrémentale | Flux avec code et serveur (rejeté, ADR-002) |
-| Authentification (Android) | Module Capacitor sur **Credential Manager** et **AuthorizationClient** (Google Play services) | Jetons gérés par le système, renouvellement silencieux | — |
-| Notifications locales (mobile) | `@capacitor/local-notifications` | Programmées à l'avance, sans réseau | — |
-| Arrière-plan (mobile, lot ultérieur) | `@capacitor/background-runner` (WorkManager sur Android) | Synchronisation périodique sans ouvrir l'application | — |
+| Authentification (tous appareils) | **Redirection OAuth pleine page** (`response_type=token`, `prompt=none`) à l'ouverture, et **Google Identity Services**, modèle « jeton », ou redirection interactive sur geste (§4.1.7, ADR-013) | Pas de secret ni de serveur ; pas de geste à l'ouverture ; autorisation incrémentale | Flux avec code et serveur (rejeté, ADR-002) |
+| Authentification (Android natif) | *Repli si la condition échoue* : module Capacitor sur Credential Manager et AuthorizationClient | Jetons gérés par le système, renouvellement silencieux | — |
+| Notifications locales (mobile) | **Abandonnées** (Q-PWA-3) ; *repli* : `@capacitor/local-notifications` | — | — |
+| Arrière-plan (mobile, lot ultérieur) | **Abandonné** (Q-PWA-3) ; *repli* : `@capacitor/background-runner` | — | — |
 | Graphiques (lot ultérieur) | Chart.js | Léger, accessible | Recharts |
 | Tests unitaires | **Vitest**, **@testing-library/react**, `fake-indexeddb` | Rapide, natif Vite, compatible TypeScript | Jest |
 | Tests métiers | **@cucumber/cucumber** (cucumber-js), `# language: fr` | Gherkin français natif, *step definitions* en TypeScript | — |
 | Tests de bout en bout | **Playwright** (et `@axe-core/playwright` pour l'accessibilité) | Parcours UI sur la PWA, mode hors ligne simulable | Cypress |
 | Simulation HTTP | **MSW** | Rejoue les réponses Google dans les tests d'adaptateurs | nock |
 | Qualité | ESLint (typescript-eslint, configuration *strict*), Prettier, `tsc --noEmit`, Semgrep (sécurité), audit des dépendances | Lint et analyse statique « au vert » (E12) | — |
-| Intégration continue | **GitHub Actions** (dépôt GitHub, PO-7 tranché ; gratuit sans limite de minutes une fois le dépôt public, DEC-023) | Construction Android incluse ; signature de l'APK par secrets chiffrés (ADR-012) | GitHub Actions sur dépôt privé (quota gratuit de minutes) |
-| Distribution Android | **APK signé installé directement** (DEC-021, ADR-012), `apksigner` pour la vérification | Gratuit, sans magasin | Google Play (DEC-005, remplacée) ; F-Droid (inadapté) |
+| Intégration continue | **GitHub Actions** (dépôt GitHub, PO-7 tranché ; gratuit sans limite de minutes une fois le dépôt public, DEC-023) | Construction et déploiement de la PWA ; *repli* : construction et signature de l'APK (ADR-012) | GitHub Actions sur dépôt privé (quota gratuit de minutes) |
+| Distribution (tous appareils) | **PWA sur GitHub Pages**, installée depuis le navigateur, mise à jour par le service worker (ADR-013) | Gratuit, sans magasin, sans installation manuelle | *Repli si la condition échoue* : APK signé installé directement (DEC-021, ADR-012) |
 
 ### 3.3 Outillage de tests : organisation (ADR-009)
 - **Unitaires (Vitest)** : `domaine`, `synchro` et cas d'usage, avec des adaptateurs en mémoire. Couverture minimale proposée : 90 % des lignes pour `domaine` et `synchro`, 80 % pour l'ensemble. Anthony fixe les seuils définitifs.
@@ -237,7 +234,7 @@ Section de référence pour Anthony (`conventions.md`). Les versions sont celles
 - **Adaptateurs Google** : tests de contrat avec MSW, sur des réponses enregistrées conformes à la documentation, y compris les erreurs 401, 403, 404, 409, 410, 429 et 5xx.
 - **Bout en bout (Playwright)** : quelques parcours sur la PWA, avec un faux Google injecté. Ils couvrent le démarrage, le hors ligne et l'accessibilité.
 - **Recette sur appareil réel** : un compte Google de recette dédié (§7.4).
-- **Scénarios « système » du smartphone (v0.9, Q-US-018-3)** : arrêt brutal, extinction et redémarrage, coupure du réseau pendant la saisie (US-018 S09, S13). Ils sont exécutés au niveau des cas d'usage, avec un `DepotLocal` persistant simulé : un arrêt brutal y est l'abandon de l'instance sans fermeture propre, suivi d'une nouvelle instance sur le même stockage. Une écriture non validée (transaction non terminée) doit être absente, et une écriture validée présente. La vérification est complétée en recette technique (E14, Starck) par un arrêt forcé réel sur l'appareil (`adb shell am force-stop`, puis redémarrage du téléphone). Une variante `@recette` de S09 est recommandée.
+- **Scénarios « système » du smartphone (v0.9, Q-US-018-3)** : arrêt brutal, extinction et redémarrage, coupure du réseau pendant la saisie (US-018 S09, S13). Ils sont exécutés au niveau des cas d'usage, avec un `DepotLocal` persistant simulé : un arrêt brutal y est l'abandon de l'instance sans fermeture propre, suivi d'une nouvelle instance sur le même stockage. Une écriture non validée (transaction non terminée) doit être absente, et une écriture validée présente. La vérification est complétée en recette technique (E14, Starck) par un arrêt forcé réel sur l'appareil : **v0.11**, arrêt forcé de Chrome (« Applications > Chrome > Forcer l'arrêt ») puis redémarrage du téléphone, avec la PWA installée (mesure M-DUR du test technique v3) ; *repli* : `adb shell am force-stop` sur l'APK. Une variante `@recette` de S09 est recommandée.
 
 ---
 
@@ -263,17 +260,18 @@ Scopes **exclus** :
 
 | Appareil | Mécanisme | Stockage | Renouvellement |
 |---|---|---|---|
-| Android (Capacitor) | Credential Manager pour l'identité, AuthorizationClient (Google Play services) pour les scopes | Jetons gérés par Google Play services. L'application ne conserve que le jeton d'accès **en mémoire**. | Silencieux tant que l'autorisation est valide (y compris en arrière-plan, à confirmer lors de la mise au point technique) |
+| **Tous appareils (v0.11, ADR-013)** : PWA sur PC, Chrome Android, Safari iPhone | **Redirection OAuth pleine page** `prompt=none` à l'ouverture ; Google Identity Services (modèle « jeton ») ou redirection interactive sur geste (§4.1.7) | Jeton d'accès (1 h) **en mémoire uniquement**, reçu dans le fragment de l'URL de retour, effacé aussitôt | À chaque ouverture sans jeton en mémoire : une redirection silencieuse (1 à 2 s). En cours de session, après expiration : un geste. Si la session Google a expiré : saisie chez Google. |
+| *Repli* : Android (Capacitor) | Credential Manager pour l'identité, AuthorizationClient (Google Play services) pour les scopes | Jetons gérés par Google Play services. L'application ne conserve que le jeton d'accès **en mémoire**. | Silencieux tant que l'autorisation est valide (y compris en arrière-plan, à confirmer lors de la mise au point technique) |
 | iOS (si A1) | SDK GoogleSignIn | Jeton de rafraîchissement conservé par le SDK dans le **trousseau** iOS | Silencieux |
-| PC (PWA) | Google Identity Services, modèle « jeton » | Jeton d'accès (1 h) **en mémoire uniquement**, jamais dans `localStorage` ni dans IndexedDB | Nouvelle demande au premier usage suivant l'expiration, ou après un rechargement de la page (le jeton en mémoire est alors perdu). **Hypothèse de conception (v0.9, à vérifier par le test technique R2 et R11)** : cette demande passe par une fenêtre Google et doit être déclenchée par un geste de l'utilisateur (« Reprendre la synchronisation ») ; si la session Google du navigateur est active et le consentement acquis, la fenêtre se ferme d'elle-même, sans saisie. Voir §4.1.6 bis. |
+| PC (PWA), jusqu'à v0.10.2 | Google Identity Services, modèle « jeton » | Jeton d'accès (1 h) **en mémoire uniquement**, jamais dans `localStorage` ni dans IndexedDB | Nouvelle demande au premier usage suivant l'expiration, ou après un rechargement de la page (le jeton en mémoire est alors perdu). **Hypothèse de conception (v0.9, à vérifier par le test technique R2 et R11)** : cette demande passe par une fenêtre Google et doit être déclenchée par un geste de l'utilisateur (« Reprendre la synchronisation ») ; si la session Google du navigateur est active et le consentement acquis, la fenêtre se ferme d'elle-même, sans saisie. Voir §4.1.6 bis. |
 
 Principes :
 - l'application n'utilise **aucun secret client** : tous ses clients OAuth sont publics ;
 - notre code ne manipule **aucun jeton de rafraîchissement** ;
-- les clients OAuth sont restreints au nom de paquet et à l'empreinte SHA-1 sur Android, et aux origines JavaScript autorisées sur le web ;
-- **sur Android, l'empreinte déclarée est celle de la clé de publication du projet** (ADR-012), et non celle d'une clé gérée par Google Play. L'authentification par Google Play services fonctionne à l'identique pour une application installée directement : elle dépend du composant système, pas du magasin.
+- les clients OAuth sont restreints aux origines JavaScript autorisées et aux **URI de redirection autorisés** (v0.11 : `https://mathieublandin-create.github.io/taskapp/` pour le PoC et la production sur GitHub Pages, adresse de recette, `http://localhost:5173/` en développement) ; *repli* : nom de paquet et empreinte SHA-1 sur Android ;
+- *repli* : **sur Android, l'empreinte déclarée est celle de la clé de publication du projet** (ADR-012), et non celle d'une clé gérée par Google Play. L'authentification par Google Play services fonctionne à l'identique pour une application installée directement : elle dépend du composant système, pas du magasin.
 
-**Limite connue sur PC** : sans serveur, une PWA ne peut pas renouveler son jeton en arrière-plan. Les données restent consultables et modifiables localement ; la synchronisation reprend au premier geste de l'utilisateur. Si ce comportement gêne à l'usage, deux évolutions sont possibles :
+**Limite connue sur tous les appareils (v0.11 ; auparavant « sur PC »)** : sans serveur, une PWA ne peut pas renouveler son jeton en arrière-plan ; elle le renouvelle à l'ouverture par une redirection silencieuse (§4.1.7) et, en cours de session, au geste. Accepté sur le téléphone par DEC-034 (Q-PWA-2). Les données restent consultables et modifiables localement ; la synchronisation reprend au premier geste de l'utilisateur. Si ce comportement gêne à l'usage, deux évolutions sont possibles :
 - (a) une application de bureau Tauri, avec un client OAuth « bureau » (PKCE) et un jeton conservé dans le trousseau du système ;
 - (b) une petite fonction sans état qui échange et renouvelle le jeton (voir A4).
 
@@ -290,7 +288,7 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
 | Compte Google Workspace : application « interne » | Ni vérification ni avertissement | Seulement si le compte du commanditaire est un compte Workspace |
 
 #### 4.1.4 Identité et appareils
-- Le compte est identifié par la claim `sub`. **La base locale est cloisonnée par compte** : un espace de stockage (base IndexedDB, ou fichier SQLite) par `sub`, nommé d'après une empreinte de ce `sub`. Un autre compte qui se connecte sur l'appareil ouvre son propre espace et ne voit jamais les données du précédent (RG-018, US-022 CA-9). Il n'y a jamais de mélange entre comptes.
+- Le compte est identifié par la claim `sub`. **La base locale est cloisonnée par compte** : un espace de stockage (base IndexedDB ; *repli* : fichier SQLite) par `sub`, nommé d'après une empreinte de ce `sub`. Un autre compte qui se connecte sur l'appareil ouvre son propre espace et ne voit jamais les données du précédent (RG-018, US-022 CA-9). Il n'y a jamais de mélange entre comptes.
 - **DEC-016** : les données du compte précédent sont **conservées à part** sur l'appareil, invisibles pour l'autre compte. C'est le comportement natif du cloisonnement. Chaque espace de stockage a sa propre synchronisation, et seul l'espace du compte connecté est synchronisé.
 - Chaque installation reçoit un `appareilId` (UUID) au premier lancement.
 
@@ -318,7 +316,7 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
 - **Évaluation** : à l'ouverture, au retour au premier plan et chaque minute tant que l'application est ouverte. Pas de notification système ni de tâche de fond (DEC-007). Le bandeau ne bloque rien et ne limite pas l'usage hors ligne (RG-021).
 - **Disparition** : après un dépôt confirmé par Drive. Le calcul dépend de l'horloge de l'appareil, sans conséquence grave si elle est déréglée (information non bloquante).
 
-#### 4.1.6 PC hors ligne (DEC-013, US-031)
+#### 4.1.6 Hors ligne de la PWA : PC (DEC-013, US-031) et, en v0.11, smartphone (US-018)
 - **Démarrage sans réseau** : le service worker (Workbox) met en cache l'ensemble de l'application, en mode « précache ». L'application s'ouvre sans réseau une fois installée ou visitée.
 - **Google Identity Services** : le script `accounts.google.com/gsi/client` est chargé **à la demande et de façon non bloquante**. Il ne se charge pas hors ligne. L'application démarre sans lui, à partir de l'identité mise en cache, et le charge au retour du réseau (R12).
 - **Session expirée (F14)** : l'application reste utilisable, puisque les saisies vont dans IndexedDB. Elle affiche « reconnexion nécessaire pour synchroniser » ; le nombre de modifications en attente est visible. Le dépôt reprend après le geste de reconnexion. Distinction avec l'accès retiré : §4.1.6 bis.
@@ -333,9 +331,15 @@ Ce choix est un arbitrage du commanditaire (A5), détaillé dans ADR-005.
   - un verrou `navigator.locks` garantit qu'un seul onglet exécute la synchronisation et écrit le fichier de l'appareil dans le Drive ;
   - l'HLC est avancée dans la transaction IndexedDB ;
   - l'affichage est actualisé d'un onglet à l'autre par observation de la base.
-- Navigateurs cibles : Chrome et Edge pour ordinateur. Firefox et Safari ne sont pas ciblés en v1.
+- Navigateurs cibles : Chrome et Edge pour ordinateur ; **v0.11** : Chrome pour Android (PWA installée) ; Safari iOS 17 et plus pour le contributeur d'EPI-001 (hors v1, DEC-001). Firefox n'est pas ciblé.
+- **Smartphone (v0.11, ADR-013)** : les dispositions ci-dessus s'appliquent à l'identique à la PWA installée sur Chrome Android. Précisions :
+  - le hors ligne (RG-021, US-018) n'est garanti que pour la **PWA installée** : c'est elle qui obtient la persistance (condition de DEC-034, mesure M-PERSIST) ; un onglet ordinaire peut être évincé ;
+  - **durabilité** : chaque transaction d'écriture d'un cas d'usage est ouverte en `durability: 'strict'` et n'est confirmée qu'à son événement `complete`. Une écriture confirmée survit à un arrêt forcé et à une extinction (US-018 CA-5 ; mesure M-DUR) ;
+  - la désinstallation de la PWA ou « Effacer les données du site » peuvent supprimer la base : seules les modifications non déposées sont exposées (R15).
 
-#### 4.1.6 bis PC : session expirée ou accès retiré (v0.9, Q-US-031-1)
+#### 4.1.6 bis Session expirée ou accès retiré (v0.9, Q-US-031-1 ; v0.11 : tous les appareils)
+**Portée (v0.11, ADR-013)** : ce qui suit, écrit pour le PC, s'applique à **tous les appareils**. Deux ajouts : un retour de redirection `prompt=none` en erreur d'interaction (`interaction_required`, `login_required`, `consent_required`, `account_selection_required`) produit **« Session à reprendre »** (`SYN-SESSION`, sans bandeau) ; un retour en erreur de configuration (`redirect_uri_mismatch`, `invalid_request`, `invalid_client`, `origin_mismatch`) produit aussi `SYN-SESSION`, est consigné au journal technique et constitue une anomalie.
+
 **Constat.** Sur le PC, le jeton d'accès est en mémoire et dure 1 h ; il n'y a pas de jeton de rafraîchissement (§4.1.2). Après l'expiration du jeton, ou après un rechargement de la page, l'application n'a plus aucun moyen d'interroger Google **sans geste de l'utilisateur**. Or une autorisation retirée et une session expirée produisent, vues de l'application, le même symptôme : pas de jeton, ou un `401` sur un jeton périmé. Elles ne se distinguent qu'au moment de la nouvelle demande de jeton. Le comportement exact de Google Identity Services (fenêtre qui se ferme seule, codes d'erreur renvoyés après un retrait d'accès) **ne peut être établi que par le test technique R2 et R11** ; la conception retient d'ici là l'hypothèse suivante, qui ne dépend pas de ce résultat pour les états affichés.
 
 **Hypothèse de conception (adaptateur `FournisseurAuth` web) :**
@@ -353,6 +357,38 @@ Conséquences :
 - (b) **Avant tout geste** : `SYN-SESSION` (proposition d'Anthony retenue).
 - (c) **« Accès expiré » sur le PC** (RG-035, US-022 CA-7, US-031 CA-9) : il correspond à la session ou au jeton expiré, donc à `SYN-SESSION`, **sans bandeau**. « Accès retiré » correspond à `BAN-ACCES-GOOGLE` une fois constaté selon le tableau. Pour le banc de test, l'étape « l'accès au compte Google "X" a été retiré sur le PC » place l'adaptateur simulé dans l'état « accès perdu constaté » (sens a) de Q-US-022-1).
 - **Points à vérifier par le test technique R2 et R11** (ajoutés au protocole, §3.5 de `test-technique-R1-R2.md`, v0.10) : (1) la demande de jeton après expiration exige-t-elle un geste, et la fenêtre se ferme-t-elle seule quand la session est active ? (2) après un retrait de l'accès dans « Sécurité > Applications tierces », un jeton non échu est-il refusé par Drive (`401`), et dans quel délai ? (3) quelle réponse renvoie la demande de jeton après ce retrait : écran de consentement de nouveau, ou erreur ? Si (2) est infirmé, la deuxième ligne du tableau disparaît et le retrait n'est constaté qu'à la reconnexion ; les états affichés restent ceux du tableau.
+
+#### 4.1.7 Connexion par redirection à l'ouverture (v0.11, ADR-013, DEC-034)
+
+**Objet.** Sans jeton de rafraîchissement, obtenir un jeton **sans geste** à l'ouverture de l'application, sur tous les appareils. Une navigation de premier niveau n'exige pas de geste de l'utilisateur, contrairement à une fenêtre surgissante ; c'est aussi la seule méthode fiable dans une application de l'écran d'accueil d'iOS.
+
+```mermaid
+sequenceDiagram
+    participant A as PWA (chargement)
+    participant G as accounts.google.com
+    A->>A: identité en cache, réseau, pas de jeton, pas de retour en cours
+    A->>A: state aléatoire mémorisé (sans jeton)
+    A->>G: navigation : /o/oauth2/v2/auth ? response_type=token & prompt=none & login_hint & state & redirect_uri
+    alt session Google active, consentement acquis
+        G-->>A: redirect_uri#access_token=…&expires_in=…&scope=…&state=…
+    else interaction nécessaire
+        G-->>A: redirect_uri#error=interaction_required&state=…
+    end
+    A->>A: lecture du fragment, history.replaceState (fragment effacé)
+    A->>A: contrôle de state (usage unique, 10 min), contrôle des scopes
+    A->>A: jeton en mémoire, puis synchronisation (ou SYN-SESSION)
+```
+
+**Règles** :
+- **Déclencheur** : ouverture de l'application (lancement ou rechargement, DEC-026), si une identité est en cache (sinon : écran de connexion), si le réseau est disponible, si aucun jeton valide n'est en mémoire et si la page ne revient pas elle-même de Google. Jamais pendant une saisie : la redirection précède le premier affichage interactif, derrière un **écran d'attente** (Steeve).
+- **Une seule tentative automatique par ouverture.** Un retour en erreur ne relance rien : l'application s'ouvre sur les données locales avec `SYN-SESSION`. Aucune boucle possible.
+- **Paramètres** : `client_id` ; `redirect_uri` = origine + chemin de base de la PWA (`…/taskapp/`), déclaré **à l'identique** dans le client OAuth Web ; `response_type=token` ; scopes du moment (autorisation incrémentale, ADR-005) ; `include_granted_scopes=true` ; `prompt=none` ; `login_hint` = adresse en cache (évite le choix de compte) ; `state`.
+- **Sécurité** : `state` d'au moins 128 bits (`crypto.getRandomValues`), à usage unique, valable 10 min, mémorisé sans jeton ; retour rejeté si `state` absent, inconnu ou expiré ; fragment **lu et effacé avant tout autre traitement** (premier module exécuté, avant le rendu et avant toute requête) ; `Referrer-Policy: no-referrer` par balise `meta` ; aucune ressource tierce ; CSP du §7.1 étendue à la navigation vers `accounts.google.com` ; jeton jamais journalisé, jamais persisté. La règle « aucun jeton dans une URL » (`conventions.md` §9) admet cette seule exception (à reporter par Anthony).
+- **En cours de session** : à l'expiration du jeton, aucune redirection automatique (elle rechargerait la page). « Reprendre la synchronisation » déclenche, sur geste, la fenêtre Google Identity Services (PC, Chrome Android si la mesure R3 le confirme) ou une redirection interactive (iPhone, ou à défaut). Les modifications sont dans IndexedDB et survivent au rechargement.
+- **Première connexion** : redirection interactive (ou fenêtre GIS sur PC), consentement aux scopes du lot.
+- **Service worker** : la navigation de retour (fragment non transmis au réseau) est servie par le précache (`navigateFallback`), y compris hors ligne : le retour fonctionne même si GitHub Pages est lent.
+- **Coût d'usage** : une redirection d'environ 1 à 2 s à chaque ouverture à froid sans jeton en mémoire, même moins d'une heure après la précédente. Si la mesure ou l'usage montrent une gêne, l'option « jeton persistant chiffré » (ADR-013, option 4) peut être réexaminée.
+- **Mesure** : M-RED du test technique v3 (condition de DEC-034, et condition d'E9 d'US-022 et d'US-017 avec R11).
 
 ### 4.2 Google Drive : stockage et format (ADR-003)
 
@@ -410,7 +446,8 @@ Done Juan/
     - **actions de compte en consultation seule (v0.9, Q-US-022-3)** : « Supprimer les données de cet appareil » considère le dépôt comme impossible et passe directement à la confirmation de perte (`CNF-SUPPR-DONNEES-PERTE`, avec le nombre de modifications en attente) ; « Se déconnecter » ne tente aucun dépôt (les modifications restent sur l'appareil, RG-043). Aucune de ces actions n'écrit dans le Drive ;
     - **« Mettre à jour » sur le PC (v0.9, Q-US-017-10 a)** : l'application demande au service worker de vérifier la présence d'une nouvelle version (`registration.update()`), active la version en attente (`skipWaiting`), puis recharge la page. Les modifications en attente sont dans IndexedDB et survivent au rechargement ; elles sont déposées par la nouvelle version. Si aucune version plus récente n'est publiée, l'application le dit et reste en consultation seule ;
     - **Q-REF-2 (DEC-025)** : « aucune écriture dans le Drive en consultation seule » est confirmé ; c'est le comportement décrit ci-dessus, sans changement ;
-    - **distribution directe de l'APK (DEC-021, ADR-012)** : le smartphone est mis à jour à la main et peut donc rester plus longtemps en retard sur la PWA. La règle RG-058 ne change pas. Deux mesures en limitent l'effet : une évolution incompatible du schéma est publiée **en même temps** pour la PWA et l'APK, et annoncée dans les notes de version ; sur Android, l'action « Mettre à jour » ouvre la page de téléchargement de l'APK (§7.5).
+    - **v0.11 (ADR-013)** : avec la PWA unique, tous les appareils se mettent à jour par le service worker ; le cas de consultation seule devient exceptionnel, et « Mettre à jour » suit le parcours du PC ci-dessus sur tous les appareils ;
+    - *repli*, **distribution directe de l'APK (DEC-021, ADR-012)** : le smartphone est mis à jour à la main et peut donc rester plus longtemps en retard sur la PWA. La règle RG-058 ne change pas. Deux mesures en limitent l'effet : une évolution incompatible du schéma est publiée **en même temps** pour la PWA et l'APK, et annoncée dans les notes de version ; sur Android, l'action « Mettre à jour » ouvre la page de téléchargement de l'APK (§7.5).
 - **Empreinte** : chaque fichier porte une empreinte SHA-256 de son contenu.
   - Un fichier dont l'empreinte ne correspond pas a été modifié hors de l'application. Il est traité comme **illisible** (RG-044) et n'est jamais fusionné.
   - Ce mécanisme couvre aussi les modifications manuelles qui laissent le fichier lisible (extension de RG-044, établie : V-02). Le manifeste porte lui aussi une empreinte de son contenu, de sorte qu'un `generation` ou un `schemaVersion` modifié à la main est détecté.
@@ -519,7 +556,7 @@ Déclencheurs :
 - modification locale : après une temporisation de 5 s ;
 - retour du réseau ou du jeton ;
 - au premier plan : toutes les **2 minutes** ;
-- en arrière-plan sur Android (lot ultérieur) : toutes les 30 à 60 minutes, via WorkManager ;
+- ~~en arrière-plan sur Android (lot ultérieur)~~ : **abandonné** (v0.11, Q-PWA-3) ; *repli* : toutes les 30 à 60 minutes, via WorkManager ;
 - sur demande (« Synchroniser maintenant »).
 
 **Échec persistant du cycle (v0.9, Q-US-017-12 b)** : un échec transitoire (réseau, `5xx`, `429`) est retenté avec attente exponentielle et gigue, jusqu'à un palier de 5 min (§4.4.5). L'interface passe à `SYN-ACTION` après 3 tentatives infructueuses, mais **les tentatives continuent** au palier de 5 min, ainsi qu'à chaque déclencheur ci-dessus (retour du réseau, premier plan, « Synchroniser maintenant »). Le premier succès rétablit l'état normal. Les échecs non transitoires suivent leur propre parcours, sans tentative automatique supplémentaire : `401` (§4.1.5, §4.1.6 bis), Drive plein (S29, nouvelle tentative au déclencheur suivant), altération (§4.2.2). Le code `ERR-` affiché relève de Steeve (Q-US-017-12 a).
@@ -595,10 +632,10 @@ Principe : **aucun traitement ne dépend d'un horaire d'exécution côté applic
 | Contenu du rappel du matin de J (tâches du jour et fun fact) | Tout appareil, lors de la réconciliation | À chaque synchronisation avant 8 h le jour J ; précalculé jusqu'à J+7 | Le contenu précalculé inclut la **projection** du report automatique : une tâche non terminée la veille figure le lendemain. Il reste juste si rien n'a changé. |
 | Contenu du rappel du soir de J (temps passé, reste à faire, 2 questions de bilan) | Tout appareil | À chaque saisie de temps avant 21 h | L'occurrence affiche les questions et invite à saisir le temps (recommandation Q-40.1 a) |
 | Report automatique des tâches non terminées (RG-032) | Premier appareil actif du jour | Au démarrage ou à la première synchronisation après minuit | Le report est **appliqué à la première ouverture** : la tâche est replanifiée et le créneau déplacé dans l'agenda. Entre-temps, le rappel du matin le reflète déjà par projection. |
-| Détection des créneaux déplacés (RG-037) | Tout appareil actif ; arrière-plan Android dans un lot ultérieur | À chaque synchronisation | Détection différée à la prochaine ouverture, ou au prochain réveil d'arrière-plan sur Android |
+| Détection des créneaux déplacés (RG-037) | Tout appareil actif (v0.11 : plus d'arrière-plan, Q-PWA-3) | À chaque synchronisation | Détection différée à la prochaine ouverture |
 | Proposition de replanification du soir (RG-037) | Tout appareil | Calculée à l'heure du rappel du soir, présentée à l'ouverture suivante | Présentée à l'ouverture suivante |
 | Instantanés hebdomadaires (backlog, vélocité) | **Aucun** : ils sont recalculés à partir du journal métier | — | Sans objet |
-| Notification de secours de l'application en cas de perte de l'accès à l'agenda (Q-38 b) | Smartphone uniquement : notifications locales **programmées à l'avance** (J à J+7), annulées tant que l'agenda est accessible | À l'heure du rappel | Elle fonctionne hors ligne. Elle n'est pas possible sur la PWA du PC. |
+| ~~Notification de secours de l'application en cas de perte de l'accès à l'agenda (Q-38 b)~~ | **Abandonnée (v0.11, DEC-034, Q-PWA-3)** : impossible en PWA sans serveur émetteur. *Repli* : notifications locales programmées à l'avance sur l'APK | — | Les rappels restent portés par Google Calendar |
 
 **Idempotence entre appareils** : si deux appareils exécutent le même rattrapage, ils écrivent les mêmes valeurs. La fusion par champ les rend équivalentes, et les identifiants d'événements déterministes empêchent les doublons.
 
@@ -695,7 +732,8 @@ erDiagram
   1. **Modifications faites en connaissance l'une de l'autre** : la plus récente l'emporte **toujours, quelles que soient les horloges**, car l'HLC respecte la causalité (§4.2.1).
   2. **Modifications concurrentes, horloge décalée d'un écart constant**, quelle qu'en soit l'ampleur (minutes ou jours) : l'écart est mesuré au dernier échange avec Google et reste valable hors ligne. La garantie est **tenue**, y compris au-delà de 24 h. Les deux appareils horodatent sur la base de l'heure de Google, à environ une seconde près.
   3. **Horloge modifiée pendant que l'appareil est hors ligne** (réglage manuel, pile de l'horloge du PC, heure d'un téléphone remise à zéro) : l'écart mesuré n'est plus valable. Parades retenues :
-     - **Android** : l'heure corrigée est calculée à partir de l'**horloge monotone du système** (`SystemClock.elapsedRealtime`, qui avance aussi en veille et ignore les changements d'heure), ancrée sur l'heure de Google au dernier échange : `heure corrigée = heureGoogle₀ + (monotone − monotone₀)`. L'ancre est persistée avec l'identifiant de démarrage du système, et reste valable tant que le téléphone **n'a pas redémarré**. Une petite extension native est nécessaire, à prévoir dans ST-US-018 ;
+     - **Smartphone (v0.11, ADR-013)** : même mécanisme que le PC ci-dessous (`performance.now()` et détection des sauts) ; la limite résiduelle du point 4 s'applique donc aussi au téléphone pour une heure changée application fermée (déjà acceptée pour le PC, DEC-030) ;
+     - *repli*, **Android natif** : l'heure corrigée est calculée à partir de l'**horloge monotone du système** (`SystemClock.elapsedRealtime`, qui avance aussi en veille et ignore les changements d'heure), ancrée sur l'heure de Google au dernier échange : `heure corrigée = heureGoogle₀ + (monotone − monotone₀)`. L'ancre est persistée avec l'identifiant de démarrage du système, et reste valable tant que le téléphone **n'a pas redémarré**. Une petite extension native est nécessaire, à prévoir dans ST-US-018 ;
      - **PC** : pendant que la page est ouverte, un **saut** de l'horloge murale est détecté en comparant sa progression à celle de `performance.now()`. L'écart corrigé est alors ajusté du saut, exactement ;
      - **les deux** : l'HLC ne recule jamais (dernier HLC persisté), et un recul de l'horloge murale à l'ouverture est consigné dans le journal technique.
   4. **Limite résiduelle, impossible à lever sans source d'heure fiable hors ligne** : l'horloge est modifiée pendant que l'application est fermée (PC) ou suivie d'un redémarrage (smartphone), alors que l'appareil reste hors ligne. Les modifications faites ensuite, et jusqu'au retour du réseau, peuvent être mal départagées face à une modification **concurrente** de la même information sur l'autre appareil. Même dans ce cas, **rien n'est perdu silencieusement** : la valeur écartée figure dans « Modifications non retenues » (RG-036, RG-056). Au retour du réseau, l'écart est de nouveau mesuré, et les modifications suivantes sont correctement horodatées.
@@ -719,20 +757,21 @@ erDiagram
   - aucun secret ni jeton de rafraîchissement dans notre code ;
   - jetons d'accès conservés en mémoire ;
   - aucun jeton dans les journaux ;
-  - clients OAuth restreints (paquet et SHA-1 sur Android, origines autorisées sur le web).
+  - clients OAuth restreints (origines et URI de redirection autorisés sur le web ; *repli* : paquet et SHA-1 sur Android) ;
+  - **redirection OAuth (v0.11)** : `state` à usage unique, fragment effacé avant tout traitement, `no-referrer`, jeton jamais persisté (§4.1.7). Le flux implicite est exposé à une fuite du jeton par l'historique ou le référent : ces mesures la neutralisent ; la durée de vie d'une heure et le scope `drive.file` en bornent l'effet.
 - **Web (OWASP)** :
   - CSP stricte, sans `unsafe-inline` ni `unsafe-eval`, avec pour seules origines autorisées `accounts.google.com` et `*.googleapis.com` ;
   - aucune bibliothèque tierce chargée depuis un CDN ;
   - aucun `dangerouslySetInnerHTML` ; échappement des contenus écrits dans les descriptions d'événements ;
   - `Trusted Types` si le navigateur le permet.
 - **Données au repos** :
-  - Android : stockage privé de l'application (bac à sable) ; un chiffrement SQLCipher est possible plus tard ;
+  - smartphone (v0.11) : IndexedDB du profil Chrome, propre à l'origine ; *repli* : stockage privé de l'application Android (SQLCipher possible plus tard) ;
   - PC : IndexedDB du profil de navigateur ;
   - **conséquence de RG-043** : après une déconnexion, les données **restent au repos sur l'appareil**. Sur Android, elles restent dans le bac à sable de l'application ; elles sont accessibles à qui dispose du téléphone déverrouillé et peut se reconnecter avec le compte Google enregistré. Sur PC, elles sont lisibles par toute personne qui utilise le même profil de navigateur. C'est une tension avec ENF-05, que le commanditaire a traitée par l'action « Supprimer les données de cet appareil » (DEC-015). Recommandation d'usage : ne pas utiliser l'application sur un PC partagé sans session personnelle du système ;
   - Drive : protégé par le compte Google. Un chiffrement côté client est possible en option (A7), non recommandé en v1.
 - **Intégrité des fichiers Drive** : validation par Zod à la lecture. Un fichier invalide est ignoré, l'utilisateur est averti, et ce fichier n'écrase jamais l'état local.
 - **Chaîne d'approvisionnement** : dépendances verrouillées, audit en intégration continue (`pnpm audit` ou OSV-Scanner), mises à jour automatisées (Dependabot ou Renovate), Semgrep.
-- **Signature** : la clé de signature Android est conservée dans les secrets de l'intégration continue, avec une copie hors ligne chez le commanditaire.
+- **Signature** : *repli si la condition échoue* : la clé de signature Android est conservée dans les secrets de l'intégration continue, avec une copie hors ligne chez le commanditaire (DEC-027). Aucune clé n'est créée tant que la PWA unique n'est pas infirmée (Q-PWA-5).
 
 ### 7.2 Données personnelles (RGPD)
 - **Usage strictement personnel**, par un utilisateur unique. L'éditeur ne traite **aucune** donnée : il n'a ni serveur, ni télémétrie, ni analytique.
@@ -756,21 +795,32 @@ erDiagram
 
 | Environnement | Projet Google Cloud | Clients OAuth | Données | Distribution |
 |---|---|---|---|---|
-| Développement | `objectifs-taches-dev` | Web (localhost) et Android en mode debug | Compte Google de test ; dossier Drive `… (dev)` | Local ; simulateurs pour les tests automatisés |
-| Recette | `objectifs-taches-dev` (partagé) | Web (URL de prévisualisation) et Android `…recette` | Compte Google de recette dédié | PWA sur une URL de recette ; **APK de recette** (`<paquet>.recette`, clé de recette) installé directement par le commanditaire, qui coexiste avec la production (ADR-012) |
-| Production | `objectifs-taches` (distinct) | Web (origine de l'hébergement statique) et Android (empreinte de la clé de publication) | Compte du commanditaire | PWA sur l'hébergement statique ; **APK installé directement** (DEC-021, ADR-012), page de téléchargement sur le même hébergement ; pas d'iPhone en v1 (DEC-001) |
+| Développement | `objectifs-taches-dev` | Web (localhost, origine et URI de redirection) ; *repli* : Android en mode debug | Compte Google de test ; dossier Drive `… (dev)` | Local ; simulateurs pour les tests automatisés |
+| Recette | `objectifs-taches-dev` (partagé) | Web (URL de recette, origine et URI de redirection) ; *repli* : Android `…recette` | Compte Google de recette dédié | **PWA sur une adresse de recette**, installée sur le PC et sur le téléphone à côté de la production (origine ou chemin distinct, donc base locale distincte) ; *repli* : APK de recette (ADR-012) |
+| Production | `objectifs-taches` (distinct) | Web (origine de l'hébergement statique et URI de redirection) ; *repli* : Android (empreinte de la clé de publication) | Compte du commanditaire | **PWA sur GitHub Pages**, installée sur le PC et le téléphone (ADR-013) ; *repli* : APK installé directement (ADR-012) ; pas d'iPhone en v1 (DEC-001), iPhone du contributeur avec EPI-001 |
 
 **Intégration continue (GitHub Actions)** :
-- à chaque *pull request* : lint, typage, tests unitaires, Cucumber, construction de la PWA et de l'APK ;
-- sur une étiquette de version : déploiement de la PWA ; construction, signature et vérification (`apksigner verify`) de l'APK ; contrôle que le `versionCode` augmente ; publication de l'APK, de `android/derniere-version.json` et de la page de téléchargement sur l'hébergement statique (ADR-012). Les secrets de signature ne sont accessibles qu'à ce flux, déclenché sur une étiquette de la branche principale.
+- à chaque *pull request* : lint, typage, tests unitaires, Cucumber, construction de la PWA ;
+- sur une étiquette de version : déploiement de la PWA ;
+- *repli si la condition échoue* : construction de l'APK à chaque *pull request* et, sur étiquette, construction, signature et vérification (`apksigner verify`) de l'APK ; contrôle que le `versionCode` augmente ; publication de l'APK, de `android/derniere-version.json` et de la page de téléchargement sur l'hébergement statique (ADR-012). Les secrets de signature ne sont accessibles qu'à ce flux, déclenché sur une étiquette de la branche principale.
 
 Les versions suivent la numérotation sémantique. La version de l'application est distincte de la version du schéma de données.
 
-**Mises à jour** : la PWA se met à jour par son service worker, avec une invite « nouvelle version », sans rechargement forcé pendant une saisie. Sur Android, la mise à jour est **faite par l'utilisateur** : il installe le nouvel APK par-dessus l'ancien, ce qui conserve les données locales et la connexion (ADR-012). La règle de compatibilité des schémas, et sa conséquence pour une mise à jour manuelle, sont décrites au §4.2.
+**Mises à jour** : la PWA se met à jour par son service worker, avec une invite « nouvelle version », sans rechargement forcé pendant une saisie, **sur tous les appareils** (v0.11). *Repli* : sur Android, la mise à jour est **faite par l'utilisateur** : il installe le nouvel APK par-dessus l'ancien, ce qui conserve les données locales et la connexion (ADR-012). La règle de compatibilité des schémas, et sa conséquence pour une mise à jour manuelle, sont décrites au §4.2.
 
-### 7.5 Distribution Android et hébergement de la version PC (DEC-021, DEC-006, DEC-023)
+### 7.5 Distribution et hébergement (DEC-006, DEC-023, DEC-034 ; repli DEC-021)
 
-**Distribution Android (ADR-012)**, en résumé :
+**Distribution de la PWA unique (v0.11, ADR-013)** :
+| Sujet | Disposition |
+|---|---|
+| Adresse | `https://mathieublandin-create.github.io/taskapp/` (production) ; adresse de recette distincte (E16) |
+| Mise à disposition | Dépôt rendu public par le commanditaire ; « Settings > Pages » en source **GitHub Actions** ; variables du dépôt `VITE_BASE_PATH=/taskapp/`, `VITE_APP_ORIGIN=https://mathieublandin-create.github.io`, `VITE_GOOGLE_WEB_CLIENT_ID` |
+| Installation | PC : icône d'installation de Chrome ou Edge. Android : Chrome, « Installer l'application ». iPhone (EPI-001) : Safari, « Sur l'écran d'accueil » |
+| Mise à jour | Automatique, par le service worker ; invite « nouvelle version » ; « Mettre à jour » (RG-058) identique partout |
+| Recette (E16) | Le commanditaire installe la PWA de recette depuis son adresse ; aucune installation de fichier |
+| Désinstallation | Peut effacer la base locale : déposer les modifications en attente avant (indicateur à 0) |
+
+**Repli si la condition de DEC-034 échoue : distribution Android (ADR-012)**, en résumé :
 | Sujet | Disposition |
 |---|---|
 | Signature | Une clé de publication par application (production, recette). Elle n'est jamais dans le dépôt (`.gitignore` à poser avant sa création). Elle est conservée dans les secrets chiffrés de GitHub Actions, sous réserve de l'accord du commanditaire (QC-8), avec une **sauvegarde hors ligne chez le commanditaire**. |
@@ -782,7 +832,7 @@ Les versions suivent la numérotation sémantique. La version de l'application e
 | Vérification des développeurs Android | Appliquée en France en 2027 (date non publiée). Recommandation : compte gratuit « distribution limitée » (20 appareils, sans pièce d'identité), ou ADB, exempté. Choix à faire par le commanditaire avant l'échéance (QC-9). |
 | Recette (E16) | Le commanditaire installe l'APK de recette avec le guide fourni ; la version se lit dans les réglages Android. |
 
-**Hébergement de la PWA et de l'APK** (DEC-006 maintenue) :
+**Hébergement de la PWA** (et, en repli, de l'APK) (DEC-006 maintenue) :
 - **dépôt public** (DEC-023, passage à faire par le commanditaire) : **GitHub Pages**, gratuit, sans compte supplémentaire, déployé par GitHub Actions ;
 - **tant que le dépôt est privé** : GitHub Pages est payant (GitHub Pro) ; utiliser **Cloudflare Pages**, gratuit, avec un compte à créer par le commanditaire ;
 - le choix est **figé au moment du test technique R11** (prérequis P5), selon la visibilité du dépôt à cette date. Changer d'hébergeur ensuite change l'**origine** de la PWA : il faut alors déclarer la nouvelle origine dans le client OAuth web, et la base locale du PC (IndexedDB, liée à l'origine) repart du Drive, ce qui fait perdre les seules modifications non déposées. Il est donc préférable de choisir avant la mise en production ;
@@ -797,11 +847,11 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | Id | Exigence | Difficulté | Alternatives et recommandation |
 |---|---|---|---|
 | F1 | RG-017 / ENF-02 : visible « dans l'heure » | Si l'appareil destinataire est éteint ou fermé, aucune architecture ne peut afficher la modification. Sur PC, sans geste de l'utilisateur après l'expiration du jeton, la synchronisation attend. | Reformuler ainsi : « une modification faite sur un appareil connecté est visible sur l'autre appareil au plus tard 1 h après, s'il est au premier plan et connecté, et dès son ouverture sinon ». C'est cohérent avec la recommandation Q-21.2. |
-| F2 | RG-037 : notification d'un créneau déplacé | Une détection en temps réel sans appareil actif exige les notifications push de Calendar, donc un serveur (A4). | Détection à l'ouverture et à chaque synchronisation au premier plan, plus en arrière-plan sur Android dans un lot ultérieur (environ toutes les heures). Notification dans l'application : bandeau et liste des alertes ; notification système sur Android si l'arrière-plan est actif. |
+| F2 | RG-037 : notification d'un créneau déplacé | Une détection en temps réel sans appareil actif exige les notifications push de Calendar, donc un serveur (A4). | Détection à l'ouverture et à chaque synchronisation au premier plan. Notification dans l'application : bandeau et liste des alertes. (v0.11 : l'arrière-plan Android est abandonné, Q-PWA-3.) |
 | F3 | DEC-012 : fuseau de référence fixe Europe/Paris (remplace DEC-011) | Les difficultés liées à des appareils situés dans deux fuseaux différents **disparaissent**. Le report, le bilan, le fun fact, la vélocité et les rappels sont calculés sur le même jour, celui de Paris, sur tous les appareils. Seule conséquence restante : en voyage, la journée et les horaires sont ceux de Paris, et non ceux de l'endroit où se trouve l'utilisateur (A-F6). | RG-008 (« heure locale de l'appareil ») et Q-DEM001-37 sont à aligner sur DEC-012 par Pepper. |
 | F4 | RG-012 : contenu du rappel du matin | Le contenu est précalculé par le dernier appareil synchronisé. Une modification faite hors ligne et non synchronisée avant 8 h n'y figure pas. | Accepter ce comportement, cohérent avec « pas de mise à jour après l'heure ». Le préciser dans les critères d'acceptation. |
 | F5 | RG-032 : report automatique | Sans appareil actif, le créneau n'est pas déplacé dans l'agenda à minuit. Il l'est à la première ouverture du jour. Le rappel du matin le reflète déjà par projection. | Préciser dans les critères d'acceptation : « appliqué au plus tard à la première ouverture de l'application du jour ». |
-| F6 | Q-38 b : notification de secours de l'application | Elle n'est possible que sur l'application mobile native (notifications locales programmées). Elle est impossible sur la PWA du PC sans serveur de notifications push. | Retenir Q-38 b pour le **smartphone seulement**. |
+| F6 | Q-38 b : notification de secours de l'application | Elle n'est possible que sur l'application mobile native (notifications locales programmées). Elle est impossible en PWA sans serveur de notifications push. | **v0.11 : abandonnée par DEC-034 (Q-PWA-3)**, à acter par Pepper (Q-38 b). |
 | F7 | DEM-002, RG-042 : « affiché aussi souvent que les autres » | Faut-il compter ce qui est attribué à un jour, ou ce que l'utilisateur a réellement vu ? Compter les vues exigerait un suivi des lectures, non garanti dans Google Calendar. | Définir l'équité sur les **attributions quotidiennes** : exacte sur chaque cycle de 100 jours (ADR-008). Reste à préciser l'origine et la licence des 100 fun facts, à fournir par le commanditaire ou à rédiger. |
 | F8 | DEM-002, RG-039 : réponses aux 2 questions du soir | Un événement Google Calendar ne permet pas de saisir des réponses. | Les questions figurent dans le rappel, avec un lien vers l'écran de bilan de l'application ; la saisie se fait dans l'application. |
 | F9 | Q-22.4 : restauration après suppression dans Drive | Faisable : chaque appareil possède une copie complète. | Retenir l'option a recommandée par Pepper. |
@@ -809,7 +859,7 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | F11 | Q-36.2 : horizon de la proposition de planning | Un horizon illimité multiplierait les créneaux dans l'agenda et les écritures. | Nous soutenons la recommandation N = 7 jours, cohérente avec l'horizon de réconciliation. |
 | F12 | Q-23.1 a : fusion information par information | Elle est faisable et recommandée, mais elle peut violer des règles qui portent sur plusieurs informations : sous-tâche rouverte sous une tâche terminée, cycle ou profondeur de hiérarchie, suppression d'un côté et modification de l'autre. | Ajouter aux US-017, 023, 024 et 003 les règles de réparation après fusion (§4.2) : la suppression l'emporte, avec signalement ; le déplacement le plus récent l'emporte, avec signalement ; une incohérence d'état est signalée sans être corrigée. |
 | F13 | US-017 CA-7 : « sans réseau, l'application indique qu'une connexion est nécessaire » | Dans une architecture *local-first*, la saisie est d'abord enregistrée sur l'appareil. Bloquer l'usage sans réseau demande un développement **supplémentaire**, qu'il faudra retirer au lot suivant. Une coupure en cours de saisie doit de toute façon être gérée sans perte. | Remplacer CA-7 par : « sans réseau, les saisies sont conservées sur l'appareil, signalées comme non synchronisées, puis déposées au retour du réseau ». Voir l'avis S3 dans `avis-dependances-lot1.md`. |
-| F14 | Q-21.2 : affichage immédiat à l'ouverture | Il est faisable : l'état local s'affiche immédiatement, puis l'application se synchronise en quelques secondes. Sur la PWA du PC, si la session Google du navigateur a expiré, un clic de reconnexion est nécessaire avant cette synchronisation. | Retenir la recommandation de Pepper, en précisant l'exception du PC. |
+| F14 | Q-21.2 : affichage immédiat à l'ouverture | Il est faisable : l'état local s'affiche immédiatement, puis l'application se synchronise en quelques secondes. Sur la PWA, si la session Google du navigateur a expiré, une reconnexion est nécessaire avant cette synchronisation ; v0.11 : à l'ouverture, un bref passage par Google (§4.1.7), sur tous les appareils. | Retenir la recommandation de Pepper, en précisant l'exception, étendue au téléphone par DEC-034 (Q-PWA-2). |
 | P-T1 | « Instants en UTC » (consigne du coordinateur avec DEC-012 ; reprise de DEC-011) | Une **date sans heure** (délai, jour planifié, jour d'une saisie) convertie en UTC changerait de jour : un délai au 21 octobre deviendrait le 20 octobre à 22 h UTC. | Interprétation : instants en UTC ; dates civiles conservées telles quelles (`AAAA-MM-JJ`). Point d'interprétation technique, toujours pertinent, mais de faible enjeu. **Simple confirmation** demandée à Pepper, sans arbitrage du commanditaire nécessaire si elle l'accepte. |
 
 ### 8.1 Points métier liés au fuseau horaire (pour Pepper, via Jarvis), mis à jour après DEC-012
@@ -829,8 +879,8 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 
 | Id | Sujet | Options | Recommandation de Starck |
 |---|---|---|---|
-| **A1** | Système du smartphone | Android ; iPhone | **À préciser par le commanditaire.** Android : aucun coût récurrent. iPhone : Apple Developer Program (99 USD par an), un Mac ou un service de construction macOS dans le cloud, et un arrière-plan beaucoup plus limité. L'architecture couvre les deux ; seul le coût diffère. |
-| **A2** | Distribution de l'application Android | (a) Google Play, piste de test interne (25 USD une fois) ; (b) installation directe de l'APK (gratuite) | **Tranché : (b), DEC-021 (2026-10-21), qui remplace DEC-005 (a).** Mise en œuvre : ADR-012, §7.5. |
+| **A1** | Système du smartphone | Android ; iPhone | **À préciser par le commanditaire.** Android : aucun coût récurrent. iPhone : Apple Developer Program (99 USD par an), un Mac ou un service de construction macOS dans le cloud, et un arrière-plan beaucoup plus limité. L'architecture couvre les deux ; seul le coût diffère. **Tranché : Android (DEC-001).** v0.11 : avec la PWA unique, l'iPhone du contributeur d'EPI-001 est couvert sans coût (DEC-035, M1-10). |
+| **A2** | Distribution de l'application Android | (a) Google Play, piste de test interne (25 USD une fois) ; (b) installation directe de l'APK (gratuite) | **Tranché : (b), DEC-021 (2026-10-21), qui remplace DEC-005 (a).** Mise en œuvre : ADR-012, §7.5. **v0.11 : sans objet si la PWA unique est confirmée (DEC-034, ADR-013) ; DEC-021 à remplacer, sous validation du commanditaire.** |
 | **A3** | Hébergement de la PWA (PC) | GitHub Pages, Cloudflare Pages (offres gratuites) ; domaine personnalisé facultatif (environ 10 à 15 € par an) | **Tranché : hébergement statique gratuit, sans domaine (DEC-006).** Code public autorisé (DEC-023) : GitHub Pages si le dépôt est public, Cloudflare Pages tant qu'il est privé (§7.5). |
 | **A4** | Serveur applicatif | (a) Aucun serveur (*local-first*) ; (b) une petite fonction sans serveur (environ 0 à 5 € par mois) qui détient un jeton de rafraîchissement, pour la détection en temps réel des créneaux déplacés, le report à minuit et le renouvellement silencieux sur PC | **(a) Aucun serveur.** L'option b conserverait des jetons, donc des données personnelles, chez l'éditeur, ce qui contredit l'exclusion du CdC §4.3. Elle crée aussi un coût et une charge d'exploitation pour un gain faible (§5). |
 | **A5** | Statut OAuth et vérification Google (à partir des fonctions d'agenda) | (a) Production non vérifiée : écran d'avertissement au consentement ; (b) vérification Google : domaine, politique de confidentialité, vidéo, quelques jours à quelques semaines ; (c) mode « Test » : reconnexion tous les 7 jours | **(a)**. Option b seulement si l'écran d'avertissement est inacceptable. Si le compte du commanditaire est un compte Google Workspace : application « interne », sans vérification. |
@@ -846,9 +896,9 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 
 | Id | Risque | Probabilité | Impact | Parade |
 |---|---|---|---|---|
-| R1 | `drive.file` : les fichiers créés par le client Android ne seraient pas visibles du client web, ou inversement, alors que les deux clients appartiennent au même projet Cloud | Faible | Bloquant pour la synchronisation | **Test technique préalable**, protocole dans [`test-technique-R1-R2.md`](test-technique-R1-R2.md), avant E9. Repli : `drive.appdata` (arbitrage A6 à rouvrir, car DEC-009 retient le dossier visible). |
-| R2 | Renouvellement silencieux du jeton sur Android en arrière-plan | Moyenne | Pas de synchronisation d'arrière-plan | Mise au point technique ; repli : synchronisation au premier plan seulement |
-| R3 | Friction du renouvellement du jeton sur la PWA du PC (après 1 h) | Moyenne | Gêne d'usage sur PC | Synchronisation au geste ; évolution vers Tauri ou une fonction d'échange de jeton (§4.1.2) |
+| R1 (*repli seulement*, v0.11 : sans objet avec un client Web unique) | `drive.file` : les fichiers créés par le client Android ne seraient pas visibles du client web, ou inversement, alors que les deux clients appartiennent au même projet Cloud | Faible | Bloquant pour la synchronisation | **Test technique préalable**, protocole dans [`test-technique-R1-R2.md`](test-technique-R1-R2.md), avant E9. Repli : `drive.appdata` (arbitrage A6 à rouvrir, car DEC-009 retient le dossier visible). |
+| R2 (*repli seulement*) | Renouvellement silencieux du jeton sur Android en arrière-plan | Moyenne | Pas de synchronisation d'arrière-plan | Mise au point technique ; repli : synchronisation au premier plan seulement |
+| R3 | Friction du renouvellement du jeton sur la PWA (après 1 h ; v0.11 : PC **et téléphone**) | Moyenne | Gêne d'usage | Redirection silencieuse à l'ouverture (§4.1.7) ; synchronisation au geste en cours de session ; mesure M-RED ; évolutions : jeton persistant chiffré (ADR-013, option 4), Tauri ou fonction d'échange de jeton (§4.1.2) |
 | R4 | Horloge d'un appareil déréglée, qui fausse la règle « la plus récente » | Faible | Valeur écartée à tort (jamais silencieusement) | HLC causale ; écart mesuré avec Google ; ancrage monotone sur Android et détection des sauts sur PC ; `ALR-001` au-delà de 24 h ; journal des valeurs écartées. Limite résiduelle : horloge modifiée hors ligne, application fermée ou appareil redémarré (§6.4, A8) |
 | R5 | Versions d'application différentes entre la PWA et le mobile (schéma) | Moyenne | Lecture impossible | `schemaVersion`, lecture seule et invitation à mettre à jour (§4.2) ; migrations testées |
 | R6 | L'utilisateur modifie ou supprime manuellement les fichiers Drive | Faible | Données incohérentes | Validation Zod, fichier ignoré, restauration depuis l'appareil |
@@ -858,11 +908,13 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | R10 | Notifications Google Calendar désactivées ou non installées sur le smartphone | Moyenne | Rappels non perçus | Vérification guidée à la connexion de l'agenda ; notification de secours sur smartphone (Q-38 b) |
 | R11 | L'origine de la PWA, sans domaine propre (DEC-006), n'est pas acceptée par l'écran de consentement en production (domaine autorisé à vérifier), ou un écran d'avertissement s'affiche malgré des scopes non sensibles | Moyenne | Bloque US-022 CA-8 sur PC | Test technique R1/R2. Repli : domaine personnalisé (environ 10 à 15 € par an, arbitrage du commanditaire). |
 | R12 | Le script Google Identity Services ne se charge pas hors ligne sur PC | Certaine si Q-39 b | Démarrage hors ligne bloqué | Chargement du script à la demande et non bloquant ; application utilisable sans lui |
-| R13 | Maturité ou performances du module SQLite pour Capacitor | Faible | Retard d'US-018 | Adaptateur derrière `DepotLocal` ; repli sur l'IndexedDB de la WebView Android |
+| R13 (*repli seulement*) | Maturité ou performances du module SQLite pour Capacitor | Faible | Retard d'US-018 | Adaptateur derrière `DepotLocal` ; repli sur l'IndexedDB de la WebView Android |
 | R14 | Erreur dans la fusion ou la réparation (perte ou divergence) | Moyenne | Bloquant (perte de données) | Tests de propriétés (fast-check), banc Cucumber à deux appareils, recette technique E14 ciblée |
-| R15 | Éviction ou effacement par le navigateur de l'IndexedDB du PC avant le dépôt de modifications | Faible | Perte des seules modifications non déposées | `storage.persist()`, dépôt 5 s après la modification, indicateur des modifications en attente, avertissement si le stockage n'est pas persistant (§4.1.6) |
-| R16 | Perte ou compromission de la clé de signature de l'APK | Faible | Plus de mise à jour possible ; réinstallation qui efface la base locale (modifications non déposées perdues) | Sauvegarde hors ligne chez le commanditaire ; secrets chiffrés ; procédure de changement de clé (ADR-012) ; dépôt de toutes les modifications avant toute désinstallation |
-| R17 | Vérification des développeurs Android appliquée en France (2027) : installation directe ralentie (parcours avancé, délai de 24 h) ou bloquée sans enregistrement | Certaine (date inconnue) | Mises à jour du smartphone gênées | Compte gratuit « distribution limitée » ou installation par ADB (ADR-012) ; décision QC-9 du commanditaire avant l'échéance ; veille |
+| R15 | Éviction ou effacement par le navigateur de l'IndexedDB (v0.11 : PC **et téléphone**) avant le dépôt de modifications | Faible | Perte des seules modifications non déposées | `storage.persist()`, dépôt 5 s après la modification, indicateur des modifications en attente, avertissement si le stockage n'est pas persistant (§4.1.6) |
+| R16 (*repli seulement*) | Perte ou compromission de la clé de signature de l'APK | Faible | Plus de mise à jour possible ; réinstallation qui efface la base locale (modifications non déposées perdues) | Sauvegarde hors ligne chez le commanditaire ; secrets chiffrés ; procédure de changement de clé (ADR-012) ; dépôt de toutes les modifications avant toute désinstallation |
+| R17 (*repli seulement*) | Vérification des développeurs Android appliquée en France (2027) : installation directe ralentie (parcours avancé, délai de 24 h) ou bloquée sans enregistrement | Certaine (date inconnue) | Mises à jour du smartphone gênées | Compte gratuit « distribution limitée » ou installation par ADB (ADR-012) ; décision QC-9 du commanditaire avant l'échéance ; veille |
+| R18 (v0.11) | Flux OAuth implicite (`response_type=token`) déconseillé par les recommandations OAuth récentes : Google pourrait le restreindre ou modifier le comportement de `prompt=none` | Faible à moyenne | Plus de jeton sans geste à l'ouverture ; retour au geste seul (ADR-013, option 2) | Veille (R8) ; adaptateur isolé derrière `FournisseurAuth` ; repli au geste sans changement des états affichés ; réintroduction d'une coque native possible (ADR-010) |
+| R19 (v0.11) | Politiques des navigateurs : persistance refusée, installation de PWA, retour de redirection hors de la fenêtre installée ; pour l'iPhone (EPI-001), revirement d'Apple sur les applications web de l'écran d'accueil | Faible | Hors ligne fragilisé, connexion dégradée | Mesures M-PERSIST, M-RED (mode `standalone`), R-P2 ; avertissement si la persistance est refusée ; veille |
 
 ### 10.2 Points ouverts
 
@@ -877,6 +929,8 @@ Ces points ne modifient pas les livrables de Pepper. Ils sont transmis pour êtr
 | PO-7 | ~~Hébergeur du dépôt et de l'intégration continue~~ : **tranché**, GitHub et GitHub Actions ; dépôt privé, passage en public autorisé (DEC-023) | Commanditaire | — |
 | PO-8 | Contenu des 100 fun facts : rédaction, sources, licence | Pepper et commanditaire | Lot DEM-002 |
 | PO-9 (v0.9) | **Clos (v0.10)** : reformulation de CA-13 acceptée, A8 tranché (DEC-030) | commanditaire | Sans objet |
+| PO-11 (v0.11) | **Condition de DEC-034** : M-RED et M-PERSIST sur Chrome Android | Test technique v3 (volet web) | E9 d'US-022 et d'US-017 (avec R11) ; confirmation d'ADR-013 ou retour à ADR-012 |
+| PO-12 (v0.11) | Partage multicomptes avec `drive.file` (R-P1) et PWA sur iPhone (R-P2), EPI-001 | Volet optionnel R-P1/R-P2 du test v3 | E3 d'EPI-001 seulement |
 | PO-10 (v0.9) | Comportement de Google Identity Services : demande de jeton après expiration et après retrait de l'accès (§4.1.6 bis) | Test technique R2 et R11 | Rien : hypothèse de conception retenue ; seule la détection précoce du retrait (`401` sur jeton non échu) en dépend |
 
 ---
@@ -887,23 +941,23 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 
 | DS | Décision | Référence |
 |---|---|---|
-| ★ DS-01 Langage | **TypeScript** (dernière version 5.x stable au démarrage du lot, figée dans `package.json`), `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`. Cible ES2022, modules ESM. **Node.js 24 LTS** pour l'outillage. Navigateurs cibles : Chrome et Edge (deux dernières versions) sur PC ; WebView Android à jour (Android 10 et plus) ; iOS 16.4 et plus si l'arbitrage A1 retient l'iPhone. Conventions idiomatiques : `type` et unions discriminées plutôt que des classes pour les données ; classes admises pour les adaptateurs ; pas d'`enum` TypeScript (unions de littéraux) ; pas de `any`. | §3.2, ADR-001 |
-| ★ DS-02 Forme de l'application | **Base de code unique** : PWA installable sur PC, application **Capacitor** sur smartphone (Android ; iOS selon A1). 100 % du code métier et de l'interface est partagé. Seuls diffèrent les adaptateurs de plateforme (stockage, authentification, notifications), choisis à l'assemblage (`composition/web.ts`, `composition/capacitor.ts`). | §3.1, ADR-001 |
+| ★ DS-01 Langage | **TypeScript** (dernière version 5.x stable au démarrage du lot, figée dans `package.json`), `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`. Cible ES2022, modules ESM. **Node.js 24 LTS** pour l'outillage. Navigateurs cibles : Chrome et Edge (deux dernières versions) sur PC ; **v0.11** : Chrome pour Android à jour (Android 10 et plus), PWA installée ; Safari iOS 17 et plus pour le contributeur d'EPI-001 ; *repli* : WebView Android à jour. Conventions idiomatiques : `type` et unions discriminées plutôt que des classes pour les données ; classes admises pour les adaptateurs ; pas d'`enum` TypeScript (unions de littéraux) ; pas de `any`. | §3.2, ADR-001 |
+| ★ DS-02 Forme de l'application | **v0.11 (ADR-013, sous condition DEC-034)** : **une seule PWA** sur tous les appareils, une seule composition (`composition/web.ts`). *Repli* (texte antérieur) : **base de code unique** : PWA installable sur PC, application **Capacitor** sur smartphone (Android ; iOS selon A1). 100 % du code métier et de l'interface est partagé. Seuls diffèrent les adaptateurs de plateforme (stockage, authentification, notifications), choisis à l'assemblage (`composition/web.ts`, `composition/capacitor.ts`). | §3.1, ADR-001 |
 | ★ DS-03 Serveur | **Aucun composant serveur.** OAuth : mécanismes Google côté client. Rappels : séries Google Calendar. Synchronisation : fichiers Drive par appareil. Seul hébergement : fichiers statiques de la PWA. | §2.1, §5, ADR-002 |
-| DS-04 Flux OAuth | **Clients publics uniquement**, sans aucun secret : Google Identity Services, modèle « jeton », sur le web ; Credential Manager et AuthorizationClient sur Android ; SDK GoogleSignIn (PKCE interne) sur iOS. Les identifiants clients ne sont pas secrets : ils sont injectés à la construction par environnement (variables `VITE_GOOGLE_CLIENT_ID_WEB`, configuration Android par variante de build). Il existe un projet Google Cloud pour le développement et la recette, et un autre pour la production. | §4.1, §7.4, ADR-004 |
+| DS-04 Flux OAuth | **Clients publics uniquement**, sans aucun secret. **v0.11** : un seul client Web, redirection `prompt=none` à l'ouverture et GIS ou redirection interactive sur geste (§4.1.7) ; URI de redirection déclarées par environnement. Antérieurement (et en repli) : Google Identity Services, modèle « jeton », sur le web ; Credential Manager et AuthorizationClient sur Android ; SDK GoogleSignIn (PKCE interne) sur iOS. Les identifiants clients ne sont pas secrets : ils sont injectés à la construction par environnement (variables `VITE_GOOGLE_CLIENT_ID_WEB`, configuration Android par variante de build). Il existe un projet Google Cloud pour le développement et la recette, et un autre pour la production. | §4.1, §7.4, ADR-004 |
 | ★ DS-05 Scopes | Lot 1 : `openid`, `email`, `drive.file` (non sensibles). Lot avec agenda : ajout par **autorisation incrémentale** de `calendar.events.owned`, ou à défaut de `calendar.events`. Un scope n'est demandé qu'au premier usage de la fonctionnalité concernée. Le refus d'un scope dégrade la fonctionnalité concernée sans bloquer les autres (erreur `PorteeInsuffisante`). | §4.1.1, ADR-005 |
-| DS-06 `CoffreJetons` | Port conservé. Il ne conserve **jamais de jeton de rafraîchissement** produit par notre code. Web : jeton d'accès **en mémoire uniquement**, perdu à la fermeture de l'onglet et obtenu à nouveau par Google Identity Services. Android : jeton d'accès en mémoire, renouvellement délégué à Google Play services. iOS : délégué au SDK GoogleSignIn (trousseau). La règle de `conventions.md` §8, « stockage sécurisé de la plateforme », est donc satisfaite par délégation. | §4.1.2, ADR-004 |
-| ★ DS-07 Stockage local | Port `DepotLocal`. Web : **IndexedDB via Dexie**. Natif : **SQLite** (`@capacitor-community/sqlite`). Chaque cas d'usage écrit en **une transaction** les champs modifiés avec leur HLC et les entrées du journal métier. Une modification validée localement survit à un arrêt brutal. Pas de chiffrement au repos en v1 : bac à sable Android, profil de navigateur ; SQLCipher est possible plus tard. **Un espace de stockage par compte (`sub`)**. Les données sont **conservées à la déconnexion** (RG-043). Un autre compte qui se connecte ne voit pas ces données, conservées à part (DEC-016). Leur effacement se fait seulement par l'action « Supprimer les données de cet appareil » (DEC-015) ou par « repartir de zéro » (RG-044 b). | §3.2, ADR-010 |
+| DS-06 `CoffreJetons` | Port conservé. Il ne conserve **jamais de jeton de rafraîchissement** produit par notre code. Web (v0.11 : tous les appareils) : jeton d'accès **en mémoire uniquement**, perdu à la fermeture, obtenu à nouveau par redirection à l'ouverture (§4.1.7) ou par Google Identity Services sur geste. Android : jeton d'accès en mémoire, renouvellement délégué à Google Play services. iOS : délégué au SDK GoogleSignIn (trousseau). La règle de `conventions.md` §8, « stockage sécurisé de la plateforme », est donc satisfaite par délégation. | §4.1.2, ADR-004 |
+| ★ DS-07 Stockage local | Port `DepotLocal`. Web (v0.11 : tous les appareils) : **IndexedDB via Dexie**, transactions d'écriture en **durabilité stricte**, confirmées à `complete`. *Repli* natif : **SQLite** (`@capacitor-community/sqlite`). Chaque cas d'usage écrit en **une transaction** les champs modifiés avec leur HLC et les entrées du journal métier. Une modification validée localement survit à un arrêt brutal. Pas de chiffrement au repos en v1 : bac à sable Android, profil de navigateur ; SQLCipher est possible plus tard. **Un espace de stockage par compte (`sub`)**. Les données sont **conservées à la déconnexion** (RG-043). Un autre compte qui se connecte ne voit pas ces données, conservées à part (DEC-016). Leur effacement se fait seulement par l'action « Supprimer les données de cet appareil » (DEC-015) ou par « repartir de zéro » (RG-044 b). | §3.2, ADR-010 |
 | DS-08 Identifiants | **UUID v7** (RFC 9562 ; horodatage UTC intégré), générés sur l'appareil par le port `GenerateurIdentifiants`. Ils sont globalement uniques et triables par date de création. Exceptions, à clé naturelle ou déterministe : `SaisieTemps` (tacheId, jour), `LienTacheObjectif` (tacheId, objectifId), `ExceptionCapacite` et `BilanSoir` (date), identifiants d'événements Google (`hash` en base32hex), `AlerteCreneau`, `EvenementJournal` (`<UUID v7 de l'opération>:<rang>`, ou `hash` pour les réparations RG-048 ; v0.10.2, ANT-25). | §6.1 |
-| DS-09 Traitements planifiés | Délégation à Google Calendar (séries récurrentes) et **rattrapage idempotent** par le premier appareil actif. Aucune exécution à heure fixe côté application, hormis les notifications locales programmées à l'avance sur le smartphone, en secours. | §5, ADR-006, ADR-007 |
+| DS-09 Traitements planifiés | Délégation à Google Calendar (séries récurrentes) et **rattrapage idempotent** par le premier appareil actif. Aucune exécution à heure fixe côté application (v0.11 : les notifications locales de secours sont abandonnées, Q-PWA-3). | §5, ADR-006, ADR-007 |
 | ★ DS-10 Format dans Drive | Un dossier visible ; **un fichier d'état par appareil** (`appareils/<appareilId>.etat.json.gz`, JSON compressé) et un `manifeste.json`. Le fichier porte `schemaVersion` (entier croissant) et `versionApplication`. Lecture des schémas antérieurs par **migrations** pures et testées (Zod). Un schéma plus récent que celui de l'appareil fait passer l'application en **lecture seule** et demande une mise à jour. Pas de fichier unique partagé. | §4.2, ADR-003 |
 | ★ DS-11 Synchronisation et conflits | **CRDT à base d'état, par champ.** Métadonnées par champ : (valeur, HLC, appareilId). L'HLC est fondé sur l'heure **UTC** **corrigée de l'écart avec l'en-tête `Date` de Google** ; en cas d'égalité, l'`appareilId` le plus grand (ordre lexicographique) l'emporte. Suppression : **pierre tombale** conservée indéfiniment en v1 ; elle l'emporte sur une modification concurrente, avec signalement. Journal métier : union. Passe de réparation après fusion. Valeurs écartées : journal synchronisé, critère de concurrence par **contexte causal par écriture** (v0.9, §4.2.1). **File d'attente hors ligne** : il n'y a pas de file d'opérations. L'état local et le marqueur « déposé jusqu'à HLC x » suffisent : toute écriture **de l'appareil lui-même** dont l'HLC est supérieur à x est en attente (une valeur reçue d'un autre appareil ne l'est jamais). L'**index local des écritures en attente** (v0.9, §4.1.5 bis) sert seulement à l'affichage (décompte, plus ancienne modification). Le port `Horloge` expose en outre une **horloge monotone** (v0.9, §6.4), simulée au banc. Les écritures Calendar se font par réconciliation, sans file. Pas d'erreur `ConflitDeVersion` sur Drive, puisque chaque fichier n'a qu'un écrivain. Journaux techniques : locaux, dans un tampon circulaire, et exportables (§7.3). | §4.2, §4.3, §7.3, ADR-003, ADR-011 |
 | DS-12 Erreurs | **Type résultat** conformément à la recommandation d'Anthony : union discriminée maison `Succes<T> \| Echec<E>`, sans bibliothèque. Les exceptions sont réservées aux erreurs de programmation. Asynchronisme par `async`/`await` et `Promise<Resultat<…>>`, avec annulation par `AbortSignal` pour les appels réseau. | — |
 | DS-13 Injection de dépendances et état de l'interface | Injection **manuelle par constructeur**, assemblée dans `composition/`, sans conteneur. État de l'interface : **Zustand**, alimenté par les cas d'usage et par un abonnement aux changements du `DepotLocal`. | §3.2 |
-| ★ DS-14 Tests | **Vitest** (unitaires, couverture v8) ; **fast-check** (tests par propriétés : convergence de la fusion, durées, rotation) ; **@cucumber/cucumber** en mode `--strict`, avec `# language: fr`, *step definitions* en TypeScript chargées par `tsx`, et simulateurs en mémoire (banc multi-appareils) ; **MSW** (contrats des adaptateurs Google) ; **Playwright** avec axe (PWA, y compris le hors ligne). Sur smartphone, pas de bout en bout automatisé en v1 : recette manuelle guidée sur appareil réel. **Stryker** (mutation, indicateur). Seuils : ceux d'Anthony (§10). | §3.3, ADR-009 |
-| ★ DS-15 Arborescence | **Un seul paquet** (pas de monodépôt), géré par pnpm. `src/<contexte>/<couche>/`, `src/infrastructure-google/`, `src/composition/` ; `tests/` selon `conventions.md` §3.2 (tests unitaires **séparés**, en miroir de `src/`). `android/` (et `ios/`) générés par Capacitor à la racine ; `public/` contient les ressources statiques, dont `fun-facts.fr.json` (lot DEM-002). | §2.4 |
+| ★ DS-14 Tests | **Vitest** (unitaires, couverture v8) ; **fast-check** (tests par propriétés : convergence de la fusion, durées, rotation) ; **@cucumber/cucumber** en mode `--strict`, avec `# language: fr`, *step definitions* en TypeScript chargées par `tsx`, et simulateurs en mémoire (banc multi-appareils) ; **MSW** (contrats des adaptateurs Google) ; **Playwright** avec axe (PWA, y compris le hors ligne). Sur smartphone, pas de bout en bout automatisé en v1 : recette manuelle guidée sur appareil réel (v0.11 : la PWA installée sur Chrome Android ; Playwright peut émuler un mobile, sans remplacer l'appareil réel). **Stryker** (mutation, indicateur). Seuils : ceux d'Anthony (§10). | §3.3, ADR-009 |
+| ★ DS-15 Arborescence | **Un seul paquet** (pas de monodépôt), géré par pnpm. `src/<contexte>/<couche>/`, `src/infrastructure-google/`, `src/composition/` ; `tests/` selon `conventions.md` §3.2 (tests unitaires **séparés**, en miroir de `src/`). `android/` (et `ios/`) générés par Capacitor à la racine *en repli seulement* (v0.11 : aucun) ; `public/` contient les ressources statiques, dont `fun-facts.fr.json` (lot DEM-002). | §2.4 |
 | ★ DS-16 Qualité | Prettier ; ESLint (configuration *flat*, `typescript-eslint` `strict-type-checked`, `eslint-plugin-react-hooks`, `jsx-a11y`) ; `no-restricted-syntax` et `no-restricted-globals` pour interdire `Date.now`, `new Date()` sans argument, `Math.random` et `crypto.randomUUID` hors des adaptateurs ; `tsc --noEmit` ; **dependency-cruiser** pour les règles de couches et de contextes ; **Semgrep** (SAST) ; **gitleaks** (secrets) ; **osv-scanner** et `license-checker` (SCA et licences) ; Husky et lint-staged pour les hooks locaux. | §7.1 |
-| DS-17 Intégration continue, environnements, distribution | **GitHub Actions** (PO-7 tranché). Environnements selon §7.4. Distribution Android par **APK installé directement** (DEC-021, ADR-012) : signature dans l'intégration continue sur étiquette, `versionCode` croissant, publication sur l'hébergement statique. Hébergement : GitHub Pages (dépôt public) ou Cloudflare Pages (dépôt privé), §7.5. | §7.4, §7.5, ADR-012 |
+| DS-17 Intégration continue, environnements, distribution | **GitHub Actions** (PO-7 tranché). Environnements selon §7.4. **v0.11** : distribution de la PWA seule sur GitHub Pages (§7.5, ADR-013). *Repli* : distribution Android par **APK installé directement** (DEC-021, ADR-012) : signature dans l'intégration continue sur étiquette, `versionCode` croissant, publication sur l'hébergement statique. Hébergement : GitHub Pages (dépôt public) ou Cloudflare Pages (dépôt privé), §7.5. | §7.4, §7.5, ADR-012 |
 | DS-18 Calendar | Marquage par `extendedProperties.private` ; identifiants déterministes ; réconciliation déclarative ; `posApp` dans l'événement contre les boucles ; lecture incrémentale par `syncToken` (pas de notifications push) ; attente exponentielle avec gigue ; les rappels et les créneaux sont écrits avec `timeZone: "Europe/Paris"` (DEC-012). | §4.4, ADR-006 |
 | ★ DS-19 Historisation | **Journal métier en ajout seul**, et non des instantanés. Chaque entrée porte l'instant UTC et le jour calculé dans Europe/Paris (DEC-012). Le journal est alimenté **dès le lot 1** par chaque cas d'usage (liste dans `avis-dependances-lot1.md`, S7). Les courbes démarrent à la première entrée du journal, sans reconstitution antérieure. | §6.1, §6.2 |
 | DS-20 Fun facts | Liste **embarquée** (JSON versionné). Rotation par **fonction pure** (graine, date d'origine, J, version de la liste) : aucun état de cycle à partager entre appareils. La graine est tirée une fois par `SourceAleatoire`, puis synchronisée. La permutation utilise un générateur pseudo-aléatoire initialisé par la graine, implémenté dans le domaine. | §6.3, ADR-008 |
@@ -930,7 +984,7 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 
 | ADR | Titre | Statut |
 |---|---|---|
-| [ADR-001](adr/ADR-001-plateforme-base-de-code-unique.md) | Plateforme : base de code TypeScript unique, PWA (PC) et Capacitor (smartphone) | Proposé |
+| [ADR-001](adr/ADR-001-plateforme-base-de-code-unique.md) | Plateforme : base de code TypeScript unique, PWA (PC) et Capacitor (smartphone) | Proposé (note de portée v0.11 : ADR-013) |
 | [ADR-002](adr/ADR-002-architecture-local-first-sans-serveur.md) | Architecture *local-first* sans serveur applicatif | Proposé |
 | [ADR-003](adr/ADR-003-synchronisation-drive-crdt.md) | Synchronisation par Google Drive : état fusionnable par appareil (CRDT par champ) | Proposé |
 | [ADR-004](adr/ADR-004-authentification-google-jetons.md) | Authentification Google et gestion des jetons | Proposé |
@@ -939,6 +993,7 @@ Réponse aux demandes d'Anthony (`docs/04-specification-technique/conventions.md
 | [ADR-007](adr/ADR-007-traitements-planifies-sans-serveur.md) | Traitements planifiés sans serveur : délégation à Calendar et rattrapage idempotent | Proposé |
 | [ADR-008](adr/ADR-008-rotation-equitable-fun-facts.md) | Rotation équitable des fun facts par permutation déterministe | Proposé |
 | [ADR-009](adr/ADR-009-outillage-de-tests.md) | Outillage de tests : Vitest, cucumber-js en français, Playwright, simulateurs Google | Proposé |
-| [ADR-010](adr/ADR-010-architecture-hexagonale-stockage-local.md) | Architecture hexagonale et stockage local (IndexedDB et SQLite) | Proposé |
+| [ADR-010](adr/ADR-010-architecture-hexagonale-stockage-local.md) | Architecture hexagonale et stockage local (IndexedDB et SQLite) | Proposé (note de portée v0.11 : IndexedDB seul) |
 | [ADR-011](adr/ADR-011-horloges-et-fuseau-de-reference.md) | Horloges hybrides (HLC), instants en UTC et fuseau de référence fixe Europe/Paris (révisé après DEC-012) | Proposé |
-| [ADR-012](adr/ADR-012-distribution-android-apk-direct.md) | Distribution Android par installation directe de l'APK, sans Google Play (DEC-021) | Proposé |
+| [ADR-012](adr/ADR-012-distribution-android-apk-direct.md) | Distribution Android par installation directe de l'APK, sans Google Play (DEC-021) | **Remplacé sous condition par ADR-013** |
+| [ADR-013](adr/ADR-013-pwa-unique-tous-appareils.md) | PWA unique sur tous les appareils, connexion par redirection à l'ouverture (DEC-034, sous condition de mesure) | Proposé |

@@ -6,6 +6,8 @@
 >
 > **Version 0.4 du 2026-10-20 (Pepper, fin de E1 pour LOT-001)** : les réponses P1 aux questions Q-DEM001-21 à 29 sont reportées dans le [cahier des charges v0.4](cahier-des-charges.md) et dans les US de LOT-001. Nouvelles questions **Q-DEM001-41** et **Q-DEM001-42** (P1). **Q-DEM001-39 passe en P1**, car le hors ligne du smartphone entre dans LOT-001 (DEC-002).
 >
+> **Mise à jour du 2026-10-22 (Pepper, DEC-034)** : **Q-DEM001-38** est touchée par la décision DEC-034 (application web unique). Le commanditaire renonce aux notifications de secours (option b, Q-PWA-3) ; l'option c n'est plus réalisable sans serveur. Il est proposé de la clore par l'option a), à valider (V-DEC034-6, `docs/ceremonies/validation-DEC-034.md`).
+>
 > Les thèmes sont présentés par ordre d'importance. Au sein de chaque thème, les questions sont elles aussi classées par importance.
 >
 > Priorités :
@@ -422,7 +424,7 @@ En cas d'égalité, quel critère départage deux tâches ?
 | Q-DEM001-35 | Critères de l'ordre de priorité | Q16 partielle, tension Q6.3 / Q6.4 | P2 | US-004, US-030, US-027 | Ouverte |
 | Q-DEM001-36 | Définition du backlog et planification | Tension Q20.1 b) / Q13.2 b) / Q13.3 | P2 | US-012, US-027 | Ouverte |
 | Q-DEM001-37 | Fuseau horaire des rappels et des créneaux | Tension Q10.4 a) / Q18.1 | P2 | US-015, US-016, US-020, US-029 | Répondue (DEC-012 : option c, fuseau fixe Europe/Paris) |
-| Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte |
+| Q-DEM001-38 | Rôle de la notification de l'application | Tension Q19.1 b) / Q18.3 a) | P2 | US-014, US-015, US-016 | Ouverte ; option b) retirée (DEC-034, Q-PWA-3) ; **clôture par a) proposée, à valider (V-DEC034-6)** |
 | Q-DEM001-39 | Usage hors ligne sur le PC | Q4.1 partielle (smartphone prioritaire) | **P1** (depuis DEC-002) | US-031, US-017, US-018 | Répondue (b, DEC-013) |
 | Q-DEM001-40 | Rappel du soir : invitation à saisir | Q18.5 partielle | P3 | US-016 | Ouverte |
 | Q-DEM001-41 | Confirmation du sens du délai d'une heure | Réponse « 1h » à Q-21.1, qui ne désigne aucune option | P1 | US-017 ; plus tard US-032 | Répondue (oui, DEC-014) |
@@ -764,6 +766,11 @@ En cas d'égalité, quel critère départage deux tâches ?
 - c) En complément : la notification de l'application s'ajoute toujours à l'événement Google.
 
 *Bloque* : US-014, US-015, US-016.
+
+> **Mise à jour du 2026-10-22 (DEC-034)** :
+> - **option b) retirée** : vous avez renoncé aux notifications de secours (Q-PWA-3, DEC-034, verbatim « Pour la question PWA, prendre les recos de Stark ») ;
+> - **option c) irréalisable** : avec l'application web unique et sans serveur (DEC-007), l'application ne peut pas programmer à l'avance une notification sur l'appareil (étude de Starck ETU-002, §5) ; cette option tombe pour la même raison que b) ;
+> - **proposition : clore la question par a)**. Les rappels passent uniquement par Google Calendar ; si l'accès à l'agenda est perdu, l'application vous en avertit et vous propose de vous reconnecter. RG-014 est reformulée en ce sens (cahier des charges v0.13, §7.1). **À valider : V-DEC034-6.**
 
 ### Q-DEM001-39 — Usage hors ligne sur le PC (P1 depuis la v0.4, auparavant P2)
 *Origine* : réponse partielle à Q4.1. Vous avez indiqué que l'usage prioritaire est celui du smartphone.

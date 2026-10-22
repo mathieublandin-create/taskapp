@@ -2,7 +2,9 @@
 
 | Statut | Date | Auteur | Références |
 |---|---|---|---|
-| Proposé | 2026-10-21 | Starck | **DEC-021** (remplace DEC-005), DEC-019, DEC-023 ; ENF-07 ; RG-058 ; ADR-001 ; ADR-004 ; DAT v0.8 §7.4 et §7.5 ; `etude-sans-cloud-ou-gratuit.md` (option F) |
+| **Remplacé sous condition par ADR-013** (2026-10-22, DEC-034) ; auparavant Proposé | 2026-10-21 | Starck | **DEC-021** (remplace DEC-005), DEC-019, DEC-023 ; ENF-07 ; RG-058 ; ADR-001 ; ADR-004 ; DAT v0.8 §7.4 et §7.5 ; `etude-sans-cloud-ou-gratuit.md` (option F) |
+
+> **Note du 2026-10-22 (DEC-034).** Cet ADR est **remplacé sous condition** par [ADR-013](ADR-013-pwa-unique-tous-appareils.md) : si, sur Chrome Android, la PWA installée obtient un jeton à l'ouverture sans saisie en au plus un aller-retour de redirection, et que le stockage persistant est accordé (mesures M-RED et M-PERSIST du test technique v3), cet ADR est **abandonné**. Sinon, il **s'applique de nouveau** tel quel pour Android. D'ici là, rien n'est mis en œuvre : création des clés différée (Q-PWA-5), procédure des clés suspendue, volet Android du test en annexe « repli ».
 
 ## Contexte
 L'arbitrage A2 avait retenu Google Play, piste de test interne, pour 25 USD payés une seule fois (DEC-005). À la suite de l'étude `etude-sans-cloud-ou-gratuit.md`, le commanditaire a précisé sa motivation : le coût **et** l'indépendance vis-à-vis des services en ligne (DEC-019). Il a ensuite décidé d'**installer lui-même l'APK, sans Google Play** (DEC-021).

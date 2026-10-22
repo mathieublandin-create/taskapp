@@ -7,6 +7,10 @@
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
+# DEC-034 (Pepper, 2026-10-22) : le smartphone utilise l'application web installée depuis Chrome, et non plus une application Android (APK).
+# Scénarios nouveaux ou adaptés, tag @DEC-034, à valider par le commanditaire (V-DEC034-5 et V-DEC034-7) : S06 (accès Google valide),
+# S06b (accès Google à renouveler au retour du réseau), S09b (application installée), S11 (accès retiré seulement ; l'accès expiré relève de S06b),
+# S18 et S19 (cas limites du navigateur). Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
 
 Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
   En tant qu'utilisateur,
@@ -109,10 +113,11 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
 
   # ---------------------------------------------------------------- Retour du réseau (CA-4, CA-7)
 
-  @US-018 @RG-021 @LOT-001
-  Scénario: S06 — Au retour du réseau, les modifications sont enregistrées et celles de l'autre appareil intégrées, sans action
+  @US-018 @RG-021 @LOT-001 @DEC-034
+  Scénario: S06 — Au retour du réseau, accès Google valide, les modifications sont enregistrées et celles de l'autre appareil intégrées, sans action
     Étant donné que le smartphone est sans réseau
     Et que l'application est ouverte sur le smartphone
+    Et que la session Google du smartphone est active
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Et sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
     Et sur le PC, l'utilisateur enregistre ses modifications dans le Drive
@@ -121,6 +126,25 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" ne porte plus la mention "MEN-ATTENTE"
     Et sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-HORS-LIGNE"
+
+  @US-018 @RG-017 @RG-021 @LOT-001 @DEC-034
+  Scénario: S06b — Au retour du réseau, accès Google à renouveler : le travail continue, puis tout est enregistré après au plus un geste, sans bandeau
+    Étant donné que le smartphone est sans réseau
+    Et que l'application est ouverte sur le smartphone
+    Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et sur le PC, l'utilisateur crée un objectif "Courir un semi-marathon" sans délai
+    Et sur le PC, l'utilisateur enregistre ses modifications dans le Drive
+    Et la session Google du smartphone expire
+    Et le réseau revient sur le smartphone
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le smartphone, aucun bandeau n'est affiché
+    Et le Drive du compte "A" ne contient pas encore la tâche "Chapitre 1 : contexte"
+    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 1 : contexte"
+    Alors sur le smartphone, l'opération est acceptée
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
+    Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" à l'état "terminée"
+    Et sur le smartphone, l'objectif "Courir un semi-marathon" existe sans délai
+    Et sur le smartphone, aucun élément ne porte la mention "MEN-ATTENTE"
 
   @US-018 @RG-021 @RG-036 @RG-056 @LOT-001
   Scénario: S07 — Au retour du réseau, la règle de conflit s'applique et la valeur écartée est signalée
@@ -165,9 +189,10 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
       | le smartphone est éteint puis rallumé            |
       | l'application est arrêtée brutalement sur le smartphone |
 
-  @US-018 @RG-021 @recette @LOT-001
-  Scénario: S09b — Recette manuelle sur un vrai smartphone : après un arrêt forcé de l'application puis un redémarrage du téléphone, aucune modification faite sans réseau n'est perdue
+  @US-018 @RG-021 @recette @LOT-001 @DEC-034
+  Scénario: S09b — Recette manuelle sur un vrai smartphone : après un arrêt forcé de l'application installée puis un redémarrage du téléphone, aucune modification faite sans réseau n'est perdue
     # E8, Q-US-018-3 : S09 s'exécute au niveau des cas d'usage ; cette variante se déroule à la main sur l'appareil (recette, E14).
+    # DEC-034 : l'application est celle installée sur l'écran d'accueil depuis Chrome (Android) ; l'arrêt forcé se fait depuis les réglages du téléphone.
     Étant donné que le smartphone est sans réseau
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Et l'application est arrêtée brutalement sur le smartphone
@@ -191,9 +216,10 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
 
   # ---------------------------------------------------------------- Perte de l'accès Google (CA-8)
 
-  @US-018 @RG-035 @LOT-001
-  Plan du scénario: S11 — Accès Google retiré ou expiré : le smartphone fonctionne comme sans réseau et propose de se reconnecter
-    Étant donné que l'accès au compte Google "A" <cause> sur le smartphone
+  # DEC-034 : l'exemple « a expiré » est retiré ; sur le smartphone comme sur le PC, un accès expiré est un accès à renouveler (S06b, sans bandeau).
+  @US-018 @RG-035 @LOT-001 @DEC-034
+  Scénario: S11 — Accès Google retiré : le smartphone fonctionne comme sans réseau et propose de se reconnecter
+    Étant donné que l'accès au compte Google "A" a été retiré sur le smartphone
     Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
     Alors sur le smartphone, l'opération est acceptée
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
@@ -201,15 +227,11 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
-    Exemples:
-      | cause            |
-      | a été retiré     |
-      | a expiré         |
-
   # ---------------------------------------------------------------- Cas limites
 
   @US-018 @RG-019 @LOT-001
   Scénario: S12 — La toute première connexion sans réseau est impossible
+    # DEC-034 : « jamais utilisée » = l'application a déjà été chargée une fois avec le réseau (installée), mais aucun compte ne s'y est connecté. L'application jamais chargée relève de S19.
     Étant donné que l'application n'a jamais été utilisée sur le smartphone
     Et que le smartphone est sans réseau
     Quand l'utilisateur tente de se connecter avec le compte "A" sur le smartphone
@@ -336,3 +358,23 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" variante 24H n'est pas affiché
     Et sur le smartphone, un seul bandeau est affiché
+
+  # ---------------------------------------------------------------- Cas limites du navigateur (proposés, DEC-034 ; V-DEC034-7)
+
+  @US-018 @RG-021 @ihm @LOT-001 @DEC-034
+  Scénario: S18 — Données du navigateur effacées sur le smartphone : les modifications non enregistrées sont perdues et les données sont rechargées depuis le Drive
+    Étant donné que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur renomme la tâche "Chapitre 1" en "Chapitre 1 : contexte"
+    Et l'utilisateur efface les données de son navigateur sur le smartphone
+    Et le réseau revient sur le smartphone
+    Et l'utilisateur se connecte avec le compte "A" sur le smartphone
+    Alors sur le smartphone, la tâche "Chapitre 1" existe avec le délai 2026-11-30
+    Et sur le smartphone, la tâche "Chapitre 1 : contexte" n'existe pas
+
+  @US-018 @RG-021 @ihm @LOT-001 @DEC-034
+  Scénario: S19 — La première ouverture de l'application dans le navigateur du smartphone, sans réseau, est impossible
+    Étant donné que l'application n'a jamais été ouverte dans le navigateur du smartphone
+    Et que le smartphone est sans réseau
+    Quand l'utilisateur ouvre l'application sur le smartphone depuis son adresse web
+    Alors sur le smartphone, aucun écran de Done Juan n'est affiché
+    Et le navigateur du smartphone affiche son propre message de page inaccessible

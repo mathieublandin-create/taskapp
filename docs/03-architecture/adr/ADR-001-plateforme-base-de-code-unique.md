@@ -4,6 +4,8 @@
 |---|---|---|---|
 | Proposé | 2026-10-20 | Starck | RG-017, RG-021, ENF-01, ENF-04, Q-DEM001-38, DAT §3.1 |
 
+> **Note de portée du 2026-10-22 (DEC-034, ADR-013).** La partie « application Capacitor sur le smartphone » de la décision est **suspendue sous condition** : si la mesure M-RED et M-PERSIST du test technique v3 réussit sur Chrome Android, l'**option 1 (PWA seule) est retenue pour tous les appareils** (ADR-013) et l'option 2 devient une évolution possible (réintroduction d'une coque Capacitor par ajout d'adaptateurs). Si la mesure échoue, la décision ci-dessous reste valable pour Android. Les arguments contre l'option 1 portaient surtout sur iOS ; DEC-001 (Android) et DEC-022 (rappels par Google Calendar) en ont réduit la portée, et DEC-034 accepte les limites restantes (Q-PWA-2, Q-PWA-3).
+
 ## Contexte
 L'application doit fonctionner sur smartphone, usage prioritaire et hors ligne, et sur PC dès la première version. Elle a un seul utilisateur. Sur le smartphone, elle doit fonctionner hors ligne en consultation et en saisie, et pouvoir émettre des notifications locales en secours de Google Calendar (Q-38 b), ce qui nécessite des modules natifs. Les tests métiers sont écrits en Gherkin français et exécutés avec Cucumber. Le système du smartphone (Android ou iOS) n'est pas encore connu (arbitrage A1).
 

@@ -7,6 +7,9 @@
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
+# DEC-034 (Pepper, 2026-10-22) : connexion dans l'application web sur les deux appareils (plus d'application Android).
+# Scénarios adaptés ou nouveaux, tag @DEC-034, à valider par le commanditaire (V-DEC034-3 et V-DEC034-5) : S11 (accès retiré seulement), S23b (nouveau).
+# Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
 # « l'utilisateur se déconnecte » : déconnexion menée à son terme, y compris la confirmation si elle est demandée (CA-6).
 # Nom de l'application : « Done Juan » (DEC-017). Le dossier du Drive porte le même nom (V-13, DEC-018).
 # Motifs d'échec de la connexion : codes ERR-001 à ERR-006 du catalogue de Steeve (guide d'ergonomie §6.6.8), qui fait foi pour les libellés et les codes ; voir US-022, section « Motifs de connexion ».
@@ -148,22 +151,18 @@ Fonctionnalité: Se connecter avec mon compte Google
 
   # ---------------------------------------------------------------- Accès retiré ou expiré (CA-7)
 
-  @US-022 @RG-035 @LOT-001
-  Plan du scénario: S11 — Accès Google retiré ou expiré : avertissement à la prochaine utilisation, travail possible, aucune perte
+  # DEC-034 : l'exemple « a expiré » est retiré ; sur le smartphone comme sur le PC, un accès expiré est un accès à renouveler, sans bandeau (S23, S23b).
+  @US-022 @RG-035 @LOT-001 @DEC-034
+  Scénario: S11 — Accès Google retiré : avertissement à la prochaine utilisation, travail possible, aucune perte
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et un objectif "Publier le guide" de délai 2026-12-15
-    Et que l'accès au compte Google "A" <cause> sur le smartphone
+    Et que l'accès au compte Google "A" a été retiré sur le smartphone
     Quand l'utilisateur ouvre l'application sur le smartphone
     Alors sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" est affiché, avec l'action "Se reconnecter"
     Quand sur le smartphone, l'utilisateur modifie le délai de l'objectif "Publier le guide" en 2027-01-31
     Alors sur le smartphone, l'opération est acceptée
     Quand sur le smartphone, l'utilisateur se reconnecte avec le compte "A"
     Alors le Drive du compte "A" contient l'objectif "Publier le guide" avec le délai 2027-01-31
-
-    Exemples:
-      | cause        |
-      | a été retiré |
-      | a expiré     |
 
   @US-022 @RG-035 @LOT-001
   Scénario: S12 — Accès retiré pendant l'utilisation : signalé dès l'action suivante qui en a besoin, sans perte
@@ -338,6 +337,20 @@ Fonctionnalité: Se connecter avec mon compte Google
     Alors sur le PC, aucune connexion n'est demandée avant d'afficher les données
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+
+  # DEC-034 ; Q-DEC034-1 (Starck) fixe le mécanisme du renouvellement (bref passage par Google à l'ouverture ou geste) ; le scénario vaut pour les deux.
+  @US-022 @RG-017 @RG-035 @LOT-001 @DEC-034
+  Scénario: S23b — Sur le smartphone, accès Google à renouveler à l'ouverture : données affichées sans écran de connexion, accès renouvelé sans saisie
+    Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
+    Et un objectif "Publier le guide" de délai 2026-12-15
+    Et que l'application est fermée sur le smartphone
+    Et que la session Google du smartphone a expiré
+    Quand l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
+    Alors sur le smartphone, aucune connexion n'est demandée avant d'afficher les données
+    Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" n'est pas affiché
+    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
+    Alors sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-SESSION"
 
   # E8, Q-US-022-3 : en consultation seule (RG-058), aucune action de compte n'écrit dans le Drive.
   @US-022 @RG-055 @RG-058 @LOT-001

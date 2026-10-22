@@ -1,8 +1,12 @@
 # Spécification de l'application de test (preuve de concept, dossier `poc/`)
 
-> Version 1 du 2026-10-22. Auteur : Starck. Destinataire : Benjamin (revue : Anthony).
-> Références : `test-technique-R1-R2.md` (protocole, §3.1 à §3.5, prérequis P8 et P9), DAT v0.10.1 §3 et §4.1, ADR-004, ADR-005, ADR-012, DEC-023, DEC-031.
+> **Version 2 du 2026-10-22.** Auteur : Starck. Destinataire : Benjamin (revue : Anthony).
+> **Version 2 (DEC-034, ADR-013)** : volet Android natif **suspendu** (gardé pour le repli, §1 à §9 inchangés sur ce point) ; ajout du §13 « Redirection et durabilité » (mesures M-RED, M-PERSIST, M-DUR, condition de DEC-034), du §14 « Volet partage R-P1/R-P2 » (optionnel, DEC-035, M1-14) et du §15 « Écarts constatés avec l'implémentation » (commit `b0239ec`). Le §12 est mis à jour.
+> Version 1 du 2026-10-22 : création.
+> Références : `test-technique-R1-R2.md` v3, `guide-test-technique-commanditaire.md` v3, DAT v0.11 §3, §4.1 (dont §4.1.7), ADR-004, ADR-005, **ADR-013**, ADR-012 (repli), DEC-023, DEC-031, DEC-034, DEC-035.
 > Objet : outil de mesure **jetable**. Il ne sert pas de base au code de production, mais il en reprend la stack et les contrats d'authentification, pour que les mesures soient valables.
+
+> **Portée après DEC-034.** Seule la partie web est construite et déployée pour le test (§7.1). Le plugin Kotlin, `capacitor.config.ts`, `scripts/prepare-android.sh`, les jobs `apk` du workflow et la clé de signature (§5, §7.2, §7.3, §9) sont **conservés sans être exécutés** : ils ne servent que si la condition de DEC-034 échoue (annexe A du protocole v3). Ne pas les supprimer avant la décision.
 
 ## 1. Périmètre minimal
 
@@ -18,8 +22,13 @@ Aucune fonction métier, aucune donnée réelle. Un écran « Diagnostic » avec
 | **R15** | PC | Résultat de `navigator.storage.persist()` | §3.4.4 |
 | **R16-T** APK signé | Android | Affichage de `versionCode`, `versionName`, empreinte du certificat de signature ; conservation des données après `adb install -r` | §3.3.8 |
 | **§3.5** accès retiré | PC | « Appeler Drive » (code HTTP, code d'erreur GIS, échéance) ; « Demander un jeton » ; affichage de `hasGrantedAllScopes` | §3.5 |
+| **M-RED** redirection (v2) | PC, Chrome Android (PWA installée) ; iPhone (R-P2) | « Jeton par redirection », « Remettre à zéro le compteur » ; traitement du retour au chargement | §3.6 du protocole v3, §13 ci-dessous |
+| **M-PERSIST**, **M-DUR** (v2) | PC, Chrome Android ; iPhone (R-P2) | « Stockage persistant ? », « Poser le marqueur », « Lire le marqueur » | §3.7 du protocole v3, §13 |
+| **R-P1/R-P2** partage (v2, optionnel) | PC, iPhone, deux comptes | Sélecteur Google (Picker), lecture d'un dossier choisi, connexion par redirection interactive | §3.8 du protocole v3, §14 |
 
-Hors périmètre : Calendar, CRDT, SQLite, notifications, interface métier, iOS.
+En v2, les lignes R1 (croisement de clients), R2 et R16-T relèvent du **repli** (annexe A du protocole v3) et ne sont pas exécutées.
+
+Hors périmètre : Calendar, CRDT, SQLite, notifications, interface métier.
 
 ## 2. Stack
 
@@ -85,6 +94,9 @@ Aucune valeur n'est versionnée. `.env.example` liste les noms ; `.env.local` (i
 | `VITE_GOOGLE_WEB_CLIENT_ID` | PWA, et plugin Android (identifiant « serveur » de Credential Manager) | Non, mais non versionné | ID client OAuth Web |
 | `VITE_BASE_PATH` | PWA | Non | `/` (Cloudflare) ou `/<nom-du-depot>/` (GitHub Pages) |
 | `VITE_APP_ORIGIN` | PWA | Non | Origine hébergée, affichée dans le Diagnostic |
+| *(dérivée, v2)* URI de redirection | PWA | Non | `window.location.origin` + `VITE_BASE_PATH`, soit `https://mathieublandin-create.github.io/taskapp/` en recette du PoC et `http://localhost:5173/` en local. Doit figurer **à l'identique** (barre oblique finale comprise) dans les « URI de redirection autorisés » du client OAuth Web, en plus de l'origine JavaScript |
+| `VITE_GOOGLE_API_KEY` (v2, volet partage seulement) | PWA | Non secret, mais **restreinte** (référents HTTP de l'origine, API Google Picker seule) | Clé d'API exigée par le sélecteur Google (§14) |
+| `VITE_GOOGLE_PROJECT_NUMBER` (v2, volet partage seulement) | PWA | Non | Numéro du projet Google Cloud (`appId` du sélecteur, §14) |
 | `VITE_POC_APP_PROPERTY` | PWA, Android | Non | Valeur de `appProperties.app`, par défaut `objectifs-taches-poc` |
 | `VITE_POC_FOLDER_NAME` | PWA, Android | Non | Par défaut `Done Juan (POC)` |
 | `POC_ANDROID_PACKAGE` | Android | Non | Nom de paquet fixé par Anthony |
@@ -352,13 +364,100 @@ Complément recommandé : un contrôle automatique (Semgrep ou `gitleaks`, DAT �
 
 ## 12. Reste à faire par l'équipe
 
-| # | Tâche | Qui |
+**v2 (DEC-034)** : les tâches 2, 3 et 5 sont **suspendues** (repli). Le workflow `poc` fonctionne sans clé : le job `apk (release)` est sauté et `apk (debug)` est signé par une clé automatique, sans usage pour le test web.
+
+| # | Tâche | Qui | État v2 |
+|---|---|---|---|
+| 1 | Poser le `.gitignore` (§11) | Anthony | Fait |
+| 2 | Fixer le nom de paquet Android | Anthony | Fait (`fr.donejuan.poc`), repli |
+| 3 | Générer les deux clés de test, transmettre les SHA-1 au commanditaire par Jarvis, poser les secrets GitHub | Commanditaire (DEC-032) | **Suspendu** (DEC-034, Q-PWA-5) |
+| 4 | Écrire `poc/` (§3 à §6), avec ses tests Vitest | Benjamin | Fait |
+| 5 | Écrire le plugin Kotlin et le faire compiler via le workflow | Benjamin | Écrit, repli |
+| 6 | Ajouter `.github/workflows/poc.yml` | Anthony | Fait |
+| 7 | Revue du PoC (§10) | Starck | Revue v2 au §15 |
+| 8 | Tenir le tableau de résultats pendant les séances et en tirer la décision | Starck | À faire |
+| 9 | Mesures M-RED, M-PERSIST, M-DUR (§13) | Benjamin | Fait (`b0239ec`), corrections du §15 à apporter |
+| 10 | Volet partage R-P1/R-P2 (§14) | Benjamin | **Optionnel**, à faire avant l'E3 d'EPI-001, pas avant la séance web |
+| 11 | (Suggestion) Entrée `android` (booléen, faux par défaut) dans `poc.yml` pour sauter les jobs `apk` | Anthony | Facultatif : gagne environ 10 min par passage |
+
+## 13. Redirection et durabilité (v2, DEC-034, ADR-013)
+
+### 13.1 Objet
+Mesurer la **condition de DEC-034** sur Chrome Android, PWA installée : un jeton est-il obtenu à l'ouverture, **sans saisie**, en **au plus un aller-retour** vers Google, et le stockage persistant est-il accordé ? Mesurer aussi la durabilité d'une écriture IndexedDB après un arrêt forcé et un redémarrage. Les mêmes boutons servent sur le PC (référence) et sur l'iPhone (R-P2).
+
+### 13.2 Bouton « Jeton par redirection » (groupe « Redirection (PWA unique, DEC-034) »)
+**Départ** :
+1. Tirer un `state` aléatoire d'au moins 122 bits (`crypto.randomUUID()` admis ; en production, `crypto.getRandomValues`, 128 bits).
+2. Enregistrer dans `localStorage` le **contexte** `{ state, debutMs, numero }` (aucun jeton), et incrémenter le **compteur cumulatif** de redirections (`localStorage`, remis à zéro seulement par le bouton « Remettre à zéro le compteur »).
+3. Journaliser « Départ vers Google » (mesure `Redirection`) : numéro, `prompt=none`, présence d'un `login_hint`, **mode d'affichage** (§13.5).
+4. Naviguer (`location.assign`) vers `https://accounts.google.com/o/oauth2/v2/auth` avec : `client_id` ; `redirect_uri` = origine + `VITE_BASE_PATH` (exactement la valeur déclarée) ; `response_type=token` ; `scope=openid email https://www.googleapis.com/auth/drive.file` ; `prompt=none` ; `state` ; `include_granted_scopes=true` ; `login_hint` = adresse de l'identité en cache, si elle existe.
+
+**Retour** (au chargement de la page, **avant tout appel réseau** de l'application) :
+1. Lire le fragment ; s'il ne contient ni `access_token` ni `error`, ne rien faire.
+2. **Effacer le fragment immédiatement** (`history.replaceState`, chemin et requête conservés), puis déclarer le jeton au filtre anti-secret du journal.
+3. Consommer le contexte (lu puis effacé : un retour ne se traite qu'une fois). Rejeter le retour si le contexte est absent ou si `state` diffère : résultat « Retour rejeté », `codeErreur = etat_invalide`, jeton ignoré.
+4. En cas d'erreur Google : journaliser le **code brut** et sa catégorie : `interaction_requise` (`interaction_required`, `login_required`, `consent_required`, `account_selection_required`, `access_denied`), `acces_revoque` (`invalid_grant`), `configuration` (`invalid_request`, `invalid_client`, `invalid_scope`, `redirect_uri_mismatch`, `unauthorized_client`, `unsupported_response_type`, `origin_mismatch`), `inconnue` (autres).
+5. En cas de succès : adopter le jeton (mémoire seulement) pour les boutons Drive ; journaliser « JetonObtenu », l'échéance, la durée de vie annoncée, les scopes accordés, le numéro de redirection.
+6. **Durée de l'aller-retour** : de l'instant du clic (`debutMs`) au traitement du retour, rechargement compris, en millisecondes (horloge murale : un écart dû à un changement d'heure pendant la mesure est négligeable).
+
+**Ce que la mesure établit** :
+- « sans saisie » : un retour `JetonObtenu` **sans** qu'aucun écran Google ne demande de taper quoi que ce soit (constat visuel du commanditaire, consigné dans le tableau) ;
+- « au plus un aller-retour » : le compteur n'augmente que d'un entre le départ et le `JetonObtenu`, et le journal ne montre qu'un départ ;
+- la durée, pour l'écran d'attente de la production (cible indicative : moins de 3 s).
+
+Une navigation de premier niveau n'exige pas de geste de l'utilisateur : le bouton ne fait que déclencher la mesure. Le résultat vaut donc pour une redirection automatique à l'ouverture (ADR-013).
+
+### 13.3 Option « Redirection automatique à l'ouverture » (souhaitable, non bloquante)
+Une case à cocher, mémorisée dans `localStorage`, qui lance le départ du §13.2 **au chargement**, si et seulement si : la page ne revient pas elle-même de Google (aucun contexte en attente ni fragment), une identité est en cache, et le réseau est disponible. Une seule tentative par chargement. Elle reproduit à l'identique le comportement de production. Si elle n'est pas réalisée, le guide utilise le bouton juste après l'ouverture, ce qui suffit à la mesure (§13.2, dernier alinéa).
+
+### 13.4 Persistance et marqueur IndexedDB
+- **« Stockage persistant ? »** (M-PERSIST) : journaliser `navigator.storage.persisted()` **avant** l'appel, puis le résultat de `navigator.storage.persist()` (s'il n'était pas déjà persistant), avec le mode d'affichage.
+- **« Poser le marqueur »** (M-DUR) : écrire `{ poseLe, identifiant }` dans une base IndexedDB dédiée (`poc-marqueur`), par une transaction ouverte en **durabilité stricte** (`db.transaction('marqueur', 'readwrite', { durability: 'strict' })`), et ne journaliser « OK » qu'à l'événement **`complete` de la transaction** (pas au `success` de la requête). C'est le mode d'écriture retenu pour la production (ADR-013) : la mesure doit porter sur lui.
+- **« Lire le marqueur »** : relecture à la demande ; journaliser « Marqueur présent » (date de pose, âge, identifiant) ou « Marqueur absent ».
+- Protocole : poser, noter l'identifiant, provoquer l'arrêt (arrêt forcé de Chrome dans les réglages Android, ou redémarrage du téléphone), rouvrir, lire. Succès : même identifiant.
+
+### 13.5 Contexte d'exécution à journaliser
+Chaque entrée des mesures `Redirection` et `R15` (persistance, marqueur) porte, dans `detail` ou dans un champ dédié :
+- le **mode d'affichage** : `standalone` si `matchMedia('(display-mode: standalone)').matches`, sinon `navigateur` ; il prouve que la mesure a eu lieu dans la PWA installée, ce qu'exige DEC-034 ;
+- la **plateforme web** déduite de l'agent utilisateur : `web-android`, `web-ios` ou `web-pc` (sur le web, `typeAppareil()` renvoie aujourd'hui `pc` pour tous les appareils) ;
+- `navigator.onLine`.
+
+### 13.6 Tests Vitest attendus
+Analyse du fragment (jeton, erreur, vide) ; classement des codes ; construction de l'URL (paramètres exacts, `login_hint` facultatif) ; contexte à usage unique ; rejet d'un `state` différent ou absent ; fragment effacé avant la journalisation ; **absence du jeton dans le journal exporté** (sentinelle) ; compteur cumulatif et remise à zéro ; marqueur posé puis relu (`fake-indexeddb`), avec l'option de durabilité passée à la transaction.
+
+## 14. Volet partage R-P1/R-P2 (v2, optionnel, DEC-035, M1-14)
+
+À réaliser **avant l'E3 d'EPI-001**, pas avant la séance web : il n'entre pas dans la condition de DEC-034. Environ une demi-journée.
+
+### 14.1 Objet
+- **R-P1** : avec le scope `drive.file`, l'application d'un compte B (contributeur) voit-elle un dossier et des fichiers créés par l'application sous un compte A (administrateur) et **partagés** avec B dans Drive ? Sinon, la sélection du dossier dans le sélecteur Google (Picker) ouvre-t-elle l'accès à ses fichiers, existants **et futurs** ?
+- **R-P2** : sur l'iPhone de B, la PWA ajoutée à l'écran d'accueil depuis Safari se connecte-t-elle par redirection, obtient-elle un jeton par `prompt=none` à l'ouverture après une heure, après 24 h, après un redémarrage, et conserve-t-elle ses données (persistance, marqueur) ?
+
+### 14.2 Boutons supplémentaires (groupe « Partage (EPI-001) »)
+| Bouton | Comportement | Journal |
 |---|---|---|
-| 1 | Poser le `.gitignore` (§11) | Anthony |
-| 2 | Fixer le nom de paquet Android | Anthony |
-| 3 | Générer les deux clés de test, transmettre les SHA-1 au commanditaire par Jarvis, poser les secrets GitHub | Anthony |
-| 4 | Écrire `poc/` (§3 à §6), avec ses tests Vitest | Benjamin |
-| 5 | Écrire le plugin Kotlin et le faire compiler via le workflow | Benjamin |
-| 6 | Ajouter `.github/workflows/poc.yml` | Anthony |
-| 7 | Revue du PoC (§10) | Starck |
-| 8 | Tenir le tableau de résultats pendant les séances et en tirer la décision | Starck |
+| « Connexion par redirection » | Comme le §13.2, mais **sans** `prompt=none` (`prompt=consent select_account`) : première connexion dans la PWA de l'iPhone, où la fenêtre GIS est réputée défaillante | Mesure `R-P2` ; mêmes champs qu'au §13.2 |
+| « Choisir dans le sélecteur Google » | Charge à la demande `https://apis.google.com/js/api.js` puis `picker` ; vue `DocsView` avec dossiers (`setIncludeFolders(true)`, `setSelectFolderEnabled(true)`, `setOwnedByMe(false)`), `setOAuthToken(jeton)`, `setDeveloperKey(VITE_GOOGLE_API_KEY)`, `setAppId(VITE_GOOGLE_PROJECT_NUMBER)` ; mémorise l'identifiant et le type de l'élément choisi | `R-P1` : identifiant, type MIME, propriétaire (adresse masquée sauf le domaine) |
+| « Lister le dossier choisi » | `files.list` avec `q = '<id>' in parents and trashed = false`, `fields = files(id,name,owners(emailAddress),capabilities(canEdit))` | Nombre de fichiers, noms, `canEdit` |
+| « Lire par identifiant » | Champ de saisie d'un identifiant de fichier, puis `files.get?alt=media` | Code HTTP (`404` attendu sans sélection), empreinte SHA-256 |
+| « Tenter une écriture » | `files.update` sur le fichier lu | Code HTTP (`403` attendu : partage en lecture) |
+| « Créer mon fichier » | Crée `contributeur-poc.etat.json.gz` dans un dossier `Done Juan (POC partage)` du compte connecté | Identifiant, empreinte |
+
+Le jeton passé au sélecteur n'est jamais journalisé. La clé d'API n'est pas un secret, mais elle est restreinte dans la console (référents HTTP `https://mathieublandin-create.github.io/*` et `http://localhost:5173/*`, API Google Picker seule) et n'est pas versionnée.
+
+### 14.3 Prérequis propres
+API **Google Picker** activée dans le projet `objectifs-taches-dev` ; clé d'API restreinte ; second compte Google (B) ; iPhone sous iOS 17 ou plus ; accès d'un second compte à l'écran de consentement (application « En production » : aucun compte de test à déclarer).
+
+## 15. Écarts constatés avec l'implémentation (revue de `b0239ec`, 2026-10-22)
+
+| # | Écart | Spécification | Implémentation | Gravité | Action |
+|---|---|---|---|---|---|
+| EC-1 | Durabilité du marqueur | Transaction en `durability: 'strict'`, « OK » à l'événement `complete` (§13.4) | Transaction par défaut (durabilité relâchée sous Chrome) ; promesse résolue au `success` de la requête `put` | **Bloquant pour M-DUR** : la mesure porterait sur un mode d'écriture qui n'est pas celui de la production, et « OK » peut être journalisé avant la validation | Benjamin : passer `{ durability: 'strict' }` à `base.transaction(...)` en écriture, et résoudre sur `transaction.oncomplete` (rejet sur `onerror`/`onabort`) |
+| EC-2 | Mode d'affichage et plateforme non journalisés | §13.5 | Le journal ne porte que `pc \| <agent utilisateur>` ; sur Chrome Android, `typeAppareil()` vaut `pc` | **Bloquant pour la condition** : rien ne prouve que la mesure a eu lieu dans la PWA installée | Benjamin : ajouter `display-mode` et `web-android` / `web-ios` / `web-pc` aux entrées `Redirection` et `R15` (environ 30 min) |
+| EC-3 | Ordre d'effacement du fragment | Avant tout appel réseau de l'application | Effacé dans `traiterRetourRedirection()`, appelé juste après `racine.render(...)` | Mineur pour le PoC (aucun appel réseau au rendu, GIS chargé à la demande) ; **exigence de production** (ADR-013) | Aucune pour le PoC. Anthony : en production, consommer le fragment avant le rendu |
+| EC-4 | Validité du `state` | 10 min en production (ADR-013) | Pas de limite | Mineur pour le PoC | Aucune pour le PoC ; exigence de production |
+| EC-5 | Redirection automatique à l'ouverture | Souhaitable (§13.3) | Absente | Non bloquant | Facultatif |
+| EC-6 | Connexion par redirection interactive | Nécessaire pour R-P2 (§14.2) | Absente | Non bloquant pour la séance web ; **bloquant pour R-P2** | À faire avec le volet partage (§14) |
+| EC-7 | `access_denied` classé `interaction_requise` | Conforme pour `prompt=none` (§13.2) | Idem | Aucun | En production, après un geste, `access_denied` donne « accès perdu » (DAT §4.1.6 bis, ADR-013) |
+
+Conformes : URI de redirection (origine + `VITE_BASE_PATH`), paramètres de l'URL (`response_type=token`, `prompt=none`, `include_granted_scopes`, `login_hint` facultatif), `state` par `crypto.randomUUID()`, contexte à usage unique dans `localStorage`, rejet `etat_invalide`, compteur cumulatif et remise à zéro, durée clic-retour rechargement compris, jeton en mémoire seulement et déclaré au filtre anti-secret, classement des erreurs, `persisted()` journalisé avant `persist()`, relecture du marqueur à la demande.

@@ -4,6 +4,8 @@
 |---|---|---|---|
 | Proposé | 2026-10-20 | Starck | ENF-04, ENF-06, ADR-001, ADR-003, ADR-009, DAT §2.4 |
 
+> **Note de portée du 2026-10-22 (DEC-034, ADR-013).** Si la PWA unique est confirmée, l'adaptateur SQLite n'est **pas réalisé** : IndexedDB (Dexie) sert sur tous les appareils, avec des transactions d'écriture en **durabilité stricte** et une confirmation à l'événement `complete` (US-018 CA-5). Le port `DepotLocal` et l'architecture hexagonale sont inchangés ; SQLite reste le repli si l'APK est conservé pour Android.
+
 ## Contexte
 Le même noyau tourne sur deux types de cibles :
 - le web (PWA) : stockage IndexedDB, authentification par Google Identity Services ;

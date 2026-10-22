@@ -7,6 +7,9 @@
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
 # Règles et critères validés par le commanditaire le 2026-10-21 (DEC-018).
+# DEC-034 (Pepper, 2026-10-22) : même application web sur les deux appareils (plus d'application Android ni d'APK).
+# Scénarios adaptés ou nouveaux, tag @DEC-034, à valider par le commanditaire : S06b (V-DEC034-3), S30 (V-DEC034-2).
+# Si DEC-034 n'est pas confirmée, la version précédente de ce fichier est rétablie.
 # Les délais d'une heure et d'une minute (CA-2, CA-3) se vérifient en faisant avancer l'horloge contrôlée du banc à deux appareils
 # (conventions §9.11, PT-04) : aucun scénario n'attend en temps réel (E7, ANT-3).
 # E7 : S12b (horodatages identiques), S13 scindé en S13a/S13b (seuil de 24 h, CA-13), S17 scindé en S17a/S17b, S30b (RG-058 : aucune écriture, dépôt après mise à jour).
@@ -108,6 +111,19 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le PC, l'objectif "Publier le guide" existe
+
+  # DEC-034 ; Q-DEC034-1 (Starck) fixe le mécanisme du renouvellement (bref passage par Google à l'ouverture ou geste) ; le scénario vaut pour les deux.
+  @US-017 @RG-017 @RG-035 @LOT-001 @DEC-034
+  Scénario: S06b — Sur le smartphone, accès Google à renouveler à l'ouverture : données du smartphone affichées aussitôt, mise à jour une minute au plus après un renouvellement sans saisie
+    Étant donné que l'application est fermée sur le smartphone
+    Et que la session Google du smartphone a expiré
+    Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
+    Quand l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
+    Alors sur le smartphone, les données présentes sur le smartphone s'affichent aussitôt
+    Et sur le smartphone, aucune connexion n'est demandée avant d'afficher les données
+    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
+    Et l'horloge avance de 1 minute depuis la reconnexion
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et le Drive du compte "A" contient la tâche "Envoyer le devis"
 
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
@@ -585,13 +601,14 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et le smartphone échange ses modifications avec le Drive
     Alors le Drive du compte "A" contient l'objectif "Publier le guide"
 
-  @US-017 @RG-017 @RG-058 @LOT-001
+  # DEC-034 (V-DEC034-2) : « Mettre à jour » n'ouvre plus une page de téléchargement d'APK ; il applique la dernière version de l'application web.
+  @US-017 @RG-017 @RG-058 @LOT-001 @DEC-034
   Scénario: S30 — Un appareil qui ne sait pas lire le format des données enregistrées par une version plus récente passe en consultation seule et invite à se mettre à jour, sans rien perdre
     Étant donné que le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone
     Et que sur le smartphone, l'objectif "Publier le guide" a été créé et n'est pas encore synchronisé
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, l'action "Mettre à jour" est proposée
-    Et sur le smartphone, l'action "Mettre à jour" ouvre la page de téléchargement de la dernière version et ne renvoie pas vers Google Play
+    Et sur le smartphone, l'action "Mettre à jour" applique la dernière version de l'application, sans fichier à télécharger ni renvoi vers Google Play
     Et sur le smartphone, le bandeau "BAN-CONSULTATION-SEULE" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour
     Et sur le smartphone, l'objectif "Publier le guide" existe toujours
 

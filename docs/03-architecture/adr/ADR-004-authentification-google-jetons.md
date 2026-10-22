@@ -4,6 +4,8 @@
 |---|---|---|---|
 | Proposé (mis à jour le 2026-10-21 pour RG-043) | 2026-10-20 | Starck | RG-019, RG-035, ENF-05, ENF-06, Q-DEM001-22, DAT §4.1 |
 
+> **Note de portée du 2026-10-22 (DEC-034, ADR-013).** Si la PWA unique est confirmée, la ligne « Android : Credential Manager et AuthorizationClient » de l'option 3 n'est plus mise en œuvre : **tous les appareils utilisent l'adaptateur web**, qui obtient le jeton par une **redirection `prompt=none` à l'ouverture** et par Google Identity Services (ou une redirection interactive) sur geste ; détail et mesures de sécurité de la redirection dans ADR-013 et DAT v0.11 §4.1.7. Le principe « jeton d'accès en mémoire uniquement, aucun jeton de rafraîchissement ni secret » est **inchangé**. La conséquence « renouvellement silencieux sur le smartphone » ne vaut plus qu'en cas de repli sur l'APK.
+
 ## Contexte
 La connexion Google est obligatoire. L'application n'a pas de serveur (ADR-002), donc pas de lieu sûr pour un secret client ni pour un jeton de rafraîchissement côté éditeur. Le smartphone doit synchroniser sans intervention de l'utilisateur, et à terme en arrière-plan.
 
