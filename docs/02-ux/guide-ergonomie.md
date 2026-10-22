@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.9, 2026-10-22 (Steeve).** E9 de LOT-001, réponse à Q-US-001-6 (Anthony) : ordre d'affichage des listes d'objectifs, de sous-objectifs, de tâches du détail d'un objectif et de sous-tâches (§5.8) ; section « Atteints » conservée ; codes `SEC-` créés (§6.6.4 bis). ECR-008 réordonné. Aucune règle de gestion ni périmètre modifié.
+>
 > **Version 0.2.8, 2026-10-21 (Steeve).** Correction de fin d'E8 de LOT-001 (É-3, `explicitation-LOT-001.md`) : libellés d'`ALR-010` complétés pour le rattachement et le placement non retenus, en cas de suppression concurrente d'un objectif (DEC-030, §6.6.9).
 >
 > **Version 0.2.7, 2026-10-21 (Steeve).** E8 de LOT-001, réponses aux demandes de précision d'Anthony (`explicitation-LOT-001.md`) : liste « Tâches » (filtre, tri, sous-tâches : §5.7, Q-US-002-1) ; point « à lire » indépendant de l'état de l'indicateur, sans modifier RG-056 (§4.8, §6.5, §6.6.2, Q-US-017-6) ; décompte d'une « modification en attente » (§6.6.1, Q-US-018-1) ; avis sur Q-US-003-1, 017-8, 017-10, 017-11, 017-12, 022-2, 022-4, 023-1, 031-2 (§6.6.11). Codes créés : `ERR-016`, `ALR-014`, `EVD-FILTRE-A-FAIRE`, `SYN-FEUILLE-A-LIRE`. **Version 0.2.6, 2026-10-21 (Steeve).** Remarque RF-LOT-001-PEP-14 : en-tête mis à jour (US de LOT-001 validées le 2026-10-21, DEC-018) ; §11 : distribution Android par installation directe de l'APK par le commanditaire (DEC-021, ADR-012), en remplacement de Google Play (DEC-005). **Version 0.2.5, 2026-10-21 (Steeve).** Décision DEC-025 du commanditaire sur Q-ERG-16, 17 et 18 (RG-057) : les 24 h du rappel courent depuis la plus ancienne modification en attente ; en cas d'accès Google perdu, un seul bandeau « Se reconnecter », complété du nombre de modifications seulement sur l'appareil ; le rappel fermé réapparaît à la prochaine ouverture tant que des modifications sont en attente. Mise à jour de §4.9, §6.6.3, §6.6.9, §6.6.10, §12.1 et des cadres J et L d'ECR-011 ; « sous réserve » retiré des entrées du catalogue concernées. **Version 0.2.4, 2026-10-21 (Steeve).** Tour 2 du refinement (ANT-21) : motifs de refus des scénarios rattachés à des codes (`ERR-023`, `ERR-032` à `ERR-035` créés, variantes d'`ERR-030`), table de correspondance (§6.6.10), forme de `MEN-HEURE-PARIS` avec une date de fin. **Version 0.2.3 :** E7 de LOT-001, tour 1 : catalogue des libellés et des codes d'état observables (§6.6, ANT-7), écran d'atterrissage (BEN-6), mention « Heure de Paris » par écran (BEN-8), compteur 3/3 « En cours » (PEP-10), confirmation d'abandon sans sous-tâche (ECR-007 D2), question Q-ERG-18. Version précédente : 0.2.1. Mise à jour de l'étape E4 de LOT-001 (itération majeure, 10 US). La v0.1 (2026-10-20) était le socle UX initial, hors cycle de lot.
@@ -492,6 +494,19 @@ Besoin : à l'ouverture, voir ce qu'il reste à faire, sans bruit ; retrouver un
 
 Conséquence pour US-002 S20 (à aligner par Pepper) : avec le filtre par défaut, la liste ne contient que les tâches à faire, triées par délai (« Payer la facture » puis « Chapitre 2 ») ; « Chapitre 1 », terminée, n'y est pas. Pour la voir, l'utilisateur choisit « Terminées ». Si le scénario doit montrer la terminée, l'étape de filtre « terminée » est ajoutée. US-003 S16 et US-025 S04 suivent la même règle.
 
+### 5.8 Ordre des listes d'objectifs, de sous-objectifs, de tâches du détail et de sous-tâches (v0.2.9, Q-US-001-6)
+Besoin : ce qui presse est en haut, sans que l'utilisateur ait à trier ; un ordre toujours identique d'une ouverture à l'autre, d'un appareil à l'autre. Aucune règle de gestion touchée (affichage seulement).
+
+**Ordre de référence « par délai »** (utilisé par (a), (c) et (e)) : 1. délai croissant, les « En retard » remontent d'elles-mêmes, **sans délai à la fin** ; 2. à délai égal, date de création croissante ; 3. à création égale, intitulé en ordre alphabétique français, sans tenir compte de la casse ni des accents.
+
+| Réf. | Liste | Réponse |
+|---|---|---|
+| (a) | Liste des objectifs (ECR-008) | Objectifs principaux actifs selon l'ordre de référence. Les objectifs non atteints seuls : un objectif atteint n'est pas dans cette liste (voir (b)). |
+| (b) | Objectifs atteints | **Section repliée « Atteints ({n}) » à la fin de la liste** (`SEC-OBJ-ATTEINTS`), `n` = objectifs principaux atteints, même ordre de référence à l'intérieur. Choix différent de la proposition d'Anthony : le regroupement existe déjà dans ECR-008 et a été validé avec US-001 en E6 ; sans lui, un objectif atteint à délai proche resterait en tête et masquerait ce qui reste à faire (P2). Un sous-objectif atteint dont le parent est en cours reste sous son parent ; un principal atteint emmène ses sous-objectifs dans la section. |
+| (c) | Sous-objectifs | Sous leur parent, en retrait, dans la liste et dans le détail de l'objectif (ECR-003) : ordre de référence, atteints compris (pas de déplacement quand l'état change : une ligne qui bouge est déroutante). |
+| (d) | Tâches du détail d'un objectif (ECR-003) | Trois sections : « Tâches à faire · {n} », « Terminées ({n}) », « Abandonnées ({n}) » (`SEC-TACHES-*`), les deux dernières repliées. Tris du §5.7 : à faire par ordre de référence ; terminées par date de fin décroissante ; abandonnées par date d'abandon décroissante. Une sous-tâche affichée suit immédiatement sa tâche parente, ordre (e). |
+| (e) | Sous-tâches du détail d'une tâche (ECR-007) | Une seule liste, tous états confondus (`SEC-SOUS-TACHES`), ordre de référence. Une sous-tâche terminée reste à sa place : la progression « 1 / 3 » se lit sur la liste entière. |
+
 ---
 
 ## 6. États : vide, chargement, erreur, hors ligne, synchronisation
@@ -678,6 +693,17 @@ Les mentions sont des textes ou marqueurs brefs portés par un élément.
 | `ETA-SOUS-TACHE-ABANDONNEE-AVANT` | Sous-tâche | « Abandonnée avant la tâche » | Non reprise avec la tâche parente |
 | `ETA-SOUS-TACHE-TERMINEE-AVANT` | Sous-tâche | « Terminée avant l'abandon » | Reste terminée |
 
+Titres de section (`SEC-`, v0.2.9, Q-US-001-6), texte exact visible :
+
+| Code | Texte | Où |
+|---|---|---|
+| `SEC-OBJ-ATTEINTS` | « Atteints ({n}) » (Disclosure, repliée par défaut) | Fin de la liste des objectifs (ECR-008), absente si n = 0 |
+| `SEC-SOUS-OBJECTIFS` | « Sous-objectifs » (+ nombre) | Détail d'un objectif (ECR-003) |
+| `SEC-TACHES-A-FAIRE` | « Tâches à faire · {n} » | Détail d'un objectif (ECR-003) |
+| `SEC-TACHES-TERMINEES` | « Terminées ({n}) » (Disclosure, repliée) | Détail d'un objectif (ECR-003) |
+| `SEC-TACHES-ABANDONNEES` | « Abandonnées ({n}) » (Disclosure, repliée) | Détail d'un objectif (ECR-003) |
+| `SEC-SOUS-TACHES` | « Sous-tâches » + compteur « {t} / {n} » | Détail d'une tâche (ECR-007) |
+
 #### 6.6.5 États vides et écrans d'atterrissage
 
 | Code | Écran | Texte exact | Action |
@@ -833,6 +859,7 @@ Les scénarios qui citent déjà `ERR-011`, `ERR-012`, `ERR-003` à `ERR-006` et
 | Q-US-002-1 | Filtre par défaut « À faire » ; valeurs `à faire`, `terminée`, `abandonnée`, pas de « tous » ; tri par délai, puis création, puis intitulé ; terminées par date de fin décroissante ; sous-tâches jamais listées | §5.7, ECR-002 L1, L4, L5 |
 | Q-US-017-6 | Option a), sans modifier RG-056 : le point « à lire » est un signal indépendant (`data-a-lire`), présent dans tous les états ; `SYN-INFO` devient un code dérivé de `SYN-OK` | §4.8, §6.5, §6.6.2, ECR-011 M |
 | Q-US-018-1 | Option a) : nombre d'éléments distincts portant `MEN-ATTENTE` (exemple : n = 2). Aucun journal d'opérations. Départ des 24 h : première écriture locale non déposée, tous éléments | §6.6.1, ECR-011 M |
+| Q-US-001-6 (E9, v0.2.9) | (a) oui ; (b) non à la ★ : section repliée « Atteints (n) » conservée ; (c) oui ; (d) oui ; (e) oui | §5.8, §6.6.4 (`SEC-`), ECR-008 |
 | Q-US-003-1 | Option a) : « Annuler » = réouverture (fin puis réouverture dans l'historique) ; l'écriture locale immédiate sert ENF-T-07 et la saisie hors ligne. Pepper peut ignorer la paire fin/réouverture rapprochée dans la vélocité | §6.6.6 |
 | Q-US-017-8 | Oui, code créé : `ALR-014`, sous la carte `ALR-008`, non compté dans le point « à lire » | §6.6.9 |
 | Q-US-017-10 | (a) Sur PC, « Mettre à jour » active la version en attente puis recharge ; la phrase « L'application va se recharger. Vos modifications sont conservées. » précède le rechargement. (b) **Non** : la version de schéma n'est affichée ni dans le bandeau ni dans la carte (l'utilisateur agit de la même façon quelle que soit la version) ; le DAT est à aligner sur `BAN-CONSULTATION-SEULE` | §6.6.3 |
@@ -1068,7 +1095,7 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 - **Un seul endroit** pour la synchronisation et le compte (ECR-011), ouvert par l'avatar ou l'indicateur.
 - **Estimation d'une tâche** : icône horloge au lot 1 (le sablier est réservé au reste à faire).
 - **Heure d'apparition de la carte « Bilan du soir »** : dès 17 h (valeur de conception ; RG-039 n'en fixe pas).
-- **Regroupement « Atteints »** replié dans la liste des objectifs (P2).
+- **Regroupement « Atteints »** replié dans la liste des objectifs (P2), confirmé en E9 (§5.8, Q-US-001-6).
 
 ### 12.2 Questions résiduelles de Pepper qui conditionnent les écrans
 
