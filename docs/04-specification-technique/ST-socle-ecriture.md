@@ -240,7 +240,7 @@ export type RegistreQuelconque = {
 #### 4.1.4 Synchronisation : journal métier (RG-050, DAT §6.1)
 ```ts
 // src/synchronisation/domaine/identifiant-evenement.ts
-export type IdEvenement = Marque<string, 'IdEvenement'>;            // `${IdOperation}:${rang}` (§6.7 ; ANT-25 soumis à Starck)
+export type IdEvenement = Marque<string, 'IdEvenement'>;            // `${IdOperation}:${rang}` (§6.7 ; validé par Starck, DAT v0.10.2 §6.1)
 export const idEvenement: (operation: IdOperation, rang: number) => IdEvenement;
 
 // src/synchronisation/domaine/evenement-journal.ts
@@ -585,11 +585,11 @@ projeterEtatMetier(etat):
 Le service mémorise la dernière projection par `version` de l'état (aucun recalcul sans écriture).
 
 ### 6.7 Identifiant et ordre des entrées du journal
-- `idEvenement(operation, rang)` = `${operation}:${rang}`, où `operation` est un UUID v7 tiré une fois par appel de `modifier` (`GenerateurIdentifiants`). Unique, déterministe dans les tests, sans tirage dans le domaine. **ANT-25** : soumis à Starck (le DAT §6.1 écrit « id (UUID) »).
+- `idEvenement(operation, rang)` = `${operation}:${rang}`, où `operation` est un UUID v7 tiré une fois par appel de `modifier` (`GenerateurIdentifiants`). Unique, déterministe dans les tests, sans tirage dans le domaine. Validé par Starck, DAT v0.10.2 §6.1 (et DS-08). Le rang s'écrit en décimal, sans zéros de tête (`…:0`, `…:1`, `…:12`). L'identifiant est **opaque** : aucun code ne doit en extraire l'opération, le rang ni l'horodatage.
 - `cause` : `idEvenement(operation, m.evenement.cause)`.
 - Une décision qui doit **enregistrer** l'identifiant d'un de ses propres événements dans une valeur (par exemple `evenementAbandon` et `abandonParCascade` du registre `cycleDeVie`, ST-US-025) le calcule avec `idEvenement(contexte.operation, rang)` : c'est le même identifiant que celui que `planifierEcritures` attribue à l'événement de ce rang (UT-SOC-23).
-- Ordre chronologique d'un historique : HLC croissant, puis `id`.
-- Les entrées produites par la fusion (réparations RG-048) ont l'identifiant déterministe `hash(élément, HLC du déplacement annulé)` du DAT §6.1 (incrément 2).
+- Ordre chronologique d'un historique : HLC croissant, puis `id` en comparaison ordinale de chaînes (opérateurs `<` et `>`), sans `localeCompare`.
+- Les entrées produites par la fusion (réparations RG-048) ont l'identifiant déterministe `hash(élément, HLC du déplacement annulé)` du DAT §6.1, en base32hex (incrément 2). Le test de l'incrément 2 d'US-017 qui couvre les réparations vérifie que cet identifiant ne contient pas « : » : il ne peut donc jamais être confondu avec un identifiant d'opération (suggestion de Starck, reprise dans ST-US-017).
 
 ### 6.8 Transaction (`ServiceEtatLocalTransactionnel.modifier`)
 ```text
@@ -702,7 +702,7 @@ Scénarios `@ihm` : aucun. Scénarios `@recette` : aucun.
 | UT-SOC-20 | `tests/unitaires/synchronisation/domaine/planifier-ecritures.test.ts` | `planifierEcritures` | `CREER_OBJECTIF` : registres creation, intitule, delai, parent (origine CREATION, `hlcOrigine` = h), même HLC, contexte vide ; pas de registre description si absente | DS-11 | NI |
 | UT-SOC-21 | idem | `planifierEcritures` | deux modifications : HLC strictement croissants ; la seconde voit l'effet de la première | DS-11 | NI |
 | UT-SOC-22 | idem | `planifierEcritures` | `ECRIRE_OBJECTIF` parent : origine DEPLACEMENT ; événement `CHANGEMENT_PARENT` avec `avant` (origine et `hlcOrigine` de l'ancienne valeur) et `apres` | RG-048 (préparation), RG-050 | NI |
-| UT-SOC-23 | idem | `planifierEcritures` | événement : `id` = `<operation>:<rang>`, `hlc` de sa modification, `instant` et `jour` fournis, `cause` convertie | RG-050 | NI |
+| UT-SOC-23 | idem | `planifierEcritures` | événement : `id` = `<operation>:<rang>` (rang décimal sans zéros de tête), `hlc` de sa modification, `instant` et `jour` fournis, `cause` convertie | RG-050 | NI |
 | UT-SOC-24 | idem | `planifierEcritures` | écriture sur un élément absent ou supprimé ; création en double → `ErreurProgrammation` | — | NI |
 | UT-SOC-25 | `tests/unitaires/synchronisation/domaine/index-en-attente.test.ts` | `enregistrerEnAttente` | la réécriture d'une information conserve `premiereEcriture` et remplace `derniereHlc` | RG-057, DEC-025 | NI |
 | UT-SOC-26 | idem | `decompterModificationsEnAttente` | objectif X créé puis renommé, délai de T modifié deux fois, T rattachée → 2 | Q-US-018-1 | NI |
@@ -745,7 +745,7 @@ Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation 
 6. Composition `web.ts` ; contrôle dependency-cruiser (aucun import interdit, §9).
 
 ## 16. Dette, hypothèses et points ouverts
-- **Points ouverts** : aucun bloquant. **ANT-25** (format de l'`IdEvenement`) est soumis à Starck pour validation avant E11 (`conventions.md` §17.2) ; un refus ne change que `idEvenement`.
+- **Points ouverts** : aucun. ANT-25 (format de l'`IdEvenement`) est clos : validé par Starck, DAT v0.10.2 §6.1.
 - **Sous réserve R1** : §5.3 (emplacement et forme physique du fichier Drive).
 - **Hypothèses** : H-1, H-4, H-5 (contrôle d'explicitation), appliquées sans changement.
 - **Dette acceptée d'emblée** : aucune. DT-001 (données locales non chiffrées) s'applique à `DepotLocalDexie`.
@@ -760,4 +760,4 @@ Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation 
 - [x] Les patterns imposés et interdits sont listés (§9) ; la sécurité est explicite (§10).
 - [x] Les étapes communes sont listées (§12).
 - [ ] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10).
-- [ ] ANT-25 validé par Starck.
+- [x] ANT-25 validé par Starck (DAT v0.10.2 §6.1).

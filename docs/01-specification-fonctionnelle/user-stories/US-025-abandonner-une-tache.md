@@ -117,7 +117,9 @@ Statut : Validée
 Q-ERG-13 : le commanditaire a répondu « toujours » (2026-10-21). La confirmation de l'abandon, prévue par CA-1, est donc validée. La date d'abandon (CA-1, S03) et le contenu de la confirmation (CA-6, S10), proposés par Pepper, sont validés par le commanditaire le 2026-10-21 (DEC-018, V-21 n et p).
 
 ## Questions ouvertes
-Aucune. Q-US-025-2 est répondue par le commanditaire (DEC-030).
+Q-US-025-2 est répondue par le commanditaire (DEC-030).
+
+- **Q-US-025-3** (E9, posée par Anthony dans ST-US-025 §16 ; à soumettre au commanditaire, car elle complète RG-027) — *Reprendre une sous-tâche abandonnée dont la tâche parente est terminée.* Aucune règle ne tranche ce cas : RG-027 et CA-8 / CA-12 visent une tâche parente **abandonnée** ; RG-026 et US-003 CA-9 visent la **réouverture** d'une sous-tâche **terminée**, pas la reprise d'une sous-tâche abandonnée. Seuls CA-5 (action « reprendre »), CA-8 et le scénario à ajouter en dépendent ; le reste de l'US n'est pas bloqué.
 
 ## Historique (validations du commanditaire, précisions)
 | Date | Événement |
@@ -128,3 +130,4 @@ Aucune. Q-US-025-2 est répondue par le commanditaire (DEC-030).
 | 2026-10-21 | E7, tour 1 du refinement (Pepper) : PEP-8 (mentions caduques retirées), PEP-7 (glossaire d'étapes figé). Aucun critère n'est modifié. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-025-1 (glossaire v1.2 ; « n'a pas de date d'abandon »), Q-US-001-2 (historique de la cascade ; S18 ajouté), Q-US-002-1 (filtre « abandonnée », S04 conforme), Q-US-024-1 (construction des tableaux de contexte), Q-US-017-7 (préfixe d'appareil, S14). Précisions sans changement de règle. **Q-US-025-2 soumise au commanditaire** (réouverture d'une sous-tâche terminée sous une tâche parente abandonnée). |
 | 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : CA-12 ajouté : une sous-tâche terminée dont la tâche parente est abandonnée ne peut pas être rouverte directement ; il faut d'abord reprendre la tâche parente (Q-US-025-2 a ; S12b ajouté ; RG-027 complétée). |
+| 2026-10-22 | E9 (Pepper) : Q-US-025-3 (Anthony) analysée ; aucune règle de gestion, US ni scénario ne la tranche. Question fermée transmise à Jarvis pour le commanditaire. CA, RG et `.feature` inchangés en attendant la réponse. |

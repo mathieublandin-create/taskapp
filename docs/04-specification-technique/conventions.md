@@ -391,7 +391,7 @@ export interface Horloge {
 - Les identifiants d'entités sont des **UUID v7** (RFC 9562), produits par le port `GenerateurIdentifiants` ; adaptateur `GenerateurUuidV7`, fondé sur la fonction `v7` du paquet `uuid` (bibliothèque de référence, sans dépendance, licence MIT ; elle évite une implémentation maison de la RFC).
 - Chaque identifiant a son type marqué (`IdObjectif`, `IdTache`, `IdAppareil`…) ; un `IdTache` ne peut pas être passé là où un `IdObjectif` est attendu.
 - Le tri par identifiant n'est **jamais** une règle métier : l'ordre de création est un champ explicite. L'horodatage intégré à l'UUID v7 n'est pas lu par le code.
-- Exceptions à clé naturelle ou déterministe (DS-08) : `SaisieTemps` (tacheId, jour), `LienTacheObjectif` (tacheId, objectifId), `ExceptionCapacite` et `BilanSoir` (date), événements Google, `AlerteCreneau`, signalements de réparation (RG-048).
+- Exceptions à clé naturelle ou déterministe (DS-08) : `SaisieTemps` (tacheId, jour), `LienTacheObjectif` (tacheId, objectifId), `ExceptionCapacite` et `BilanSoir` (date), événements Google, `AlerteCreneau`, signalements de réparation (RG-048), `EvenementJournal` (`<UUID v7 de l'opération>:<rang>`, identifiant opaque ; DAT v0.10.2 §6.1).
 - Doublure : `GenerateurIdentifiantsSequentiel`, qui produit des UUID v7 **valides et prévisibles** (`00000000-0000-7000-8000-000000000001`, `…002`…), un compteur par monde de test.
 
 ## 8. Gestion des erreurs et catalogue de messages
@@ -976,7 +976,7 @@ Les seuils de couverture proposés au DAT §3.3 et à l'ADR-009 (90 % pour `doma
 | ANT-20 | Scénarios `@ihm` exécutés par cucumber-js et Playwright (§11.8) | Starck | **Clos** : confirmé (DAT v0.7 §3.3, ADR-009 précisé) |
 | ANT-21 | Motifs de refus rattachés à des codes du catalogue (§8.5, §11.6) | Pepper et Steeve | **Clos** : guide v0.2.4 §6.6.10, glossaire v1.4 §9 |
 | ANT-22 | Alignement des conventions (DAT v0.10.1, ADR-012, CdC v0.11, glossaire v1.4, guide v0.2.8) | Anthony | **Clos** par la présente v0.3 |
-| ANT-25 (nouveau) | Format de l'identifiant d'une entrée du journal métier : `<UUID v7 de l'opération>:<rang>` (`ST-socle-ecriture.md` §5.1), au lieu d'un UUID par entrée (DAT §6.1, « id (UUID) »). Unicité et fusion par union inchangées. Validation de Starck demandée avant E11 ; si elle est refusée, seule la fonction `idEvenement` change, avant toute publication du schéma 1. | Starck | Non bloquant pour E10 |
+| ANT-25 | Format de l'identifiant d'une entrée du journal métier : `<UUID v7 de l'opération>:<rang>`, rang décimal sans zéros de tête, identifiant opaque (`ST-socle-ecriture.md` §6.7) | Starck | **Validé, DAT v0.10.2** (§6.1, DS-08) |
 | — | Protection des branches `main` et `lot/*` sur GitHub (§13.1, DEC-029) | Commanditaire, sur demande de Jarvis | À la fusion du rang 0 |
 | R1, R2, R11 | Test technique préalable | Jarvis, commanditaire | Bloque l'E9 d'US-022, d'US-017, d'US-018 et d'US-031 ; les éléments qui en dépendent sont marqués « Sous réserve R1 » (ou R2, R11) |
 
