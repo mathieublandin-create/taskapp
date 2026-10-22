@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { creerFournisseur } from '../auth';
-import { descriptionAppareil, typeAppareil } from '../appareil';
+import { contexteExecution, descriptionAppareil, typeAppareil } from '../appareil';
 import { ErreurConfiguration, lireConfig } from '../config';
 import { Diagnostic, signatureNative } from '../diagnostic';
 import { ClientDrive } from '../drive/client-drive';
@@ -30,6 +30,7 @@ try {
     journal,
     config,
     appareil: typeAppareil(),
+    contexteExecution,
     marqueur: new MarqueurIndexedDb(),
     navigation: {
       redirectUri: `${window.location.origin}${config.basePath}`,

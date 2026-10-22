@@ -17,7 +17,7 @@ import {
 } from './drive/client-drive';
 import { empreinteSha256 } from './drive/empreinte';
 import { genererEtatPoc } from './drive/etat-poc';
-import type { Journal, Mesure } from './journal/journal';
+import type { DonneesEntree, Journal, Mesure } from './journal/journal';
 
 const MIME_DOSSIER = 'application/vnd.google-apps.folder';
 const NOM_SOUS_DOSSIER = 'appareils';
@@ -37,6 +37,8 @@ export interface Dependances {
   navigation?: Navigation;
   marqueur?: StockageMarqueur;
   maintenant?: () => number;
+  /** Mode d'affichage, plateforme web et état réseau, ajoutés aux mesures Redirection et R15 (§13.5). */
+  contexteExecution?: () => string;
   auth: FournisseurJeton;
   drive: ClientDrive;
   journal: Journal;
@@ -153,14 +155,14 @@ export class Diagnostic {
   /** R15, étape 3.4.4. */
   async persistance(): Promise<void> {
     const dejaPersistant = await navigator.storage.persisted();
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'R15',
       etape: '3.4.4',
       operation: 'navigator.storage.persisted()',
       resultat: dejaPersistant ? 'Persistant' : 'Non persistant',
     });
     const accorde = dejaPersistant || (await navigator.storage.persist());
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'R15',
       etape: '3.4.4',
       operation: 'navigator.storage.persist()',
@@ -174,7 +176,7 @@ export class Diagnostic {
     const nav = this.d.navigation;
     if (!nav) return;
     const contexte = demarrerContexte(this.stockage, crypto.randomUUID(), this.maintenant());
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'Redirection',
       operation: 'Départ vers Google',
       resultat: 'Redirection lancée',
@@ -203,7 +205,7 @@ export class Diagnostic {
     const duree = contexte ? `${this.maintenant() - contexte.debutMs} ms` : 'inconnue';
     const numero = contexte ? `n° ${contexte.numero}` : 'n° inconnu';
     if (contexte === null || contexte.state !== retour.state) {
-      await this.d.journal.enregistrer({
+      await this.enregistrerAvecContexte({
         mesure: 'Redirection',
         operation: 'Retour de Google',
         resultat: 'Retour rejeté',
@@ -213,7 +215,7 @@ export class Diagnostic {
       return;
     }
     if (retour.type === 'erreur') {
-      await this.d.journal.enregistrer({
+      await this.enregistrerAvecContexte({
         mesure: 'Redirection',
         operation: 'Retour de Google',
         resultat: 'Erreur',
@@ -226,7 +228,7 @@ export class Diagnostic {
     const echeance =
       retour.dureeSecondes === null ? null : this.maintenant() + retour.dureeSecondes * 1000;
     this.echeance = echeance;
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'Redirection',
       operation: 'Retour de Google',
       resultat: 'JetonObtenu',
@@ -239,6 +241,12 @@ export class Diagnostic {
     reinitialiserCompteur(this.stockage);
   }
 
+  private enregistrerAvecContexte(donnees: DonneesEntree): Promise<unknown> {
+    const contexte = this.d.contexteExecution?.();
+    const detail = [donnees.detail, contexte].filter(Boolean).join(' ; ');
+    return this.d.journal.enregistrer({ ...donnees, detail });
+  }
+
   private maintenant(): number {
     return (this.d.maintenant ?? Date.now)();
   }
@@ -247,7 +255,7 @@ export class Diagnostic {
   async poserMarqueur(): Promise<void> {
     if (!this.d.marqueur) return;
     const m = await this.d.marqueur.poser(new Date(this.maintenant()));
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'R15',
       operation: 'Marqueur IndexedDB posé',
       resultat: 'OK',
@@ -259,7 +267,7 @@ export class Diagnostic {
   async lireMarqueur(): Promise<void> {
     if (!this.d.marqueur) return;
     const m = await this.d.marqueur.lire();
-    await this.d.journal.enregistrer({
+    await this.enregistrerAvecContexte({
       mesure: 'R15',
       operation: 'Marqueur IndexedDB relu',
       resultat: m ? 'Marqueur présent' : 'Marqueur absent',

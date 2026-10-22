@@ -18,8 +18,9 @@ const COLONNES: readonly (keyof EntreeJournal)[] = [
   'detail',
 ];
 
-export function exporterJson(entrees: readonly EntreeJournal[]): string {
-  return JSON.stringify(entrees, null, 2);
+/** Sans contexte : tableau d'entrées. Avec contexte : objet `{ contexte, entrees }` (en-tête). */
+export function exporterJson(entrees: readonly EntreeJournal[], contexte?: string): string {
+  return JSON.stringify(contexte === undefined ? entrees : { contexte, entrees }, null, 2);
 }
 
 function celluleCsv(valeur: unknown): string {
@@ -27,9 +28,11 @@ function celluleCsv(valeur: unknown): string {
   return /[",\n\r;]/.test(texte) ? `"${texte.replaceAll('"', '""')}"` : texte;
 }
 
-export function exporterCsv(entrees: readonly EntreeJournal[]): string {
+/** Avec contexte : première ligne `# contexte : …` (mode d'affichage, plateforme). */
+export function exporterCsv(entrees: readonly EntreeJournal[], contexte?: string): string {
   const lignes = entrees.map((e) => COLONNES.map((c) => celluleCsv(e[c])).join(','));
-  return [COLONNES.join(','), ...lignes].join('\n');
+  const entete = contexte === undefined ? [] : [`# contexte : ${contexte.replaceAll('\n', ' ')}`];
+  return [...entete, COLONNES.join(','), ...lignes].join('\n');
 }
 
 /** Télécharge (PC) ou partage (Android) le contenu exporté. Aucun réseau. */

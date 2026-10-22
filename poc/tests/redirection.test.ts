@@ -8,6 +8,7 @@ import {
   demarrerContexte,
 } from '../src/auth/redirection';
 import { FournisseurJetonWeb } from '../src/auth/auth-web';
+import { modeAffichage, plateformeWeb } from '../src/appareil';
 import { lireConfig } from '../src/config';
 import { Diagnostic, type Navigation } from '../src/diagnostic';
 import { ClientDrive } from '../src/drive/client-drive';
@@ -177,5 +178,84 @@ describe('marqueur IndexedDB', () => {
     await m.diagnostic.lireMarqueur();
     const r = (await m.journal.lire()).map((e) => e.resultat);
     expect(r).toContain('Marqueur présent');
+  });
+});
+
+describe('durabilité stricte du marqueur', () => {
+  it('passe durability: strict à la transaction d’écriture et résout à complete', async () => {
+    const evenements: string[] = [];
+    const original = IDBDatabase.prototype.transaction;
+    IDBDatabase.prototype.transaction = function (
+      this: IDBDatabase,
+      ...args: Parameters<IDBDatabase['transaction']>
+    ) {
+      const t = original.apply(this, args);
+      if (args[1] === 'readwrite') {
+        evenements.push(`options:${JSON.stringify(args[2])}`);
+        t.addEventListener('complete', () => evenements.push('complete'));
+      }
+      return t;
+    } as IDBDatabase['transaction'];
+    try {
+      const marqueur = new MarqueurIndexedDb('test-marqueur-strict');
+      await marqueur.poser(new Date());
+      evenements.push('poser résolu');
+    } finally {
+      IDBDatabase.prototype.transaction = original;
+    }
+    expect(evenements).toEqual(['options:{"durability":"strict"}', 'complete', 'poser résolu']);
+  });
+});
+
+describe('contexte d’exécution (mode d’affichage, plateforme)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it.each([
+    ['Mozilla/5.0 (Linux; Android 15; Pixel 9) Chrome/130 Mobile', 0, 'web-android'],
+    ['Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari', 5, 'web-ios'],
+    ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari', 5, 'web-ios'],
+    ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome', 0, 'web-pc'],
+    ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome', 0, 'web-pc'],
+  ])('%s -> %s', (agent, tactile, attendu) => {
+    expect(plateformeWeb(agent, tactile)).toBe(attendu);
+  });
+
+  it('modeAffichage distingue standalone et navigateur', () => {
+    expect(modeAffichage(() => ({ matches: true }))).toBe('standalone');
+    expect(modeAffichage(() => ({ matches: false }))).toBe('navigateur');
+  });
+
+  it('les entrées Redirection et R15 portent le contexte', async () => {
+    const journal = new Journal(new StockageMemoire(), 'pc');
+    const auth = new FournisseurJetonWeb('client-test', fetch, async () => undefined);
+    const diagnostic = new Diagnostic({
+      auth,
+      drive: new ClientDrive(auth, config),
+      journal,
+      config,
+      appareil: 'pc',
+      stockage: localStorage,
+      marqueur: new MarqueurIndexedDb('test-marqueur-ctx'),
+      navigation: {
+        redirectUri: 'https://x.test/',
+        fragment: () => '',
+        effacerFragment: () => undefined,
+        aller: () => undefined,
+      },
+      contexteExecution: () => 'mode d’affichage : standalone ; plateforme : web-android',
+    });
+    await diagnostic.jetonParRedirection();
+    await diagnostic.poserMarqueur();
+    await diagnostic.lireMarqueur();
+    const entrees = await journal.lire();
+    expect(entrees).toHaveLength(3);
+    for (const e of entrees) expect(e.detail).toContain('standalone ; plateforme : web-android');
+  });
+
+  it('les exports portent le contexte en en-tête', () => {
+    const contexte = 'mode d’affichage : standalone ; plateforme : web-android';
+    expect(JSON.parse(exporterJson([], contexte))).toEqual({ contexte, entrees: [] });
+    expect(exporterCsv([], contexte).split('\n')[0]).toBe(`# contexte : ${contexte}`);
+    expect(JSON.parse(exporterJson([]))).toEqual([]);
   });
 });

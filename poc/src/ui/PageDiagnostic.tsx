@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { FournisseurJeton } from '../auth/ports';
 import type { ConfigPoc } from '../config';
 import type { Diagnostic } from '../diagnostic';
+import { contexteExecution } from '../appareil';
 import { copier, exporterCsv, exporterJson, livrerExport } from '../journal/export';
 import { MESURES, type EntreeJournal, type Journal } from '../journal/journal';
 
@@ -98,6 +99,7 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
 
   const visibles = entrees.filter((e) => filtre === 'tous' || e.mesure === filtre);
   const identite = auth.identiteEnCache();
+  const contexte = contexteExecution();
 
   return (
     <IonApp>
@@ -105,7 +107,7 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
         <h1>Diagnostic POC</h1>
         <p>
           Origine : {config.origine} | Dossier : {config.nomDossier} | Identité en cache :{' '}
-          {identite?.email ?? 'aucune'}
+          {identite?.email ?? 'aucune'} | {contexte}
         </p>
         {groupes(diagnostic).map((g) => (
           <section key={g.titre}>
@@ -149,17 +151,23 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
           </IonSelect>
           <IonButton
             onClick={() =>
-              void livrerExport('journal-poc.json', exporterJson(entrees), 'application/json')
+              void livrerExport(
+                'journal-poc.json',
+                exporterJson(entrees, contexte),
+                'application/json',
+              )
             }
           >
             Exporter JSON
           </IonButton>
           <IonButton
-            onClick={() => void livrerExport('journal-poc.csv', exporterCsv(entrees), 'text/csv')}
+            onClick={() =>
+              void livrerExport('journal-poc.csv', exporterCsv(entrees, contexte), 'text/csv')
+            }
           >
             Exporter CSV
           </IonButton>
-          <IonButton onClick={() => void copier(exporterJson(entrees))}>Copier</IonButton>
+          <IonButton onClick={() => void copier(exporterJson(entrees, contexte))}>Copier</IonButton>
           <IonButton
             color="danger"
             onClick={() => {
