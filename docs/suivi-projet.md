@@ -41,6 +41,7 @@
 ## Journal des échanges (règle anti-boucle : 2 itérations maximum)
 | Sujet | US | Entre | Itération | État | Remarques |
 |---|---|---|---|---|---|
+| E9 LOT-001 (US métier) : Q-US-001-6 (ordre des listes), Q-US-025-3 (reprise d'une sous-tâche abandonnée sous une tâche terminée), ANT-25 (identifiant du journal) | US-001, 023, 002, 024, 025 ; socle | Anthony → Steeve, Pepper, Starck | 1/2 | En cours (2026-10-22) | Conventions v0.3, `ST-socle-ecriture.md` et ST des six US métier livrées ; seuls 5 tests unitaires attendent les réponses ; ST-US-022, 017, 018, 031 attendent le test technique R1/R2/R11 |
 | E8 explicitation LOT-001 : 40 Q-US (11 bloquantes) | Les 10 US Non explicites | Anthony → Pepper, Starck, Steeve | 1/2 | **Clos (2026-10-21) : 10 US Explicites**, 40/40 levées, sans arbitrage | `ceremonies/explicitation-LOT-001.md` ; Q-US-017-3 (règle nouvelle) et peut-être Q-US-017-4, 017-6, 001-1, 025-2 à soumettre au commanditaire |
 | Refinement LOT-001 (RF-LOT-001-*) | US-022, 017, 018, 031 Non Ready ; 6 US Ready après nettoyage | Tous | Tour 2/2 | **Clos : lot Ready** (2026-10-21), sans arbitrage | `ceremonies/refinement-LOT-001.md` ; questions Q-ERG-16, 17, 18 et Q-LOT-1 au commanditaire |
 
