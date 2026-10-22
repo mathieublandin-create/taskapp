@@ -62,6 +62,10 @@ export class FournisseurJetonWeb implements FournisseurJeton {
     return this.identite;
   }
 
+  adopterJeton(jeton: string): void {
+    this.jeton = jeton;
+  }
+
   async deconnecter(): Promise<void> {
     this.jeton = null;
   }

@@ -33,6 +33,8 @@ export interface FournisseurJeton {
   valeurJeton(): Promise<string | null>;
   identiteEnCache(): Identite | null;
   deconnecter(): Promise<void>;
+  /** Web uniquement : adopte un jeton obtenu par redirection, pour les appels Drive. */
+  adopterJeton?(jeton: string): void;
 }
 
 export function libelleEtat(etat: EtatJeton): string {

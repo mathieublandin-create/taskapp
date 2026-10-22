@@ -1,6 +1,6 @@
-export type Mesure = 'R1' | 'R2' | 'R3' | 'R11' | 'R12' | 'R15' | 'R16-T' | '3.5' | 'Général';
+export type Mesure = 'R1' | 'R2' | 'R3' | 'R11' | 'R12' | 'R15' | 'R16-T' | '3.5' | 'Redirection' | 'Général';
 
-export const MESURES: readonly Mesure[] = ['R11', 'R1', 'R2', 'R3', 'R12', 'R15', 'R16-T', '3.5'];
+export const MESURES: readonly Mesure[] = ['R11', 'R1', 'R2', 'R3', 'R12', 'R15', 'R16-T', '3.5', 'Redirection'];
 
 export interface EntreeJournal {
   id: string;
