@@ -1,8 +1,9 @@
 # language: fr
 #
 # Tests métiers — US-025 — Abandonner une tâche
-# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.11, US-025
+# Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.12, US-025
 # E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
+# E9 (Pepper, 2026-10-22) : DEC-032 (Q-US-025-3 a), CA-13 : scénarios S12c à S12f ; confirmation CNF-REPRENDRE-SOUS-TACHE (guide v0.2.11, §6.6.7) ; glossaire d'étapes v1.6.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -182,6 +183,89 @@ Fonctionnalité: Abandonner une tâche
     Alors l'action "rouvrir" n'est pas proposée pour la tâche "Section A"
     Quand l'utilisateur reprend la tâche "Chapitre 1"
     Alors l'action "rouvrir" est proposée pour la tâche "Section A"
+
+  # DEC-032 (Q-US-025-3 a) : la reprise d'une sous-tâche abandonnée dont la tâche parente est terminée est proposée,
+  # après la confirmation CNF-REPRENDRE-SOUS-TACHE (Steeve, guide d'ergonomie v0.2.11, §6.6.7 ; ECR-007 D3),
+  # qui annonce la réouverture de la tâche parente. Construction du contexte (glossaire §1, Q-US-024-1 b) :
+  # "Section A" est abandonnée seule, "Section B" terminée, puis "Chapitre 1" terminée (permis : US-024 CA-8).
+  @US-025 @RG-027 @RG-023 @RG-025 @LOT-001
+  Scénario: S12c — Reprendre une sous-tâche abandonnée dont la tâche parente est terminée rouvre aussi la tâche parente, après confirmation
+    Étant donné un objectif "Nouvelle identité visuelle" sans délai
+    Et les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs                  | tâche parente |
+      | Chapitre 1 | terminée   | 2026-11-30 |            | Nouvelle identité visuelle |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |                            | Chapitre 1    |
+      | Section B  | terminée   | 2026-11-25 | 1 h        |                            | Chapitre 1    |
+    Et l'état de l'objectif "Nouvelle identité visuelle" est "atteint"
+    Alors l'action "reprendre" est proposée pour la tâche "Section A"
+    Quand l'utilisateur reprend la tâche "Section A"
+    Alors une confirmation "CNF-REPRENDRE-SOUS-TACHE" est demandée, qui annonce la réouverture de la tâche "Chapitre 1"
+    Quand l'utilisateur confirme
+    Alors l'état de la tâche "Section A" est "à faire"
+    Et la tâche "Section A" n'a pas de date d'abandon
+    Et l'état de la tâche "Chapitre 1" est "à faire"
+    Et la tâche "Chapitre 1" n'a pas de date de fin
+    Et l'état de la tâche "Section B" est "terminée"
+    Et l'état de l'objectif "Nouvelle identité visuelle" est "en cours"
+    Et aucun élément ne porte la mention "MEN-INCOHERENCE"
+
+  @US-025 @RG-027 @RG-023 @LOT-001
+  Scénario: S12d — Renoncer à la reprise d'une sous-tâche abandonnée dont la tâche parente est terminée ne change rien
+    Étant donné les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | terminée   | 2026-11-30 |            |           |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | Section B  | terminée   | 2026-11-25 | 1 h        |           | Chapitre 1    |
+    Quand l'utilisateur reprend la tâche "Section A" et renonce
+    Alors la tâche "Section A" est "abandonnée" avec la date d'abandon 2026-10-21
+    Et la tâche "Chapitre 1" est "terminée" avec la date de fin 2026-10-21
+    Et l'état de la tâche "Section B" est "terminée"
+    Et l'historique ne contient aucune entrée "reprise" pour la tâche "Section A"
+    Et l'historique ne contient aucune entrée "réouverture" pour la tâche "Chapitre 1"
+
+  @US-025 @RG-027 @RG-023 @RG-021 @LOT-001
+  Scénario: S12e — Hors ligne, la reprise confirmée d'une sous-tâche sous une tâche parente terminée est conservée puis retrouvée sur l'autre appareil
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | terminée   | 2026-11-30 |            |           |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | Section B  | terminée   | 2026-11-25 | 1 h        |           | Chapitre 1    |
+    Et que le smartphone est sans réseau
+    Quand sur le smartphone, l'utilisateur reprend la tâche "Section A"
+    Alors sur le smartphone, une confirmation "CNF-REPRENDRE-SOUS-TACHE" est demandée, qui annonce la réouverture de la tâche "Chapitre 1"
+    Quand sur le smartphone, l'utilisateur confirme
+    Alors sur le smartphone, l'état de la tâche "Section A" est "à faire"
+    Et sur le smartphone, l'état de la tâche "Chapitre 1" est "à faire"
+    Et sur le smartphone, la tâche "Section A" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la tâche "Chapitre 1" porte la mention "MEN-ATTENTE"
+    Et sur le PC, l'état de la tâche "Section A" est "abandonnée"
+    Et sur le PC, l'état de la tâche "Chapitre 1" est "terminée"
+    Quand le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, l'état de la tâche "Section A" est "à faire"
+    Et sur les deux appareils, l'état de la tâche "Chapitre 1" est "à faire"
+    Et sur les deux appareils, la tâche "Chapitre 1" n'a pas de date de fin
+    Et aucun élément ne porte la mention "MEN-INCOHERENCE"
+    Et sur les deux appareils, la liste des modifications non retenues est vide
+
+  # CA-11 (RG-050), Q-US-001-2 c : la réouverture de la tâche parente, conséquence de la reprise, a sa propre entrée (comme US-003 S22).
+  @US-025 @RG-050 @RG-027 @RG-023 @LOT-001
+  Scénario: S12f — La reprise d'une sous-tâche et la réouverture de sa tâche parente terminée sont conservées dans l'historique
+    Étant donné les tâches suivantes :
+      | intitulé   | état       | délai      | estimation | objectifs | tâche parente |
+      | Chapitre 1 | terminée   | 2026-11-30 |            |           |               |
+      | Section A  | abandonnée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | Section B  | terminée   | 2026-11-25 | 1 h        |           | Chapitre 1    |
+    Et que nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Quand l'utilisateur reprend la tâche "Section A"
+    Et l'utilisateur confirme
+    Alors l'historique de la tâche "Section A" se termine par :
+      | événement | journée    | avant                                 | après   |
+      | reprise   | 2026-10-22 | abandonnée, date d'abandon 2026-10-21 | à faire |
+    Et l'historique de la tâche "Chapitre 1" se termine par :
+      | événement   | journée    | avant                            | après   |
+      | réouverture | 2026-10-22 | terminée, date de fin 2026-10-21 | à faire |
 
   @US-025 @RG-027 @RG-023 @LOT-001
   Scénario: S13 — Abandonner une sous-tâche seule recalcule l'estimation de la tâche parente et peut la rendre terminable
