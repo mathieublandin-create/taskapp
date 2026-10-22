@@ -1,12 +1,12 @@
 # Conventions techniques
 
-> **Version 0.2 — 2026-10-21 — Anthony (responsable technique).** Alignement sur le DAT v0.6 et les ADR-001 à ADR-011 (statut « Proposé », stables pour E9 selon l'en-tête du DAT), à l'issue du tour 1 du refinement de LOT-001 (E7).
+> **Version 0.3 — 2026-10-22 — Anthony (responsable technique).** E9 de LOT-001 (ANT-22) : alignement sur le DAT v0.10.1 et les ADR-001 à ADR-012 (statut « Proposé », stables pour E9 selon l'en-tête du DAT), sur le cahier des charges v0.11, le glossaire d'étapes v1.4 et le guide d'ergonomie v0.2.8 ; distribution Android par APK (DEC-021, ADR-012, DEC-027, DEC-028) ; protection de `main` (DEC-029) ; conception en parallèle du test technique (DEC-031).
 >
-> **Statut : brouillon applicable.** Les règles de ce document s'appliquent dès maintenant à LOT-001. La version 1.0 sera publiée à la revue de lancement de LOT-001 (E11), une fois levés les points encore ouverts du §17.2. Les marqueurs « En attente du DAT » de la v0.1 sont retirés : la stack est celle du DAT §3.2 et des décisions DS-01 à DS-20 (DAT §11).
+> **Statut : brouillon applicable.** Les règles de ce document s'appliquent dès maintenant à LOT-001. La version 1.0 sera publiée à la revue de lancement de LOT-001 (E11), une fois connu le résultat du test technique R1, R2 et R11 (§17.2). Les règles qui dépendent de ce résultat portent la mention **« Sous réserve R1 »** (ou R2, R11), avec l'hypothèse retenue, tirée du DAT.
 >
-> **Entrées** : `docs/workflow.md` ; cahier des charges v0.8 (RG-001 à RG-058) ; DAT v0.6 et ADR-001 à ADR-011 ; guide d'ergonomie v0.2.3, dont le catalogue des libellés et des codes d'état (§6.6) ; glossaire d'étapes v1.0 (`tests/features/GLOSSAIRE-ETAPES.md`) ; décisions DEC-010, DEC-012, DEC-015 à DEC-018 (`docs/suivi-projet.md`) ; compte rendu du tour 1 du refinement (`docs/ceremonies/refinement-LOT-001.md`) ; fichiers `.feature` de LOT-001 (231 scénarios).
+> **Entrées** : `docs/workflow.md` ; cahier des charges v0.11 (RG-001 à RG-058) ; DAT v0.10.1 et ADR-001 à ADR-012 ; guide d'ergonomie v0.2.8, dont le catalogue des libellés et des codes d'état (§6.6) ; glossaire d'étapes v1.4 (`tests/features/GLOSSAIRE-ETAPES.md`) ; décisions DEC-010, DEC-012, DEC-015 à DEC-031 (`docs/suivi-projet.md`) ; contrôle d'explicitation de LOT-001 et ses hypothèses de conception H-1 à H-7 (`docs/ceremonies/explicitation-LOT-001.md`) ; fichiers `.feature` de LOT-001 (**270 scénarios**).
 >
-> **Éléments demandés pendant le tour 1 et désormais parus** : couche de modèles de vue (DAT v0.6 §2.4, ANT-8) ; catalogue des codes d'état et des messages (guide v0.2.3 §6.6, ANT-7) ; glossaire d'étapes (Pepper, ANT-9, ANT-10, PEP-7) ; en-tête `Date` simulé et `appareilId` fixes du banc (DAT v0.6 §3.3, ANT-4, ANT-11) ; statut du DAT avant E9 (ANT-12). Q-ERG-16 à 18 sont **tranchées** (DEC-025, DEC-026, 2026-10-21). **Restent attendues** : les points du §17.2.
+> **Documents de conception de LOT-001** : `ST-socle-ecriture.md` (modèle d'écriture synchronisable, commun à US-001 et à l'incrément 1 d'US-017) et les `ST-US-xxx.md`. L'ordre de réalisation est dans `docs/lots/LOT-001.md`, section « Ordre de réalisation ».
 >
 > Toute contradiction entre ce document et un livrable d'un autre agent est remontée à Jarvis. Elle n'est jamais tranchée unilatéralement. Une règle du DAT ou d'un ADR prévaut sur ce document.
 
@@ -16,6 +16,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Création : principes, organisation conceptuelle, règles de codage, erreurs, sécurité, stratégie de tests, Git, outillage par catégorie, DoD technique, points de testabilité, décisions attendues de Starck. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001, section 3 de l'avis de refinement (points 1 à 18), sur la base du DAT v0.6, du guide d'ergonomie v0.2.3 et du glossaire d'étapes v1.0. Marqueurs « En attente du DAT » retirés. Stack, versions figées et idiomes TypeScript (§3, §5.3, §6.2). Arborescence physique `src/<contexte>/<couche>/` (§4). Ports et doublures du DAT et de l'ADR-009 (§2.3, §11.10). Outillage complet et CI GitHub Actions (§13, §14 ; PO-7 : dépôt `mathieublandin-create/taskapp`). Seuils de couverture, dont 95 % pour la synchronisation (§12). Dates et temps selon DEC-012 et ADR-011 : `FUSEAU_REFERENCE`, date-fns et @date-fns/tz, fuseaux de CI, PT-16 (§7, §11.9). UUID v7 (§7.5). Sécurité DS-06 et DS-07 (§9). Nouvelle section stockage et synchronisation, dont RG-058 (§10). Banc de synchronisation (§11.11). Types de paramètres, organisation des steps, tags `@ihm`, `@lent`, `@google-reel`, `@recette` (§11.6 à §11.8). Couche de modèles de vue (§2.2, §4.3, §11.12). Catalogue de messages (§8.5). Glossaire code aligné sur le CdC v0.8 et le DAT §6.1 (§5.2) ; `Duree.saisie` et `Duree.calculee`, `EcartTemps` (§7.1). Points de testabilité mis à jour (§16). Dette DT-001 (données locales non chiffrées). |
+| 0.3 | 2026-10-22 | Anthony | E9 de LOT-001, ANT-22. Entrées : DAT v0.10.1, ADR-012, CdC v0.11, glossaire v1.4, guide v0.2.8, 270 scénarios. Port `Horloge` : horloge monotone (DS-11 v0.9, §7.3). Écriture synchronisable : `ServiceEtatLocal`, contexte causal, index des écritures en attente, décompte par élément, journal métier typé (§10.1, §5.2 ; détail dans `ST-socle-ecriture.md`). Commandes avec confirmation (§8.6). Catalogue v0.2.8 : `data-a-lire`, `data-variante`, motifs `ERR-001` à `ERR-006` (§8.5). Distribution Android par APK : nom de paquet, `.gitignore` posé avant toute clé, secrets de signature (DEC-027), `versionCode`, flux de publication, vérification des développeurs (DEC-028) (§3.1, §9.1, §13.3, §14). Protection de `main` dès la CI (DEC-029, §13.1). Glossaire d'étapes v1.4 : conventions d'écriture, hypothèses H-5 et H-7, heure ambiguë (§11.6, §11.7). Rattachement des scénarios aux rangs de réalisation et sélection des scénarios exécutables (§11.13). Points ouverts ANT-17 à ANT-21 clos (§17.2). |
 
 ## Sommaire
 
@@ -87,12 +88,12 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 
 | Port | Contexte (dossier) | Responsabilité | Doublure de test (§11.10) | Référence |
 |---|---|---|---|---|
-| `DepotLocal` | `synchronisation/application/ports` | Lecture et écriture **transactionnelles** de l'état local (champs horodatés HLC, journal métier, pierres tombales), espace cloisonné par compte, abonnement aux changements | Adaptateur réel `DepotLocalDexie` sur `fake-indexeddb` (pas de doublure en mémoire, §11.10) | DS-07, ADR-010 |
+| `DepotLocal` | `synchronisation/application/ports` | Lecture et écriture **transactionnelles** de l'état local : écritures par information (valeur, HLC, contexte causal), pierres tombales, journal métier, index des écritures en attente, métadonnées locales ; espace cloisonné par compte ; abonnement aux changements. Contrat : `ST-socle-ecriture.md` §4.3 | Adaptateur réel `DepotLocalDexie` sur `fake-indexeddb` (pas de doublure en mémoire, §11.10) | DS-07, DS-11, ADR-010 |
 | `TransportSynchro` | `synchronisation/application/ports` | Échanges avec le Drive : manifeste, liste des changements, lecture des fichiers des autres appareils, dépôt du fichier de l'appareil | `FauxDrive` | DS-10, DS-11, ADR-003 |
 | `PasserelleAgenda` | Contexte agenda, fixé dans la ST du premier lot qui utilise l'agenda | Événements de l'application (séries de rappels, créneaux), lecture incrémentale, intervalles occupés | `FauxAgenda` | DS-18, ADR-006 |
 | `FournisseurAuth` | `compte/application/ports` | Connexion et déconnexion Google, identité (`sub`), jeton d'accès valide, portées accordées, détection de la révocation et de la session expirée | `FauxFournisseurAuth` | DS-04, DS-05, ADR-004 |
 | `CoffreJetons` | `compte/application/ports` | Conservation **en mémoire** du jeton d'accès ; aucun jeton de rafraîchissement (DS-06) | `CoffreJetonsMemoire` (l'adaptateur réel est déjà en mémoire) | DS-06 |
-| `Horloge` | `commun/application/ports` | Instant courant de l'appareil ; fuseau de référence ; fuseau de l'appareil pour la seule mention RG-054 (§7.3) | `HorlogeSimulee` | ADR-011 |
+| `Horloge` | `commun/application/ports` | Instant courant de l'appareil ; horloge monotone (DS-11 v0.9, DAT §6.4) ; fuseau de référence ; fuseau de l'appareil pour la seule mention RG-054 (§7.3) | `HorlogeSimulee` | ADR-011 |
 | `Notifieur` | `commun/application/ports` | Notifications locales programmées (smartphone, lots ultérieurs) | `NotifieurMemoire` | DAT §5 |
 | `Planificateur` | `commun/application/ports` | Déclenchements différés et périodiques : temporisation de dépôt de 5 s, synchronisation toutes les 2 min, évaluation du bandeau RG-057 chaque minute, attentes entre tentatives | `PlanificateurSimule` | DAT §4.3, §4.1.5 bis |
 | `GenerateurIdentifiants` | `commun/application/ports` | Identifiants UUID v7 (§7.5) | `GenerateurIdentifiantsSequentiel` | DS-08 |
@@ -100,7 +101,8 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 | `JournalTechnique` | `commun/application/ports` | Journal technique local (§9.4), distinct du **journal métier** `EvenementJournal` | `JournalTechniqueMemoire` | DAT §7.3 |
 | `EtatReseau` | `commun/application/ports` | État connecté ou coupé, et événement de retour du réseau | `ReseauSimule` | DAT §4.3 |
 
-- Les ports `CoffreJetons` (défini par Anthony, reconnu par le DAT §2.4), `GenerateurIdentifiants`, `SourceAleatoire`, `JournalTechnique` et `EtatReseau` complètent la liste du DAT. Ils sont transverses et sans effet sur l'architecture ; leur liste est soumise à Starck pour information (§17.2).
+- Les ports `CoffreJetons` (défini par Anthony, reconnu par le DAT §2.4), `GenerateurIdentifiants`, `SourceAleatoire`, `JournalTechnique` et `EtatReseau` complètent la liste du DAT. Ils sont transverses et sans effet sur l'architecture ; leur liste et leur placement sont confirmés par Starck (DAT v0.7, ANT-18).
+- Les autres contextes n'utilisent **jamais** `DepotLocal` directement (DAT §2.4, ANT-18) : ils lisent et écrivent par le **service applicatif `ServiceEtatLocal`** du contexte `synchronisation`, exposé par son `index.ts` (§10.1, `ST-socle-ecriture.md` §4.2).
 - Un **port interne à un contexte** (par exemple un verrou exclusif entre onglets pour `navigator.locks`, DAT §4.1.6) peut être défini dans une ST-US. Il est signalé à Starck dans la ST.
 - Chaque port a **au moins deux implémentations**, l'adaptateur réel et une doublure, soumises à la même suite de contrat (§11.10), sauf `DepotLocal`, testé directement sur ses adaptateurs réels.
 - Les événements créés par l'application sont marqués par `extendedProperties.private` et portent un identifiant déterministe (DS-18). Les appels Google sont idempotents (DAT §4.4.5).
@@ -123,7 +125,8 @@ Les noms et le découpage des ports sont ceux du DAT. Chaque port est une `inter
 | Langage | **TypeScript 5.x** | Dernière version 5.x stable au démarrage d'E12, figée **exactement** ; un passage en 6.x ou plus passe par Starck |
 | Interface | React, Ionic React | Version exacte |
 | Construction et PWA | Vite, vite-plugin-pwa (Workbox) | Version exacte |
-| Coque mobile | Capacitor ; `@capacitor-community/sqlite` ; `@capacitor/local-notifications` (lots ultérieurs) | Version exacte |
+| Coque mobile | Capacitor ; `@capacitor-community/sqlite` ; `@capacitor/network` ; `@capacitor/local-notifications` (lots ultérieurs) | Version exacte |
+| Construction Android | JDK 21 (Temurin), Gradle par l'enveloppe `android/gradlew` versionnée, Android SDK Build-Tools (dont `apksigner` et `zipalign`) | JDK : version majeure figée dans la CI (`actions/setup-java`) ; Gradle : fixé par `gradle-wrapper.properties` ; `compileSdk`, `targetSdk` et version des Build-Tools figés dans `android/variables.gradle` au démarrage d'E12 (ST-US-018) |
 | Base locale web | Dexie | Version exacte |
 | État de l'interface | Zustand | Version exacte |
 | Dates et fuseaux | **date-fns 4.x** et **@date-fns/tz** | Version exacte ; la version 4 est requise pour l'option `in` (§7.2) |
@@ -154,10 +157,12 @@ Le code est découpé d'abord **par contexte métier**, puis **par couche** (DAT
 Un seul paquet pnpm, sans monodépôt.
 ```
 /
+  .gitignore                  premier fichier versionné du socle, avant toute clé de signature (§9.1)
   .github/                    workflows GitHub Actions, dependabot.yml, modèle de pull request
-  android/                    généré par Capacitor (ios/ si l'arbitrage A1 retient l'iPhone)
+  android/                    projet Android généré par Capacitor puis versionné (hors artefacts et clés, §9.1) ; pas d'iPhone en v1 (DEC-001)
   public/                     ressources statiques (dont fun-facts.fr.json, lot DEM-002)
-  scripts/                    scripts d'outillage TypeScript (contrôle du catalogue, des tags…)
+  scripts/                    scripts d'outillage (contrôle du catalogue, des tags, des rangs ; sélection des scénarios exécutables, §11.13)
+  cucumber.mjs                profils cucumber-js (§11.8, §11.13)
   src/
     commun/
       domaine/                type Resultat, objets-valeurs, temps/ (seul usage de date-fns, §7.2)
@@ -182,7 +187,7 @@ Un seul paquet pnpm, sans monodépôt.
     features/                 fichiers .feature (Pepper)
     steps/                    step definitions au niveau application (§11.7)
     steps-ihm/                step definitions des scénarios @ihm (Playwright)
-    support/                  monde, hooks, types de paramètres, banc/ (§11.11), fabriques/
+    support/                  monde, hooks, types de paramètres, banc/ (§11.11), fabriques/, rendu-historique.ts, rangs-scenarios.json (§11.13)
     doublures/                doublures des ports (§11.10)
     contrats/                 suites de contrat des ports
     unitaires/                tests unitaires, en miroir de src/ (non colocalisés, DS-15)
@@ -211,40 +216,51 @@ Règles :
 - Noms imposés par un framework : conservés (`useEffect`, `render`).
 - Messages destinés à l'utilisateur : issus du catalogue (§8.5), jamais écrits en dur.
 
-### 5.2 Glossaire code (CdC v0.8 §6, DAT §6.1)
+### 5.2 Glossaire code (CdC v0.11 §6, DAT v0.10.1 §6.1)
 | Terme métier | Identifiant de code | Remarque |
 |---|---|---|
-| Objectif, sous-objectif | `Objectif` (`parentId?: IdObjectif`) | RG-022 ; un seul niveau |
-| Tâche, sous-tâche, tâche parente | `Tache` (`parentId?: IdTache`) | RG-023 ; un seul niveau ; estimation de la parente dérivée |
-| État d'une tâche | `EtatTache` = `'A_FAIRE' \| 'TERMINEE' \| 'ABANDONNEE'` | RG-026, RG-027 ; registre unique avec `dateFin`, `dateAbandon`, `abandonParCascade` (DAT §4.2) |
+| Objectif, sous-objectif | `Objectif` (`parentId?: IdObjectif`) | RG-022 ; un seul niveau ; `parentId` est le parent **effectif** (un parent supprimé est ignoré, RG-046) |
+| Tâche, sous-tâche, tâche parente | `Tache` (`tacheParenteId?: IdTache`) | RG-023 ; un seul niveau ; estimation de la parente dérivée ; la tâche parente est fixée à la création |
+| Intitulé | `Intitule` (type marqué), `construireIntitule` | Espaces de début et de fin retirés, vide refusé (`ERR-020`), aucune longueur maximale (Q-US-001-3) |
+| État d'une tâche | `EtatTache` = `'A_FAIRE' \| 'TERMINEE' \| 'ABANDONNEE'` ; registre `CycleDeVie` | RG-026, RG-027 ; registre unique : état, `dateFin` et `instantFin`, `dateAbandon` et `instantAbandon`, `evenementAbandon`, `abandonParCascade` (DAT §4.2) |
+| État d'un objectif | `EtatObjectif` = `'EN_COURS' \| 'ATTEINT' \| 'A_DECLINER'` | RG-025 ; dérivé, jamais stocké |
+| Actions proposées | `ActionTache`, `ActionObjectif` | Liste fermée du glossaire d'étapes v1.4 §7 : terminer, rouvrir, abandonner, reprendre, créer une sous-tâche, créer un sous-objectif |
+| Confirmation demandée | `ConfirmationRequise` (union discriminée) | Codes `CNF-…` du catalogue ; commandes avec confirmation (§8.6) |
+| Information (au sens de RG-036) | `CleInformation` = (type d'élément, identifiant, champ) | DAT §4.2 ; granularité de la fusion |
+| Écriture d'une information | `Ecriture<V>` = valeur, `Hlc`, `ContexteCausal` | DAT §4.2.1, §6.1 ; manipulée **uniquement** dans le contexte `synchronisation` |
+| Contexte causal | `ContexteCausal` | DAT §4.2.1 : par appareil, HLC de la plus récente écriture connue de l'auteur |
+| Modification demandée par un cas d'usage | `Modification` | Langage d'écriture du contexte métier vers `ServiceEtatLocal` (`ST-socle-ecriture.md` §4.1) |
+| État lu par les contextes métier | `EtatMetier` | Projection de l'état local, sans HLC ni contexte (`ST-socle-ecriture.md` §4.1) |
+| Index des écritures en attente | `IndexEnAttente`, `EntreeEnAttente` | DAT §4.1.5 bis ; local, non synchronisé ; le marqueur `creationNonDeposee` du DAT est porté par l'entrée de champ `creation` |
 | Délai (échéance) | `delai: DateCalendaire` | RG-002, RG-003, RG-045 |
 | En retard | `estEnRetard(element, jour)` | RG-045 ; fonction dérivée, jamais stockée |
 | Objectif atteint | `estAtteint(objectif, …)` | RG-025 ; dérivé |
 | Estimation initiale | `estimationInitiale: Duree` | RG-028, RG-029 ; construite par `Duree.saisie` (minimum 30 min) |
 | Estimation calculée | `estimationCalculee: Duree` | RG-023, RG-028 ; construite par `Duree.calculee`, peut valoir 0 h, jamais stockée (DAT v0.6 §6.2) |
 | Horloge déréglée | `estHorlogeDereglee(ecart)` | RG-036, US-017 CA-13 ; écart strictement supérieur à 24 h |
-| Code de motif | `MotifRefus` (union de codes) | Glossaire du CdC v0.8 ; codes `CNX-…` d'US-022 et codes du catalogue (§8.5) |
+| Code de motif | `MotifRefus` (union de codes) | Codes `ERR-001` à `ERR-006` (connexion) et `ERR-020` à `ERR-035` (saisie) du catalogue (glossaire d'étapes v1.4 §9) ; les anciens codes `CNX-…` sont abandonnés |
+| Refus métier | `RefusMetier` (union discriminée) | Erreurs typées du domaine `objectifs-taches` ; le code `ERR-…` est attribué par le modèle de vue `messagesDeRefus` |
 | Reste à faire | `resteAFaire` (dérivé), `resteAFaireCorrige?: Duree` | RG-009 |
 | Temps passé | `SaisieTemps` (`tacheId`, `jour: DateCalendaire`, `duree: Duree`) | RG-008 |
 | Lien tâche-objectif | `LienTacheObjectif` | RG-001 ; relation n-n |
 | Suppression | `PierreTombale` | RG-046 ; jamais d'effacement physique en v1 |
 | Journée | `jour: DateCalendaire` | RG-008, RG-053 ; calculée dans `FUSEAU_REFERENCE` |
 | Fuseau de référence | `FUSEAU_REFERENCE` | RG-053, DEC-012 |
-| Historique | `EvenementJournal`, type `TypeEvenementJournal` | RG-050, DS-19 ; journal **métier**, à ne pas confondre avec `JournalTechnique` |
+| Historique | `EvenementJournal`, type `TypeEvenementJournal` = `'CREATION' \| 'MODIFICATION_DELAI' \| 'MODIFICATION_ESTIMATION' \| 'RATTACHEMENT' \| 'DETACHEMENT' \| 'CHANGEMENT_PARENT' \| 'FIN' \| 'REOUVERTURE' \| 'ABANDON' \| 'REPRISE' \| 'SUPPRESSION'` | RG-050, DS-19, DAT §6.1 v0.9 ; valeurs `avant` et `apres` structurées, jamais rendues ; journal **métier**, à ne pas confondre avec `JournalTechnique` |
 | Appareil | `Appareil`, `appareilId: IdAppareil`, `NomAppareil` = `'smartphone' \| 'pc'` (tests) | RG-017 |
 | Compte Google | `IdCompte` (claim `sub`), `EspaceLocal` (espace de stockage par compte) | RG-018, DEC-016 |
 | Déconnexion | `SeDeconnecter` (cas d'usage) | RG-043 |
 | Suppression des données de l'appareil | `SupprimerDonneesAppareil` (cas d'usage) | RG-055, DEC-015 |
 | Horodatage de fusion | `Hlc` | ADR-011 |
-| Valeur écartée | `ValeurEcartee` | RG-036 ; à l'écran : « modification non retenue » |
-| Modifications non retenues | `ModificationNonRetenue`, `marquerCommeLue` | RG-056 |
+| Valeur écartée | `ValeurEcartee` | RG-036, DAT §4.2.1 : écartée si et seulement si l'écriture gagnante a été faite sans connaissance d'elle ; à l'écran : « modification non retenue » |
+| Modifications non retenues | `ModificationNonRetenue`, `marquerCommeLue` | RG-056 ; le point « à lire » (`data-a-lire`) est indépendant de l'état de l'indicateur ; `ALR-008` et `ALR-014` n'y sont pas comptées (H-6) |
 | Incohérence après fusion | `Incoherence` | RG-049 ; dérivée |
 | Fusion | `fusionner(etatA, etatB)` | RG-036, RG-047 à RG-049 |
 | Format des données | `schemaVersion`, constante `SCHEMA_VERSION` | RG-058 |
 | Consultation seule | `ModeSaisie` = `'NORMAL' \| 'CONSULTATION_SEULE'` | RG-058 |
 | Génération des données | `generation` | RG-044 b |
-| Modification en attente | `ModificationEnAttente`, marqueur `deposeJusquA: Hlc` | DS-11 |
-| Plus ancienne modification en attente | `plusAncienneModificationEnAttente?: Instant` | RG-057, DEC-025 ; donnée locale non synchronisée ; les 24 h courent depuis cette date |
+| Modification en attente | `ModificationEnAttente`, marqueur `deposeJusquA: Hlc`, `decompterModificationsEnAttente(index)` | DS-11, DAT §4.1.5 bis v0.10.1 ; décompte = nombre d'**éléments distincts** (objectif, tâche, sous-tâche) qui ont une entrée dans l'index ; un élément créé puis supprimé avant le dépôt de sa création ne compte pas, ni ses descendants supprimés par dérivation (Q-US-018-1, H-4) |
+| Plus ancienne modification en attente | `plusAncienneModificationEnAttente?: Instant` | RG-057, DEC-025 ; minimum de `premiereEcriture` sur tout l'index ; donnée locale non synchronisée ; les 24 h courent depuis cet instant |
 | Bandeau de rappel 24 h | `doitAfficherBandeauRappel24h(…)` | RG-057, DEC-025, DEC-026 ; affiché quand la plus ancienne modification en attente date de plus de 24 h, en ligne ou hors ligne ; fermable ; réapparaît à la prochaine ouverture (lancement de l'application ou rechargement de la PWA, non un simple retour au premier plan) ; calculé dans un modèle de vue ; code `BAN-RAPPEL-24H` (« Modifications en attente depuis plus de 24 h ») |
 | Bandeau d'accès Google perdu | `doitAfficherBandeauAccesGoogle(…)` | RG-057, DEC-025, DEC-026 ; affiché quand l'accès Google est perdu, à la place de `BAN-RAPPEL-24H` ; variante 24 h avec la mention « n modifications ne sont encore que sur cet appareil » si la plus ancienne modification en attente date de plus de 24 h ; non fermable ; calculé dans un modèle de vue ; code `BAN-ACCES-GOOGLE` |
 | Planification, créneau, horaire suggéré | `Planification`, `CreneauAgenda`, `HoraireSuggere` | RG-006, RG-034 ; lots ultérieurs |
@@ -340,6 +356,8 @@ Règles impératives :
 - Un délai ou un écart **technique** (temporisation, période, seuil, dérive d'horloge) est un `EcartTemps`, jamais une `Duree`.
 - Une journée de Paris ne dure pas toujours 24 h (23 h ou 25 h aux changements d'heure) : « le lendemain » se calcule sur la `DateCalendaire`, jamais en ajoutant 24 h à un instant.
 - **Conversion d'une heure murale de Paris en instant** (`instantDeReference(jour, heure)`), règle par défaut dite « compatible » (celle de Temporal et de RFC 5545) : une heure **ambiguë** (de 2 h à 2 h 59 le dernier dimanche d'octobre) prend la **première** occurrence (heure d'été) ; une heure **inexistante** (de 2 h à 2 h 59 le dernier dimanche de mars) est **décalée de la durée du saut** (2 h 30 devient 3 h 30 heure d'été). Une ST-US peut imposer une autre règle si une RG l'exige (PT-16 (3)).
+- **Banc de test** (glossaire d'étapes v1.4 §4, Q-US-001-4) : l'étape « nous sommes le … à HH:MM heure de <fuseau> » applique la même règle pour une heure **ambiguë** (première occurrence), mais **échoue** pour une heure **inexistante** : un scénario ne doit pas l'écrire. La conversion du banc est faite dans `tests/support/temps.ts`, pour tout fuseau admis par le glossaire.
+- **« Maintenant » métier et HLC** : l'instant et le jour d'une action métier (date de fin, d'abandon, création, journée d'une entrée d'historique) sont calculés à partir de `Horloge.maintenant()`, heure de l'appareil **non corrigée**. Seuls l'HLC et l'instant `premiereEcriture` de l'index des écritures en attente utilisent l'heure physique **corrigée** de l'écart mesuré avec Google (DAT §4.1.5 bis, §6.4 ; `ST-socle-ecriture.md` §6.1).
 - Le formatage pour l'affichage (« 1 h 30 », « 31 oct. ») est fait par `commun/presentation/format/`, selon le guide d'ergonomie §8.
 
 ### 7.2 Usage de date-fns et @date-fns/tz
@@ -355,13 +373,14 @@ Règles impératives :
 ```ts
 export interface Horloge {
   maintenant(): Instant;                 // heure de l'appareil, non corrigée (la correction HLC relève de la synchronisation)
+  monotone(): EcartTemps;                // horloge monotone : temps écoulé depuis une origine arbitraire, insensible aux changements d'heure (DS-11 v0.9, DAT §6.4)
   readonly fuseauReference: Fuseau;      // toujours FUSEAU_REFERENCE (DAT §6.4)
   fuseauAppareil(): Fuseau;              // usage exclusif : mention « heure de Paris » (RG-054)
 }
 ```
-- Adaptateur : `HorlogeSysteme`, seul fichier autorisé à lire l'heure et le fuseau système.
-- Doublure : `HorlogeSimulee` (`tests/doublures/`), construite sur le `TempsSimule` du banc (§11.11), seule source de temps des tests (DAT v0.6 §3.3) : `positionner(instant)`, `avancer(ecart: EcartTemps)`, `dereglerDe(ecart: EcartTemps)` (avance ou retard propre à l'appareil), `reglerFuseauAppareil(fuseau)`.
-- `fuseauAppareil()` est un ajout au port, nécessaire pour tester RG-054 : il est soumis à Starck (§17.2).
+- Adaptateur : `HorlogeSysteme`, seul fichier autorisé à lire l'heure, l'horloge monotone (`performance.now()` sur le web) et le fuseau système. Sur Android, l'horloge monotone ancrée sur `SystemClock.elapsedRealtime` et l'identifiant de démarrage sont fournis par l'extension native prévue au DAT §6.4 (ST-US-018).
+- Doublure : `HorlogeSimulee` (`tests/doublures/`), construite sur le `TempsSimule` du banc (§11.11), seule source de temps des tests (DAT v0.6 §3.3) : `positionner(instant)`, `avancer(ecart: EcartTemps)` (fait avancer l'horloge murale et l'horloge monotone), `dereglerDe(ecart: EcartTemps)` (avance ou retard propre à l'appareil, sans effet sur la monotone), `changerHeureMurale(ecart)` (saut de l'horloge murale seule, DAT §6.4 point 3), `redemarrer()` (nouvelle origine de la monotone), `reglerFuseauAppareil(fuseau)`.
+- `fuseauAppareil()` est accepté par Starck (DAT v0.7, ANT-17) ; `monotone()` est demandé par le DAT (DS-11 v0.9). Seul l'incrément 4 d'US-017 et US-018 l'utilisent au lot 1.
 
 ### 7.4 Hasard
 - Tout tirage passe par `SourceAleatoire` (`entierEntre(min, max)`, `octets(n)`). Adaptateur : `SourceAleatoireCrypto` (`crypto.getRandomValues`). Doublure : `SourceAleatoireDeterministe` (graine ou séquence imposée).
@@ -420,16 +439,24 @@ Il n'y a **pas** d'erreur `ConflitDeVersion` sur le Drive : chaque fichier n'a q
 - Interdits : capture silencieuse ; capture globale ailleurs qu'aux frontières ; erreur utilisée pour un flux nominal (« hors ligne » n'est pas une exception) ; message technique, trace de pile ou code HTTP affiché à l'utilisateur.
 
 ### 8.5 Catalogue des codes d'état et des messages
-Source de vérité : **guide d'ergonomie v0.2.3, §6.6** (Steeve, ANT-7), qui fait foi pour les libellés exacts. Les codes de motif de connexion `CNX-…` sont définis par Pepper (US-022, glossaire d'étapes §9).
+Source de vérité : **guide d'ergonomie v0.2.8, §6.6** (Steeve, ANT-7), qui fait foi pour les libellés exacts. Les motifs de connexion sont les codes `ERR-001` à `ERR-006` du catalogue (glossaire d'étapes v1.4 §9) ; les codes `CNX-…` des versions précédentes ne sont plus utilisés.
 
-- **Familles de codes** (guide §6.6.1) : `SYN-` état de l'indicateur, `BAN-` bandeau, `MEN-` mention, `ETA-` état d'un objet, `EVD-` état vide, `TST-` message éphémère, `CNF-` boîte de confirmation, `ERR-` erreur, `ALR-` alerte ou information ; `CNX-` motif de connexion (Pepper). Un code n'est jamais renuméroté ni réutilisé.
-- **Attributs d'observabilité** (proposition de Steeve, **confirmée** par Anthony) : tout élément qui porte un état expose son code dans `data-etat="CODE"` ; un message d'erreur ou d'alerte ajoute `data-message="ERR-xxx"` ou `data-message="ALR-xxx"`. Ces attributs sont posés par les composants à partir du modèle de vue ; ils servent aux tests Playwright et ne sont jamais affichés.
+- **Familles de codes** (guide §6.6.1) : `SYN-` état de l'indicateur, `BAN-` bandeau, `MEN-` mention, `ETA-` état d'un objet, `EVD-` état vide, `TST-` message éphémère, `CNF-` boîte de confirmation, `ERR-` erreur, `ALR-` alerte ou information. Un code n'est jamais renuméroté ni réutilisé.
+- **Attributs d'observabilité** (proposition de Steeve, **confirmée** par Anthony, noms définitifs) : tout élément qui porte un état expose son code dans `data-etat="CODE"` ; un message d'erreur ou d'alerte ajoute `data-message="ERR-xxx"` ou `data-message="ALR-xxx"` ; une variante de code (`ERR-030`, `BAN-ACCES-GOOGLE`, `BAN-RAPPEL-24H`, `ALR-010`) ajoute `data-variante="<variante>"` ; l'indicateur de synchronisation porte en outre `data-a-lire="{n}"`, absent si n = 0 (guide §6.6.2). Ces attributs sont posés par les composants à partir du modèle de vue ; ils servent aux tests Playwright et ne sont jamais affichés.
+- **Ordre de gravité de l'indicateur** (guide §6.6.2) : `SYN-ACTION` > `SYN-SESSION` > `SYN-RETENTATIVE` > `SYN-HORS-LIGNE` > `SYN-EN-COURS` > `SYN-ATTENTE` > `SYN-INFO` > `SYN-OK`, confirmé ; `SYN-INFO` est dérivé de `SYN-OK` et de `data-a-lire`.
 - **Dans le code** : `src/commun/presentation/messages/catalogue.fr.ts` exporte un objet `CATALOGUE` typé `as const satisfies Record<CodeCatalogue, GabaritLibelle>` ; `CodeCatalogue` est l'union des codes. Les variables du guide (`{n}`, `{appareil}`, `{élément}`, `{date}`, `{heure}`, ancienneté) sont interpolées par `libelle(code, variables)`, avec les règles de pluriel (0 et 1 au singulier, `Intl.PluralRules('fr')`) et de typographie (espaces insécables, guillemets « ») du guide §6.6.1. Les formats de date, d'heure et d'ancienneté sont dans `commun/presentation/format/`.
 - **Responsabilités** : le domaine et l'application renvoient des erreurs typées, sans code de catalogue ; la correspondance erreur ou état → code est faite **dans le modèle de vue**, qui fournit code et libellé ; les composants affichent le libellé et posent l'attribut. Un code de motif `CNX-…` est porté par l'erreur de connexion du contexte `compte` (`MotifRefus`), car il fait partie du contrat métier d'US-022.
 - **Priorités d'affichage** : l'ordre de gravité de l'indicateur (`SYN-ACTION` > … > `SYN-OK`) et l'ordre des bandeaux (`BAN-ACCES-GOOGLE` > `BAN-CONSULTATION-SEULE` > `BAN-RAPPEL-24H`) du guide §6.6.2 et §6.6.3 sont implémentés par **une seule** fonction de sélection par élément, dans le modèle de vue, testée cas par cas.
 - **Entrées sous réserve** : les entrées marquées « sous réserve Q-ERG-xx » au guide ne sont implémentées qu'après la réponse du commanditaire ; leurs tests sont écrits en E10 sur la réponse retenue.
 - **Tests** : ils vérifient le **code** ; ils vérifient le libellé seulement lorsque le `.feature` cite le texte, et alors via `libelle()`.
-- **Contrôle de CI** `scripts/verifier-catalogue.ts` : chaque code des tableaux du guide §6.6 existe dans `catalogue.fr.ts` avec le même gabarit de texte, et réciproquement ; chaque code cité dans un `.feature` existe au catalogue ou parmi les codes `CNX-` (§14.1).
+- **Contrôle de CI** `scripts/verifier-catalogue.ts` : chaque code des tableaux du guide §6.6 existe dans `catalogue.fr.ts` avec le même gabarit de texte, et réciproquement ; chaque code cité dans un `.feature` existe au catalogue (§14.1).
+- **Refus** : un modèle de vue `messagesDeRefus(refus)` (contexte `objectifs-taches`) transforme un `RefusMetier` en une liste ordonnée de `{ code, variante?, variables }`. Les codes de saisie cumulables (`ERR-020` à `ERR-023`) suivent l'ordre intitulé, délai, estimation (guide §6.6.8). Un refus sans code (élément introuvable, action non disponible) produit une liste vide : l'interface ne propose jamais l'action correspondante.
+
+### 8.6 Commandes avec confirmation (`CNF-…`)
+Une action destructrice ou qui touche plusieurs éléments est confirmée avant d'être faite (guide §4.12, §6.6.7). Le cas d'usage expose **deux opérations**, sans paramètre booléen (RCD-02) :
+- `evaluer(commande): Promise<Resultat<Evaluation, RefusMetier | ErreurDepotLocal>>`, où `Evaluation = { type: 'SANS_CONFIRMATION' } | { type: 'CONFIRMATION_REQUISE'; confirmation: ConfirmationRequise }`. Elle n'écrit rien. Elle renvoie aussi les refus (`Echec`), dans le même ordre que `executer`.
+- `executer(commande): Promise<Resultat<…, RefusMetier | ErreurDepotLocal>>` : fait l'action, conséquences comprises, en une transaction. Elle ne redemande pas la confirmation : c'est l'interface qui appelle `evaluer`, affiche la boîte `CNF-…`, puis appelle `executer` si l'utilisateur confirme.
+- Dans les *step definitions*, « … et confirme » enchaîne `evaluer` puis `executer` ; « demande … » ou une action qui exige une confirmation appelle `evaluer` et mémorise la commande en attente dans le monde, pour l'appareil concerné ; « l'utilisateur confirme » appelle `executer` sur la commande en attente ; « … et renonce » ou « l'utilisateur renonce » l'oublie, sans écriture (`ST-socle-ecriture.md` §12).
 
 ## 9. Sécurité, jetons OAuth, données personnelles et journalisation
 
