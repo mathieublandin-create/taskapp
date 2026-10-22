@@ -7,10 +7,10 @@
 | Objet | Partie commune « modèle d'écriture synchronisable » : condition 1 de Starck (`explicitation-LOT-001.md`, note de Jarvis). Elle est partagée par US-001, US-023, US-002, US-024, US-003, US-025 et par l'incrément 1 d'US-017. |
 | Lot | [LOT-001](../lots/LOT-001.md) — rang de réalisation : **0** / 13 (partie « écriture » du socle ; le reste du socle relève de ST-US-022) |
 | Exigences couvertes | RG-036 (contexte causal, préparation), RG-046 et RG-047 (pierres tombales et leur contexte), RG-050 (journal métier), RG-057 (index des écritures en attente, préparation), ENF-06, ENF-T-02, ENF-T-07 ; DS-07, DS-08, DS-11, DS-19 |
-| DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.1.5 bis, §4.2, §4.2.1, §6.1, §6.4) ; ADR-003, ADR-010, ADR-011 |
+| DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.1.5 bis, §4.2, §4.2.1, §6.1, §6.4) ; DAT v0.11 (§3.2, DS-07 : durabilité stricte) ; ADR-003, ADR-010, ADR-011, ADR-013 |
 | Hypothèses du contrôle d'explicitation appliquées | H-1 (§6.4), H-4 (§6.5), H-5 (§12) |
-| Version de la ST | 0.1 |
-| Statut | **Prête pour E10**, sauf §5.3 (contenu logique du fichier Drive) : **sous réserve R1** |
+| Version de la ST | 0.2 |
+| Statut | **Prête pour E10** ; tests UT-SOC-44 à 46 ajoutés en v0.2 (rouges) |
 | Auteur | Anthony |
 | Branche Git | `us/SOCLE-ecriture` créée depuis `lot/LOT-001-socle-objectifs-taches` |
 
@@ -18,11 +18,12 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-22 | Anthony | Alignement sur `conventions.md` v0.4 (DEC-034, ADR-013, DAT v0.11). `DepotLocalDexie` : base ouverte en durabilité stricte, écriture confirmée à l'événement `complete`, transaction avortée traduite en `EcritureLocaleImpossible` (§4.4, §6.8, §8) ; tests UT-SOC-44 à 46 et support `FabriqueIndexedDbEspionne` (§13). Rédaction : `DepotLocalSqlite` et horloge d'Android renvoyés au repli (§1, §3) ; réserve R1 limitée au repli (§5.3, §7, §16, §17). Aucun changement d'interface ni de type. |
 
 ### Conditions de Starck (texte qui fait foi, note de Jarvis) et leur traitement
 | Condition | Traitement dans ce document |
 |---|---|
-| 1. US-001 est construite directement sur le modèle d'écriture de la synchronisation : écriture par information avec HLC et contexte causal, transaction unique, index des écritures en attente, journal RG-050 au format du DAT §6.1 ; les ST d'US-001 et de l'incrément 1 sont conçues ensemble, avec le format Drive complet (schéma 1). | §4 à §6 : modèle complet, livré au rang 0. §5.3 : contenu logique du schéma 1, figé dès maintenant (sous réserve R1 pour sa forme physique). L'incrément 1 d'US-017 n'ajoute que le transport, la fusion et le marqueur « déposé jusqu'à » : il ne modifie aucun type de ce document. |
+| 1. US-001 est construite directement sur le modèle d'écriture de la synchronisation : écriture par information avec HLC et contexte causal, transaction unique, index des écritures en attente, journal RG-050 au format du DAT §6.1 ; les ST d'US-001 et de l'incrément 1 sont conçues ensemble, avec le format Drive complet (schéma 1). | §4 à §6 : modèle complet, livré au rang 0. §5.3 : contenu logique du schéma 1, figé dès maintenant (sa forme physique relève de ST-US-017 ; réserve R1 en repli seulement). L'incrément 1 d'US-017 n'ajoute que le transport, la fusion et le marqueur « déposé jusqu'à » : il ne modifie aucun type de ce document. |
 | 2. La revue E13 d'US-001 couvre ce chemin d'écriture. | §13 : les tests `UT-SOC-*` sont rejoués à la revue d'US-001 ; ST-US-001 §14 l'exige. |
 | 3. Q-US-001-2 et Q-US-001-3 sont tranchées avant le développement d'US-001. | Tranchées en E8 (glossaire v1.4 §11 ; Q-US-001-3 : espaces retirés, pas de longueur maximale). Appliquées au §5.1 et dans ST-US-001. |
 | Compléments d'Anthony | US-001 ne passe pas « En recette » avant l'approbation des incréments 1 et 2 ; l'incrément 1 suit immédiatement US-001 et est validé par des tests de propriétés de la fusion (ST-US-017). |
@@ -33,7 +34,7 @@
 - **Hors périmètre** (ne pas réaliser ici) :
   - transport Drive, fusion, réception d'HLC, marqueur « déposé jusqu'à », retrait de l'index après dépôt, valeurs écartées, réparations RG-047 à RG-049, correction d'horloge mesurée : ST-US-017 (incréments 1 à 4) ;
   - ouverture de l'espace local par compte, identité, `appareilId` du premier lancement, outillage, CI, `.gitignore` (règles : `conventions.md` §9.1, §14) : ST-US-022 et conventions ;
-  - adaptateur SQLite, horloge monotone d'Android : ST-US-018 ;
+  - adaptateur SQLite et horloge monotone d'Android : **repli seulement** (`conventions.md` v0.4 §19.4), si la condition de DEC-034 échoue ; en cible, `DepotLocalDexie` et `HorlogeSysteme` servent tous les appareils (ADR-013) ;
   - verrou entre onglets : ST-US-031.
 - **Prérequis** : aucun (premier élément du lot).
 
@@ -91,7 +92,8 @@
 | 32 | `tests/support/banc/temps-simule.ts`, `appareil-simule.ts`, `banc-synchro.ts` | Test | Créer | Banc minimal à un ou deux appareils, sans transport (§12) ; le `FauxDrive` est ajouté par ST-US-017 | 26, 27, 31 |
 | 33 | `tests/support/monde.ts`, `hooks.ts`, `types-parametres.ts`, `prefixes.ts`, `references.ts`, `temps.ts`, `commandes-en-attente.ts` | Test | Créer | Monde, préfixes, types de paramètres, résolution des intitulés, conversion des heures murales, commandes en attente (§12) | 32 |
 | 34 | `tests/steps/commun/temps.steps.ts`, `appareils.steps.ts`, `confirmations.steps.ts` | Test | Créer | Étapes communes du §12 | 33 |
-| 35 | `tests/contrats/depot-local.contrat.ts` | Test | Créer | Suite de contrat du port `DepotLocal`, exécutée sur `DepotLocalDexie` (puis sur `DepotLocalSqlite`, ST-US-018) | 24 |
+| 35 | `tests/contrats/depot-local.contrat.ts` | Test | Créer | Suite de contrat du port `DepotLocal`, exécutée sur `DepotLocalDexie` (en repli seulement, aussi sur `DepotLocalSqlite`, `conventions.md` §19.4) | 24 |
+| 36 | `tests/support/fabrique-indexeddb-espionne.ts` | Test | Livré (E10, v0.2) | `FabriqueIndexedDbEspionne` : `IDBFactory` de `fake-indexeddb` qui observe le mode, la durabilité et l'événement `complete` de chaque transaction, et peut avorter les écritures (UT-SOC-44 à 46) | — |
 
 **Fichiers qui ne doivent pas être créés à ce rang** : tout fichier de `src/synchronisation/infrastructure/drive/`, `TransportSynchro`, fusion (ST-US-017).
 
@@ -432,7 +434,7 @@ export interface GenerateurIdentifiants { genererUuidV7(): string }
 ### 4.4 Adaptateurs
 | Adaptateur | Port | Technologie | Points d'attention |
 |---|---|---|---|
-| `DepotLocalDexie` | `DepotLocal` | Dexie sur IndexedDB ; `fake-indexeddb` en test (une `IDBFactory` par appareil simulé) | Constructeur `new DepotLocalDexie({ nomBase: string, fabrique?: IDBFactory, appareilId: IdAppareil })` : à la première ouverture, écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon `ErreurProgrammation`). Garde en mémoire le dernier `EtatLocal` lu et sa `version` ; au début de chaque transaction, relit `meta.version` et recharge tout l'état si elle diffère (autre onglet). `null` en base ↔ `undefined` en mémoire ; `Instant` et `Hlc.physique` en ISO 8601. Toute ligne relue passe par Zod (§5.1). |
+| `DepotLocalDexie` | `DepotLocal` | Dexie sur IndexedDB ; `fake-indexeddb` en test (une `IDBFactory` par appareil simulé) | Constructeur `new DepotLocalDexie({ nomBase: string, fabrique?: IDBFactory, appareilId: IdAppareil })`. **Durabilité stricte** (`conventions.md` §10.1, ADR-013) : la base Dexie est construite avec l'option `chromeTransactionDurability: 'strict'` (avec `indexedDB: fabrique` et l'`IDBKeyRange` correspondant quand `fabrique` est fournie), de sorte que **toute** transaction d'écriture est ouverte en `durability: 'strict'` (UT-SOC-44). À la première ouverture, écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon `ErreurProgrammation`). Garde en mémoire le dernier `EtatLocal` lu et sa `version` ; au début de chaque transaction, relit `meta.version` et recharge tout l'état si elle diffère (autre onglet). `null` en base ↔ `undefined` en mémoire ; `Instant` et `Hlc.physique` en ISO 8601. Toute ligne relue passe par Zod (§5.1). |
 | `HorlogeSysteme` | `Horloge` | `Date.now()`, `performance.now()`, `Intl.DateTimeFormat().resolvedOptions().timeZone` | Seul fichier autorisé à lire l'heure système (`conventions.md` §7.2) |
 | `GenerateurUuidV7` | `GenerateurIdentifiants` | `uuid` (`v7`) | — |
 
@@ -460,8 +462,8 @@ Taille cible (ENF-T-05) : 5 000 tâches, environ 40 000 registres et 50 000 entr
 
 L'incrément 2 d'US-017 ajoutera la version 2 de la base (tables `valeursEcartees` et `lectures`) : ajout pur, sans transformation de données.
 
-### 5.3 Contenu logique du fichier d'appareil dans le Drive, schéma 1 — **sous réserve R1**
-**Hypothèse retenue (DAT §4.2, §4.2.1, §4.2.2, §6.1)** : un dossier visible `Done Juan/` (portée `drive.file`), un fichier `appareils/<appareilId>.etat.json.gz` par appareil, écrit par lui seul, et un `manifeste.json`. **Si le test R1 échoue** (fichiers d'un client invisibles de l'autre), le repli `drive.appdata` (arbitrage A6 à rouvrir) change l'emplacement et la visibilité, **pas** le contenu logique ci-dessous. La sérialisation physique (compression, table d'appareils, schéma Zod `v1.ts`, empreinte) est spécifiée par ST-US-017, incrément 1.
+### 5.3 Contenu logique du fichier d'appareil dans le Drive, schéma 1
+**Hypothèse retenue (DAT §4.2, §4.2.1, §4.2.2, §6.1)** : un dossier visible `Done Juan/` (portée `drive.file`), un fichier `appareils/<appareilId>.etat.json.gz` par appareil, écrit par lui seul, et un `manifeste.json`. Avec un client OAuth Web unique (ADR-013), R1 est sans objet (DAT v0.11 §10.1). **En repli seulement** (`conventions.md` §19), si le test R1 échouait (fichiers d'un client invisibles de l'autre), le repli `drive.appdata` (arbitrage A6 à rouvrir) changerait l'emplacement et la visibilité, **pas** le contenu logique ci-dessous. La sérialisation physique (compression, table d'appareils, schéma Zod `v1.ts`, empreinte) est spécifiée par ST-US-017, incrément 1.
 
 Contenu logique figé dès le rang 0 (le rang 2 n'écrit que des données de ces formes) :
 | Partie | Contenu | Origine |
@@ -605,13 +607,13 @@ modifier(decision):
        e. plan ← planifierEcritures(etat, r.valeur.modifications, { operation, instant, jour, physiqueCorrigee })
        f. renvoyer succes({ plan, valeur: r.valeur.valeur }))
 ```
-`DepotLocalDexie.appliquer` : transaction Dexie `rw` sur les quatre tables ; lecture de `meta.version` ; rechargement si nécessaire ; appel de `calcul` ; si `Succes` et plan non vide : `bulkPut` des registres écrits, `bulkAdd` des événements, `bulkPut` et `bulkDelete` de l'index, écriture de `meta.dernierHlc` et `meta.version + 1` ; mise à jour du cache après validation ; notification des observateurs (et, entre onglets, par l'observation Dexie).
+`DepotLocalDexie.appliquer` : transaction Dexie `rw` sur les quatre tables, en durabilité stricte (§4.4) ; lecture de `meta.version` ; rechargement si nécessaire ; appel de `calcul` ; si `Succes` et plan non vide : `bulkPut` des registres écrits, `bulkAdd` des événements, `bulkPut` et `bulkDelete` de l'index, écriture de `meta.dernierHlc` et `meta.version + 1`. **Confirmation** : `appliquer` ne résout son `Succes` qu'**après l'événement `complete`** de la transaction, c'est-à-dire après la résolution de la promesse de `db.transaction(…)` de Dexie, jamais au `success` d'une requête isolée (UT-SOC-45) ; mise à jour du cache et notification des observateurs (et, entre onglets, par l'observation Dexie) après cette confirmation. Une transaction rejetée par Dexie (`error`, `abort`, quota) donne `Echec({ type: 'EcritureLocaleImpossible' })`, sans mise à jour du cache ni notification (§8 n° 3, UT-SOC-46).
 
 **Temps et fuseaux** : `jour` est le jour de Paris de l'instant non corrigé (`conventions.md` §7.1) ; PT-16 : UT-SOC-05 à 07.
 **Hasard** : aucun ; seuls les UUID v7 de `GenerateurIdentifiants`.
 
 ## 7. Intégration Google
-Sans objet à ce rang : aucune requête Google. Le contenu logique du fichier Drive (§5.3) est **sous réserve R1**.
+Sans objet à ce rang : aucune requête Google. Le contenu logique du fichier Drive est figé au §5.3 (réserve R1 en repli seulement).
 
 ## 8. Gestion des erreurs
 
@@ -619,7 +621,7 @@ Sans objet à ce rang : aucune requête Google. Le contenu logique du fichier Dr
 |---|---|---|---|---|---|---|---|
 | 1 | Refus métier dans la décision | Domaine métier | `E` du contexte | Aucune écriture ; `Echec` renvoyé | Code `ERR-…` attribué par le modèle de vue du contexte | `info` : `cas_usage`, `type` | UT-SOC-33 |
 | 2 | Modification incohérente (élément absent ou supprimé, création en double, lien en double) | `planifierEcritures` | `ErreurProgrammation` levée | Transaction annulée ; exception propagée jusqu'à la frontière (gestionnaire global) | `ERR-014` (toast) | `erreur` : `cas_usage`, nature, identifiants opaques | UT-SOC-24, 34 |
-| 3 | Base IndexedDB indisponible, quota, transaction avortée | `DepotLocalDexie` | `EcritureLocaleImpossible` | Aucune écriture ; l'utilisateur peut réessayer | `ERR-014` (`TST-ERREUR-ENREGISTREMENT`) | `erreur` : nom de l'erreur Dexie, sans contenu | Suite de contrat |
+| 3 | Base IndexedDB indisponible, quota, transaction avortée | `DepotLocalDexie` | `EcritureLocaleImpossible` | Aucune écriture ; ni cache mis à jour ni observateur prévenu ; l'utilisateur peut réessayer | `ERR-014` (`TST-ERREUR-ENREGISTREMENT`) | `erreur` : nom de l'erreur Dexie, sans contenu | UT-SOC-46 ; suite de contrat |
 | 4 | Ligne relue invalide | `DepotLocalDexie` (Zod) | `DonneesLocalesIllisibles` | Lecture refusée, aucune écriture | `ERR-014` | `erreur` : table, clé | UT-SOC-41 |
 | 5 | Espace non ouvert | `DepotLocalDexie` | `EspaceLocalNonOuvert` | Aucune lecture ni écriture | Aucun (l'interface ne propose rien sans compte, RG-019) | `avertissement` | Suite de contrat |
 
@@ -722,6 +724,9 @@ Scénarios `@ihm` : aucun. Scénarios `@recette` : aucun.
 | UT-SOC-39 | idem | `modifier` sur deux instances du service partageant la base | la décision de la seconde voit l'écriture de la première (rechargement par `version`) | US-031 (onglets) | NI |
 | UT-SOC-40 | `tests/integration/synchronisation/depot-local-dexie.test.ts` | `DepotLocalDexie` | aller-retour d'un registre `delai: undefined` (stocké `null`) et d'un `Instant` (ISO) | `conventions.md` §7.1 | NI |
 | UT-SOC-41 | idem | `DepotLocalDexie.lire` | ligne `registres` corrompue → `DonneesLocalesIllisibles` | `conventions.md` §6.2 | NI |
+| UT-SOC-44 | idem (`FabriqueIndexedDbEspionne`) | `DepotLocalDexie.appliquer` | toute transaction d'écriture est ouverte en durabilité `strict` | `conventions.md` §10.1, ADR-013 | NI |
+| UT-SOC-45 | idem | `DepotLocalDexie.appliquer` | à la résolution du `Succes`, chaque transaction d'écriture a reçu `complete` | US-018 CA-5, ENF-T-07 | NI |
+| UT-SOC-46 | idem | `DepotLocalDexie.appliquer` | transaction d'écriture avortée → `EcritureLocaleImpossible` ; une nouvelle instance relit la version 0, sans registre | §8 n° 3, ENF-T-07 | NI |
 | UT-SOC-42 | `tests/unitaires/synchronisation/domaine/hlc.proprietes.test.ts` (fast-check) | `hlcSuivant` | pour toute suite d'heures physiques, la suite des HLC est strictement croissante | DAT §6.4 | NI |
 | UT-SOC-43 | `tests/unitaires/synchronisation/domaine/contexte-causal.proprietes.test.ts` (fast-check) | `fusionnerContextes` | commutative, associative, idempotente | DAT §4.2.1 | NI |
 
@@ -750,14 +755,14 @@ Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation 
 ## 15. Plan de réalisation
 1. Commun : `Resultat`, `Marque`, types temporels, `Duree`, identifiants (UT-SOC-01 à 07).
 2. Synchronisation, domaine : HLC, contexte causal, informations, journal, index, pierre tombale, planification, projection (UT-SOC-08 à 32, 42, 43).
-3. Port `DepotLocal` et suite de contrat ; `DepotLocalDexie` (UT-SOC-40, 41).
+3. Port `DepotLocal` et suite de contrat ; `DepotLocalDexie` (UT-SOC-40, 41, 44 à 46).
 4. `ServiceEtatLocalTransactionnel` (UT-SOC-33 à 39).
 5. Doublures, banc minimal, monde, préfixes, types de paramètres, étapes communes (§12).
 6. Composition `web.ts` ; contrôle dependency-cruiser (aucun import interdit, §9).
 
 ## 16. Dette, hypothèses et points ouverts
 - **Points ouverts** : aucun. ANT-25 (format de l'`IdEvenement`) est clos : validé par Starck, DAT v0.10.2 §6.1.
-- **Sous réserve R1** : §5.3 (emplacement et forme physique du fichier Drive).
+- **Réserve R1** : en repli seulement (`conventions.md` §19) ; elle porterait sur l'emplacement du fichier Drive (§5.3), pas sur son contenu logique.
 - **Hypothèses** : H-1, H-4, H-5 (contrôle d'explicitation), appliquées sans changement.
 - **Dette acceptée d'emblée** : aucune. DT-001 (données locales non chiffrées) s'applique à `DepotLocalDexie`.
 
@@ -765,10 +770,10 @@ Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation 
 - [x] Chaque exigence est reliée à un élément et à au moins un test (§2.1).
 - [x] Tous les fichiers à créer sont listés, avec leur couche (§3).
 - [x] Toutes les signatures publiques sont données, erreurs comprises (§4).
-- [x] Le modèle de données et les migrations sont décrits (§5) ; le format Drive est marqué « sous réserve R1 ».
+- [x] Le modèle de données et les migrations sont décrits (§5) ; le contenu logique du format Drive est figé (§5.3), la réserve R1 ne valant qu'en repli.
 - [x] Chaque algorithme est décrit de façon déterministe (§6).
 - [x] Chaque erreur a un comportement, un code de message et un test (§8).
 - [x] Les patterns imposés et interdits sont listés (§9) ; la sécurité est explicite (§10).
 - [x] Les étapes communes sont listées (§12).
-- [x] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10, 2026-10-22 : 68 cas UT-SOC et 7 cas CT-DEPOT, tous « NI »).
+- [x] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10, 2026-10-22 : 68 cas UT-SOC et 7 cas CT-DEPOT, tous « NI » ; v0.2 : 3 cas UT-SOC-44 à 46 ajoutés, « NI »).
 - [x] ANT-25 validé par Starck (DAT v0.10.2 §6.1).

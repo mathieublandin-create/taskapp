@@ -14,7 +14,7 @@ export type TransactionObservee = {
 };
 
 export class FabriqueIndexedDbEspionne extends IDBFactory {
-  private readonly observees: TransactionObservee[] = [];
+  private readonly observees: Array<TransactionObservee> = [];
   private avorterEcritures = false;
 
   /** Toutes les transactions ouvertes depuis la création de la fabrique, dans l'ordre. */
@@ -29,6 +29,10 @@ export class FabriqueIndexedDbEspionne extends IDBFactory {
   /** Les transactions d'écriture ouvertes ensuite sont avortées avant leur validation. */
   avorterLesEcritures(): void {
     this.avorterEcritures = true;
+  }
+
+  retablirLesEcritures(): void {
+    this.avorterEcritures = false;
   }
 
   override open(nom: string, version?: number): IDBOpenDBRequest {

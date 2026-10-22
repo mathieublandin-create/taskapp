@@ -1,11 +1,12 @@
 # Registre de la dette technique
 
-> **Version 0.2 — 2026-10-21 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
+> **Version 0.3 — 2026-10-22 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
 
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Registre initialisé, vide. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001 : inscription de DT-001 (données locales non chiffrées au repos, DS-07, RG-043, DEC-015). |
+| 0.3 | 2026-10-22 | Anthony | DT-001 alignée sur `conventions.md` v0.4 (DEC-034, ADR-013) : IndexedDB sur tous les appareils ; SQLite et SQLCipher renvoyés au repli. |
 
 ## Règles de tenue
 
@@ -41,7 +42,7 @@
 
 | Id | Date | Origine (US / RC / ANO) | Catégorie | Description | Localisation | Impact | Priorité | Plan de remboursement | Statut |
 |---|---|---|---|---|---|---|---|---|---|
-| DT-001 | 2026-10-21 | Constat (DAT v0.5 DS-07, §7.1 ; RG-043 ; DEC-015) | Sécurité | Les données locales (IndexedDB sur PC, SQLite sur Android) ne sont pas chiffrées au repos et restent sur l'appareil après une déconnexion. | `DepotLocalDexie`, `DepotLocalSqlite` (contexte `synchronisation`, à créer en LOT-001) | Lecture possible par une personne disposant du téléphone déverrouillé ou du même profil de navigateur sur PC ; sensibilité accrue avec les réponses de bilan (lot DEM-002) | P3 | Réévaluation avant la conception du lot DEM-002 (bilan du soir) et à toute évolution des données sensibles ; option SQLCipher sur Android (DAT §7.1) | Identifiée |
+| DT-001 | 2026-10-21 | Constat (DAT v0.5 DS-07, §7.1 ; RG-043 ; DEC-015 ; DAT v0.11, ADR-013) | Sécurité | Les données locales (IndexedDB du profil du navigateur, sur le PC et sur le téléphone ; *repli* : SQLite sur Android) ne sont pas chiffrées au repos et restent sur l'appareil après une déconnexion. | `DepotLocalDexie` (contexte `synchronisation`, LOT-001) ; *repli* : `DepotLocalSqlite` | Lecture possible par une personne disposant du téléphone déverrouillé (profil Chrome) ou du même profil de navigateur sur PC ; sensibilité accrue avec les réponses de bilan (lot DEM-002) | P3 | Réévaluation avant la conception du lot DEM-002 (bilan du soir) et à toute évolution des données sensibles ; option de chiffrement applicatif par clé WebCrypto non extractible ; *repli* : SQLCipher sur Android (DAT §7.1) | Identifiée |
 
 ## Gabarit de fiche détaillée
 
@@ -65,13 +66,13 @@ Une fiche détaillée est rédigée ci-dessous pour toute dette de priorité P1 
 
 ### DT-001 — Données locales non chiffrées au repos
 - Date d'inscription : 2026-10-21 — inscrite par : Anthony
-- Origine : constat sur le DAT v0.5 (DS-07, §7.1 « Données au repos »), RG-043 (données conservées à la déconnexion), DEC-015 (action distincte « Supprimer les données de cet appareil »), DEC-010 (pas de chiffrement supplémentaire dans le Drive)
+- Origine : constat sur le DAT v0.5 (DS-07, §7.1 « Données au repos »), confirmé par le DAT v0.11 et ADR-013 (IndexedDB sur tous les appareils), RG-043 (données conservées à la déconnexion), DEC-015 (action distincte « Supprimer les données de cet appareil »), DEC-010 (pas de chiffrement supplémentaire dans le Drive)
 - Catégorie : Sécurité — Priorité : P3 — Statut : Identifiée
-- Localisation : adaptateurs `DepotLocalDexie` et `DepotLocalSqlite` du contexte `synchronisation` (à créer en LOT-001) ; `conventions.md` §9.3
-- Description : en v1, l'état local est écrit en clair : IndexedDB dans le profil du navigateur sur PC, SQLite dans le bac à sable de l'application sur Android, sans SQLCipher. Depuis RG-043, ces données ne sont pas effacées à la déconnexion. La cible de sécurité (OWASP MASVS-STORAGE pour le mobile, protection des données personnelles au repos) n'est pas atteinte au-delà de l'isolement fourni par la plateforme.
+- Localisation : adaptateur `DepotLocalDexie` du contexte `synchronisation` (LOT-001), seul adaptateur en cible ; *repli* : `DepotLocalSqlite` (`conventions.md` §19.4) ; `conventions.md` §9.3
+- Description : en v1, l'état local est écrit en clair dans IndexedDB, dans le profil du navigateur, sur le PC comme sur le téléphone (PWA installée, ADR-013) ; *repli* : SQLite dans le bac à sable de l'application Android, sans SQLCipher. Depuis RG-043, ces données ne sont pas effacées à la déconnexion. La protection des données personnelles au repos (OWASP ASVS ; *repli* : MASVS-STORAGE) n'est pas atteinte au-delà de l'isolement par origine fourni par le navigateur.
 - Raison : choix d'architecture de Starck (DS-07) pour la simplicité et la robustesse du lot 1 ; décision du commanditaire de conserver les données à la déconnexion (RG-043), avec pour parade une action explicite de suppression (DEC-015, RG-055). Les données du lot 1 (objectifs, tâches) sont d'une sensibilité modérée.
-- Impact : sur Android, données accessibles à qui dispose du téléphone déverrouillé et peut se reconnecter avec le compte enregistré, ou à un attaquant disposant d'un accès au système de fichiers (appareil rooté, sauvegarde) ; sur PC, données lisibles par tout utilisateur du même profil de navigateur. L'impact augmente avec les réponses aux questions de bilan du soir (DEM-002), traitées comme les données les plus sensibles.
+- Impact : sur le téléphone, données accessibles à qui dispose du téléphone déverrouillé et peut ouvrir la PWA avec le compte enregistré, ou à un attaquant disposant d'un accès au système de fichiers (appareil rooté, profil Chrome) ; sur PC, données lisibles par tout utilisateur du même profil de navigateur. L'impact augmente avec les réponses aux questions de bilan du soir (DEM-002), traitées comme les données les plus sensibles.
 - Mesures compensatoires en place dès LOT-001 : espace local cloisonné par compte et nommé par empreinte SHA-256 du `sub` (aucun e-mail ni `sub` en clair dans les noms) ; aucun jeton persisté (DS-06) ; action « Supprimer les données de cet appareil » testée pour ne laisser aucune donnée de l'espace (conventions §9.3) ; recommandation d'usage du DAT §7.1 (pas de PC partagé sans session personnelle du système).
-- Plan de remboursement : (1) avant E9 du lot DEM-002, Anthony saisit Starck pour décider du chiffrement au repos (SQLCipher sur Android ; sur PC, chiffrement applicatif par clé non extractible WebCrypto, à évaluer) ; (2) si le chiffrement est retenu, ST-US dédiée avec migration de l'espace local existant ; (3) sinon, passage au statut « Acceptée durablement », sur décision motivée validée par Starck et portée à la connaissance du commanditaire via Jarvis.
-- Critère de remboursement : données de l'espace local illisibles sans la clé (test d'intégration lisant le fichier SQLite ou la base IndexedDB brute), ou décision « Acceptée durablement » tracée.
-- Historique : 2026-10-21, inscription (Identifiée).
+- Plan de remboursement : (1) avant E9 du lot DEM-002, Anthony saisit Starck pour décider du chiffrement au repos (chiffrement applicatif par clé WebCrypto non extractible, à évaluer, sur tous les appareils ; *repli* : SQLCipher sur Android) ; (2) si le chiffrement est retenu, ST-US dédiée avec migration de l'espace local existant ; (3) sinon, passage au statut « Acceptée durablement », sur décision motivée validée par Starck et portée à la connaissance du commanditaire via Jarvis.
+- Critère de remboursement : données de l'espace local illisibles sans la clé (test d'intégration lisant la base IndexedDB brute ; *repli* : le fichier SQLite), ou décision « Acceptée durablement » tracée.
+- Historique : 2026-10-21, inscription (Identifiée) ; 2026-10-22, alignement sur ADR-013, sans changement de priorité ni de statut.

@@ -1,6 +1,6 @@
 # Grille de revue de code (E13)
 
-> **Version 0.2 — 2026-10-21 — Anthony.** Grille appliquée à chaque US (ou incrément d'US) à l'étape E13 du workflow, et à chaque correction d'anomalie (`ANO-xxx`) avant sa nouvelle recette. Elle découle de `conventions.md` v0.2, alignée sur le DAT v0.6.
+> **Version 0.3 — 2026-10-22 — Anthony.** Grille appliquée à chaque US (ou incrément d'US) à l'étape E13 du workflow, et à chaque correction d'anomalie (`ANO-xxx`) avant sa nouvelle recette. Elle découle de `conventions.md` (v0.2 ; points CR-51, CR-52 et CR-58 alignés sur la v0.4, DAT v0.11, ADR-013).
 
 ## Historique
 
@@ -8,6 +8,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Création |
 | 0.2 | 2026-10-21 | Anthony | Alignement sur `conventions.md` v0.2 : renvois de sections, *pull request* GitHub, fuseau de référence, modèles de vue, catalogue, OAuth sans jeton de rafraîchissement, RG-058, steps et tags. Nouveaux points CR-16, CR-17, CR-34, CR-46, CR-68. |
+| 0.3 | 2026-10-22 | Anthony | Alignement de CR-51, CR-52 et CR-58 sur `conventions.md` v0.4 (DEC-034, ADR-013) : PWA unique, retour de redirection OAuth (§9.2.1, RED-01 à RED-08), points Android renvoyés au repli (§19). |
 
 ## 1. Déroulement
 
@@ -117,14 +118,14 @@ Chaque revue produit un compte rendu `docs/04-specification-technique/revues/REV
 | Id | Point de contrôle |
 |---|---|
 | CR-50 | Aucun secret, identifiant confidentiel, jeton ni compte réel dans le code, les tests, la configuration versionnée ou l'historique ; la détection de secrets est verte. |
-| CR-51 | Jeton d'accès en mémoire uniquement (`CoffreJetonsMemoire`) ; aucun jeton de rafraîchissement manipulé ; aucun usage de `localStorage`, `sessionStorage` ou `@capacitor/preferences` pour une donnée d'authentification (`conventions.md` §9.2, DS-06). |
-| CR-52 | Flux OAuth conforme au DAT (DS-04, ADR-004) : clients publics sans secret, Google Identity Services chargé à la demande et sans blocage, portées accordées vérifiées, compte identifié par `sub` ; portées inchangées ou évolution validée par Starck. |
+| CR-51 | Jeton d'accès en mémoire uniquement (`CoffreJetonsMemoire`) ; aucun jeton de rafraîchissement manipulé ; aucun jeton écrit dans une URL (en-tête `Authorization` seulement) ; aucun usage de `localStorage` ou `sessionStorage` pour une donnée d'authentification, sauf la mémorisation du seul `state` dans le fichier autorisé (RED-04) ; *repli* : ni `@capacitor/preferences` (`conventions.md` §9.2, §9.2.1, §19.4, DS-06). |
+| CR-52 | Flux OAuth conforme au DAT (DS-04, ADR-004, ADR-013, DAT §4.1.7) : client Web public sans secret ; URI de redirection construite en un seul point ; retour de redirection conforme à RED-01 à RED-08 (`conventions.md` §9.2.1) : fragment effacé par la première instruction de `main.tsx`, avant tout rendu et toute requête, dans tous les cas ; `state` de 128 bits, à usage unique, valable 10 min, rejet s'il est absent, inconnu, rejoué ou expiré ; jeton ni journalisé ni persisté ; `no-referrer` ; une seule redirection automatique par ouverture ; Google Identity Services chargé à la demande et sans blocage ; portées accordées vérifiées ; compte identifié par `sub` ; portées inchangées ou évolution validée par Starck. |
 | CR-53 | Déconnexion (RG-043) : jeton et compte actif effacés, données locales conservées ; suppression des données de l'appareil (RG-055) : dépôt préalable, puis suppression complète de l'espace du compte ; espace local nommé par empreinte du `sub` (`conventions.md` §9.3). |
 | CR-54 | Journalisation conforme à `conventions.md` §9.4 : port `JournalTechnique` uniquement, aucune donnée personnelle ni jeton ; masquage défensif en place. |
 | CR-55 | Validation des entrées : saisies, contenu lu dans l'espace de l'utilisateur, réponses des API ; échappement de l'affichage ; aucune évaluation dynamique de code ; liens profonds validés. |
 | CR-56 | Minimisation : seules les données nécessaires sont lues dans l'agenda et écrites dans les événements ; aucune transmission à un tiers. |
 | CR-57 | Analyses SAST et SCA vertes ; aucune vulnérabilité haute ou critique introduite. |
-| CR-58 | Points OWASP pertinents pour la plateforme (ASVS pour la PWA, MASVS pour Android) : CSP du DAT §7.1, aucune ressource de CDN, aucun `dangerouslySetInnerHTML` ni évaluation dynamique, permissions Android minimales. |
+| CR-58 | Points OWASP ASVS de la PWA, sur tous les appareils : CSP du DAT §7.1 (navigation de redirection vers `accounts.google.com` comprise), `Referrer-Policy: no-referrer`, aucune ressource de CDN, aucun `dangerouslySetInnerHTML` ni évaluation dynamique, transactions d'écriture IndexedDB en durabilité stricte (`conventions.md` §10.1). *Repli* (`conventions.md` §19) : MASVS et permissions Android minimales. |
 
 ### G. Tests
 | Id | Point de contrôle |

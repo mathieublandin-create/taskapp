@@ -12,6 +12,8 @@ import type {
  * Options (ST-socle-ecriture.md §4.4). `fabrique` : IDBFactory à utiliser (une par appareil simulé
  * en test, `fake-indexeddb`) ; absente : `globalThis.indexedDB`. À la première ouverture, écrit
  * `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon ErreurProgrammation).
+ * Base Dexie ouverte avec `chromeTransactionDurability: 'strict'` ; une écriture n'est confirmée
+ * qu'à l'événement `complete` de sa transaction (ST-socle-ecriture.md §4.4, §6.8 ; UT-SOC-44 à 46).
  */
 export type OptionsDepotLocalDexie = {
   readonly nomBase: string;
