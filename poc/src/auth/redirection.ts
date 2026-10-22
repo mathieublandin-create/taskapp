@@ -6,11 +6,7 @@
 const URL_AUTORISATION = 'https://accounts.google.com/o/oauth2/v2/auth';
 
 export type CategorieErreur =
-  | 'interaction_requise'
-  | 'acces_revoque'
-  | 'configuration'
-  | 'etat_invalide'
-  | 'inconnue';
+  'interaction_requise' | 'acces_revoque' | 'configuration' | 'etat_invalide' | 'inconnue';
 
 export type RetourRedirection =
   | { type: 'aucun' }

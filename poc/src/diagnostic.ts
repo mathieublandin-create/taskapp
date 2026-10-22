@@ -1,4 +1,12 @@
 import { GoogleAuthNative } from './auth/plugin-natif';
+import {
+  analyserFragment,
+  construireUrlRedirection,
+  consommerContexte,
+  demarrerContexte,
+  reinitialiserCompteur,
+} from './auth/redirection';
+import type { StockageMarqueur } from './storage/marqueur';
 import { libelleEtat, SCOPES_POC, type EtatJeton, type FournisseurJeton } from './auth/ports';
 import type { ConfigPoc } from './config';
 import {
@@ -15,14 +23,27 @@ const MIME_DOSSIER = 'application/vnd.google-apps.folder';
 const NOM_SOUS_DOSSIER = 'appareils';
 const CLE_PAGE_TOKEN = 'poc.pageToken';
 
+/** Accès à la page courante pour la redirection (injecté pour rester testable). */
+export interface Navigation {
+  /** URL de retour exacte, déclarée dans le client OAuth Web. */
+  redirectUri: string;
+  fragment(): string;
+  /** Retire le fragment (donc le jeton) de la barre d'adresse et de l'historique. */
+  effacerFragment(): void;
+  aller(url: string): void;
+}
+
 export interface Dependances {
+  navigation?: Navigation;
+  marqueur?: StockageMarqueur;
+  maintenant?: () => number;
   auth: FournisseurJeton;
   drive: ClientDrive;
   journal: Journal;
   config: ConfigPoc;
   /** `android` ou `pc` : sert à nommer le fichier d'état. */
   appareil: string;
-  stockage?: Pick<Storage, 'getItem' | 'setItem'>;
+  stockage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
   /** Plugin natif (R16-T) ; absent sur PC. */
   signature?: () => Promise<{
     versionCode: number;
@@ -40,7 +61,7 @@ function iso(echeance: number | null): string | undefined {
 export class Diagnostic {
   private echeance: number | null = null;
   private gestes = 0;
-  private readonly stockage: Pick<Storage, 'getItem' | 'setItem'>;
+  private readonly stockage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
   constructor(private readonly d: Dependances) {
     this.stockage = d.stockage ?? localStorage;
@@ -132,6 +153,12 @@ export class Diagnostic {
   /** R15, étape 3.4.4. */
   async persistance(): Promise<void> {
     const dejaPersistant = await navigator.storage.persisted();
+    await this.d.journal.enregistrer({
+      mesure: 'R15',
+      etape: '3.4.4',
+      operation: 'navigator.storage.persisted()',
+      resultat: dejaPersistant ? 'Persistant' : 'Non persistant',
+    });
     const accorde = dejaPersistant || (await navigator.storage.persist());
     await this.d.journal.enregistrer({
       mesure: 'R15',
@@ -139,6 +166,106 @@ export class Diagnostic {
       operation: 'navigator.storage.persist()',
       resultat: accorde ? 'Stockage persistant' : 'Stockage non persistant',
       detail: `déjà persistant avant l'appel : ${dejaPersistant}`,
+    });
+  }
+
+  /** Redirection : départ pleine page vers Google (`prompt=none`). Le retour est traité au chargement. */
+  async jetonParRedirection(): Promise<void> {
+    const nav = this.d.navigation;
+    if (!nav) return;
+    const contexte = demarrerContexte(this.stockage, crypto.randomUUID(), this.maintenant());
+    await this.d.journal.enregistrer({
+      mesure: 'Redirection',
+      operation: 'Départ vers Google',
+      resultat: 'Redirection lancée',
+      detail: `redirection n° ${contexte.numero} ; prompt=none ; login_hint : ${this.d.auth.identiteEnCache() ? 'oui' : 'non'}`,
+    });
+    nav.aller(
+      construireUrlRedirection({
+        clientId: this.d.config.clientIdWeb,
+        redirectUri: nav.redirectUri,
+        scopes: SCOPES_POC,
+        state: contexte.state,
+        loginHint: this.d.auth.identiteEnCache()?.email || undefined,
+      }),
+    );
+  }
+
+  /** Redirection : à appeler au chargement. Journalise le retour sans jamais écrire le jeton. */
+  async traiterRetourRedirection(): Promise<void> {
+    const nav = this.d.navigation;
+    if (!nav) return;
+    const retour = analyserFragment(nav.fragment());
+    if (retour.type === 'aucun') return;
+    nav.effacerFragment();
+    const contexte = consommerContexte(this.stockage);
+    if (retour.type === 'jeton') this.d.journal.declarerSecret(retour.jeton);
+    const duree = contexte ? `${this.maintenant() - contexte.debutMs} ms` : 'inconnue';
+    const numero = contexte ? `n° ${contexte.numero}` : 'n° inconnu';
+    if (contexte === null || contexte.state !== retour.state) {
+      await this.d.journal.enregistrer({
+        mesure: 'Redirection',
+        operation: 'Retour de Google',
+        resultat: 'Retour rejeté',
+        codeErreur: 'etat_invalide',
+        detail: `paramètre state absent ou différent ; jeton ignoré ; aller-retour : ${duree}`,
+      });
+      return;
+    }
+    if (retour.type === 'erreur') {
+      await this.d.journal.enregistrer({
+        mesure: 'Redirection',
+        operation: 'Retour de Google',
+        resultat: 'Erreur',
+        codeErreur: retour.code,
+        detail: `catégorie : ${retour.categorie} ; aller-retour : ${duree} ; redirection ${numero}`,
+      });
+      return;
+    }
+    this.d.auth.adopterJeton?.(retour.jeton);
+    const echeance =
+      retour.dureeSecondes === null ? null : this.maintenant() + retour.dureeSecondes * 1000;
+    this.echeance = echeance;
+    await this.d.journal.enregistrer({
+      mesure: 'Redirection',
+      operation: 'Retour de Google',
+      resultat: 'JetonObtenu',
+      echeanceJeton: iso(echeance),
+      detail: `aller-retour : ${duree} ; redirection ${numero} ; durée de vie du jeton : ${retour.dureeSecondes ?? 'inconnue'} s ; scopes : ${retour.scopes.join(' ')} ; jeton présent`,
+    });
+  }
+
+  reinitialiserCompteurRedirections(): void {
+    reinitialiserCompteur(this.stockage);
+  }
+
+  private maintenant(): number {
+    return (this.d.maintenant ?? Date.now)();
+  }
+
+  /** R15 : pose d'un marqueur IndexedDB horodaté. */
+  async poserMarqueur(): Promise<void> {
+    if (!this.d.marqueur) return;
+    const m = await this.d.marqueur.poser(new Date(this.maintenant()));
+    await this.d.journal.enregistrer({
+      mesure: 'R15',
+      operation: 'Marqueur IndexedDB posé',
+      resultat: 'OK',
+      detail: `posé le ${m.poseLe} ; id ${m.identifiant}`,
+    });
+  }
+
+  /** R15 : relecture du marqueur (après arrêt forcé ou redémarrage). */
+  async lireMarqueur(): Promise<void> {
+    if (!this.d.marqueur) return;
+    const m = await this.d.marqueur.lire();
+    await this.d.journal.enregistrer({
+      mesure: 'R15',
+      operation: 'Marqueur IndexedDB relu',
+      resultat: m ? 'Marqueur présent' : 'Marqueur absent',
+      detail: m
+        ? `posé le ${m.poseLe} (il y a ${Math.round((this.maintenant() - Date.parse(m.poseLe)) / 1000)} s) ; id ${m.identifiant}`
+        : 'aucun marqueur : données perdues ou jamais posé',
     });
   }
 

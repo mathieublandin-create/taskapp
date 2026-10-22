@@ -10,6 +10,7 @@ import { Diagnostic, signatureNative } from '../diagnostic';
 import { ClientDrive } from '../drive/client-drive';
 import { Journal } from '../journal/journal';
 import { StockageIndexedDb, StockageLocalStorage } from '../journal/stockage';
+import { MarqueurIndexedDb } from '../storage/marqueur';
 import { PageDiagnostic } from './PageDiagnostic';
 
 setupIonicReact();
@@ -29,6 +30,14 @@ try {
     journal,
     config,
     appareil: typeAppareil(),
+    marqueur: new MarqueurIndexedDb(),
+    navigation: {
+      redirectUri: `${window.location.origin}${config.basePath}`,
+      fragment: () => window.location.hash,
+      effacerFragment: () =>
+        window.history.replaceState(null, '', window.location.pathname + window.location.search),
+      aller: (url) => window.location.assign(url),
+    },
     signature: Capacitor.isNativePlatform() ? signatureNative : undefined,
   });
   racine.render(
@@ -36,7 +45,7 @@ try {
       <PageDiagnostic diagnostic={diagnostic} journal={journal} config={config} auth={auth} />
     </StrictMode>,
   );
-  void diagnostic.demarrage();
+  void diagnostic.traiterRetourRedirection().then(() => diagnostic.demarrage());
 } catch (erreur) {
   const message = erreur instanceof ErreurConfiguration ? erreur.message : String(erreur);
   racine.render(<p role="alert">Configuration invalide : {message}</p>);

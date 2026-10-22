@@ -49,7 +49,10 @@ export class MarqueurIndexedDb implements StockageMarqueur {
   }
 
   async lire(): Promise<Marqueur | null> {
-    const valeur = await this.executer('readonly', (t) => t.get(CLE) as IDBRequest<Marqueur | undefined>);
+    const valeur = await this.executer(
+      'readonly',
+      (t) => t.get(CLE) as IDBRequest<Marqueur | undefined>,
+    );
     return valeur ?? null;
   }
 }

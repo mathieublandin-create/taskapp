@@ -43,8 +43,22 @@ function groupes(d: Diagnostic): { titre: string; actions: Action[] }[] {
       actions: [{ libelle: 'Synchroniser', executer: () => d.synchroniser() }],
     },
     {
-      titre: 'R15 Persistance (PC)',
-      actions: [{ libelle: 'Stockage persistant ?', executer: () => d.persistance() }],
+      titre: 'R15 Persistance et durabilité (PC, Android)',
+      actions: [
+        { libelle: 'Stockage persistant ?', executer: () => d.persistance() },
+        { libelle: 'Poser le marqueur', executer: () => d.poserMarqueur() },
+        { libelle: 'Lire le marqueur', executer: () => d.lireMarqueur() },
+      ],
+    },
+    {
+      titre: 'Redirection (PWA unique, DEC-034)',
+      actions: [
+        { libelle: 'Jeton par redirection', executer: () => d.jetonParRedirection() },
+        {
+          libelle: 'Remettre à zéro le compteur',
+          executer: async () => d.reinitialiserCompteurRedirections(),
+        },
+      ],
     },
     {
       titre: 'R16-T APK signé (Android)',
