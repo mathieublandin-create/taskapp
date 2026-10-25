@@ -1,8 +1,9 @@
 # Guide pas à pas du test technique (version web)
 
-> **Version 3 du 2026-10-22.** Auteur : Starck. Destinataire : le commanditaire.
+> **Version 3.1 du 2026-10-25.** Auteur : Starck. Destinataire : le commanditaire.
+> **Ce qui change en version 3.1** (votre retour du 2026-10-25 : bouton « Publier l'application » grisé) : Google exige désormais une **page d'accueil**, une page de **règles de confidentialité** et un **domaine autorisé** avant de laisser publier l'application. La mise en place se fait donc **en deux temps** : (1) l'application reste en mode **« Test »** et vous vous ajoutez comme **utilisateur de test** (b.4, point 9) ; vous pouvez faire toute la préparation et la séance g ; (2) quand l'équipe a mis en ligne les deux pages, vous complétez l'image de marque et vous publiez (nouvelle partie **f bis**), puis vous faites un contrôle de 10 minutes du consentement (mesure R11).
 > **Ce qui change en version 3** (votre décision DEC-034 du 2026-10-22) : on teste **une seule application web** (PWA), sur le PC et sur le téléphone Android, **sans application Android à installer, sans clé et sans mode développeur**. L'ancien volet Android est rangé en **annexe R « repli »** : il ne servira que si le test montre que la version web ne convient pas sur le téléphone. Deux nouvelles mesures sur le téléphone : la **connexion automatique à l'ouverture** (la condition que vous avez posée) et la **conservation des données** après un arrêt forcé ou un redémarrage. Une partie **facultative** (h) prépare le partage avec un contributeur sur iPhone (DEC-035).
-> Protocole technique de référence : `test-technique-R1-R2.md` v3.
+> Protocole technique de référence : `test-technique-R1-R2.md` v3.1.
 > Mise à jour du 2026-10-22 : case « Redirection automatique à l'ouverture », ligne de contexte (« standalone », « web-android »), exports avec contexte.
 > Statut : **prêt à l'emploi, jamais exécuté.**
 
@@ -20,6 +21,7 @@ Vous mettez en ligne l'application de test sur GitHub, vous créez un petit proj
 | d) Mettre l'application de test en ligne | 5 min, plus 5 min d'attente |
 | e) Préparer le téléphone | 5 min |
 | f) Transmission à l'équipe | 5 min |
+| f bis) Publier l'application (deuxième temps, quand l'équipe vous le dit) | 15 min, plus 10 min de contrôle |
 | **Préparation totale** | **environ 1 h**, en une ou plusieurs fois |
 | g) Séance d'essai | 1 h, plus une pause d'au moins 1 h ; un contrôle de 5 min le lendemain (facultatif) |
 | h) Partage avec un contributeur (facultatif, plus tard) | 1 h, plus des attentes |
@@ -124,11 +126,10 @@ Dans la console récente, cette partie s'appelle **Google Auth Platform**. Dans 
 
 Résultat attendu : le tableau de bord de Google Auth Platform s'affiche, avec un menu à gauche : « Vue d'ensemble », « Image de marque » (« Branding »), « Audience », « Clients », « Accès aux données » (« Data Access »).
 
-7. Menu **Image de marque** (« Branding ») :
-   - **N'ajoutez aucun logo.** Laissez le champ vide. Un logo déclencherait une vérification par Google.
-   - Laissez vides les champs « Page d'accueil », « Règles de confidentialité » et « Conditions d'utilisation ». Ils ne sont pas demandés pour ce test.
-   - « Domaines autorisés » : laissez vide pour l'instant. Si vous y êtes obligé plus tard, notez-le et prévenez l'équipe.
-   - Cliquez sur **Enregistrer**.
+7. Menu **Image de marque** (« Branding ») : **premier temps, ne remplissez rien de plus.**
+   - **N'ajoutez aucun logo**, ni maintenant ni plus tard. Un logo déclencherait une vérification par Google.
+   - Laissez vides, pour l'instant, « Page d'accueil », « Règles de confidentialité », « Conditions d'utilisation » et « Domaines autorisés ». Ils seront remplis au **deuxième temps** (partie f bis), quand l'équipe aura mis en ligne les pages correspondantes. Une adresse qui ne répond pas ferait échouer la suite.
+   - Si vous avez modifié quelque chose, cliquez sur **Enregistrer**.
 8. Menu **Accès aux données** (« Data Access ») :
    1. Cliquez sur **Ajouter ou supprimer des niveaux d'accès** (« Add or remove scopes »).
    2. Dans le filtre, cherchez et cochez les trois accès suivants :
@@ -143,17 +144,20 @@ Résultat attendu : le tableau affiche exactement trois lignes, dans la section 
 
    Si une ligne apparaît dans « sensibles » ou « restreints », retirez-la et prévenez l'équipe.
 
-9. Menu **Audience** :
+9. Menu **Audience** : **premier temps, l'application reste en mode « Test ».**
    1. Vérifiez que « Type d'utilisateur » indique **Externe**.
-   2. Vérifiez l'« État de la publication » (« Publishing status »). Il indique « Test » (« Testing »).
-   3. Cliquez sur **Publier l'application** (« Publish app »).
-   4. Confirmez en cliquant sur **Confirmer**.
+   2. Vérifiez l'« État de la publication » (« Publishing status ») : il indique **« Test »** (« Testing »). **Ne cliquez pas** sur « Publier l'application » : le bouton est grisé tant que l'image de marque n'est pas complète, c'est normal. La publication se fait en f bis.
+   3. Plus bas, section **Utilisateurs de test** (« Test users ») : cliquez sur **Ajouter des utilisateurs** (« Add users »).
+   4. Saisissez l'adresse Gmail **du compte que vous utiliserez pour le test** (celle connectée dans Chrome sur le PC et sur le téléphone). Cliquez sur **Enregistrer**.
 
-Résultat attendu : l'état devient **En production** (« In production »). Aucune demande de vérification n'est affichée, car les trois accès ne sont pas sensibles.
+Résultat attendu : l'état est **« Test »**, et votre adresse figure dans la liste des utilisateurs de test (« 1 utilisateur »).
 
-   Si Google affiche « Vérification requise » (« Verification required »), faites une capture d'écran et arrêtez-vous : c'est une information importante pour le test R11.
+   **Ce que le mode « Test » change pour vous, d'ici la publication** :
+   - au moment où vous acceptez les accès (séance g, étapes 1, 4 et 21), Google affiche d'abord un **avertissement** (« Google n'a pas validé cette application »). C'est **normal en mode Test** : cliquez sur **Continuer**, puis acceptez. Faites une capture ;
+   - votre accord est valable **7 jours**. Faites la séance g (y compris le contrôle du lendemain) dans les 7 jours qui suivent votre première acceptation ; au-delà, il suffit d'accepter de nouveau ;
+   - seuls les comptes de la liste peuvent se connecter. Un autre compte voit « Accès bloqué ».
 
-**À noter pour l'équipe** : le nom exact de l'état final, et tout message affiché après la publication.
+**À noter pour l'équipe** : l'état affiché (« Test ») et, si le bouton « Publier l'application » est grisé, le texte exact du message qui l'accompagne (capture).
 
 ---
 
@@ -222,6 +226,65 @@ Envoyez à Jarvis, par **message privé** :
 
 ---
 
+## f bis) Publier l'application (deuxième temps : environ 15 min, plus 10 min de contrôle)
+**Quand ?** Quand Jarvis vous annonce que **les pages d'accueil et de confidentialité sont prêtes**.
+- Si c'est **avant** votre séance g : faites f bis.1 à f bis.3 **avant** la séance. Les étapes 1 et 4 de la séance mesureront alors directement le consentement en production, et le contrôle f bis.4 est inutile.
+- Sinon : faites la séance g en mode Test, sans attendre, puis revenez ici. Le contrôle f bis.4 complétera la séance.
+
+### f bis.1 Mettre les pages en ligne
+1. Relancez la mise en ligne comme en d.2 (onglet **Actions**, workflow **poc**, **Run workflow**, case « Déployer sur GitHub Pages » cochée). Attendez la pastille verte.
+2. Sur le PC, ouvrez ces deux adresses :
+   - `https://mathieublandin-create.github.io/taskapp/accueil.html` : une page « Done Juan », avec un lien « Règles de confidentialité » ;
+   - `https://mathieublandin-create.github.io/taskapp/confidentialite.html` : la page « Règles de confidentialité ».
+
+Résultat attendu : les deux pages s'affichent. Si l'une affiche « 404 », attendez 5 minutes et rechargez ; si cela persiste, prévenez Jarvis.
+
+### f bis.2 Compléter l'image de marque
+Dans **Google Auth Platform**, menu **Image de marque** (« Branding »), recopiez exactement :
+
+| Champ | Valeur à saisir |
+|---|---|
+| Nom de l'application | `Done Juan` (déjà rempli) |
+| Adresse e-mail d'assistance utilisateur | votre adresse (déjà remplie) |
+| Logo de l'application | **rien** (aucun logo) |
+| Page d'accueil de l'application | `https://mathieublandin-create.github.io/taskapp/accueil.html` |
+| Lien vers les règles de confidentialité | `https://mathieublandin-create.github.io/taskapp/confidentialite.html` |
+| Lien vers les conditions d'utilisation | **rien** (laissez vide) |
+| Domaines autorisés | cliquez sur **Ajouter un domaine** (« Add domain ») et saisissez `mathieublandin-create.github.io` (sans `https://`, sans barre oblique) |
+| Coordonnées du développeur | votre adresse (déjà remplie) |
+
+Ne saisissez **pas** `github.io` seul : Google le refuse, car ce nom est partagé par tous les utilisateurs de GitHub. Cliquez sur **Enregistrer**.
+
+Résultat attendu : l'enregistrement se fait sans message d'erreur.
+
+- Si un message apparaît sous « Domaines autorisés » (par exemple « Domaine introuvable » / « Domain not found », « Domaine non valide » / « Invalid domain », ou une demande de **prouver que le domaine vous appartient**, parfois avec un lien vers **Search Console**) : faites une capture, **ne créez rien dans Search Console**, ne cherchez pas à contourner, et prévenez Jarvis. L'équipe vous posera une question à choix (Q-R11-1). L'application continue de fonctionner en mode Test.
+- Si Google vous propose de **soumettre l'application à validation** ou à une « vérification de la marque » (« Brand verification », « Verification Center ») : **ne soumettez rien**. Notez-le.
+
+### f bis.3 Publier
+1. Menu **Audience**, « État de la publication » : cliquez sur **Publier l'application** (« Publish app »).
+2. Confirmez en cliquant sur **Confirmer**.
+
+Résultat attendu : l'état devient **« En production »** (« In production »). Aucune demande de vérification n'est affichée, car les trois accès ne sont pas sensibles. La liste des utilisateurs de test ne sert plus ; vous pouvez la laisser telle quelle.
+
+- Si le bouton reste **grisé** : capture du message qui l'accompagne, et prévenez Jarvis.
+- Si Google affiche « Vérification requise » (« Verification required ») : capture, arrêtez-vous et prévenez Jarvis.
+
+### f bis.4 Contrôle du consentement en production (10 min, seulement si la séance g a déjà été faite en mode Test)
+L'objectif est de revoir l'écran d'accord de Google, maintenant que l'application est publiée.
+1. Dans Chrome sur le PC, `https://myaccount.google.com`, **Sécurité**, **Vos connexions à des applications tierces**, `Done Juan`, **Supprimer l'accès**. (Ainsi, Google vous redemandera votre accord.)
+2. **PC** : ouvrez l'application installée, cliquez sur « Se connecter ». Observez, avant d'accepter :
+   - un écran « Google n'a pas validé cette application » apparaît-il ?
+   - quel **nom** s'affiche en haut de l'écran Google : « Done Juan » ou « mathieublandin-create.github.io » ?
+   - quels **accès** sont listés ?
+   Faites une capture de chaque écran, puis acceptez.
+3. **Téléphone** : ouvrez l'icône « Diagnostic ». Si l'application part seule chez Google et revient avec une erreur, c'est normal (l'accès vient d'être supprimé). Touchez « Se connecter ». Mêmes observations et captures qu'au point 2, puis acceptez.
+4. **Téléphone** : touchez « Jeton par redirection ». Le journal affiche-t-il « JetonObtenu » sans que vous ayez rien tapé ni touché chez Google ?
+5. Exportez le journal du téléphone et du PC (« Exporter JSON ») et envoyez-les à Jarvis avec les captures.
+
+**À noter pour l'équipe (mesure R11)** : l'état final (« En production »), tout message vu dans l'image de marque ou à la publication, et pour chaque appareil : avertissement oui/non, nom affiché, accès listés, « JetonObtenu » sans saisie oui/non.
+
+---
+
 ## g) Séance d'essai (environ 1 h, plus une pause d'au moins 1 h)
 
 ### Règles
@@ -229,6 +292,7 @@ Envoyez à Jarvis, par **message privé** :
 - Prenez une **capture d'écran** à chaque fois que Google affiche quelque chose (choix de compte, consentement, avertissement, erreur).
 - Pour chaque étape, remplissez le tableau de résultats : heure, appareil, ce que vous avez vu, réussi ou non.
 - Ne cherchez pas à corriger une erreur. Notez-la : c'est un résultat utile.
+- **Mode Test ou production ?** Notez en tête du tableau l'état de l'application au moment de la séance (« Test » ou « En production », menu Audience). En mode Test, l'avertissement « Google n'a pas validé cette application » est **attendu** à chaque acceptation (étapes 1, 4 et 21) : cliquez sur **Continuer**, puis acceptez. Le contrôle de cet écran en production se fait en f bis.4.
 - **Installer l'application** sur le téléphone : dans Chrome, à l'adresse de l'application, menu **⋮**, puis **Installer l'application** (ou **Ajouter à l'écran d'accueil**, puis **Installer**). Une icône « Diagnostic » apparaît sur l'écran d'accueil. **Pendant la séance, ouvrez toujours l'application par cette icône**, jamais par un onglet de Chrome (sauf à l'étape 13).
 - Le journal de l'application et le haut de l'écran affichent une ligne de **contexte**, par exemple « mode d'affichage : standalone ; plateforme : web-android ; en ligne : true ». Sur le téléphone, vérifiez **« standalone »** (application installée, et non onglet) et **« web-android »**. Sur le PC : « standalone » et « web-pc ».
 - **Redirection automatique à l'ouverture** : une case de ce nom se trouve dans le groupe « Redirection ». Une fois cochée, l'application part d'elle-même chez Google **à chaque ouverture**, sans que vous touchiez quoi que ce soit, puis revient. C'est exactement ce que l'étape décisive (14) doit vérifier. Si le journal affiche « Départ automatique à l'ouverture : Non lancé », il indique la raison (pas de réseau, pas d'identité, départ précédent resté sans retour) : notez-la, puis touchez « Jeton par redirection ».
@@ -237,10 +301,10 @@ Envoyez à Jarvis, par **message privé** :
 
 | # | Ce que vous faites | Ce que vous observez | Ce que vous notez |
 |---|---|---|---|
-| 1 | **Consentement, PC.** Ouvrez l'adresse de l'application dans Chrome. Cliquez sur « Se connecter » et acceptez. | Un écran « Google n'a pas validé cette application » apparaît-il ? Quels accès sont listés ? | Oui/non pour l'écran. Les accès (capture). |
+| 1 | **Consentement, PC.** Ouvrez l'adresse de l'application dans Chrome. Cliquez sur « Se connecter » et acceptez (en mode Test : **Continuer** sur l'avertissement, puis acceptez). | Un écran « Google n'a pas validé cette application » apparaît-il ? Quel nom s'affiche en haut de l'écran Google ? Quels accès sont listés ? | Oui/non pour l'écran. Le nom. Les accès (capture). |
 | 2 | **Installer sur le PC.** Cliquez sur l'icône d'installation dans la barre d'adresse. | L'application s'ouvre dans sa propre fenêtre. | Oui/non. |
 | 3 | **Installer sur le téléphone.** Ouvrez l'adresse dans Chrome, puis **⋮ > Installer l'application**. Ouvrez l'icône « Diagnostic ». | Une fenêtre sans barre d'adresse. | Oui/non. |
-| 4 | **Consentement, téléphone.** Dans l'application installée, touchez « Se connecter », acceptez. | Même question qu'en 1. La fenêtre Google revient-elle dans l'application ? | Oui/non. Capture. |
+| 4 | **Consentement, téléphone.** Dans l'application installée, touchez « Se connecter », acceptez (en mode Test : **Continuer**, puis acceptez). | Même question qu'en 1. La fenêtre Google revient-elle dans l'application ? | Oui/non. Capture. |
 | 5 | **Connexion automatique, premier essai.** Touchez « Remettre à zéro le compteur », puis « Jeton par redirection ». Ensuite, **cochez la case « Redirection automatique à l'ouverture »**. | L'écran passe brièvement chez Google et revient. Le journal affiche « JetonObtenu », « redirection n° 1 », une durée, « standalone » et « web-android ». | Le résultat, la durée, « standalone » et « web-android » (oui/non). Si un écran Google demande quelque chose : capture. |
 | 6 | **Stockage, téléphone.** Touchez « Stockage persistant ? ». | Deux lignes : avant, puis après la demande. | « Stockage persistant » ou « non persistant ». |
 | 7 | **Stockage, PC.** Même bouton dans l'application installée du PC. Cochez aussi la case « Redirection automatique à l'ouverture » sur le PC. | Idem. | Le résultat. |
@@ -283,6 +347,7 @@ Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir
 ### Après la séance
 - **Exportez le journal de chaque appareil** : bouton « Exporter JSON » sur le téléphone, puis sur le PC. Le fichier est téléchargé (sur le téléphone, dans « Téléchargements »). Chaque export commence par la ligne de **contexte** de l'appareil (mode d'affichage, plateforme) : inutile de renommer les fichiers. « Exporter CSV » donne la même chose pour un tableur, le contexte en première ligne.
 - Envoyez le tableau, les captures et les deux exports à Jarvis, en message privé.
+- Si la séance s'est faite en mode Test, il reste le contrôle f bis.4 après la publication : il est **nécessaire** pour la mesure R11 (écran d'accord de Google), mais n'empêche pas l'équipe d'analyser le reste.
 - L'équipe analyse les résultats. **Si l'étape 14 réussit sans rien taper et que le stockage est persistant (étape 6)**, la version web est retenue pour le téléphone, comme vous l'avez décidé ; sinon, on revient à l'application Android (annexe R), et l'équipe vous le dit avant toute action.
 
 ---
@@ -302,7 +367,7 @@ Recopiez ce tableau dans un fichier privé, ou demandez à l'équipe de le tenir
    - « Restrictions relatives aux API » : **Restreindre la clé**, cochez seulement **Google Picker API** ;
    - **Enregistrer**.
 3. Notez la clé et le **numéro du projet** (page d'accueil de la console, « Numéro du projet »). Envoyez-les à Jarvis en message privé. Ce ne sont pas des secrets, grâce aux restrictions.
-4. Aucun réglage n'est nécessaire pour le compte du contributeur : l'application est « En production ».
+4. Si l'application est « En production » (f bis.3), aucun réglage n'est nécessaire pour le compte du contributeur. Si elle est encore en mode **« Test »**, ajoutez l'adresse Gmail du contributeur dans **Audience > Utilisateurs de test** (b.4, point 9), sinon il verra « Accès bloqué ».
 
 ### h.3 Déroulé
 | # | Qui | Ce que vous faites | Ce que vous notez |
@@ -334,7 +399,9 @@ Fin : retirez le partage du dossier dans Drive si vous le souhaitez.
 |---|---|
 | « redirect_uri_mismatch » | L'adresse de l'application n'est pas dans les **URI de redirection** (c.2.6), ou il manque la barre oblique finale. Corrigez, attendez 5 minutes. |
 | « origin_mismatch » | L'origine n'est pas dans les **origines JavaScript** (c.2.5), ou elle a une barre oblique finale. |
-| « Accès bloqué : cette application n'a pas été validée » | Notez-le : c'est un résultat. Vérifiez que l'état est « En production » (b.4, point 9). |
+| « Accès bloqué : cette application n'a pas été validée » ou « … n'a pas terminé la procédure de validation » (erreur 403 `access_denied`) | En mode **Test** : le compte utilisé n'est pas dans la liste des utilisateurs de test. Ajoutez-le (b.4, point 9), puis réessayez. En production : notez-le, c'est un résultat, et prévenez Jarvis. |
+| Bouton « Publier l'application » grisé, message sur l'« image de marque » (« Branding ») | Normal tant que la page d'accueil, les règles de confidentialité et le domaine autorisé ne sont pas remplis. Restez en mode Test (b.4, point 9) et attendez f bis. |
+| « Domaine introuvable », « Domain not found » ou demande de vérification du domaine dans l'image de marque | Capture, rien dans Search Console, message à Jarvis (f bis.2). |
 | Page blanche ou « 404 » à l'adresse de l'application | Vérifiez `VITE_BASE_PATH` = `/taskapp/` (a.3) et relancez la mise en ligne (d.2). |
 | « Configuration invalide : VITE_GOOGLE_WEB_CLIENT_ID est vide » | Ajoutez la variable (d.1) et relancez la mise en ligne (d.2). |
 | Pas de menu « Installer l'application » dans Chrome (téléphone) | Rechargez la page une fois, attendez 30 s, réessayez. Sinon : **⋮ > Ajouter à l'écran d'accueil**. Capture et message à Jarvis. |

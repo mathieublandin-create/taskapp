@@ -36,6 +36,9 @@ En mode « Test », les autorisations expirent au bout de 7 jours.
 - **Dossier de données** : dossier visible via `drive.file` (recommandation de l'arbitrage A6). Repli : `drive.appdata` si la mise au point technique révèle un problème de visibilité des fichiers entre le client Android et le client web (risque R1).
 - **Projets Google Cloud distincts** pour la production et pour le développement et la recette.
 
+## Note du 2026-10-25 (DAT v0.11.2, sans changement de décision)
+Constat du commanditaire : le bouton « Publier l'application » reste grisé tant que l'image de marque est incomplète. Publier en production, même avec des scopes non sensibles, exige une **page d'accueil**, une page de **règles de confidentialité** et un **domaine autorisé** ; cela ne déclenche pas la vérification de la marque en l'absence de logo, mais l'écran de Google affiche alors le domaine au lieu du nom. Ces pages sont servies avec la PWA sur GitHub Pages (`poc-specification.md` §16). Si Google refuse le domaine `mathieublandin-create.github.io` : question Q-R11-1 (protocole v3.1 §3.1 ter). Le mode « Test » reste réservé au test technique, le temps de publier.
+
 ## Conséquences
 - \+ Le lot 1 n'est soumis à aucune vérification et à aucun délai Google.
 - \+ L'accès est limité aux fichiers de l'application ; les autres fichiers Drive de l'utilisateur restent hors de portée.

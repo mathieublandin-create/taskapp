@@ -1,6 +1,7 @@
 # Spécification de l'application de test (preuve de concept, dossier `poc/`)
 
-> **Version 2 du 2026-10-22.** Auteur : Starck. Destinataire : Benjamin (revue : Anthony).
+> **Version 2.1 du 2026-10-25.** Auteur : Starck. Destinataire : Benjamin (revue : Anthony).
+> **Version 2.1** : ajout du §16 « Pages d'accueil et de confidentialité » (condition de la publication en production, donc de R11, protocole v3.1) ; §12 tâche 12 ; §14.3 précisé (mode « Test »).
 > **Version 2 (DEC-034, ADR-013)** : volet Android natif **suspendu** (gardé pour le repli, §1 à §9 inchangés sur ce point) ; ajout du §13 « Redirection et durabilité » (mesures M-RED, M-PERSIST, M-DUR, condition de DEC-034), du §14 « Volet partage R-P1/R-P2 » (optionnel, DEC-035, M1-14) et du §15 « Écarts constatés avec l'implémentation » (commit `b0239ec`). Le §12 est mis à jour.
 > Version 1 du 2026-10-22 : création.
 > Références : `test-technique-R1-R2.md` v3, `guide-test-technique-commanditaire.md` v3, DAT v0.11 §3, §4.1 (dont §4.1.7), ADR-004, ADR-005, **ADR-013**, ADR-012 (repli), DEC-023, DEC-031, DEC-034, DEC-035.
@@ -379,6 +380,7 @@ Complément recommandé : un contrôle automatique (Semgrep ou `gitleaks`, DAT �
 | 9 | Mesures M-RED, M-PERSIST, M-DUR (§13) | Benjamin | Fait (`b0239ec`), corrections du §15 à apporter |
 | 10 | Volet partage R-P1/R-P2 (§14) | Benjamin | **Optionnel**, à faire avant l'E3 d'EPI-001, pas avant la séance web |
 | 11 | Entrée `android` (booléen, faux par défaut) dans `poc.yml` pour sauter les jobs `apk` | Anthony | Fait |
+| 12 | (v2.1) Pages `accueil.html` et `confidentialite.html`, exclusion du repli de navigation, lien en pied de l'écran « Diagnostic », tests Vitest (§16) | Benjamin | **À faire**, prioritaire : condition de la publication, donc de R11 |
 
 ## 13. Redirection et durabilité (v2, DEC-034, ADR-013)
 
@@ -446,7 +448,7 @@ Analyse du fragment (jeton, erreur, vide) ; classement des codes ; construction 
 Le jeton passé au sélecteur n'est jamais journalisé. La clé d'API n'est pas un secret, mais elle est restreinte dans la console (référents HTTP `https://mathieublandin-create.github.io/*` et `http://localhost:5173/*`, API Google Picker seule) et n'est pas versionnée.
 
 ### 14.3 Prérequis propres
-API **Google Picker** activée dans le projet `objectifs-taches-dev` ; clé d'API restreinte ; second compte Google (B) ; iPhone sous iOS 17 ou plus ; accès d'un second compte à l'écran de consentement (application « En production » : aucun compte de test à déclarer).
+API **Google Picker** activée dans le projet `objectifs-taches-dev` ; clé d'API restreinte ; second compte Google (B) ; iPhone sous iOS 17 ou plus ; accès d'un second compte à l'écran de consentement (application « En production » : aucun compte de test à déclarer ; v2.1 : tant qu'elle est en mode « Test », déclarer le compte B en utilisateur de test).
 
 ## 15. Écarts constatés avec l'implémentation (revue de `b0239ec`, 2026-10-22 ; seconde revue de `e1d2b21` et `62a010b`, 2026-10-22)
 
@@ -464,3 +466,116 @@ API **Google Picker** activée dans le projet `objectifs-taches-dev` ; clé d'AP
 | EC-7 | `access_denied` classé `interaction_requise` | Conforme pour `prompt=none` (§13.2) | Idem | Aucun | En production, après un geste, `access_denied` donne « accès perdu » (DAT §4.1.6 bis, ADR-013) |
 
 Conformes : URI de redirection (origine + `VITE_BASE_PATH`), paramètres de l'URL (`response_type=token`, `prompt=none`, `include_granted_scopes`, `login_hint` facultatif), `state` par `crypto.randomUUID()`, contexte à usage unique dans `localStorage`, rejet `etat_invalide`, compteur cumulatif et remise à zéro, durée clic-retour rechargement compris, jeton en mémoire seulement et déclaré au filtre anti-secret, classement des erreurs, `persisted()` journalisé avant `persist()`, relecture du marqueur à la demande.
+
+## 16. Pages d'accueil et de confidentialité (v2.1, 2026-10-25, condition de R11)
+
+### 16.1 Objet
+Le 2026-10-25, le commanditaire a constaté que le bouton « Publier l'application » de Google Auth Platform reste **grisé** tant que l'**image de marque** (« Branding ») est incomplète. Pour publier en production (prérequis P3-b, mesure R11 du protocole v3.1), Google demande une **page d'accueil**, une page de **règles de confidentialité** et un **domaine autorisé**, sur le domaine de l'application. Ces deux pages sont servies par GitHub Pages **avec le PoC**, sans autre hébergement ni domaine :
+
+| Page | Fichier source | Adresse publiée |
+|---|---|---|
+| Accueil | `poc/public/accueil.html` | `https://mathieublandin-create.github.io/taskapp/accueil.html` |
+| Règles de confidentialité | `poc/public/confidentialite.html` | `https://mathieublandin-create.github.io/taskapp/confidentialite.html` |
+
+La page d'accueil est une page **dédiée** et non la racine `/taskapp/` : la racine est l'écran « Diagnostic », qui peut partir d'elle-même chez Google (redirection automatique à l'ouverture, §13.3) ; une page d'accueil doit être lisible sans connexion et sans script.
+
+### 16.2 Exigences
+1. **HTML statique**, sans JavaScript, sans ressource externe (ni police, ni image distante, ni mesure d'audience) ; seules des balises `<a href>` pointent vers l'extérieur. CSS en ligne minimal dans un `<style>`. `lang="fr"`, `charset` UTF-8, `viewport`.
+2. Liens **relatifs** entre les deux pages et vers l'application (`confidentialite.html`, `accueil.html`, `./`), pour rester indépendants de `VITE_BASE_PATH`. Vite copie `public/` tel quel à la racine de la base : aucune configuration à ajouter.
+3. **Service worker** : les deux pages ne doivent jamais être remplacées par `index.html`. Ajouter à `optionsWorkbox` (`src/sw/strategie.ts`) : `navigateFallbackDenylist: [/\/(accueil|confidentialite)\.html$/]`. Elles restent précachées (motif `**/*.html`).
+4. **Écran « Diagnostic »** (souhaitable, non bloquant) : un lien discret « Règles de confidentialité » (`confidentialite.html`) en pied d'écran.
+5. Le texte est celui des §16.3 et §16.4, **à l'identique**. Toute modification de fond (scopes, lieux de stockage, contact) passe par Starck : la page engage le commanditaire vis-à-vis de Google et des utilisateurs.
+6. Aucune adresse e-mail personnelle dans les pages : le contact passe par les tickets du dépôt public ; Google affiche par ailleurs l'adresse d'assistance sur son écran de consentement.
+7. **Tests Vitest** (`tests/pages-publiques.test.ts`) : les deux fichiers existent ; aucun ne contient `<script`, `src="http` ni `href="http` vers un autre hôte que `github.com`, `docs.github.com`, `myaccount.google.com`, `developers.google.com`, `policies.google.com` ; `accueil.html` contient un lien `href="confidentialite.html"` ; `confidentialite.html` mentionne `drive.file`, `openid` et `email` ; `optionsWorkbox.navigateFallbackDenylist` écarte les deux chemins.
+
+### 16.3 Contenu exact de `poc/public/confidentialite.html`
+
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Règles de confidentialité – Done Juan</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+      h1 { font-size: 1.6rem; } h2 { font-size: 1.15rem; margin-top: 1.6rem; }
+      code { background: #f2f2f2; padding: 0 .25rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Règles de confidentialité – Done Juan</h1>
+    <p><em>Dernière mise à jour : 25 octobre 2026.</em></p>
+
+    <p>Done Juan est une application personnelle de suivi d'objectifs et de tâches, en cours de développement. L'application publiée à cette adresse est une <strong>version de test</strong> (« Diagnostic ») : elle sert à vérifier la connexion à Google et l'enregistrement des données sur l'appareil.</p>
+
+    <h2>En bref</h2>
+    <ul>
+      <li><strong>Nous ne collectons aucune donnée.</strong> L'application n'a pas de serveur : elle fonctionne entièrement dans votre navigateur.</li>
+      <li>Vos données restent <strong>dans votre propre Google Drive</strong> et <strong>sur votre appareil</strong>. Personne d'autre que vous n'y a accès.</li>
+      <li>Aucune publicité, aucune mesure d'audience, aucun cookie de suivi. Rien n'est vendu ni partagé.</li>
+    </ul>
+
+    <h2>Accès demandés à votre compte Google</h2>
+    <ul>
+      <li><code>openid</code> et <code>email</code> : connaître votre adresse e-mail, pour afficher le compte connecté et séparer les données de plusieurs comptes sur un même appareil.</li>
+      <li><code>drive.file</code> : créer, lire et modifier <strong>uniquement</strong> les fichiers que l'application a elle-même créés dans votre Google Drive (dossier « Done Juan (POC) »), ou que vous choisissez vous-même dans le sélecteur de fichiers de Google. L'application <strong>n'a pas accès</strong> à vos autres fichiers.</li>
+    </ul>
+    <p>L'application n'accède ni à votre agenda, ni à vos contacts, ni à vos e-mails. Si une version future demande un nouvel accès (par exemple à Google Agenda), cette page sera mise à jour <strong>avant</strong>, et Google vous demandera votre accord.</p>
+
+    <h2>Où sont vos données</h2>
+    <ul>
+      <li><strong>Dans votre Google Drive</strong> : les fichiers créés par l'application, dans le dossier « Done Juan (POC) ».</li>
+      <li><strong>Sur votre appareil</strong>, dans le stockage du navigateur : votre adresse e-mail, le journal de diagnostic et un marqueur de test.</li>
+      <li>Le jeton d'accès fourni par Google reste en mémoire le temps de la session. Il n'est jamais enregistré ni transmis à qui que ce soit d'autre que Google.</li>
+    </ul>
+    <p>Les pages sont hébergées par GitHub (GitHub Pages). Comme tout hébergeur, GitHub reçoit l'adresse IP des visiteurs pour leur envoyer les pages : voir la <a href="https://docs.github.com/fr/site-policy/privacy-policies/github-general-privacy-statement">déclaration de confidentialité de GitHub</a>. La connexion passe par Google : voir les <a href="https://policies.google.com/privacy?hl=fr">règles de confidentialité de Google</a>.</p>
+
+    <h2>Utilisation limitée des données Google</h2>
+    <p>L'utilisation et le transfert des informations reçues des API Google respectent la <a href="https://developers.google.com/terms/api-services-user-data-policy">règle relative aux données utilisateur des services d'API Google</a> (Google API Services User Data Policy), y compris les exigences d'utilisation limitée (« Limited Use »).</p>
+
+    <h2>Garder la main sur vos données</h2>
+    <ul>
+      <li>Supprimer vos données : supprimez le dossier « Done Juan (POC) » de votre Google Drive, puis effacez les données du site dans votre navigateur (ou désinstallez l'application).</li>
+      <li>Retirer l'accès de l'application à votre compte : <a href="https://myaccount.google.com/connections">myaccount.google.com/connections</a>, « Done Juan », « Supprimer l'accès ».</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Pour toute question : ouvrez un ticket sur <a href="https://github.com/mathieublandin-create/taskapp/issues">github.com/mathieublandin-create/taskapp/issues</a>, ou écrivez à l'adresse d'assistance que Google affiche sur son écran de connexion (cliquez sur le nom de l'application).</p>
+
+    <p><a href="accueil.html">Retour à l'accueil</a></p>
+  </body>
+</html>
+```
+
+### 16.4 Contenu exact de `poc/public/accueil.html`
+
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Done Juan</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+      h1 { font-size: 1.8rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Done Juan</h1>
+    <p>Done Juan est une application personnelle de suivi d'objectifs et de tâches, utilisable sur ordinateur et sur téléphone, même sans réseau. Les données sont enregistrées sur l'appareil et synchronisées par le Google Drive de l'utilisateur, sans serveur intermédiaire.</p>
+    <p>L'application est <strong>en cours de développement</strong>. Cette adresse héberge sa <strong>version de test</strong> (« Diagnostic »), qui vérifie la connexion à Google et l'enregistrement des données.</p>
+    <ul>
+      <li><a href="./">Ouvrir l'application de test</a></li>
+      <li><a href="confidentialite.html">Règles de confidentialité</a></li>
+      <li><a href="https://github.com/mathieublandin-create/taskapp">Code source</a></li>
+    </ul>
+  </body>
+</html>
+```
+
+### 16.5 Mise en ligne et suite
+Livraison par Benjamin (revue Anthony, contrôle du texte par Starck), puis **un passage du workflow `poc`** avec « Déployer sur GitHub Pages » (le commanditaire, guide f bis.1). Jarvis annonce alors au commanditaire que les pages sont prêtes : il complète l'image de marque et publie (guide f bis.2 et f bis.3). Si Google refuse le domaine `mathieublandin-create.github.io`, voir Q-R11-1 (protocole v3.1 §3.1 ter) ; avec l'option B (domaine personnalisé), seules les adresses changent, pas le contenu.
+
+Pour la production (hors PoC) : la même paire de pages sera nécessaire à l'origine de production, avec un texte adapté au produit réel (Anthony, en E9 d'US-022 ; contenu validé par Starck et Pepper).

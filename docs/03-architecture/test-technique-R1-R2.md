@@ -1,6 +1,7 @@
 # Test technique préalable (avant E9 de US-022 et US-017) : volet web, condition de DEC-034, essai de partage
 
-> **Version 3 du 2026-10-22.** Auteur : Starck.
+> **Version 3.1 du 2026-10-25.** Auteur : Starck.
+> **Version 3.1 (retour du commanditaire du 2026-10-25, bouton « Publier l'application » grisé)** : la publication en production exige une **image de marque complète** (page d'accueil, règles de confidentialité, domaine autorisé), ce que la v3 faisait laisser vide. **R11 dépend désormais de ces pages** (`poc-specification.md` §16) et se déroule en deux temps : préparation et séance en mode **« Test »** (utilisateur de test déclaré), puis publication et **contrôle R11** dédié (§3.1 bis). P3 est scindé en P3-a et P3-b. Nouvelle question conditionnelle **Q-R11-1** (§3.1 ter). M-RED, M-PERSIST, M-DUR, R3, R12 et §3.5 peuvent être mesurés en mode Test (§3.0). Sources de la veille au §7.
 > **Version 3 (DEC-034, ADR-013, DEC-035)** : le **volet Android natif** (R1 croisé, R2, R16-T, prérequis P4 b, P6 « débogage », P9) est **retiré** du protocole et conservé en **annexe A « repli »**, à n'exécuter que si la condition de DEC-034 échoue. Ajouts : **M-RED** (jeton par redirection à l'ouverture sur Chrome Android, condition de DEC-034), **M-PERSIST** (stockage persistant de la PWA installée, condition de DEC-034), **M-DUR** (durabilité d'IndexedDB après arrêt forcé et redémarrage), volet **optionnel R-P1/R-P2** (essai de partage d'EPI-001, deux comptes et l'iPhone du contributeur, avant l'E3 d'EPI-001). R3, R12 et §3.5 sont refaits sur Chrome Android. La mise à disposition sur GitHub Pages (dépôt public, Pages en source « GitHub Actions », variables) est reprise de `procedure-cles-et-premier-passage.md` (suspendue). **Condition de l'E9 d'US-022 et d'US-017 : R11 et M-RED.**
 > Version 2 du 2026-10-21 : APK installé directement (ADR-012), hébergement (DEC-023), P9, R16-T.
 > Statut : **protocole prêt, non exécuté. Aucun résultat à ce jour.**
@@ -11,7 +12,7 @@
 
 | Mesure | Question | Si le test échoue | Bloquant ? |
 |---|---|---|---|
-| **R11** | En production, avec l'origine GitHub Pages (sans domaine propre, DEC-006), le consentement à `openid`, `email` et `drive.file` s'affiche-t-il **sans écran d'avertissement**, sur le PC et sur Chrome Android (US-022 CA-8) ? | Domaine personnalisé (environ 10 à 15 € par an, arbitrage du commanditaire), ou acceptation de l'écran | **Oui** (E9 d'US-022, US-017) |
+| **R11** | (v3.1) L'application peut-elle être **publiée en production** avec une image de marque hébergée sur l'origine GitHub Pages (domaine autorisé `mathieublandin-create.github.io`, sans domaine propre, DEC-006) ? Une fois publiée, le consentement à `openid`, `email` et `drive.file` s'affiche-t-il **sans écran d'avertissement**, sur le PC et sur Chrome Android (US-022 CA-8) ? | Q-R11-1 (§3.1 ter) : vérification Search Console de l'adresse github.io, ou domaine personnalisé (environ 10 à 15 € par an, arbitrage du commanditaire), ou acceptation de l'écran | **Oui** (E9 d'US-022, US-017) |
 | **M-RED** (condition de DEC-034) | Sur Chrome Android, la **PWA installée**, ouverte plus d'une heure après la dernière connexion, session Google du téléphone active, obtient-elle un jeton par redirection `prompt=none` **sans saisie**, en **au plus un aller-retour** vers Google ? | On garde l'APK pour Android (DEC-034) : annexe A, ADR-012 réactivé | **Oui** (E9 d'US-022, US-017 ; décision PWA unique) |
 | **M-PERSIST** (condition de DEC-034) | `navigator.storage.persist()` est-il accordé à la PWA installée sur Chrome Android ? Et sur le PC (R15) ? | Sur Android : on garde l'APK (DEC-034). Sur PC : avertissement R15, sans changement | **Oui** pour Android (décision PWA unique) |
 | **M-DUR** | Un marqueur écrit dans IndexedDB en durabilité stricte survit-il à un **arrêt forcé** de Chrome et à un **redémarrage** du téléphone (US-018 CA-5) ? | Analyse par Starck : correction du mode d'écriture, ou constat d'une limite à soumettre au commanditaire | Non pour E9 d'US-022 et US-017 ; **oui pour E9 d'US-018** |
@@ -29,7 +30,8 @@ R1 (croisement de clients Android et web), R2 (jeton silencieux natif) et R16-T 
 |---|---|---|---|
 | P1 | **Compte Google** pour le test | **Commanditaire** | Son compte, ou un compte Gmail de test. |
 | P2 | **Projet Google Cloud** `objectifs-taches-dev`, API Google Drive activée | **Commanditaire** | Aucune facturation. |
-| P3 | **Écran de consentement OAuth** : « Externe », **« En production »**, nom, adresse d'assistance, **sans logo**, scopes `openid`, `email`, `drive.file` | Commanditaire, guidé | Publication d'un clic, sans vérification. |
+| P3-a | **Écran de consentement OAuth, premier temps** : « Externe », **« Test »**, nom, adresse d'assistance, coordonnées du développeur, **sans logo**, scopes `openid`, `email`, `drive.file` ; compte de P1 déclaré en **utilisateur de test** (et le compte B pour R-P1/R-P2 tant que l'application n'est pas publiée) | Commanditaire, guidé (guide b.4) | Suffit pour toutes les mesures sauf R11 (§3.0). |
+| P3-b | **Écran de consentement OAuth, second temps** : image de marque complétée (page d'accueil `…/taskapp/accueil.html`, règles de confidentialité `…/taskapp/confidentialite.html`, domaine autorisé `mathieublandin-create.github.io`, toujours sans logo), puis **« En production »** | Commanditaire, guidé (guide f bis) ; pages par l'équipe (`poc-specification.md` §16) | **Condition de R11.** Le bouton « Publier l'application » est grisé tant que l'image de marque est incomplète (constat du 2026-10-25). Aucune vérification de la marque n'est demandée : sans elle, l'écran de Google affiche le domaine au lieu du nom (§3.1 bis). |
 | P4 | **Client OAuth Web** : origines JavaScript `http://localhost:5173` et `https://mathieublandin-create.github.io` ; **URI de redirection autorisés** (v3) : `https://mathieublandin-create.github.io/taskapp/` et `http://localhost:5173/` | Commanditaire | L'URI de redirection est l'origine suivie de `VITE_BASE_PATH`, barre oblique finale comprise, à l'identique. Sans elle, M-RED échoue en `redirect_uri_mismatch`. |
 | P5 | **Mise à disposition sur GitHub Pages** (DEC-023, DEC-032 H-1 A) : dépôt `mathieublandin-create/taskapp` rendu **public** par le commanditaire ; « Settings > Pages » : source **« GitHub Actions »** ; variables du dépôt `VITE_BASE_PATH=/taskapp/`, `VITE_APP_ORIGIN=https://mathieublandin-create.github.io`, puis `VITE_GOOGLE_WEB_CLIENT_ID` ; un passage du workflow `poc` avec « Déployer sur GitHub Pages » coché | **Commanditaire** | Reprise des étapes 3 et 4 de `procedure-cles-et-premier-passage.md` (suspendue), **sans clé** : le job `apk (release)` est sauté, sans conséquence. Historique vérifié le 2026-10-22 : aucun secret. |
 | P6 | **Téléphone Android** 10 ou plus, **Chrome à jour**, session Google active dans Chrome (compte P1) | **Commanditaire** | Ni mode développeur, ni débogage USB, ni installation d'APK. |
@@ -43,10 +45,42 @@ Les numéros 3.1, 3.4 et 3.5 sont ceux de la v2 (cités par le DAT et les spéci
 
 Chaque étape est consignée au §5 avec la date, l'heure, l'appareil, le **mode d'affichage** journalisé (`standalone` ou `navigateur`), le résultat observé et une capture si une interface Google s'affiche.
 
+### 3.0 (v3.1) Ce que le mode « Test » change aux mesures
+En mode « Test », Google affiche aux utilisateurs de test un **avertissement** avant chaque consentement, et leurs autorisations **expirent 7 jours** après le consentement ; seuls les comptes déclarés peuvent se connecter. Rien d'autre ne change : même client OAuth, mêmes origines, mêmes scopes, même session Google.
+- **M-PERSIST, M-DUR, R12** : indépendants d'OAuth. Valables en mode Test.
+- **M-RED** : `prompt=none` ne présente aucune interface, et l'avertissement n'intervient qu'à l'étape de consentement interactif. Un renouvellement sans interface **réussi en mode Test vaut pour la production**, qui ne fait que lever des contraintes. En revanche, un **échec** en mode Test par `interaction_required` ou `consent_required` **ne conclut pas** contre DEC-034 : refaire 3.6.3 après la publication (§3.1 bis.4) avant toute décision. La séance, contrôle du lendemain compris, doit tenir dans les 7 jours qui suivent le premier consentement.
+- **R3, §3.5** : valables en mode Test ; au §3.5.3, l'avertissement précède le nouvel écran de consentement : le noter, sans en tirer de conclusion.
+- **R11** : **non mesurable** en mode Test. Les observations des étapes 3.1.2 et 3.1.3 faites en mode Test sont consignées (avertissement attendu, liste des scopes), mais R11 se mesure au §3.1 bis.
+
 ### 3.1 R11 : consentement
 1. **PC** : ouvrir `https://mathieublandin-create.github.io/taskapp/` dans une fenêtre sans session de l'application. « Se connecter ». Consentir.
 2. **Observer** : un écran « Google n'a pas validé cette application » apparaît-il ? Les scopes affichés sont-ils les trois demandés ?
 3. **Chrome Android** : même adresse ; « Installer l'application » (menu de Chrome) ; ouvrir la PWA installée depuis l'écran d'accueil ; « Se connecter » ; mêmes observations.
+
+Si l'application est déjà « En production » au moment de la séance (P3-b fait avant), 3.1 **est** la mesure R11 et §3.1 bis.2 à 4 sont sans objet. Noter aussi, au 3.1.2, le **nom affiché** en haut de l'écran de Google (« Done Juan » ou le domaine).
+
+### 3.1 bis (v3.1) R11 en deux temps : publication, puis contrôle du consentement
+1. **Publication** (guide f bis.1 à f bis.3) : pages `accueil.html` et `confidentialite.html` en ligne ; image de marque complétée ; « Publier l'application ». **Observer** : enregistrement de l'image de marque sans erreur sur le domaine autorisé ; état « En production » ; aucune demande de vérification. Consigner tout message (capture), en particulier « Domain not found », « Invalid domain » ou une demande de vérification de propriété : il déclenche Q-R11-1 (§3.1 ter).
+2. **Retrait de l'accès** existant (myaccount, « Vos connexions à des applications tierces »), pour que Google présente de nouveau le consentement.
+3. **PC puis Chrome Android (PWA installée)** : « Se connecter ». **Observer** : écran « Google n'a pas validé cette application » ? nom affiché (« Done Juan » ou `mathieublandin-create.github.io`) ? scopes listés (les trois seulement) ? Captures.
+4. **Chrome Android** : « Jeton par redirection » : `JetonObtenu` sans saisie ni appui. C'est la confirmation de M-RED en production (obligatoire si 3.6.3 a échoué en mode Test, informative sinon).
+
+Ce que Google exige (veille du 2026-10-25, sources au §7) :
+- avec des scopes non sensibles seulement, **aucune vérification** n'est obligatoire, ni pour les scopes ni pour la marque ; la **vérification de la marque** est facultative (2 à 3 jours ouvrés) et ne sert qu'à afficher le nom et le logo : sans elle, l'écran de Google affiche le **domaine**. Renseigner la page d'accueil et les règles de confidentialité **ne la déclenche pas** ; un logo, si. On ne la demande pas ;
+- la console exige néanmoins une image de marque complète pour publier (page d'accueil, règles de confidentialité, domaine autorisé) : constat du commanditaire, conforme aux signalements récents du forum Google ;
+- `github.io` figure dans la partie privée de la Public Suffix List : le « domaine privé de premier niveau » est donc `mathieublandin-create.github.io`, seule forme recevable (`github.io` seul est refusé) ;
+- la preuve de propriété dans **Search Console** est exigée par Google pour la vérification de la marque. Pour la simple publication, aucune source ne l'impose, mais un signalement récent (« Domain not found » pour un domaine `*.github.io`, même vérifié par préfixe d'URL) montre un **risque réel de refus**. D'où la question conditionnelle §3.1 ter.
+
+### 3.1 ter (v3.1) Q-R11-1, question au commanditaire, à ne poser que si 3.1 bis.1 échoue sur le domaine
+**« Google refuse `mathieublandin-create.github.io` comme domaine autorisé, ou demande d'en prouver la propriété. Que choisissez-vous ? »**
+
+| Option | Ce que cela implique | Coût, délai | Avis |
+|---|---|---|---|
+| **A. Prouver la propriété de l'adresse github.io** dans Google Search Console | Créer un second dépôt public `mathieublandin-create/mathieublandin-create.github.io` contenant le seul fichier de vérification fourni par Google (la vérification par préfixe d'URL exige un fichier à la racine de l'adresse, que le dépôt `taskapp` ne sert pas), puis valider dans Search Console avec le compte propriétaire du projet Google Cloud ; réessayer f bis.2. Origine, client OAuth et données inchangés | Gratuit ; environ 20 min | **Recommandée en premier.** Efficacité non garantie (un cas d'échec signalé) |
+| **B. Domaine personnalisé** (par exemple `donejuan.fr`) servi par GitHub Pages, vérifié dans Search Console par un enregistrement DNS | Revient sur DEC-006 (« sans domaine propre ») ; nouvelle origine : client OAuth, variables `VITE_APP_ORIGIN`, URI de redirection et adresses de l'image de marque à changer ; base locale du PC repartant du Drive (sans perte de données déposées) ; permet plus tard la vérification de la marque, utile pour l'agenda (A5) | Environ 10 à 15 € par an ; 1 h, plus la propagation DNS (quelques heures) | **Recommandée si A échoue.** Solution fiable et durable |
+| C. Rester en mode « Test » pour l'application réelle | Avertissement à chaque consentement ; nouvel accord **tous les 7 jours** ; renouvellement à l'ouverture interrompu à chaque expiration ; 100 comptes au plus | Gratuit | **Déconseillée** : contraire à US-022 CA-8 et à l'usage quotidien (DAT §4.1.3) |
+
+Recommandation de Starck : **A, puis B si A échoue.** B engage un coût annuel et revient sur DEC-006 : il relève du commanditaire.
 
 ### 3.6 M-RED : jeton par redirection à l'ouverture (Chrome Android, PWA installée ; PC en référence)
 1. Après 3.1.3, dans la PWA installée : « Remettre à zéro le compteur », puis « Jeton par redirection ». **Observer** : retour `JetonObtenu`, compteur à 1, durée, contexte `standalone` et `web-android`. C'est la mesure « session fraîche ». Puis **cocher « Redirection automatique à l'ouverture »**.
@@ -106,7 +140,7 @@ Comptes : **A** (administrateur, le commanditaire) et **B** (contributeur). Appa
 
 | Mesure | Succès si | Bloquant pour |
 |---|---|---|
-| R11 | Aucun écran d'avertissement aux étapes 3.1.2 et 3.1.3 | **E9 d'US-022 et d'US-017** ; sinon, arbitrage du commanditaire |
+| R11 | (v3.1) Publication « En production » obtenue (3.1 bis.1), **et** aucun écran d'avertissement en production, sur le PC et sur Chrome Android (3.1.2 et 3.1.3 si la séance s'est tenue en production, sinon 3.1 bis.3). Le nom affiché (domaine au lieu de « Done Juan ») n'est pas un critère : il est consigné | **E9 d'US-022 et d'US-017** ; sinon, Q-R11-1 ou arbitrage du commanditaire |
 | **M-RED** | Aux étapes 3.6.3 et 3.6.4 : `JetonObtenu`, **aucune saisie et aucun appui chez Google** (ni mot de passe, ni code, ni choix de compte, ni bouton « Continuer »), compteur augmenté de **1 au plus**, retour en mode `standalone`. Le bouton du PoC ne fait que déclencher la mesure ; si l'option « redirection automatique à l'ouverture » existe, l'étape est refaite sans bouton et doit donner le même résultat. 3.6.5 à 3.6.7 informatives. **Ce critère fixe aussi la réponse à Q-DEC034-1** (renouvellement à l'ouverture sans geste) et le sens de l'étape Gherkin « l'accès à Google est renouvelé sans saisie ». | **E9 d'US-022 et d'US-017** ; **condition de DEC-034** |
 | **M-PERSIST** | `persist()` (ou `persisted()`) vaut vrai dans la PWA installée sur Chrome Android | **Condition de DEC-034** |
 | M-DUR | Même identifiant relu aux étapes 3.7.2 et 3.7.3 | E9 d'US-018 |
@@ -129,8 +163,19 @@ Comptes : **A** (administrateur, le commanditaire) et **B** (contributeur). Appa
 
 ## 6. Ce qui est automatisable ici, et ce qui demande le commanditaire
 - **Par l'équipe** : le PoC et ses tests Vitest ; le workflow ; le guide ; l'analyse.
+- **Par l'équipe (v3.1)** : les pages `accueil.html` et `confidentialite.html` (`poc-specification.md` §16).
 - **Par le commanditaire uniquement** : rendre le dépôt public, régler Pages et les variables, lancer le workflow ; créer le projet Google Cloud, l'écran de consentement et le client Web ; consentir ; utiliser ses appareils ; les attentes d'une heure et de 24 h. Pour R-P1/R-P2 : le contributeur, son compte et son iPhone.
-- **Durée** : préparation environ 1 h (dont 30 min de projet Google Cloud) ; **séance web** d'environ 1 h, plus une attente d'une heure ; un bref contrôle le lendemain (informatif). Volet partage : environ 1 h, plus les attentes, à une autre date.
+- **Durée** : préparation environ 1 h (dont 30 min de projet Google Cloud), plus 15 min de publication et 10 min de contrôle R11 si la séance se tient en mode Test ; **séance web** d'environ 1 h, plus une attente d'une heure ; un bref contrôle le lendemain (informatif). Volet partage : environ 1 h, plus les attentes, à une autre date.
+
+## 7. Sources de la veille du 2026-10-25 (§3.0, §3.1 bis)
+- Google, *Submit for brand verification* : https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification (sans vérification de la marque, seul le domaine est affiché ; vérification du « top private domain » par Search Console ; délai de 2 à 3 jours ouvrés).
+- Google, *Comply with OAuth 2.0 policies* : https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance (page d'accueil et règles de confidentialité sur le domaine de l'application).
+- Google Cloud, *OAuth App Verification Help Center* : https://support.google.com/cloud/answer/13463073 (vérification non obligatoire avec des scopes non sensibles).
+- Google Cloud, *Manage OAuth App Branding* : https://support.google.com/cloud/answer/15549049 ; *Manage App Audience* : https://support.google.com/cloud/answer/15549945 (avertissement aux utilisateurs de test, expiration à 7 jours, 100 utilisateurs de test) ; *Unverified apps* : https://support.google.com/cloud/answer/7454865.
+- Forum Google Developers : « Google OAuth: "Domain not found" for verified GitHub Pages domain » : https://discuss.google.dev/t/google-oauth-domain-not-found-for-verified-github-pages-domain/404025 ; « Cannot publish due to error message (Your app's OAuth configuration is incomplete…) » : https://discuss.google.dev/t/cannot-publish-due-to-error-message-your-apps-oauth-configuration-is-incomplete-you-must-enter-the-missing-information-to-proceed-please-visit-the-branding-page-to-finish-configuring-your-app-even-though-all-required-fields-are-complete/392229 ; « Personal-use OAuth app: Publish app disabled despite completed required Branding fields » : https://discuss.google.dev/t/personal-use-oauth-app-publish-app-disabled-despite-completed-required-branding-fields/406262.
+- Public Suffix List (section privée, `github.io`) : https://en.wikipedia.org/wiki/Public_Suffix_List.
+
+Les pages officielles ont été consultées par moteur de recherche (accès direct indisponible depuis l'environnement de l'équipe) : la console reste la référence le jour de la manipulation.
 
 ---
 
