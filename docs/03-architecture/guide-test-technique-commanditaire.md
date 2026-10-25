@@ -58,8 +58,11 @@ L'équipe a vérifié l'historique du dépôt le 2026-10-22 : aucun fichier de c
 Résultat attendu : le mot « Public » s'affiche à côté du nom du dépôt.
 
 ### a.2 Activer GitHub Pages
-1. **Settings > Pages** (menu de gauche).
-2. Sous « Build and deployment », réglez **Source** sur **GitHub Actions**.
+1. Sur la page **du dépôt** (et non dans les paramètres de votre compte), cliquez sur l'onglet **Settings**. C'est la roue dentée, en haut, à droite de « Insights ». Faites-le sur un ordinateur : l'application mobile GitHub n'affiche pas ces réglages.
+2. Dans le menu de gauche, section **Code and automation**, cliquez sur **Pages**. La page s'intitule « GitHub Pages ».
+3. Sous le titre **Build and deployment**, la liste **Source** indique « Deploy from a branch ». Choisissez **GitHub Actions**. Le choix est enregistré aussitôt, sans bouton à valider.
+
+Si la page affiche « Upgrade or make this repository public to enable Pages », le dépôt n'est pas encore public : refaites a.1.
 
 ### a.3 Créer deux variables
 1. **Settings > Secrets and variables > Actions**, onglet **Variables** (pas « Secrets »), puis **New repository variable**.
