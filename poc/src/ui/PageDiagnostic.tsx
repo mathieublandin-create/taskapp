@@ -212,6 +212,11 @@ export function PageDiagnostic({ diagnostic, journal, config, auth }: Props) {
             ))}
           </ul>
         </section>
+        <footer>
+          <small>
+            <a href="confidentialite.html">Règles de confidentialité</a>
+          </small>
+        </footer>
       </IonContent>
     </IonApp>
   );

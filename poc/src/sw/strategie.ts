@@ -8,6 +8,8 @@ import type { VitePWAOptions } from 'vite-plugin-pwa';
 export const optionsWorkbox: NonNullable<VitePWAOptions['workbox']> = {
   globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
   navigateFallback: 'index.html',
+  // Pages publiques statiques (§16) : jamais remplacées par index.html.
+  navigateFallbackDenylist: [/\/(accueil|confidentialite)\.html$/],
   runtimeCaching: [],
   cleanupOutdatedCaches: true,
 };
