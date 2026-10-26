@@ -97,10 +97,14 @@ export class Diagnostic {
       hasGrantedAllScopes: etat.etat === 'jeton_obtenu' ? etat.hasGrantedAllScopes : undefined,
       detail:
         etat.etat === 'jeton_obtenu'
-          ? `scopes accordés : ${etat.scopesAccordes.join(' ')} ; jeton présent`
-          : `code brut : ${etat.codeErreur} (état par défaut si la cause n'est pas établie)`,
+          ? `scopes accordés : ${etat.scopesAccordes.join(' ')} ; jeton présent ; ${this.detailLoginHint()}`
+          : `code brut : ${etat.codeErreur} (état par défaut si la cause n'est pas établie) ; ${this.detailLoginHint()}`,
     });
     return etat;
+  }
+
+  private detailLoginHint(): string {
+    return `login_hint : ${this.d.auth.loginHintEnvoye?.() ? 'oui' : 'non'}`;
   }
 
   async demarrage(): Promise<void> {

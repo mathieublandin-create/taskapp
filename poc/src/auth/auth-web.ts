@@ -39,6 +39,7 @@ function traduireErreur(codeErreur: string): EtatJeton {
 export class FournisseurJetonWeb implements FournisseurJeton {
   private jeton: string | null = null;
   private identite: Identite | null = lireIdentiteEnCache();
+  private dernierLoginHint = false;
 
   constructor(
     private readonly clientId: string,
@@ -60,6 +61,10 @@ export class FournisseurJetonWeb implements FournisseurJeton {
 
   identiteEnCache(): Identite | null {
     return this.identite;
+  }
+
+  loginHintEnvoye(): boolean {
+    return this.dernierLoginHint;
   }
 
   adopterJeton(jeton: string): void {
@@ -97,10 +102,14 @@ export class FournisseurJetonWeb implements FournisseurJeton {
     scopes: readonly string[],
     prompt: Prompt,
   ): Promise<google.accounts.oauth2.TokenResponse | EtatJeton> {
+    // Sans login_hint, un téléphone à plusieurs comptes Google impose le choix du compte (V-DEC034-5).
+    const loginHint = this.identite?.email || undefined;
+    this.dernierLoginHint = loginHint !== undefined;
     return new Promise((resolve) => {
       const client = google.accounts.oauth2.initTokenClient({
         client_id: this.clientId,
         scope: scopes.join(' '),
+        login_hint: loginHint,
         callback: (reponse) => {
           if (reponse.error) resolve(traduireErreur(reponse.error));
           else resolve(reponse);

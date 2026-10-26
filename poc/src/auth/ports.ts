@@ -35,6 +35,8 @@ export interface FournisseurJeton {
   deconnecter(): Promise<void>;
   /** Web uniquement : adopte un jeton obtenu par redirection, pour les appels Drive. */
   adopterJeton?(jeton: string): void;
+  /** Web uniquement : la dernière demande GIS portait-elle un `login_hint` ? (journalisation) */
+  loginHintEnvoye?(): boolean;
 }
 
 export function libelleEtat(etat: EtatJeton): string {
