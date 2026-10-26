@@ -42,3 +42,10 @@ Prochaines mesures, décisives pour DEC-034 :
 - **M-RED** : ouvrir l'icône installée sans rien toucher. On attend « JetonObtenu » sans choix de compte, sans appui et sans saisie chez Google.
 - **M-PERSIST**.
 - **M-DUR** : arrêt forcé de l'application, puis redémarrage du téléphone.
+
+## Séance g, seconde partie (2026-10-25 et 26)
+- **Étape 14, M-RED : réussie.** Après plus d'une heure, l'icône a été ouverte sans rien toucher, et l'accès est revenu **sans aucune action** du commanditaire. **La condition de DEC-034 est remplie pour la connexion.** M-PERSIST et M-DUR (étapes 6 à 9) restent à transmettre.
+- **Étape 16, renouvellement par geste en cours d'usage (« Synchroniser », fenêtre GIS) : écart.** Google demande de choisir le compte, puis de valider. Cela fait plus d'un geste, alors que V-DEC034-5 promet « au plus un geste, aucune saisie ».
+  - Cause probable : le PoC n'envoie pas `login_hint` à `initTokenClient`, alors que le téléphone porte plusieurs comptes Google.
+  - Correctif demandé à Benjamin : transmettre `login_hint` (l'adresse en cache) et revenir sur la redirection `prompt=none` si nécessaire.
+  - Étape 16 à refaire après la remise en ligne.
