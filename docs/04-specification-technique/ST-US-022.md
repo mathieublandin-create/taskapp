@@ -814,8 +814,11 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 
 **Questions à Steeve (ergonomie), non bloquantes pour l'E10, à trancher avant l'E12 des écrans :**
 - **Q-ST022-STE-1 — Écran d'attente de la redirection à l'ouverture** (ADR-013 le confie à Steeve) : code et texte ? Proposition : code `SYN-REDIRECTION`, texte « Connexion à Google… », sans action, logo de l'application.
+- **Réponse de Steeve à Q-ST022-STE-1 (E9, 2026-10-27, guide v0.2.12 §6.6.2)** : code `SYN-REDIRECTION`, texte « Connexion à Google… », logo, aucune action ; nom accessible « Connexion à Google en cours » (`role="status"`) ; cadre « Attente » d'ECR-010.
 - **Q-ST022-STE-2 — `SYN-SESSION` et `ERR-015` sur le smartphone** (DEC-034) : le catalogue indique « PC seulement » et « ce PC ». Proposition : même libellé et même bouton sur le smartphone ; textes de `ERR-015` et de `BAN-RAPPEL-24H` variante `session` paramétrés par `{appareil}` et `{autre appareil}`.
+- **Réponse de Steeve à Q-ST022-STE-2 (E9, 2026-10-27, guide v0.2.12)** : oui, proposition retenue. `SYN-SESSION` : même libellé et même bouton sur smartphone (libellé visible « Reprendre la synchronisation » dans l'en-tête). `ERR-015` : titre « La session Google de cet appareil a expiré », texte avec `{appareil}` et `{autre appareil}` (§6.6.8) ; `BAN-RAPPEL-24H` variante `session` avec `{appareil}` (§6.6.3).
 - **Q-ST022-STE-3 — `SYN-SESSION` hors ligne.** L'ordre de gravité fait passer `SYN-SESSION` avant `SYN-HORS-LIGNE` : hors ligne, l'indicateur propose « Reprendre la synchronisation », qui ne peut pas aboutir. a) garder l'ordre (conception actuelle) ; b) `SYN-HORS-LIGNE` tant que le réseau est coupé, `SYN-SESSION` au retour du réseau ★ (aucun scénario n'est touché).
+- **Réponse de Steeve à Q-ST022-STE-3 (E9, 2026-10-27, guide v0.2.12 §6.6.2)** : option b) ★. `SYN-HORS-LIGNE` tant que le réseau est coupé ; `SYN-SESSION` (et `ERR-015`) n'est exposé qu'avec un réseau disponible, la session à renouveler étant mémorisée. Aucun scénario touché ; l'ordre de gravité du reste est inchangé.
 
 **Hypothèses** : aucune hors des questions ci-dessus (la conception retient l'option ★ de chacune et sera ajustée sans reprise d'architecture si la réponse diffère).
 **Dette acceptée** : aucune. DT-001 s'applique aux espaces de compte et à la base technique.

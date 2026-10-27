@@ -155,6 +155,7 @@ Playwright : démarrage hors ligne, `location.hash` vide au premier rendu, axe s
 
 ## 16. Points ouverts
 - **Q-ST018-STE-1 (Steeve)** : code et texte de l'état du stockage dans la feuille et de l'avertissement quand la persistance est refusée (R15, conventions §9.3, DAT §4.1.6). Le catalogue n'en a pas. Proposition : ligne `SYN-FEUILLE-STOCKAGE` « Stockage de cet appareil : protégé » / « non protégé » et carte `ALR-015` « Vos données ne sont pas protégées contre un nettoyage du navigateur. Installez l'application et gardez-la sur l'écran d'accueil. ».
+- **Réponse de Steeve à Q-ST018-STE-1 (E9, 2026-10-27, guide v0.2.12 §6.6.2, §6.6.9)** : proposition retenue. Ligne `SYN-FEUILLE-STOCKAGE`, toujours présente, discrète : « Stockage de cet appareil : protégé » / « non protégé » (persistance refusée ou API indisponible = non protégé). Carte `ALR-015` (Attention) : « Vos données ne sont pas protégées contre un nettoyage du navigateur. Installez l'application et gardez-la sur l'écran d'accueil. », dans la feuille seulement, sans bandeau, sans point sur l'indicateur, jamais de blocage.
 - **Q-ST018-STA-1 (Starck)** : la règle de rattachement place 25 des 30 scénarios d'US-018 aux rangs 5 à 9, puisque les capacités du hors ligne sont livrées par les rangs 0 à 3 (PWA unique). Le confirmez-vous, plutôt qu'une exécution groupée au rang 12 ? a) oui, rattachement strict ★ ; b) non, tout au rang 12.
 - Hypothèses : aucune. Dette : aucune.
 
