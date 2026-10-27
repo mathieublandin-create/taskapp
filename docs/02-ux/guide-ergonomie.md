@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.14, 2026-10-27 (Steeve).** E11 de LOT-001 (`ceremonies/lancement-LOT-001-steeve.md`) : réponse à Q-ST022-STE-4 (`TST-SAISIE-A-TERMINER`, §6.6.6) ; §5.8 complété : ordre des deux listes de la feuille (modifications en attente, informations à lire) et rendu des sections vides du détail d'un objectif. Code `EVD-OBJECTIFS-TOUS-ATTEINTS` créé (§6.6.5). Aucune règle de gestion modifiée.
+>
 > **Version 0.2.13, 2026-10-27 (Steeve).** Q-ST031-PEP-1 : fin de session dans un autre onglet du PC, confirmation de « sans message » (§6.6.11). Aucun code créé.
 >
 > **Version 0.2.12, 2026-10-27 (Steeve).** E9 d'US-022, 017, 018 et 031, réponses à Q-ST022-STE-1 à 3 et Q-ST018-STE-1 : écran d'attente `SYN-REDIRECTION` ; `SYN-SESSION` et `ERR-015` valables sur smartphone (PWA unique, DEC-034, DEC-036) ; hors ligne, `SYN-HORS-LIGNE` l'emporte sur `SYN-SESSION` ; ligne `SYN-FEUILLE-STOCKAGE` et carte `ALR-015`. ECR-010 complété (cadre « Attente »). Aucune règle de gestion modifiée.
@@ -513,6 +515,8 @@ Besoin : ce qui presse est en haut, sans que l'utilisateur ait à trier ; un ord
 | (b) | Objectifs atteints | **Section repliée « Atteints ({n}) » à la fin de la liste** (`SEC-OBJ-ATTEINTS`), `n` = objectifs principaux atteints, même ordre de référence à l'intérieur. Choix différent de la proposition d'Anthony : le regroupement existe déjà dans ECR-008 et a été validé avec US-001 en E6 ; sans lui, un objectif atteint à délai proche resterait en tête et masquerait ce qui reste à faire (P2). Un sous-objectif atteint dont le parent est en cours reste sous son parent ; un principal atteint emmène ses sous-objectifs dans la section. |
 | (c) | Sous-objectifs | Sous leur parent, en retrait, dans la liste et dans le détail de l'objectif (ECR-003) : ordre de référence, atteints compris (pas de déplacement quand l'état change : une ligne qui bouge est déroutante). |
 | (d) | Tâches du détail d'un objectif (ECR-003) | Trois sections : « Tâches à faire · {n} », « Terminées ({n}) », « Abandonnées ({n}) » (`SEC-TACHES-*`), les deux dernières repliées. Tris du §5.7 : à faire par ordre de référence ; terminées par date de fin décroissante ; abandonnées par date d'abandon décroissante. Une sous-tâche affichée suit immédiatement sa tâche parente, ordre (e). **Sous-tâches (Q-US-002-4, v0.2.10)** : elles ne sont listées que sous une tâche « à faire ». Dans « Terminées » et « Abandonnées », aucune ligne de sous-tâche : seul le compteur « {t} / {n} » figure sur la ligne de la tâche parente, et ses sous-tâches se lisent dans son détail (ECR-007). Besoin : ces sections sont des archives consultées pour retrouver une tâche, pas pour agir sur ses sous-tâches ; les développer multiplierait les lignes sans aider une décision (P1, P2), et reste cohérent avec le §5.7 (sous-tâches jamais listées comme lignes dans « Tâches »). |
+| (f) | Feuille « Compte et synchronisation » (v0.2.14) | **« {n} modification(s) en attente »** : la plus récente d'abord (l'utilisateur vérifie ce qu'il vient de faire), à égalité par intitulé. **« {n} information(s) à lire »** : la plus récente d'abord ; les `DiscardedItem` de `ALR-014` restent groupés sous la carte `ALR-008`, dans le même ordre. |
+| (g) | Rendu des sections du détail d'un objectif (v0.2.14) | Le modèle de vue garde les trois sections même à n = 0, mais l'écran **n'affiche pas** « Terminées (0) » ni « Abandonnées (0) » ; « Tâches à faire · 0 » n'est affiché que si l'objectif a au moins une tâche (toutes terminées ou abandonnées) ; sans aucune tâche, seul `EVD-OBJECTIF-SANS-TACHE` s'affiche (ECR-003 B). Besoin : ne montrer que ce qui contient quelque chose (P2). |
 | (e) | Sous-tâches du détail d'une tâche (ECR-007) | Une seule liste, tous états confondus (`SEC-SOUS-TACHES`), ordre de référence. Une sous-tâche terminée reste à sa place : la progression « 1 / 3 » se lit sur la liste entière. |
 
 ---
@@ -721,6 +725,7 @@ Titres de section (`SEC-`, v0.2.9, Q-US-001-6), texte exact visible :
 | `EVD-BIENVENUE` | Tâches, **tant qu'il n'existe ni objectif ni tâche** (compte neuf, ECR-010 C ; BEN-6, US-022 CA-2) | Titre « Bienvenue » ; « Un objectif donne une direction à vos tâches. Commencez par le vôtre, ou ajoutez directement une tâche. » | « Créer mon premier objectif » (principal) ; « Ajouter une tâche sans objectif » (tertiaire) |
 | `EVD-TACHES` | Tâches, **aucune tâche du tout** (dans aucun état) mais au moins un objectif | « Aucune tâche pour l'instant. » / « Commencez par ce qui vous vient à l'esprit, vous trierez ensuite. » | « Ajouter une tâche » |
 | `EVD-OBJECTIFS` | Objectifs, aucun objectif mais au moins une tâche | « Un objectif donne une direction à vos tâches. » | « Créer un objectif » |
+| `EVD-OBJECTIFS-TOUS-ATTEINTS` | Objectifs, tous les objectifs principaux sont atteints (v0.2.14, E11) : affiché au-dessus de la section repliée « Atteints (n) » | « Tous vos objectifs sont atteints. » | « Créer un objectif » |
 | `EVD-OBJECTIF-SANS-TACHE` | Détail d'un objectif sans tâche | « À décliner en tâches. » | « Ajouter une tâche » |
 | `EVD-FILTRE-SANS-OBJECTIF` | Tâches, filtre « Sans objectif » | « Toutes vos tâches ont un objectif. » | — |
 | `EVD-FILTRE-A-FAIRE` | Tâches, filtre « À faire » vide alors qu'il existe au moins une tâche (v0.2.7) | « Aucune tâche à faire. » | — |
@@ -742,6 +747,7 @@ Titres de section (`SEC-`, v0.2.9, Q-US-001-6), texte exact visible :
 | `TST-HORS-LIGNE` | « Hors ligne. Vos modifications sont enregistrées sur l'appareil et seront envoyées au retour du réseau. » | — (unique au passage hors ligne) |
 | `TST-NON-RETENUES` | « {n} modification(s) n'ont pas été retenues · Voir » | « Voir » |
 | `TST-CONSULTATION-SEULE` | « Consultation seule · mettez à jour pour modifier » | — |
+| `TST-SAISIE-A-TERMINER` | « Terminez votre saisie, puis reprenez la synchronisation. » (v0.2.14, Q-ST022-STE-4 a) | — ; l'indicateur reste `SYN-SESSION`, rien n'est perdu ni lancé |
 | `TST-ERREUR-ENREGISTREMENT` | « Impossible d'enregistrer. Réessayer » (message `ERR-014`) | « Réessayer » |
 
 #### 6.6.7 Boîtes de confirmation (`ConfirmDialog`, §4.12)
@@ -871,6 +877,7 @@ Les scénarios qui citent déjà `ERR-011`, `ERR-012`, `ERR-003` à `ERR-006` et
 | Q-US-002-1 | Filtre par défaut « À faire » ; valeurs `à faire`, `terminée`, `abandonnée`, pas de « tous » ; tri par délai, puis création, puis intitulé ; terminées par date de fin décroissante ; sous-tâches jamais listées | §5.7, ECR-002 L1, L4, L5 |
 | Q-US-017-6 | Option a), sans modifier RG-056 : le point « à lire » est un signal indépendant (`data-a-lire`), présent dans tous les états ; `SYN-INFO` devient un code dérivé de `SYN-OK` | §4.8, §6.5, §6.6.2, ECR-011 M |
 | Q-US-018-1 | Option a) : nombre d'éléments distincts portant `MEN-ATTENTE` (exemple : n = 2). Aucun journal d'opérations. Départ des 24 h : première écriture locale non déposée, tous éléments | §6.6.1, ECR-011 M |
+| Q-ST022-STE-4 (E11, v0.2.14) | a) toast `TST-SAISIE-A-TERMINER` : le geste est refusé sans rien perdre, le message dit quoi faire ; pas de confirmation « abandonner la saisie » (b) : on ne propose pas de détruire une saisie pour une tâche technique | §6.6.6 |
 | Q-ST031-PEP-1 (E9, v0.2.13) | Confirmé : les autres onglets se rechargent sur l'écran de connexion (ECR-010) **sans message, ni toast ni bandeau**. Besoin : l'utilisateur vient de demander lui-même la fin de session, l'écran de connexion est le résultat attendu ; un message ajouterait du bruit à un geste volontaire. Pas de code de catalogue | §6.6.11, ECR-010 |
 | Q-ST022-STE-1 (E9, v0.2.12) | Code `SYN-REDIRECTION`, « Connexion à Google… », logo, sans action | §6.6.2, ECR-010 (cadre Attente) |
 | Q-ST022-STE-2 | Oui : `SYN-SESSION`, `ERR-015` et variante `session` valables sur smartphone ; `{appareil}` / `{autre appareil}` ; titre d'`ERR-015` « de cet appareil » | §6.6.2, §6.6.3, §6.6.8 |
