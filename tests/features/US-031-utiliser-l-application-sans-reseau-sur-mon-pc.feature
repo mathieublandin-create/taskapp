@@ -234,6 +234,27 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte" exactement une fois
     Et le Drive du compte "A" contient l'objectif "Courir un semi-marathon" exactement une fois
 
+  # Q-ST031-PEP-1 (2026-10-27, précision sans changement de règle) : la session est celle de l'appareil ; quand elle prend fin dans un onglet,
+  # l'autre onglet revient à l'écran de connexion (US-022 CA-1, CA-6 et CA-10 ; RG-019, RG-043, RG-055).
+  @US-031 @RG-019 @RG-043 @ihm @LOT-001
+  Scénario: S16b — Déconnexion dans un onglet : l'autre onglet revient à l'écran de connexion et n'affiche plus aucune donnée, qui reste sur le PC
+    Étant donné que l'application est ouverte dans deux onglets du PC
+    Et qu'aucune modification n'est en attente sur le PC
+    Quand dans le premier onglet, l'utilisateur se déconnecte
+    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le second onglet, aucune donnée n'est affichée
+    Et les données du compte "A" sont toujours présentes sur le PC
+
+  @US-031 @RG-019 @RG-055 @ihm @LOT-001
+  Scénario: S16c — Suppression des données de cet appareil dans un onglet : l'autre onglet revient à l'écran de connexion
+    Étant donné que l'application est ouverte dans deux onglets du PC
+    Et qu'aucune modification n'est en attente sur le PC
+    Quand dans le premier onglet, l'utilisateur demande la suppression des données de cet appareil
+    Et dans le premier onglet, l'utilisateur confirme
+    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le second onglet, aucune donnée n'est affichée
+    Et les données du compte "A" ne sont plus présentes sur le PC
+
   @US-031 @RG-021 @ihm @LOT-001
   Scénario: S17 — Le réseau perdu pendant une saisie sur le PC ne laisse aucune donnée enregistrée à moitié
     Quand sur le PC, l'utilisateur commence la saisie d'une sous-tâche de la tâche "Chapitre 1"

@@ -113,8 +113,10 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le PC, l'objectif "Publier le guide" existe
+    Et le Drive du compte "A" contient la tâche "Envoyer le devis"
 
-# DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
+  # Q-ST017-PEP-1 (2026-10-27) : la dernière ligne de S06 avait été déplacée par erreur dans S06b lors de son insertion (DEC-034) ; elle est rendue à S06.
+  # DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
   @US-017 @RG-017 @RG-035 @LOT-001 @DEC-034
   Scénario: S06b — Sur le smartphone, accès Google à renouveler à l'ouverture : données du smartphone affichées aussitôt, mise à jour une minute au plus après un renouvellement sans saisie
     Étant donné que l'application est fermée sur le smartphone
@@ -126,7 +128,6 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
     Et l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
-    Et le Drive du compte "A" contient la tâche "Envoyer le devis"
 
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
 

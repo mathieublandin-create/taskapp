@@ -43,6 +43,7 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 - Première ouverture de l'application sur ce PC, ou dans ce navigateur, sans réseau : impossible ; le navigateur ne peut pas afficher l'application.
 - Données du navigateur effacées par l'utilisateur alors que des modifications ne sont pas encore enregistrées dans le Drive : ces modifications sont perdues ; l'application ne peut pas l'empêcher. Les données sont rechargées depuis le Drive à la connexion suivante.
 - Deux onglets de l'application ouverts sur le même PC sans réseau : aucune modification n'est perdue, et les deux onglets affichent les mêmes données.
+- *Précision E9 (Q-ST031-PEP-1, 2026-10-27, sans changement de règle)* : la session est celle de l'appareil. Quand l'utilisateur se déconnecte, ou supprime les données de cet appareil, dans un onglet, **l'autre onglet revient aussitôt à l'écran de connexion** et n'affiche plus aucune donnée (US-022 CA-1, CA-6 et CA-10 ; RG-019, RG-043, RG-055). Les modifications en attente sont traitées par l'action elle-même : conservées sur le PC après une déconnexion, annoncées avant une suppression, quel que soit l'onglet où elles ont été faites. Une saisie commencée dans l'autre onglet et pas encore validée n'est pas une modification enregistrée : elle n'est pas conservée (S16b, S16c). La présence d'un message dans l'onglet qui revient à la connexion relève de l'ergonomie (Steeve, non bloquant).
 - Navigateur en mode « navigation privée » : les données ne sont pas conservées après la fermeture ; l'usage hors ligne n'est pas garanti.
 - Réseau perdu pendant une saisie : la saisie est conservée ; aucune donnée n'est enregistrée à moitié.
 - Réseau intermittent : aucune modification n'est enregistrée deux fois, et aucune n'est perdue.
@@ -135,7 +136,7 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 - **Questions et réserves** : aucune nouvelle. À vérifier en E14 avec deux onglets hors ligne (DAT-UX-16).
 
 ## Tests métiers
-*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **28 scénarios** dont 7 exécutés par l'interface (`@ihm`). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
+*Rédigé par Pepper (E5, 2026-10-21).* Fichier : [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature) — **30 scénarios** dont 9 exécutés par l'interface (`@ihm`). Chaque scénario porte les tags `@US-031`, `@RG-xxx` et `@LOT-001`. Vocabulaire des étapes : [`GLOSSAIRE-ETAPES.md`](../../../tests/features/GLOSSAIRE-ETAPES.md).
 
 | Critère ou cas | Scénario(s) |
 |---|---|
@@ -151,7 +152,7 @@ Statut : Validée (DEC-018) — révision de forme DEC-034 validée le 2026-10-2
 | CA-10 (RG-057) | S19, S19b (plus ancienne modification en attente), S20 (24 h exactement, avant 24 h, aucune modification), S20b (hors ligne depuis 25 h, modification faite il y a 1 min), S21 (disparition à l'enregistrement), S21b (fermé puis rouvert), S22, S22b (accès Google perdu : un seul bandeau, avec ou sans mention), S22c (session expirée depuis plus de 24 h : rappel avec « Reprendre la synchronisation ») |
 | Cas limite : première ouverture sans réseau | S14 (`@ihm` ; résultat observable confirmé en E8, Q-US-031-4 : la navigation hors ligne échoue, aucun élément de l'application n'est affiché, la page courante est la page d'erreur du navigateur) |
 | Cas limite : données du navigateur effacées | S15 (`@ihm`) |
-| Cas limite : deux onglets | S16 (`@ihm`) |
+| Cas limite : deux onglets | S16 (`@ihm`) ; fin de session dans un autre onglet : S16b (déconnexion), S16c (suppression des données) (`@ihm`, Q-ST031-PEP-1) |
 | Cas limite : navigation privée | **Non scénarisé** : le critère n'énonce qu'une absence de garantie, sans comportement vérifiable ; information portée par le guide utilisateur |
 | Cas limite : réseau perdu pendant une saisie | S17 (`@ihm` ; saisie en cours décrite en étapes successives) |
 | Cas limite : réseau intermittent | S18 |
@@ -174,3 +175,4 @@ Aucune. V-DEC034-2, 4, 6 validées le 2026-10-22 (DEC-036).
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-031-1 (réponse de Starck reflétée dans CA-9 : accès expiré = session expirée sur le PC), Q-US-031-2 (option a : rappel après 24 h aussi en session expirée, avec « Reprendre la synchronisation » ; S22c ajouté), Q-US-031-3 (renvoi de CA-10 c corrigé vers CA-9), Q-US-031-4 (formes au glossaire v1.2 ; sens observable de S14 confirmé, ANT-23), Q-US-018-1 (décompte), Q-US-017-7 (préfixes d'appareil, S10 et S11), Q-US-022-1 (forme unique « est affiché, avec l'action », S22 et S22b). Précisions sans changement de règle. |
 | 2026-10-22 | Révision de forme DEC-034 (Pepper), proposée (V-DEC034) : analyse d'écart, règles citées (RG-017, ENF-04, ENF-07 proposées), synchronisation en arrière-plan exclue, note à Starck. Critères et scénarios inchangés. |
 | 2026-10-22 | Révision de forme DEC-034 **validée** (DEC-036, « Tout reco ») ; retirée si la condition de DEC-034 échoue (M-RED, M-PERSIST). |
+| 2026-10-27 | E9 (Pepper), réponse à Q-ST031-PEP-1 d'Anthony : fin de session dans un autre onglet (déconnexion, suppression des données) : l'autre onglet revient à l'écran de connexion ; conséquence de US-022 CA-1, CA-6, CA-10 et de RG-019, RG-043, RG-055, **sans changement de règle** ; cas limite précisé, scénarios S16b et S16c ajoutés (30 scénarios). |
