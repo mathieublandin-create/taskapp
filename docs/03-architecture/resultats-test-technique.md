@@ -71,3 +71,6 @@ Une mesure a été faite dans un onglet de Chrome (`navigateur`), le 27 à 14 h 
 Le commanditaire confirme le 2026-10-27 que l'état de publication était **« En production »** lors des essais sur PC et sur Android. **R11 est favorable** : aucun écran « Google n'a pas validé cette application ». Le nom affiché est le domaine, ce qui est accepté. Q-R11-1 est sans objet.
 
 **Condition de l'E9 d'US-022 et d'US-017 (R11 et M-RED) : remplie le 2026-10-27.** Seule l'étape 16 reste à refaire, ce qui ne bloque pas l'E9. Si le choix du compte persiste malgré `login_hint`, le renouvellement en cours d'usage passera par la redirection `prompt=none` (ADR-013).
+
+## Étape 16 refaite (2026-10-27)
+Avec le correctif `af859e3` (`login_hint` transmis à GIS), « Synchroniser » en cours d'usage renouvelle l'accès **sans choix de compte**, conformément à V-DEC034-5 (au plus un geste, aucune saisie). **Le test technique v3 est clos : tous les critères sont favorables.**
