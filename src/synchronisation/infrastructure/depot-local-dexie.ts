@@ -1,4 +1,5 @@
 import { nonImplemente } from '@non-implemente';
+import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
 import type { IdAppareil } from '../../commun/domaine/identifiants';
 import type { Resultat } from '../../commun/domaine/resultat';
 import type { EtatLocal } from '../domaine/etat-local';
@@ -22,8 +23,31 @@ export type OptionsDepotLocalDexie = {
   readonly appareilId: IdAppareil;
 };
 
+/** ST-US-022 §5.2 (DAT v0.11.3 §4.1.4, Q-ST022-STA-3) : ouverture d'un espace de compte par la composition. */
+export type OptionsOuvertureEspace = {
+  readonly nomBase: string;
+  readonly fabrique?: IDBFactory;
+  readonly generateur: GenerateurIdentifiants;
+};
+
 export class DepotLocalDexie implements DepotLocal {
   constructor(private readonly options: OptionsDepotLocalDexie) {}
+
+  /**
+   * L'`appareilId` naît avec l'espace : base neuve → nouvel identifiant (UUID v7 du générateur), écrit dans
+   * `meta.appareilId` par une transaction stricte confirmée à `complete` ; base existante → identifiant relu,
+   * générateur non appelé. Base supprimée puis rouverte → nouvel identifiant. Ligne illisible → Echec.
+   */
+  static ouvrirEspace(
+    _options: OptionsOuvertureEspace,
+  ): Promise<Resultat<DepotLocalDexie, ErreurDepotLocal>> {
+    return nonImplemente('DepotLocalDexie.ouvrirEspace');
+  }
+
+  /** Identifiant de l'appareil pour cet espace (celui du constructeur ou de `ouvrirEspace`). */
+  appareil(): IdAppareil {
+    return nonImplemente('DepotLocalDexie.appareil');
+  }
 
   lire(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
     return nonImplemente('DepotLocalDexie.lire');

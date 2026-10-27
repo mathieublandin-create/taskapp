@@ -12,9 +12,17 @@ export type ParametresAutorisation = {
   readonly portees: ReadonlyArray<string>;
   readonly state: string;
   readonly indice: string;
+  /**
+   * SILENCIEUSE : ouverture de l'application (`prompt=none`). INTERACTIVE : repli d'un geste quand GIS
+   * échoue pour une cause technique, ou geste sur web-ios (`prompt` absent ; DAT v0.11.3 §4.1.7, Q-ST022-STA-2).
+   */
+  readonly interaction: 'SILENCIEUSE' | 'INTERACTIVE';
 };
 
-/** response_type=token, prompt=none, include_granted_scopes=true, login_hint, state, redirect_uri, scope. */
+/**
+ * response_type=token, include_granted_scopes=true, login_hint, state, redirect_uri, scope ;
+ * prompt=none en interaction SILENCIEUSE seulement (aucun paramètre prompt en INTERACTIVE).
+ */
 export const construireUrlAutorisation = (_p: ParametresAutorisation): string =>
   nonImplemente('construireUrlAutorisation');
 

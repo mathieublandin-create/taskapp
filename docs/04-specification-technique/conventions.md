@@ -730,7 +730,7 @@ L'accord « signalé(e) » du glossaire s'écrit avec le texte optionnel des exp
 | Tag | Posé par | Sens (glossaire d'étapes §10) | Exécution |
 |---|---|---|---|
 | `@US-xxx`, `@RG-xxx`, `@LOT-xxx` | Pepper | Traçabilité, filtrage ; obligatoires sur chaque scénario | — |
-| `@ihm` | Pepper | Le scénario ne peut se vérifier que par l'interface réelle : navigateur, installation, onglets, saisie en cours (7 scénarios au lot 1, tous dans US-031) | Profil `ihm` : cucumber-js avec les steps de `tests/steps-ihm/`, Playwright (Chromium) sur la PWA construite avec `composition/test-ihm.ts` ; assertions sur `data-etat`, `data-message` et rôles accessibles |
+| `@ihm` | Pepper | Le scénario ne peut se vérifier que par l'interface réelle : navigateur, installation, onglets, saisie en cours (11 scénarios au lot 1 : US-031, 9 ; US-018, 2 — décompte du 2026-10-27) | Profil `ihm` : cucumber-js avec les steps de `tests/steps-ihm/`, Playwright (Chromium) sur la PWA construite avec `composition/test-ihm.ts` ; assertions sur `data-etat`, `data-message` et rôles accessibles |
 | `@recette` | Pepper | Non automatisable : dépend d'un service extérieur que le banc ne simule pas, ou d'un comportement réel de l'appareil (2 scénarios au lot 1 : US-022 S13b, US-018 S09b) | Aucune exécution automatisée ; déroulé à la main en E14, tracé dans le procès-verbal de recette |
 | `@lent` | Pepper, sur demande d'Anthony | Scénario de plus de 2 s | Exclu du profil local `rapide` ; exécuté en CI |
 | `@google-reel` | Pepper, sur demande d'Anthony | Vérification contre l'API Google réelle et un compte de test | **Jamais en CI** ; exécution manuelle (profil `google-reel`), en recette technique |

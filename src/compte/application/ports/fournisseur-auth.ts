@@ -13,6 +13,11 @@ export type DemandeJeton = {
   /** login_hint : obligatoire dans tous les modes sauf CONNEXION. */
   readonly indice?: AdresseGoogle;
   readonly reprise: EtatReprise;
+  /**
+   * Faux si une saisie est en cours : aucune redirection (qui rechargerait la page) n'est lancée ;
+   * le repli rend alors RedirectionNonPermise (DAT v0.11.3 §4.1.7, Q-ST022-STA-1).
+   */
+  readonly redirectionPermise: boolean;
 };
 
 export type AccesObtenu = {
@@ -35,7 +40,8 @@ export type ErreurAuth =
   | { readonly type: 'RetourRedirectionRejete'; readonly motif: MotifRejetRetour }
   | { readonly type: 'CompteDifferent' }
   | { readonly type: 'MemoireTechniqueIndisponible' }
-  | { readonly type: 'ReseauIndisponible' };
+  | { readonly type: 'ReseauIndisponible' }
+  | { readonly type: 'RedirectionNonPermise' };
 
 /** Retour de Google lu dans le fragment de l'URL (jamais journalisé). */
 export type RetourGoogle =

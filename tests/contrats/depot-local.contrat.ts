@@ -1,6 +1,7 @@
 /**
  * Suite de contrat du port DepotLocal (ST-socle-ecriture.md §4.3 ; conventions.md §11.10).
- * Exécutée sur DepotLocalDexie (fake-indexeddb) ; ST-US-018 l'exécutera aussi sur DepotLocalSqlite.
+ * Exécutée sur DepotLocalDexie (fake-indexeddb) et sur la doublure DepotLocalEnMemoire (ST-US-017 §12.3).
+ * CT-DEPOT-08 à 11 : méthodes de l'incrément 1 d'US-017 (lireMeta, appliquerSynchronisation).
  * Identifiants : CT-DEPOT-nn. Les cas « erreur de la base » et « espace non ouvert » sont couverts
  * par les tests d'intégration de l'adaptateur (ST-socle-ecriture.md §14).
  * Précision E10 : les observateurs de l'instance qui écrit sont appelés après la validation et au plus
@@ -11,8 +12,13 @@ import { describe, expect, it } from 'vitest';
 import { echec, succes } from '@src/commun/domaine/resultat';
 import type { DepotLocal } from '@src/synchronisation/application/ports/depot-local';
 import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
+import {
+  META_INITIALE,
+  type IdFichierDrive,
+} from '@src/synchronisation/domaine/meta-synchronisation';
 import { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-local-dexie';
-import { registre } from '@tests/support/fabriques/etat-local';
+import { DepotLocalEnMemoire, StockageDepotEnMemoire } from '@tests/doublures/depot-local-memoire';
+import { registre, texteDeCle } from '@tests/support/fabriques/etat-local';
 import { valeurDe } from '@tests/support/environnement';
 import { planAjoutant, planVide } from '@tests/support/plans';
 import {
@@ -44,6 +50,8 @@ const evenement: EvenementJournal = {
   instant: instant('2026-10-21T08:00:00.000Z'),
   jour: date('2026-10-21'),
 };
+const DOSSIER = 'dossier-contrat' as IdFichierDrive;
+const FICHIER = 'fichier-contrat' as IdFichierDrive;
 const entreeEnAttente = {
   cle: { type: 'OBJECTIF', id: O, champ: 'intitule' } as const,
   premiereEcriture: instant('2026-10-21T08:00:00.000Z'),
@@ -186,8 +194,123 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
 
       expect(appels).toBe(0);
     });
+
+    // ST-US-017 §4.2 ; conditions de Starck sur Q-ST017-STA-1 : contrat et adaptateur en mémoire couvrent
+    // lireMeta et appliquerSynchronisation, qui tient en une seule transaction stricte.
+    it('CT-DEPOT-08 lireMeta — renvoie META_INITIALE pour un espace neuf', async () => {
+      const { premier } = fabriquer();
+
+      expect(valeurDe(await premier.lireMeta())).toEqual(META_INITIALE);
+    });
+
+    it('CT-DEPOT-09 appliquerSynchronisation — plan vide : fusionne la méta partielle, sans changer la version ni prévenir', async () => {
+      const { premier, second } = fabriquer();
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planVide(etat),
+          meta: { dossier: DOSSIER },
+        })),
+      );
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planVide(etat),
+          meta: { fichierPropre: FICHIER, deposeJusquA: h },
+        })),
+      );
+
+      const autre = second();
+      expect(valeurDe(await autre.lireMeta())).toEqual({
+        dossier: DOSSIER,
+        fichierPropre: FICHIER,
+        deposeJusquA: h,
+        fusionNonDeposee: false,
+      });
+      expect(valeurDe(await autre.lire()).version).toBe(0);
+      expect(appels).toBe(0);
+    });
+
+    it('CT-DEPOT-10 appliquerSynchronisation — écrit le plan et la méta dans la même transaction, version + 1, observateurs prévenus', async () => {
+      const { premier, second } = fabriquer();
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      valeurDe(
+        await premier.appliquer((etat) =>
+          succes({
+            plan: planAjoutant(etat, {
+              registres: [creation],
+              enAttente: [entreeEnAttente],
+              dernierHlc: h,
+            }),
+            valeur: undefined,
+          }),
+        ),
+      );
+
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: {
+            ...planVide(etat),
+            etatApres: { ...etat, enAttente: new Map() },
+            enAttenteRetirees: [texteDeCle(entreeEnAttente.cle)],
+          },
+          meta: { fichierPropre: FICHIER, deposeJusquA: h },
+        })),
+      );
+
+      const autre = second();
+      const relu = valeurDe(await autre.lire());
+      expect(relu.version).toBe(2);
+      expect(relu.enAttente.size).toBe(0);
+      expect(valeurDe(await autre.lireMeta())).toMatchObject({
+        fichierPropre: FICHIER,
+        deposeJusquA: h,
+      });
+      expect(appels).toBe(2);
+    });
+
+    it('CT-DEPOT-11 appliquerSynchronisation — transmet l’état et la méta à jour d’une autre instance ; une exception n’écrit ni plan ni méta', async () => {
+      const { premier, second } = fabriquer();
+      const autre = second();
+      valeurDe(await autre.lireMeta());
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planAjoutant(etat, { registres: [creation], dernierHlc: h }),
+          meta: { dossier: DOSSIER },
+        })),
+      );
+
+      let vus: { readonly version: number; readonly dossier: unknown } | undefined;
+      await expect(
+        autre.appliquerSynchronisation((etat, meta) => {
+          vus = { version: etat.version, dossier: meta.dossier };
+          throw new Error('panne de calcul');
+        }),
+      ).rejects.toThrow('panne de calcul');
+
+      expect(vus).toEqual({ version: 1, dossier: DOSSIER });
+      expect(valeurDe(await autre.lireMeta())).toEqual({
+        dossier: DOSSIER,
+        fusionNonDeposee: false,
+      });
+      expect(valeurDe(await autre.lire()).version).toBe(1);
+    });
   });
 };
+
+decrireContratDepotLocal('DepotLocalEnMemoire', () => {
+  const stockage = new StockageDepotEnMemoire(SMARTPHONE);
+  return {
+    premier: new DepotLocalEnMemoire(stockage),
+    second: () => new DepotLocalEnMemoire(stockage),
+  };
+});
 
 decrireContratDepotLocal('DepotLocalDexie sur fake-indexeddb', () => {
   const fabrique = new IDBFactory();

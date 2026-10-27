@@ -9,13 +9,13 @@
 | Fichier `.feature` | [`tests/features/US-022-se-connecter-avec-mon-compte-google.feature`](../../tests/features/US-022-se-connecter-avec-mon-compte-google.feature), 33 scénarios (dont S13b `@recette`) |
 | RG couvertes | RG-017 (accès à renouveler), RG-018, RG-019, RG-020, RG-035, RG-043, RG-055, RG-058 (actions de compte en consultation seule, avec ST-US-017 incrément 4) |
 | ENF concernées | ENF-05, ENF-06, ENF-08 ; ENF-T-01 |
-| DAT / ADR de référence | DAT v0.11.2 (§4.1.1 à §4.1.7, §4.2.2 d, §7.1, §7.4 bis) ; ADR-004, ADR-005, ADR-010, ADR-013 |
+| DAT / ADR de référence | DAT v0.11.3 (§4.1.1 à §4.1.7, §4.2.2 d, §7.1, §7.4 bis) ; ADR-004, ADR-005, ADR-010, ADR-013 |
 | Résultats du test technique | `03-architecture/resultats-test-technique.md` : R11 favorable (en production) ; M-RED 12/12 ; M-PERSIST et M-DUR favorables ; **étape 16 refaite (information de Jarvis, 2026-10-27)** : avec `login_hint` transmis à GIS, le renouvellement par geste ne demande plus de choisir le compte |
-| Maquettes | ECR-010 (connexion, premier lancement), ECR-011 section « Compte » ; guide d'ergonomie v0.2.11 §6.6 |
+| Maquettes | ECR-010 (connexion, premier lancement, cadre « Attente »), ECR-011 section « Compte » ; guide d'ergonomie v0.2.13 §6.6 |
 | Q-US traitées | Q-US-022-1 à Q-US-022-4 (E8) ; Q-US-031-1 (DAT §4.1.6 bis) ; Q-DEC034-1 (Starck) |
-| Questions ouvertes de cette ST | Q-ST022-STA-1 à 3 (Starck), Q-ST022-STE-1 à 3 (Steeve) : §16 ; aucune ne bloque l'E10 du rang 1 |
-| Version de la ST | 0.1 |
-| Statut | **Prête pour E10** (tests du §13 livrés en rouge) |
+| Questions de cette ST | Q-ST022-STA-1 à 3 et Q-ST022-STE-1 à 3 **répondues** (2026-10-27) et intégrées ; ouvertes : Q-ST022-STA-4 (Starck), Q-ST022-STE-4 (Steeve), non bloquantes pour l'E10 : §16 |
+| Version de la ST | 0.2 |
+| Statut | **Prête pour E11** (tests du §13 livrés en rouge, v0.2 comprise) |
 | Auteur | Anthony |
 | Branches Git | `us/SOCLE-complement` (rang 0) puis `us/US-022-connexion` (rang 1), depuis `lot/LOT-001-socle-objectifs-taches` |
 
@@ -23,10 +23,11 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED). Stratégies d'authentification arrêtées d'après l'étape 16 refaite : geste par GIS avec `login_hint`, redirection `prompt=none` à l'ouverture et en repli d'une erreur technique de GIS. E10 du rang 1 livrée. |
+| 0.2 | 2026-10-27 | Anthony | Réponses de Starck (DAT v0.11.3) et de Steeve (guide v0.2.13). **Q-ST022-STA-1** : écriture du départ confirmée avant la navigation, reprise sans contenu métier (`ROUTE_REPRISE`), garde de saisie (`GardeSaisie`, `redirectionPermise`) (§4.3, §5.1, §6.4, §6.10). **Q-ST022-STA-2** : repli de GIS par **redirection interactive** (`prompt` absent), une seule par geste ; web-ios : redirection interactive d'emblée (`strategie-geste.ts`, §6.4). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace du compte (`DepotLocalDexie.ouvrirEspace`) ; `RegistreAppareil` supprimé ; table `appareil` remplacée par `installation` (§5.1, §5.2, §6.6). **Q-ST022-STE-3** : `SYN-SESSION` jamais hors ligne (§6.9). E10 complétée : UT-US-022-43 (repli interactif), 44, 45, 47 (hors ligne), 51 à 55. |
 
 ## 1. Résumé technique
 
-- **Ce que l'US change.** Création du contexte `compte` : identité (`sub`), portées, état de l'accès Google (valide, à renouveler, perdu), décision d'ouverture (DAT §4.1.7), motifs `ERR-001` à `ERR-006`, cas d'usage `OuvrirApplication`, `SeConnecter`, `ReprendreSession`, `SeDeconnecter`, `SupprimerDonneesAppareil`, `SignalerRefusJeton`. Adaptateur **`FournisseurAuthWeb` unique** (ADR-013) : redirection pleine page `prompt=none` à l'ouverture, Google Identity Services (GIS, modèle « jeton ») avec `login_hint` pour la première connexion et pour le geste, redirection `prompt=none` en repli d'une erreur technique de GIS. Consommation du retour de redirection par la première instruction de `main.tsx` (RED-01 à RED-08). Base IndexedDB **technique**, hors espace de compte (appareil, session mémorisée, départ de redirection). Espaces de stockage par compte (DEC-016). Préparation du dossier « Done Juan » dans le Drive. Modèles de vue partagés de l'indicateur de synchronisation et des bandeaux (sélection unique, `conventions.md` §8.5), utilisés dès ce rang.
+- **Ce que l'US change.** Création du contexte `compte` : identité (`sub`), portées, état de l'accès Google (valide, à renouveler, perdu), décision d'ouverture (DAT §4.1.7), motifs `ERR-001` à `ERR-006`, cas d'usage `OuvrirApplication`, `SeConnecter`, `ReprendreSession`, `SeDeconnecter`, `SupprimerDonneesAppareil`, `SignalerRefusJeton`. Adaptateur **`FournisseurAuthWeb` unique** (ADR-013) : redirection pleine page `prompt=none` à l'ouverture, Google Identity Services (GIS, modèle « jeton ») avec `login_hint` pour la première connexion et pour le geste, **redirection interactive** (`prompt` absent, `login_hint` présent) en repli d'une erreur technique de GIS, une seule par geste, et d'emblée sur web-ios (DAT v0.11.3 §4.1.7). Consommation du retour de redirection par la première instruction de `main.tsx` (RED-01 à RED-08). Base IndexedDB **technique**, hors espace de compte (installation, session mémorisée, départ de redirection). Espaces de stockage par compte (DEC-016), chacun avec son `appareilId` (DAT v0.11.3 §4.1.4). Préparation du dossier « Done Juan » dans le Drive. Modèles de vue partagés de l'indicateur de synchronisation et des bandeaux (sélection unique, `conventions.md` §8.5), utilisés dès ce rang.
 - **Socle complémentaire (rang 0)** : outillage, CI, ports transverses et leurs doublures, banc à deux appareils (§3.1).
 - **Hors périmètre** : transport Drive complet, fusion, cycle de synchronisation, décompte affiché (ST-US-017 incrément 1, rang 3) ; valeurs écartées (incrément 2) ; RG-044 (incrément 3) ; consultation seule et correction d'horloge (incrément 4) ; service worker, `storage.persist()`, RG-057 évalué en continu (ST-US-018, rang 12) ; verrou entre onglets (ST-US-031, rang 13) ; première connexion par redirection (iPhone, EPI-001 : hors v1).
 - **Prérequis** : `ST-socle-ecriture.md` (rang 0, écriture).
@@ -93,14 +94,14 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 7 | `src/compte/application/ports/coffre-jetons.ts` | Application | Créer | Port `CoffreJetons`, type `JetonAcces` | — |
 | 8 | `src/compte/application/ports/memoire-redirection.ts` | Application | Créer | Port interne `MemoireRedirection`, `DepartMemorise`, `EtatReprise` | — |
 | 9 | `src/compte/application/ports/memoire-session.ts` | Application | Créer | Port `MemoireSession`, `SessionMemorisee` | 1 |
-| 10 | `src/compte/application/ports/registre-appareil.ts` | Application | Créer | Port `RegistreAppareil` | — |
+| 10 | `src/compte/application/ports/garde-saisie.ts` | Application | Créer | Port `GardeSaisie` (saisie en cours : aucune redirection, DAT v0.11.3 §4.1.7). *Le port `RegistreAppareil` de la v0.1 est supprimé (Q-ST022-STA-3)* | — |
 | 11 | `src/compte/application/ports/gestion-espaces.ts` | Application | Créer | Port `GestionEspaces` | 1 |
 | 12 | `src/compte/application/ports/preparation-stockage.ts` | Application | Créer | Port `PreparationStockage` | — |
 | 13 | `src/compte/application/ports/depot-avant-sortie.ts` | Application | Créer | Port `DepotAvantSortie` | — |
 | 14 | `src/compte/application/session-courante.ts` | Application | Créer | `SessionCourante` : état en mémoire, observable | 1, 5 |
 | 15 | `src/compte/application/cas-usage/ouvrir-application.ts` | Application | Créer | `OuvrirApplication` (§6.2) | 4 à 14 |
 | 16 | `src/compte/application/cas-usage/se-connecter.ts` | Application | Créer | `SeConnecter` (§6.3) | 2, 3, 6, 9, 11, 12, 14 |
-| 17 | `src/compte/application/cas-usage/reprendre-session.ts` | Application | Créer | `ReprendreSession` (geste « Reprendre la synchronisation », « Se reconnecter ») | 5, 6, 9, 14 |
+| 17 | `src/compte/application/cas-usage/reprendre-session.ts` | Application | Créer | `ReprendreSession` (geste « Reprendre la synchronisation », « Se reconnecter », §6.10) | 5, 6, 9, 10, 14 |
 | 18 | `src/compte/application/cas-usage/se-deconnecter.ts` | Application | Créer | `SeDeconnecter` (`evaluer` / `executer`) | 6, 9, 11, 13, 14 |
 | 19 | `src/compte/application/cas-usage/supprimer-donnees-appareil.ts` | Application | Créer | `SupprimerDonneesAppareil` (`evaluer` / `confirmer` / `confirmerPerte`) | 6, 9, 11, 13, 14 |
 | 20 | `src/compte/application/cas-usage/signaler-refus-jeton.ts` | Application | Créer | `SignalerRefusJeton` (401 d'un appel Google) | 5, 7, 9, 14 |
@@ -109,12 +110,13 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 23 | `src/compte/infrastructure/auth/verification-retour.ts` | Infrastructure | Créer | `verifierRetour` (RED-03, portées) | 2, 8 |
 | 24 | `src/compte/infrastructure/auth/url-autorisation.ts` | Infrastructure | Créer | `uriRedirection`, `construireUrlAutorisation`, `encoderBase64Url`, `VALIDITE_STATE_REDIRECTION` | — |
 | 25 | `src/compte/infrastructure/auth/passerelle-gis.ts` | Infrastructure | Créer | Interface `PasserelleGis` et adaptateur `PasserelleGisNavigateur` (chargement à la demande, R12) | — |
+| 25 b | `src/compte/infrastructure/auth/strategie-geste.ts` | Infrastructure | Créer | Fonctions pures `mecanismeGeste(plateforme)`, `suiteErreurGis(erreur, reseau)` (§6.4) | 6 |
 | 26 | `src/compte/infrastructure/auth/fournisseur-auth-web.ts` | Infrastructure | Créer | `FournisseurAuthWeb` (§6.4) | 22 à 25, 7, 8 |
 | 27 | `src/compte/infrastructure/coffre-jetons-memoire.ts` | Infrastructure | Créer | `CoffreJetonsMemoire` (adaptateur réel et doublure) | 7 |
-| 28 | `src/compte/infrastructure/base-technique.ts` | Infrastructure | Créer | Base Dexie `donejuan-<env>-technique` (§5.1) ; `MemoireSessionDexie`, `MemoireRedirectionDexie`, `RegistreAppareilDexie` | 8 à 10 |
+| 28 | `src/compte/infrastructure/base-technique.ts` | Infrastructure | Créer | Base Dexie `donejuan-<env>-technique` (§5.1) ; `MemoireSessionDexie`, `MemoireRedirectionDexie` | 8, 9 |
 | 29 | `src/compte/infrastructure/espaces/nom-espace.ts` | Infrastructure | Créer | `nomEspace(env, compte)` : `donejuan-<env>-<sha256 hex du sub>` | 1 |
 | 30 | `src/compte/infrastructure/espaces/gestion-espaces-indexeddb.ts` | Infrastructure | Créer | `GestionEspacesIndexedDb` | 11, 29 |
-| 31 | `src/compte/infrastructure/configuration.ts` | Infrastructure | Créer | `lireConfiguration(env)` : `VITE_ENV`, `VITE_GOOGLE_WEB_CLIENT_ID`, `VITE_BASE_PATH`, `VITE_APP_ORIGIN` | — |
+| 31 | `src/compte/infrastructure/configuration.ts` | Infrastructure | Créer | `lireConfiguration(env)` : `VITE_ENV`, `VITE_GOOGLE_WEB_CLIENT_ID`, `VITE_BASE_PATH`, `VITE_APP_ORIGIN` ; `plateforme` (`web-ios` si l'agent utilisateur est Safari sur iPhone ou iPad, sinon `web`) | — |
 | 32 | `src/compte/presentation/modeles-de-vue/ecran-connexion.ts` | Modèle de vue | Créer | ECR-010 (invitation, portées annoncées, messages `ERR-001` à `ERR-006`) | 3 |
 | 33 | `src/compte/presentation/modeles-de-vue/racine.ts` | Modèle de vue | Créer | Écran racine : connexion, attente de Google, application | 14 |
 | 34 | `src/compte/presentation/modeles-de-vue/section-compte.ts` | Modèle de vue | Créer | ECR-011, section « Compte » | 21 |
@@ -137,6 +139,7 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 51 | `src/composition/web.ts`, `src/main.tsx` | Composition | Modifier | §6.6 | tout |
 | 52 | `tests/doublures/faux-fournisseur-auth.ts`, `faux-google.ts`, `faux-drive.ts` (rang 1 : dossier seulement) | Test | Créer | §12.3 | — |
 | 53 | `tests/support/compte/*.ts`, `tests/steps/compte/connexion.steps.ts`, `tests/steps/synchronisation/etat-affiche.steps.ts` | Test | Créer | §12 | — |
+| 54 | `src/synchronisation/infrastructure/depot-local-dexie.ts` | Infrastructure | Modifier | Fabrique `DepotLocalDexie.ouvrirEspace({ nomBase, fabrique?, generateur })` et accesseur `appareil()` (§5.2, Q-ST022-STA-3) ; le constructeur du socle est inchangé | socle |
 
 **Fichiers qui ne doivent pas être modifiés** : les types de `ST-socle-ecriture.md` §4 ; `src/objectifs-taches/**`.
 
@@ -217,7 +220,7 @@ export class SessionCourante {
 |---|---|---|---|---|---|
 | `OuvrirApplication.executer(retour: RetourGoogle)` | Retour déjà extrait par `consommerRetourRedirection` | `IssueOuverture` : `{ type: 'ECRAN_CONNEXION' }` \| `{ type: 'REDIRECTION_LANCEE' }` \| `{ type: 'SESSION_OUVERTE'; acces: EtatAcces; reprise?: EtatReprise }` | Aucune (toutes les situations sont des issues) | `MemoireSession`, `MemoireRedirection`, `FournisseurAuth`, `GestionEspaces`, `EtatReseau`, `JournalTechnique`, `SessionCourante`, `Horloge` | Ouvre l'espace du compte ; lance au plus une redirection |
 | `SeConnecter.executer()` | — | `Identite` | `{ type: 'ConnexionImpossible'; motif: MotifEchecConnexion }`, `{ type: 'EspaceInaccessible' }` | `EtatReseau`, `FournisseurAuth`, `PreparationStockage`, `GestionEspaces`, `MemoireSession`, `SessionCourante` | Dossier Drive, espace local, session mémorisée |
-| `ReprendreSession.executer(reprise: EtatReprise)` | État d'écran courant | `IssueReprise` : `{ type: 'ACCES_RENOUVELE' }` \| `{ type: 'REDIRECTION_LANCEE' }` \| `{ type: 'INCHANGE' }` | `{ type: 'HorsLigne' }`, `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `SessionCourante`, `EtatReseau` | Jeton dans le coffre ; `accesPerdu` effacé si renouvelé |
+| `ReprendreSession.executer(reprise: EtatReprise)` | État d'écran courant | `IssueReprise` : `{ type: 'ACCES_RENOUVELE' }` \| `{ type: 'REDIRECTION_LANCEE' }` \| `{ type: 'SAISIE_A_TERMINER' }` \| `{ type: 'ACCES_PERDU' }` \| `{ type: 'INCHANGE' }` | `{ type: 'HorsLigne' }`, `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `SessionCourante`, `EtatReseau`, `GardeSaisie` | §6.10 ; jeton dans le coffre ; `accesPerdu` effacé si renouvelé, mémorisé si perdu |
 | `SeDeconnecter.evaluer()` | — | `Evaluation` (`CNF-DECONNEXION` avec `n`, ou sans confirmation) | `{ type: 'SansSession' }` | `DepotAvantSortie`, `SessionCourante` | Tente un dépôt (§6.5), aucune écriture locale métier |
 | `SeDeconnecter.executer()` | — | `undefined` | `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `GestionEspaces`, `SessionCourante` | §6.5 |
 | `SupprimerDonneesAppareil.evaluer()` | — | `Evaluation` (`CNF-SUPPR-DONNEES`, toujours) | `SansSession` | `SessionCourante` | Aucun |
@@ -260,16 +263,20 @@ export type JetonAcces = Marque<string, 'JetonAcces'>;
 export type JetonEnCoffre = { readonly jeton: JetonAcces; readonly echeance: EcartTemps }; // échéance sur l'horloge monotone
 export interface CoffreJetons { placer(j: JetonEnCoffre): void; lire(): JetonEnCoffre | undefined; vider(): void }
 
-// src/compte/application/ports/memoire-redirection.ts — RED-03, RED-04 (port interne au contexte compte, signalé à Starck)
-export type ModeDepart = 'RENOUVELLEMENT_OUVERTURE' | 'REPLI_GESTE';
-export type EtatReprise = { readonly ecran: string; readonly feuilleSynchronisationOuverte: boolean }; // route opaque, sans donnée personnelle
+// src/compte/application/ports/memoire-redirection.ts — RED-03, RED-04, DAT v0.11.3 §4.1.7 (port interne au contexte compte, validé par Starck)
+export type ModeDepart = 'RENOUVELLEMENT_OUVERTURE' | 'REPLI_GESTE';   // REPLI_GESTE : redirection interactive d'un geste
+/** Aucun contenu métier : `ecran` est une route (segments fixes et identifiants), conforme à ROUTE_REPRISE. */
+export type EtatReprise = { readonly ecran: string; readonly feuilleSynchronisationOuverte: boolean };
+export const ROUTE_REPRISE: RegExp;   // /^[a-z0-9/_-]{1,200}$/
 export type DepartMemorise = {
   readonly state: string; readonly expireA: Instant; readonly lanceA: Instant;
   readonly mode: ModeDepart; readonly reprise: EtatReprise;
 };
 export interface MemoireRedirection {
+  /** Succes seulement après `complete` (durabilité stricte), donc avant la navigation ; base indisponible ou route
+   *  hors ROUTE_REPRISE → MemoireTechniqueIndisponible, et aucune redirection. */
   memoriser(depart: DepartMemorise): Promise<Resultat<undefined, { readonly type: 'MemoireTechniqueIndisponible' }>>;
-  /** Lit puis supprime, dans tous les cas (usage unique). */
+  /** Lit puis supprime, dans tous les cas (usage unique) ; base indisponible → undefined. */
   consommer(): Promise<DepartMemorise | undefined>;
 }
 
@@ -281,8 +288,9 @@ export interface MemoireSession {
   effacer(): Promise<void>;
 }
 
-// src/compte/application/ports/registre-appareil.ts — DAT §4.1.4 : un appareilId par installation (profil de navigateur)
-export interface RegistreAppareil { obtenirIdentifiant(): Promise<Resultat<IdAppareil, { readonly type: 'MemoireTechniqueIndisponible' }>> }
+// src/compte/application/ports/garde-saisie.ts — DAT v0.11.3 §4.1.7 (Q-ST022-STA-1) ; implémenté par la présentation
+export interface GardeSaisie { saisieEnCours(): boolean }   // vrai si un formulaire est ouvert et modifié
+// (v0.1 : RegistreAppareil, supprimé — l'appareilId naît avec l'espace du compte, §5.2)
 
 // src/compte/application/ports/gestion-espaces.ts — DEC-016, conventions §9.3
 export type ErreurEspace = { readonly type: 'EspaceInaccessible' };
@@ -314,6 +322,7 @@ export type DemandeJeton = {
   readonly portees: ReadonlyArray<Portee>;
   readonly indice?: AdresseGoogle;   // login_hint, obligatoire dès que l'identité est en cache (tous les modes sauf CONNEXION)
   readonly reprise: EtatReprise;     // état d'écran sauvegardé si la page doit quitter l'application
+  readonly redirectionPermise: boolean;  // faux si une saisie est en cours : aucune redirection, RedirectionNonPermise
 };
 export type AccesObtenu = { readonly porteesAccordees: ReadonlyArray<string>; readonly identite: Identite };
 export type IssueDemandeJeton =
@@ -328,7 +337,8 @@ export type ErreurAuth =
   | { readonly type: 'RetourRedirectionRejete'; readonly motif: 'STATE_ABSENT' | 'STATE_INCONNU' | 'STATE_EXPIRE' | 'SANS_DEPART' }
   | { readonly type: 'CompteDifferent' }                   // jeton obtenu pour un autre `sub`
   | { readonly type: 'MemoireTechniqueIndisponible' }      // départ non mémorisé : aucune navigation
-  | { readonly type: 'ReseauIndisponible' };
+  | { readonly type: 'ReseauIndisponible' }
+  | { readonly type: 'RedirectionNonPermise' };            // repli nécessaire mais redirectionPermise faux
 export type RetourGoogle =
   | { readonly type: 'AUCUN' }
   | { readonly type: 'JETON'; readonly jeton: string; readonly expireEnSecondes?: number; readonly portees: ReadonlyArray<string>; readonly state?: string }
@@ -381,8 +391,8 @@ export const SUIVI_CYCLE_AU_REPOS: SuiviCycle;   // { cycle: 'REPOS', aLire: 0 }
 | `FournisseurAuthWeb` | `FournisseurAuth` | GIS (`google.accounts.oauth2.initTokenClient`), redirection OAuth 2.0 implicite, userinfo | §6.4 ; aucune exception ne sort ; jeton jamais journalisé |
 | `PasserelleGisNavigateur` | `PasserelleGis` (interface interne) | Script `https://accounts.google.com/gsi/client` chargé à la demande | Hors ligne : `ScriptIndisponible` sans attente (R12) |
 | `CoffreJetonsMemoire` | `CoffreJetons` | Variable privée | Seul détenteur du jeton |
-| `MemoireSessionDexie`, `MemoireRedirectionDexie`, `RegistreAppareilDexie` | ports 8 à 10 | Base `donejuan-<env>-technique`, durabilité stricte | §5.1 |
-| `GestionEspacesIndexedDb` | `GestionEspaces` | `indexedDB.databases()`, `deleteDatabase` ; rappel `surOuverture(nomBase)` fourni par la composition | Le nom ne contient ni `sub` ni adresse (`nomEspace`) |
+| `MemoireSessionDexie`, `MemoireRedirectionDexie` | ports 8, 9 | Base `donejuan-<env>-technique`, durabilité stricte ; `memoriser` confirmé à `complete` | §5.1 |
+| `GestionEspacesIndexedDb` | `GestionEspaces` | `indexedDB.databases()`, `deleteDatabase` ; rappel `surOuverture(nomBase)` fourni par la composition, qui appelle `DepotLocalDexie.ouvrirEspace` (§5.2) | Le nom ne contient ni `sub` ni adresse (`nomEspace`) |
 | `ClientGoogle` | (utilitaire d'infrastructure) | `fetch`, `AbortSignal` | §6.8 |
 | `TransportSynchroDrive` | `TransportSynchro` | Drive v3 REST | `appProperties` `{ donejuan: 'dossier' }`, dossier racine, `trashed = false` |
 | `EtatReseauNavigateur` | `EtatReseau` | `navigator.onLine`, événements `online` et `offline` | — |
@@ -394,7 +404,7 @@ export const SUIVI_CYCLE_AU_REPOS: SuiviCycle;   // { cycle: 'REPOS', aLire: 0 }
 
 | Écran / composant | Maquette | Modèle de vue | Codes | Actions → cas d'usage |
 |---|---|---|---|---|
-| Racine | — | `construireRacine(etat: EtatSession): ModeleVueRacine` → `{ ecran: 'CONNEXION' \| 'ATTENTE_GOOGLE' \| 'APPLICATION' }` | — | — |
+| Racine | ECR-010 (cadre « Attente ») | `construireRacine(etat: EtatSession): ModeleVueRacine` → `{ ecran: 'CONNEXION' \| 'ATTENTE_GOOGLE' \| 'APPLICATION' }` ; `ATTENTE_GOOGLE` s'affiche avec `data-etat="SYN-REDIRECTION"` (« Connexion à Google… », logo, sans action, `role="status"`, Q-ST022-STE-1) | `SYN-REDIRECTION` | — |
 | Connexion (ECR-010) | ECR-010 A, D, E, F | `construireEcranConnexion(e: { readonly dernierEchec?: MotifEchecConnexion; readonly enCours: boolean }): ModeleVueConnexion` | `ERR-001` à `ERR-006` (`data-message`) | « Continuer avec Google » / « Réessayer » / « Choisir un autre compte » → `SeConnecter` |
 | Section Compte (ECR-011) | ECR-011 | `construireSectionCompte(c: { readonly adresse: AdresseGoogle }): ModeleVueSectionCompte` → `actions: ['SE_DECONNECTER', 'SUPPRIMER_DONNEES']` (dans cet ordre, aucune autre) | `SYN-FEUILLE-DOSSIER` | → `SeDeconnecter`, `SupprimerDonneesAppareil` |
 | Confirmations du compte | ECR-011 | `construireConfirmationCompte(c: ConfirmationCompte): { code; libelle; boutonAction; rouge }` | `CNF-DECONNEXION`, `CNF-SUPPR-DONNEES`, `CNF-SUPPR-DONNEES-PERTE` | « Se déconnecter », « Supprimer les données », « Supprimer quand même » |
@@ -457,15 +467,17 @@ Libellés : catalogue §6.6, par `libelle()` ; les tests vérifient les codes. A
 
 | Table | Clé | Contenu | Écrit par | Effacé par |
 |---|---|---|---|---|
-| `appareil` | `'appareil'` | `{ appareilId }` (UUID v7, créé au premier appel) | `RegistreAppareilDexie` | Jamais par l'application (effacement des données du navigateur) |
+| `installation` | `'installation'` | `{ persistanceDemandee?: boolean }` (ST-US-018 §5). **Aucun `appareilId`** : il est dans l'espace du compte (§5.2, Q-ST022-STA-3) | `DemanderPersistance` (rang 12) | Jamais par l'application |
 | `session` | `'session'` | `{ sub, adresse, accesPerdu }` | `SeConnecter`, `ReprendreSession`, `SignalerRefusJeton` | `SeDeconnecter`, `SupprimerDonneesAppareil` |
-| `redirection` | `'redirection'` | `{ state, expireA (ISO), lanceA (ISO), mode, reprise }` ; **ni jeton, ni adresse, ni `sub`** (RED-04) | `FournisseurAuthWeb` | `consommer()` (toujours), déconnexion |
+| `redirection` | `'redirection'` | `{ state, expireA (ISO), lanceA (ISO), mode, reprise }` ; **ni jeton, ni adresse, ni `sub`, ni contenu métier** : `reprise.ecran` conforme à `ROUTE_REPRISE` (RED-04, DAT v0.11.3 §4.1.7) | `FournisseurAuthWeb`, écriture confirmée à `complete` **avant** la navigation | `consommer()` (toujours, lecture destructive), déconnexion |
 | `journal` | auto | Entrées du journal technique (7 jours) | `JournalTechniqueLocal` | Rotation |
 
-Relecture par Zod (`compte/infrastructure/base-technique.ts`) ; une ligne invalide vaut « absente » et est journalisée en `avertissement`. Le nom de la base n'est pas cloisonné par compte : elle ne contient aucune donnée métier.
+Relecture par Zod (`compte/infrastructure/base-technique.ts`) ; une ligne invalide vaut « absente » et est journalisée en `avertissement`. Le nom de la base n'est pas cloisonné par compte : elle ne contient aucune donnée métier. **Base indisponible** (ouverture refusée, quota) : `memoriser` échoue, donc aucune redirection n'est lancée et l'application s'ouvre sans jeton (`OUVRIR_SANS_JETON` de fait, §6.2 étape 6) ; `consommer` rend `undefined`. Le journal technique peut porter un identifiant d'installation distinct (non requis au lot 1) ; il n'est jamais écrit dans le Drive.
 
 ### 5.2 Espaces par compte
-Nom : `nomEspace(env, compte)` = `donejuan-<env>-` + SHA-256 hexadécimal (64 caractères minuscules) du `sub` encodé en UTF-8. Contenu : base de `ST-socle-ecriture.md` §5.1. `existeUnEspace()` : vrai si `indexedDB.databases()` contient au moins un nom de la forme `donejuan-<env>-` suivi de 64 caractères hexadécimaux.
+Nom : `nomEspace(env, compte)` = `donejuan-<env>-` + SHA-256 hexadécimal (64 caractères minuscules) du `sub` encodé en UTF-8. Contenu : base de `ST-socle-ecriture.md` §5.1.
+
+**`appareilId` (DAT v0.11.3 §4.1.4, Q-ST022-STA-3)** : il est rangé dans l'espace (`meta.appareilId` du socle) et **naît avec lui**, un par couple installation et compte. La composition ouvre l'espace par `DepotLocalDexie.ouvrirEspace({ nomBase, fabrique?, generateur })` : base neuve → `IdAppareil.depuisUuid(generateur.genererUuidV7())` écrit dans `meta.appareilId` en transaction stricte confirmée à `complete` ; base existante → identifiant relu, générateur non appelé ; ligne illisible → `Echec(DonneesLocalesIllisibles)`. Le rappel `surOuverture(nomBase): Promise<Resultat<undefined, ErreurEspace>>` de `GestionEspacesIndexedDb` rend `EspaceInaccessible` sur tout échec. Après « Supprimer les données de cet appareil », la reconnexion crée un espace neuf, donc un **nouvel** `appareilId` (UT-US-022-55). `existeUnEspace()` : vrai si `indexedDB.databases()` contient au moins un nom de la forme `donejuan-<env>-` suivi de 64 caractères hexadécimaux.
 
 ### 5.3 Drive (rang 1)
 Seul le **dossier** est créé : `name = "Done Juan"`, `mimeType = application/vnd.google-apps.folder`, `appProperties = { donejuan: "dossier" }`, à la racine. Recherche : `q = "appProperties has { key='donejuan' and value='dossier' } and trashed = false and mimeType = 'application/vnd.google-apps.folder'"`, `orderBy = createdTime`, premier résultat retenu (dossier canonique, DAT §4.2.2 d ; le dédoublonnage est fait au rang 3). Le manifeste et les fichiers d'appareil relèvent de ST-US-017.
@@ -525,20 +537,23 @@ Base technique version 1 : création. Aucune donnée existante. Aucun impact sur
 |---|---|---|
 | `CONNEXION` | GIS `initTokenClient` puis `requestAccessToken({ prompt: '' })` | `scope` = `PORTEES_LOT_1` séparées par un espace ; **pas de `login_hint`** (compte inconnu) |
 | `RENOUVELLEMENT_OUVERTURE` | Redirection pleine page | `response_type=token`, `prompt=none`, `include_granted_scopes=true`, `login_hint`, `state`, `redirect_uri = uriRedirection(config)` |
-| `RENOUVELLEMENT_GESTE` | GIS, `prompt: ''`, **`login_hint` obligatoire** | Repli : redirection `prompt=none` (mode mémorisé `REPLI_GESTE`) **si et seulement si** GIS échoue pour une cause technique : script indisponible alors que le réseau est présent, `popup_failed_to_open`, ou type d'erreur GIS inconnu |
-| `RECONNEXION_GESTE` (après `PERDU`) | GIS, `prompt: ''`, `login_hint` | Même repli |
+| `RENOUVELLEMENT_GESTE` | `mecanismeGeste(plateforme)` : `web` → GIS, `prompt: ''`, **`login_hint` obligatoire** ; `web-ios` → redirection **interactive** d'emblée | Repli (`suiteErreurGis`) : **redirection interactive** (`prompt` absent, `login_hint` présent ; mode mémorisé `REPLI_GESTE`) **si et seulement si** GIS échoue pour une cause technique : script indisponible alors que le réseau est présent, `popup_failed_to_open`, ou type d'erreur GIS inconnu. **Une seule redirection par geste**, jamais enchaînée. Si `redirectionPermise` est faux : `RedirectionNonPermise`, aucune navigation |
+| `RECONNEXION_GESTE` (après `PERDU`) | Idem | Même repli |
 
 Sans repli : `popup_closed` → `ConnexionAnnulee` ; `access_denied` → `AccesGoogleRevoque` ; portées partielles (`hasGrantedAllScopes` faux, ou `porteesManquantes` non vide) → `PorteeInsuffisante`. Après un jeton GIS : appel userinfo (`https://openidconnect.googleapis.com/v1/userinfo`) ; en mode renouvellement ou reconnexion, si `sub` ≠ compte de la session → jeton jeté (coffre vidé), `CompteDifferent`. `demanderJeton` sans `indice` dans un mode autre que `CONNEXION` → `ErreurProgrammation`.
 
-Redirection (deux modes) :
+Redirection (ouverture silencieuse, ou repli interactif d'un geste) :
 ```text
+0. geste et non demande.redirectionPermise : renvoyer Echec({ type: 'RedirectionNonPermise' }), sans naviguer
 1. state ← encoderBase64Url(aleatoire.octets(16))                  // 128 bits, RED-03
 2. memoireRedirection.memoriser({ state, expireA: maintenant + VALIDITE_STATE_REDIRECTION (10 min), lanceA: maintenant, mode, reprise })
-   en échec : renvoyer Echec({ type: 'MemoireTechniqueIndisponible' }), sans naviguer
-3. navigation.aller(construireUrlAutorisation({ clientId, redirectUri, portees, state, indice, prompt: 'none' }))
+   attendu jusqu'à `complete` ; en échec : renvoyer Echec({ type: 'MemoireTechniqueIndisponible' }), sans naviguer
+3. navigation.aller(construireUrlAutorisation({ clientId, redirectUri, portees, state, indice,
+      interaction: mode = 'RENOUVELLEMENT_OUVERTURE' ? 'SILENCIEUSE' : 'INTERACTIVE' }))
 4. renvoyer Succes({ type: 'REDIRECTION_LANCEE' })
 ```
-`recevoirRetour` : `verifierRetour(retour, depart, maintenant)` (RED-03 : comparaison de la chaîne entière ; expiré si `maintenant > expireA`, accepté à `expireA` exactement) ; erreur Google : `access_denied` → `AccesGoogleRevoque` si `depart.mode = 'REPLI_GESTE'`, sinon `SessionARenouveler` ; codes d'interaction (`interaction_required`, `login_required`, `consent_required`, `account_selection_required`) → `SessionARenouveler` ; codes de configuration (`redirect_uri_mismatch`, `invalid_request`, `invalid_client`, `origin_mismatch`, `invalid_scope`, `unauthorized_client`, `unsupported_response_type`) → `ConfigurationOAuthInvalide`, journal `erreur` ; autre → `SessionARenouveler`. Jeton : portées vérifiées, jeton placé dans le coffre avec `echeance = horloge.monotone() + expireEnSecondes × 1000` (3 600 s si absent), userinfo, contrôle du compte.
+À l'ouverture, `redirectionPermise` vaut vrai (aucune saisie n'a pu commencer).
+`recevoirRetour` : `verifierRetour(retour, depart, maintenant)` (RED-03 : comparaison de la chaîne entière ; expiré si `maintenant > expireA`, accepté à `expireA` exactement) ; erreur Google : `access_denied` → `AccesGoogleRevoque` si `depart.mode = 'REPLI_GESTE'` (« accès perdu », DAT v0.11.3), sinon `SessionARenouveler` ; codes d'interaction (`interaction_required`, `login_required`, `consent_required`, `account_selection_required`) → `SessionARenouveler` ; codes de configuration (`redirect_uri_mismatch`, `invalid_request`, `invalid_client`, `origin_mismatch`, `invalid_scope`, `unauthorized_client`, `unsupported_response_type`) → `ConfigurationOAuthInvalide`, journal `erreur` ; autre → `SessionARenouveler`. Jeton : portées vérifiées, jeton placé dans le coffre avec `echeance = horloge.monotone() + expireEnSecondes × 1000` (3 600 s si absent), userinfo, contrôle du compte.
 
 ### 6.5 `SeDeconnecter`
 ```text
@@ -557,7 +572,7 @@ confirmer : n ← compter ; si n > 0 : deposerSiPossible ; n ← compter
 confirmerPerte : supprimer
 supprimer : espaces.supprimer(compte) (échec → EspaceInaccessible, rien d'autre) ; fournisseur.oublier ; memoireSession.effacer ; sessionCourante.fermer → { type: 'SUPPRIMEES' }
 ```
-Le Drive n'est jamais modifié par cette action. Les espaces d'autres comptes ne sont pas touchés (S19). L'`appareilId` de l'installation est conservé : à la reconnexion, l'appareil relit le Drive, y compris son propre fichier, comme un fichier ordinaire (DAT §4.1.4, §4.2.2 ; Q-ST022-STA-3).
+Le Drive n'est jamais modifié par cette action. Les espaces d'autres comptes ne sont pas touchés (S19). **L'`appareilId` disparaît avec l'espace** (DAT v0.11.3 §4.1.4, réponse b) à Q-ST022-STA-3) : la reconnexion crée un espace neuf et un nouvel `appareilId` ; l'ancien fichier `appareils/<ancien id>.etat.json.gz` est celui d'un appareil inactif, fusionné comme les autres puis archivé après 90 jours (ST-US-017 §6.7).
 
 ### 6.7 `SeConnecter`
 ```text
@@ -587,20 +602,37 @@ Rien n'est écrit dans l'appareil (espace, session) avant l'étape 4 : un échec
 `delaiAvantTentative(n, gigue)` (n ≥ 1, gigue ∈ [0, 1[ tirée par `SourceAleatoire`) = min(`PLAFOND_REPRISE` = 5 min, `DELAI_INITIAL_REPRISE` (1 s) × 2^(n−1)) × (0,5 + gigue / 2). `PreparationDossierDrive` : au plus `TENTATIVES_CONNEXION` = 3 essais, reprise sur `QuotaDepasse`, `ErreurServeurDistant`, `ReseauIndisponible` ; après le troisième : `DriveMomentanementIndisponible` (5xx, 429) ou `ReseauInterrompu` (réseau) ; `DriveIndisponible` → `DriveIndisponiblePourLeCompte` sans reprise.
 
 ### 6.9 Indicateur et bandeaux (guide §6.6.2, §6.6.3 ; conventions §8.5)
-`selectionnerEtatIndicateur` (ordre de gravité, premier qui s'applique) : `acces = PERDU` ou `actionRequise` défini → `SYN-ACTION` ; `acces = A_RENOUVELER` → `SYN-SESSION` ; `cycle = RETENTATIVE` → `SYN-RETENTATIVE` ; `reseau = COUPE` → `SYN-HORS-LIGNE` ; `cycle = EN_COURS` → `SYN-EN-COURS` ; `enAttente > 0` → `SYN-ATTENTE` ; `aLire > 0` → `SYN-INFO` ; sinon `SYN-OK`. `messageFeuille` : `PERDU` → `ERR-010` ; `DRIVE_PLEIN` → `ERR-011` ; `DONNEES_ABSENTES` → `ERR-012` ; `FORMAT_PLUS_RECENT` → `ERR-013` ; `ECHEC_PERSISTANT` → `ERR-016` ; `SYN-SESSION` → `ERR-015`.
+`selectionnerEtatIndicateur` (ordre de gravité, premier qui s'applique) : `acces = PERDU` ou `actionRequise` défini → `SYN-ACTION` ; `acces = A_RENOUVELER` **et `reseau = CONNECTE`** → `SYN-SESSION` (hors ligne, jamais : guide v0.2.12 §6.6.2, Q-ST022-STE-3 b) ; `cycle = RETENTATIVE` → `SYN-RETENTATIVE` ; `reseau = COUPE` → `SYN-HORS-LIGNE` ; `cycle = EN_COURS` → `SYN-EN-COURS` ; `enAttente > 0` → `SYN-ATTENTE` ; `aLire > 0` → `SYN-INFO` ; sinon `SYN-OK`. `messageFeuille` : `PERDU` → `ERR-010` ; `DRIVE_PLEIN` → `ERR-011` ; `DONNEES_ABSENTES` → `ERR-012` ; `FORMAT_PLUS_RECENT` → `ERR-013` ; `ECHEC_PERSISTANT` → `ERR-016` ; `SYN-SESSION` → `ERR-015`.
 
 `construireBandeau(e, maintenant)` : `depasse = e.enAttente > 0 et e.plusAncienneEnAttente défini et maintenant − plusAncienne > SEUIL_RAPPEL_HORS_LIGNE` (strict).
 1. `acces = PERDU` → `BAN-ACCES-GOOGLE`, action `SE_RECONNECTER`, non fermable, message `ERR-010` ; si `depasse` : variante `24H` et `n = enAttente`.
 2. `actionRequise = FORMAT_PLUS_RECENT` → `BAN-CONSULTATION-SEULE`, action `METTRE_A_JOUR`, non fermable, `n` si > 0, message `ERR-013`.
-3. `depasse` et non `rappelMasque` → `BAN-RAPPEL-24H`, `n = enAttente`, fermable, message `ALR-002` ; si `selectionnerEtatIndicateur(e) = SYN-SESSION` : variante `session`, action `REPRENDRE_LA_SYNCHRONISATION`.
+3. `depasse` et non `rappelMasque` → `BAN-RAPPEL-24H`, `n = enAttente`, fermable, message `ALR-002` ; si `selectionnerEtatIndicateur(e) = SYN-SESSION` (donc en ligne seulement) : variante `session`, action `REPRENDRE_LA_SYNCHRONISATION` ; hors ligne, rappel ordinaire.
 4. sinon `undefined`.
+
+### 6.10 `ReprendreSession.executer(reprise)` (DAT §4.1.6 bis, v0.11.3 §4.1.7)
+```text
+1. etat ← session.etat() ; si etat.type ≠ OUVERTE : Echec(SansSession)
+2. si réseau coupé : Echec(HorsLigne) (aucune demande ; l'indicateur est alors SYN-HORS-LIGNE, §6.9)
+3. mode ← etat.acces = PERDU ? RECONNEXION_GESTE : RENOUVELLEMENT_GESTE
+4. r ← fournisseur.demanderJeton({ mode, portees: PORTEES_LOT_1, indice: etat.identite.adresse, reprise,
+                                   redirectionPermise: non gardeSaisie.saisieEnCours() })
+5. ACCES_OBTENU → si session mémorisée avec accesPerdu : memoireSession.ecrire({ identite, accesPerdu: false }) ;
+                  session.changerAcces(VALIDE) ; ACCES_RENOUVELE
+   REDIRECTION_LANCEE → session.attendreGoogle(identite) ; REDIRECTION_LANCEE
+   Echec RedirectionNonPermise → SAISIE_A_TERMINER, rien ne change (message : Q-ST022-STE-4)
+   Echec e → acces ← accesApresRetour({ avant: etat.acces, issue: issueDe(e), origine: GESTE })
+             acces = PERDU et avant ≠ PERDU → memoireSession.ecrire({ …, accesPerdu: true }) ; changerAcces ; ACCES_PERDU
+             sinon : changerAcces(acces) si différent ; INCHANGE
+```
+Au retour d'un repli interactif, `OuvrirApplication` traite le retour (§6.2, origine `GESTE`) : `access_denied` → accès perdu ; toute autre erreur → `A_RENOUVELER` (`SYN-SESSION`), sauf si l'accès était déjà perdu (règle du §6.3, Q-ST022-STA-4).
 
 ## 7. Intégration Google
 
 | Opération | Portée | Données | Idempotence | Erreurs |
 |---|---|---|---|---|
 | GIS `initTokenClient` | `openid email …/drive.file` | `client_id`, `scope`, `login_hint` (sauf première connexion) | — | §6.4 |
-| Redirection `GET https://accounts.google.com/o/oauth2/v2/auth` | idem | `client_id`, `redirect_uri`, `response_type=token`, `scope`, `prompt=none`, `include_granted_scopes=true`, `login_hint`, `state` | `state` à usage unique | RED-03 |
+| Redirection `GET https://accounts.google.com/o/oauth2/v2/auth` | idem | `client_id`, `redirect_uri`, `response_type=token`, `scope`, `include_granted_scopes=true`, `login_hint`, `state` ; `prompt=none` à l'ouverture seulement (repli d'un geste et web-ios : `prompt` absent) | `state` à usage unique ; une redirection par ouverture, une par geste | RED-03, DAT v0.11.3 §4.1.7 |
 | `GET https://openidconnect.googleapis.com/v1/userinfo` | `openid email` | Lit `sub`, `email` | Lecture | `NonAutorise` → `SessionARenouveler` |
 | `GET drive/v3/files?q=…` puis `POST drive/v3/files` | `drive.file` | Dossier (§5.3) | Recherche avant création | §6.8 |
 
@@ -617,6 +649,8 @@ Nouvelle portée : non. Aucun événement d'agenda.
 | 5 | Drive désactivé pour le compte | `ClientGoogle` (403) | `DriveIndisponiblePourLeCompte` | Aucune fonction | `ERR-006` | `avertissement` | UT-US-022-06 |
 | 6 | Retour `prompt=none` en erreur d'interaction | `recevoirRetour` | `SessionARenouveler` | `SYN-SESSION`, aucune nouvelle redirection | `SYN-SESSION`, `ERR-015` | `info` : code | UT-US-022-33 |
 | 7 | Erreur de configuration OAuth | idem | `ConfigurationOAuthInvalide` | Comme 6 ; anomalie | `SYN-SESSION` | `erreur` : code Google seul | UT-US-022-34 |
+| 7 b | Repli de GIS nécessaire alors qu'une saisie est en cours | `FournisseurAuthWeb` (`redirectionPermise` faux) | `RedirectionNonPermise` | Aucune navigation ; `SAISIE_A_TERMINER` ; état inchangé | Q-ST022-STE-4 | `info` | UT-US-022-54 |
+| 7 c | Base technique indisponible | `MemoireRedirectionDexie` | `MemoireTechniqueIndisponible` | Aucune redirection ; ouverture sans jeton | `SYN-SESSION` (en ligne) | `avertissement` | Intégration de la base technique (§14) |
 | 8 | `state` absent, inconnu, rejoué, expiré | `verifierRetour` | `RetourRedirectionRejete` | Jeton ignoré | `SYN-SESSION` | `avertissement` : motif | UT-US-022-18, 19 |
 | 9 | Jeton d'un autre compte | `FournisseurAuthWeb` | `CompteDifferent` | Jeton jeté | `SYN-SESSION` | `avertissement` | UT-US-022-36 |
 | 10 | 401 d'une API Google | `SignalerRefusJeton` | — | `A_RENOUVELER` ou `PERDU` (§6.3) | `SYN-SESSION` / `BAN-ACCES-GOOGLE` | `info` | UT-US-022-16, 17, 25, 26 |
@@ -712,7 +746,8 @@ Nouvelle tentative : §6.8.
 
 ### 12.3 Banc, monde et doublures
 - **`FauxGoogle`** (partagé par le banc) : comptes simulés par nom (« A », « B », « C ») avec `sub` (`sub-A`…) et adresse (`a@exemple.test`…) fictifs ; par compte : accès accordé ou retiré, Drive (`FauxDrive`).
-- **`FauxFournisseurAuth`** (par appareil, implémente `FournisseurAuth`) : demandes observées (mode, portées, indice) ; `CONNEXION` → accès obtenu, ou `ConnexionAnnulee`, `PorteeInsuffisante`, `ReseauIndisponible` selon la configuration ; `RENOUVELLEMENT_OUVERTURE` → `REDIRECTION_LANCEE`, puis le banc **achève** la redirection : retour immédiat en succès (session active), immédiat en erreur `interaction_required` (« redirection en échec »), ou **différé** jusqu'à l'étape n° 36 (« session a expiré ») ; gestes → accès obtenu (en mémoire, comme GIS), ou `AccesGoogleRevoque` si l'accès est retiré et que le mode est `RENOUVELLEMENT_GESTE` ; `RECONNEXION_GESTE` → réaccorde l'accès puis accès obtenu. Compteurs : redirections automatiques par ouverture (RED-08), gestes, demandes `CONNEXION`.
+- **`FauxFournisseurAuth`** (par appareil, implémente `FournisseurAuth`) : demandes observées (mode, portées, indice) ; `CONNEXION` → accès obtenu, ou `ConnexionAnnulee`, `PorteeInsuffisante`, `ReseauIndisponible` selon la configuration ; `RENOUVELLEMENT_OUVERTURE` → `REDIRECTION_LANCEE`, puis le banc **achève** la redirection : retour immédiat en succès (session active), immédiat en erreur `interaction_required` (« redirection en échec »), ou **différé** jusqu'à l'étape n° 36 (« session a expiré ») ; gestes → accès obtenu (en mémoire, comme GIS), ou `AccesGoogleRevoque` si l'accès est retiré et que le mode est `RENOUVELLEMENT_GESTE` (le banc ne simule pas le repli interactif, couvert par les tests unitaires de `FournisseurAuthWeb`) ; `RECONNEXION_GESTE` → réaccorde l'accès puis accès obtenu. Compteurs : redirections automatiques par ouverture (RED-08), gestes, demandes `CONNEXION`.
+- **Appareil simulé et `appareilId`** : l'espace de chaque appareil simulé est ouvert par `DepotLocalDexie.ouvrirEspace` avec un `GenerateurIdentifiantsSequentiel` au préfixe de l'appareil ; le banc lit l'`appareilId` par `appareil()` et l'utilise pour `FauxDrive.transportPour`. Après « Supprimer les données de cet appareil » puis reconnexion, l'appareil simulé a donc un nouvel identifiant (S15, S18).
 - **Achever une redirection** = abandonner l'instance de l'application de l'appareil et en créer une nouvelle (même `IDBFactory`) avec le retour correspondant, comme un rechargement de page.
 - **Commandes en attente** (`tests/support/commandes-en-attente.ts`, extension compatible) : `executer()` peut renvoyer `Succes({ type: 'CONFIRMATION_REQUISE', suite: CommandeEnAttente })` ; « l'utilisateur confirme » remplace alors la commande en attente par `suite`.
 - **Monde** : `instantaneOuverture` par appareil (racine et nombre de réponses du `FauxDrive` à cet appareil au moment de l'ouverture, pour ST-US-017) ; `globalThis.fetch` remplacé dans le hook `Before` par un enregistreur qui échoue (aucune requête réelle ; « aucune donnée transmise ailleurs que dans le Drive »).
@@ -768,14 +803,19 @@ Raison d'échec en phase rouge : « NI » (`ErreurNonImplementee` des squelettes
 | UT-US-022-40 | `compte/presentation/ecran-connexion.test.ts` | `construireEcranConnexion` | sans échec : deux portées annoncées, « Continuer avec Google » | CA-1, CA-8 |
 | UT-US-022-41 | idem | idem | `ERR-001` et `ERR-002` : même texte ; `ERR-003`/`004`/`005` → « Réessayer » ; `ERR-006` → « Choisir un autre compte » | guide §6.6.8 |
 | UT-US-022-42 | `compte/presentation/section-compte.test.ts` | `construireSectionCompte` | exactement `SE_DECONNECTER`, `SUPPRIMER_DONNEES` | CA-6, CA-10 |
-| UT-US-022-43 | `compte/infrastructure/auth/url-autorisation.test.ts` | `construireUrlAutorisation`, `encoderBase64Url` | paramètres exacts (`prompt=none`, `login_hint`, `include_granted_scopes`, `response_type=token`) ; base64url sans `+`, `/`, `=` | DAT §4.1.7 |
-| UT-US-022-44 | `synchronisation/presentation/indicateur-synchronisation.test.ts` | `selectionnerEtatIndicateur` | ordre de gravité complet, cas par cas | conventions §8.5 |
-| UT-US-022-45 | idem | `construireIndicateur` | `SYN-SESSION` porte l'action et `ERR-015` ; `aLire` absent à 0 ; `SYN-INFO` seulement à la place de `SYN-OK` | Q-US-017-6 |
+| UT-US-022-43 | `compte/infrastructure/auth/url-autorisation.test.ts` | `construireUrlAutorisation`, `encoderBase64Url` | paramètres exacts en `SILENCIEUSE` (`prompt=none`, `login_hint`, `include_granted_scopes`, `response_type=token`) ; en `INTERACTIVE`, mêmes paramètres sans `prompt` ; base64url sans `+`, `/`, `=` | DAT v0.11.3 §4.1.7 |
+| UT-US-022-44 | `synchronisation/presentation/indicateur-synchronisation.test.ts` | `selectionnerEtatIndicateur` | ordre de gravité complet, cas par cas ; accès à renouveler hors ligne → `SYN-HORS-LIGNE` (ou `SYN-RETENTATIVE`) | conventions §8.5, Q-ST022-STE-3 |
+| UT-US-022-45 | idem | `construireIndicateur` | `SYN-SESSION` porte l'action et `ERR-015`, jamais hors ligne ; `aLire` absent à 0 ; `SYN-INFO` seulement à la place de `SYN-OK` | Q-US-017-6 |
 | UT-US-022-46 | `synchronisation/presentation/bandeau.test.ts` | `construireBandeau` | accès perdu : variante `24H` seulement au-delà de 24 h strictes ; un seul bandeau | RG-057 c, DEC-025 |
-| UT-US-022-47 | idem | idem | rappel : absent à 24 h exactement, présent à 24 h + 1 min, absent si masqué ou sans attente ; variante `session` en `SYN-SESSION` ; consultation seule prioritaire | RG-057 a, b, RG-058 |
+| UT-US-022-47 | idem | idem | rappel : absent à 24 h exactement, présent à 24 h + 1 min, absent si masqué ou sans attente ; variante `session` en `SYN-SESSION` (en ligne), rappel ordinaire hors ligne ; consultation seule prioritaire | RG-057 a, b, RG-058 |
 | UT-US-022-48 | `commun/infrastructure/journal-technique-local.test.ts` | `masquerDonneesSensibles` | `ya29.`, `Bearer`, `access_token=`, adresse e-mail masqués | conventions §9.4 |
 | UT-US-022-49 | `infrastructure-google/reprise.test.ts` | `delaiAvantTentative` | 1 s, 2 s, 4 s…, plafond 5 min, gigue entre 50 % et 100 % | DAT §4.4.5 |
 | UT-US-022-50 | `infrastructure-google/client-google.test.ts` | `traduireReponse` | table du §6.8 | DAT §4.4.5 |
+| UT-US-022-51 | `compte/infrastructure/auth/strategie-geste.test.ts` | `mecanismeGeste` | `web` → GIS ; `web-ios` → redirection interactive d'emblée | DAT v0.11.3 §4.1.7 |
+| UT-US-022-52 | idem | `suiteErreurGis` | repli interactif pour script indisponible avec réseau, `popup_failed_to_open`, erreur inconnue ; script indisponible hors ligne → `ReseauIndisponible` ; `popup_closed` → `ConnexionAnnulee` ; `access_denied` → `AccesGoogleRevoque` | Q-ST022-STA-2 |
+| UT-US-022-53 | `compte/application/reprendre-session.test.ts` | `ReprendreSession` | demande `RENOUVELLEMENT_GESTE` avec `login_hint` et `redirectionPermise` → `VALIDE` ; après `PERDU` : `RECONNEXION_GESTE`, `accesPerdu` effacé | RG-017, RG-035 |
+| UT-US-022-54 | idem | idem | saisie en cours → `redirectionPermise` faux, `RedirectionNonPermise` → `SAISIE_A_TERMINER`, état inchangé ; `access_denied` → `ACCES_PERDU` mémorisé ; fenêtre fermée → `INCHANGE` ; hors ligne → `HorsLigne` sans demande | Q-ST022-STA-1 |
+| UT-US-022-55 | `tests/integration/synchronisation/depot-local-dexie-espace.test.ts` | `DepotLocalDexie.ouvrirEspace` | base neuve → `appareilId` généré, relu à la réouverture sans nouvel appel ; base supprimée puis rouverte → nouvel `appareilId` | Q-ST022-STA-3 |
 
 **Précisions de l'E10 (2026-10-27)** — les squelettes font foi :
 - `verifierRetour({ stateRecu, depart, maintenant })` renvoie `Resultat<DepartMemorise, MotifRejetRetour>` ;
@@ -786,39 +826,46 @@ Raison d'échec en phase rouge : « NI » (`ErreurNonImplementee` des squelettes
 - doublures livrées : `SourceAleatoireDeterministe` (complète), `PlanificateurSimule` (squelette documenté, avec `executerJusquAuReglement` et `attentesDemandees`) ; `tests/support/compte/doublures-compte.ts` (doublures simples des ports du compte, complètes).
 Bilan : **60 cas** (UT-US-022-01 à 50, dont des cas multiples pour 12, 20, 24, 27, 43), tous en échec « NI ».
 
-Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/presentation tests/unitaires/synchronisation/application/preparation-dossier-drive.test.ts tests/unitaires/infrastructure-google tests/unitaires/commun/infrastructure`.
+**Compléments de la v0.2 (2026-10-27)** : UT-US-022-43 (cas interactif), 44, 45, 47 (hors ligne) modifiés ; UT-US-022-51 à 55 ajoutés ; squelettes `strategie-geste.ts`, `garde-saisie.ts`, `ReprendreSession` (dépendance `gardeSaisie`), `DemandeJeton.redirectionPermise`, `ErreurAuth` `RedirectionNonPermise`, `ROUTE_REPRISE`, `DepotLocalDexie.ouvrirEspace` et `appareil()` ; `registre-appareil.ts` supprimé. Bilan : **70 cas**, tous en échec « NI ».
+
+Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/presentation tests/unitaires/synchronisation/application/preparation-dossier-drive.test.ts tests/unitaires/infrastructure-google tests/unitaires/commun/infrastructure tests/integration/synchronisation/depot-local-dexie-espace.test.ts`.
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
-| Intégration | Base technique Dexie (`fake-indexeddb`) : relecture Zod, durabilité stricte, `consommer` toujours destructif | Un test par adaptateur |
+| Intégration | Base technique Dexie (`fake-indexeddb`) : relecture Zod, durabilité stricte, `memoriser` résolu après `complete`, `consommer` toujours destructif, route hors `ROUTE_REPRISE` refusée, base indisponible → aucune redirection | Un test par adaptateur et par condition |
 | Intégration | `GestionEspacesIndexedDb` : création, `existeUnEspace`, suppression sans toucher un autre espace | 3 cas |
 | Contrat | `FournisseurAuth` : `FauxFournisseurAuth` et `FournisseurAuthWeb` (GIS et navigation doublés) | Suite `tests/contrats/fournisseur-auth.contrat.ts` (écrite par Anthony au rang 1, E12 avant la revue) |
-| Unitaires | `FournisseurAuthWeb` : repli sur redirection pour chaque erreur technique de GIS, aucun repli sur `popup_closed` | Un test par code |
+| Unitaires | `FournisseurAuthWeb` : repli par redirection **interactive** pour chaque erreur technique de GIS (URL sans `prompt`), une seule navigation par geste, aucun repli sur `popup_closed` ni `access_denied`, web-ios sans GIS, `redirectionPermise` faux → aucune navigation | Un test par code |
 | Bout en bout | Au premier rendu, `location.hash` est vide (RED-02) | Playwright, rang 12 (service worker) |
 
 ## 15. Plan de réalisation
 1. Rang 0 : outillage, CI, ports transverses et doublures, banc à deux appareils.
 2. Domaine `compte` (UT 01 à 17).
-3. Infrastructure d'authentification : retour, vérification, URL, `FournisseurAuthWeb`, base technique, espaces (UT 18 à 20, 37, 43).
-4. Cas d'usage (UT 21 à 36, 38, 39) ; `ClientGoogle`, reprise, `PreparationDossierDrive`, `TransportSynchroDrive.preparerDossier` (UT 27, 49, 50).
+3. Infrastructure d'authentification : retour, vérification, URL, stratégie du geste, `FournisseurAuthWeb`, base technique, espaces, `ouvrirEspace` (UT 18 à 20, 37, 43, 51, 52, 55).
+4. Cas d'usage (UT 21 à 36, 38, 39, 53, 54) ; `ClientGoogle`, reprise, `PreparationDossierDrive`, `TransportSynchroDrive.preparerDossier` (UT 27, 49, 50).
 5. Modèles de vue (UT 40 à 47) ; écrans.
 6. Steps, doublures, composition `web.ts`, `main.tsx` ; DoD.
 
 ## 16. Dette, hypothèses et points ouverts
 
-**Questions à Starck (architecture), non bloquantes pour l'E10 du rang 1 :**
+**Questions à Starck (architecture)** — Q-ST022-STA-1 à 3 répondues (DAT v0.11.3) et intégrées en v0.2 :
 - **Q-ST022-STA-1 — Support du `state`.** RED-04 prévoit `sessionStorage`, sous réserve de M-RED. M-RED a été mesurée avec un `localStorage` (PoC), donc sans prouver que le retour a lieu dans le même contexte de navigation. Je retiens la base IndexedDB technique (alternative prévue par RED-04), qui sert aussi à sauvegarder l'état d'écran avant la redirection. Validez-vous ? a) oui ★ ; b) non, `sessionStorage` (le port `MemoireRedirection` isole le support : seul l'adaptateur change).
+  - **Réponse de Starck (2026-10-27, DAT v0.11.3 §4.1.7) : validé, à trois conditions**, intégrées : écriture confirmée à `complete` avant la navigation (§4.3, §6.4) ; lecture destructive, base indisponible → aucune redirection (§5.1) ; reprise sans contenu métier (`ROUTE_REPRISE`) et saisie en cours protégée (`GardeSaisie`, §6.10).
 - **Q-ST022-STA-2 — Repli de GIS sur la redirection.** D'après votre consigne relayée par Jarvis, la redirection `prompt=none` sert de repli « en cas d'erreur de GIS ». Je la déclenche pour les seules erreurs techniques : script indisponible avec réseau, `popup_failed_to_open`, type d'erreur inconnu ; jamais sur `popup_closed` (l'utilisateur a fermé la fenêtre) ni sur `access_denied` (accès perdu). Si ce repli revient en erreur d'interaction, l'application reste en `SYN-SESSION`, sans enchaîner de redirection interactive. Validez-vous cette liste et l'absence d'enchaînement ? a) oui ★ ; b) précisez.
+  - **Réponse de Starck (2026-10-27) : liste validée, mode corrigé**, intégrée : le repli est une redirection **interactive** (`prompt` absent, `login_hint` présent), une seule par geste ; au retour, `access_denied` → accès perdu, toute autre erreur → `SYN-SESSION` ; web-ios : redirection interactive d'emblée (§6.4, §6.10).
 - **Q-ST022-STA-3 — Appareil après « Supprimer les données ».** L'`appareilId` est propre à l'installation (DAT §4.1.4) et survit à la suppression : à la reconnexion, l'appareil lit son ancien fichier du Drive comme une source ordinaire, puis le réécrit. Confirmez-vous ? a) oui ★ ; b) un nouvel `appareilId` après la suppression (« comme un nouvel appareil »).
+  - **Réponse de Starck (2026-10-27, DAT v0.11.3 §4.1.4) : b)**, intégrée : l'`appareilId` est dans l'espace du compte et naît avec lui ; `RegistreAppareil` supprimé ; la base technique ne le porte plus (§5.1, §5.2, §6.6).
+- **Q-ST022-STA-4 (nouvelle, non bloquante) — Retour d'un repli interactif en erreur alors que l'accès était déjà perdu.** Votre réponse à Q-ST022-STA-2 : « toute autre erreur donne `SYN-SESSION` ». Le §6.3 (DAT §4.1.6 bis) dit qu'une erreur sans preuve ne transforme jamais un accès perdu en accès à renouveler. Après « Se reconnecter » (accès `PERDU`) suivi d'un repli revenu en `interaction_required`, je garde donc `PERDU` (bandeau « Se reconnecter »). a) garder `PERDU` ★ ; b) passer à `A_RENOUVELER` (`SYN-SESSION`).
 
-**Questions à Steeve (ergonomie), non bloquantes pour l'E10, à trancher avant l'E12 des écrans :**
+**Questions à Steeve (ergonomie)** — Q-ST022-STE-1 à 3 répondues (guide v0.2.12) et intégrées :
 - **Q-ST022-STE-1 — Écran d'attente de la redirection à l'ouverture** (ADR-013 le confie à Steeve) : code et texte ? Proposition : code `SYN-REDIRECTION`, texte « Connexion à Google… », sans action, logo de l'application.
 - **Réponse de Steeve à Q-ST022-STE-1 (E9, 2026-10-27, guide v0.2.12 §6.6.2)** : code `SYN-REDIRECTION`, texte « Connexion à Google… », logo, aucune action ; nom accessible « Connexion à Google en cours » (`role="status"`) ; cadre « Attente » d'ECR-010.
 - **Q-ST022-STE-2 — `SYN-SESSION` et `ERR-015` sur le smartphone** (DEC-034) : le catalogue indique « PC seulement » et « ce PC ». Proposition : même libellé et même bouton sur le smartphone ; textes de `ERR-015` et de `BAN-RAPPEL-24H` variante `session` paramétrés par `{appareil}` et `{autre appareil}`.
 - **Réponse de Steeve à Q-ST022-STE-2 (E9, 2026-10-27, guide v0.2.12)** : oui, proposition retenue. `SYN-SESSION` : même libellé et même bouton sur smartphone (libellé visible « Reprendre la synchronisation » dans l'en-tête). `ERR-015` : titre « La session Google de cet appareil a expiré », texte avec `{appareil}` et `{autre appareil}` (§6.6.8) ; `BAN-RAPPEL-24H` variante `session` avec `{appareil}` (§6.6.3).
 - **Q-ST022-STE-3 — `SYN-SESSION` hors ligne.** L'ordre de gravité fait passer `SYN-SESSION` avant `SYN-HORS-LIGNE` : hors ligne, l'indicateur propose « Reprendre la synchronisation », qui ne peut pas aboutir. a) garder l'ordre (conception actuelle) ; b) `SYN-HORS-LIGNE` tant que le réseau est coupé, `SYN-SESSION` au retour du réseau ★ (aucun scénario n'est touché).
-- **Réponse de Steeve à Q-ST022-STE-3 (E9, 2026-10-27, guide v0.2.12 §6.6.2)** : option b) ★. `SYN-HORS-LIGNE` tant que le réseau est coupé ; `SYN-SESSION` (et `ERR-015`) n'est exposé qu'avec un réseau disponible, la session à renouveler étant mémorisée. Aucun scénario touché ; l'ordre de gravité du reste est inchangé.
+- **Réponse de Steeve à Q-ST022-STE-3 (E9, 2026-10-27, guide v0.2.12 §6.6.2)** : option b) ★. `SYN-HORS-LIGNE` tant que le réseau est coupé ; `SYN-SESSION` (et `ERR-015`) n'est exposé qu'avec un réseau disponible, la session à renouveler étant mémorisée. Aucun scénario touché ; l'ordre de gravité du reste est inchangé. *Intégré en v0.2 : §6.9, UT-US-022-44, 45, 47.*
+- **Q-ST022-STE-4 (nouvelle, non bloquante pour l'E10, avant l'E12 des écrans) — Geste de reprise pendant une saisie.** Condition de Starck (DAT v0.11.3 §4.1.7) : une saisie en cours n'est jamais perdue par un rechargement. Si GIS échoue et que le repli (qui recharge la page) est nécessaire pendant qu'un formulaire modifié est ouvert, aucune redirection n'est lancée (`SAISIE_A_TERMINER`). Que voit l'utilisateur ? Proposition : un toast « Terminez votre saisie, puis reprenez la synchronisation. » (code à créer), l'indicateur restant `SYN-SESSION`. a) ce toast ★ ; b) une confirmation « Abandonner la saisie et reprendre » ; c) autre.
 
 **Hypothèses** : aucune hors des questions ci-dessus (la conception retient l'option ★ de chacune et sera ajustée sans reprise d'architecture si la réponse diffère).
 **Dette acceptée** : aucune. DT-001 s'applique aux espaces de compte et à la base technique.
@@ -829,4 +876,5 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 - [x] Fichiers listés par couche (§3) ; signatures (§4) ; données (§5) ; algorithmes (§6) ; Google (§7) ; erreurs (§8).
 - [x] Chaque phrase Gherkin d'US-022 a une ligne au §12.
 - [x] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10, 2026-10-27).
-- [ ] Q-ST022-STA-1 à 3 et Q-ST022-STE-1 à 3 répondues (avant E11).
+- [x] Q-ST022-STA-1 à 3 et Q-ST022-STE-1 à 3 répondues et intégrées (v0.2).
+- [ ] Q-ST022-STA-4 et Q-ST022-STE-4 répondues (non bloquantes pour E11 ; avant l'E12 du rang 1).

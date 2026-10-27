@@ -24,7 +24,9 @@ describe('Indicateur de synchronisation (guide §6.6.2, conventions §8.5)', () 
       [{ cycle: 'EN_COURS', reseau: 'COUPE' }, 'SYN-HORS-LIGNE'],
       [{ reseau: 'COUPE', cycle: 'RETENTATIVE' }, 'SYN-RETENTATIVE'],
       [{ cycle: 'RETENTATIVE', acces: 'A_RENOUVELER' }, 'SYN-SESSION'],
-      [{ acces: 'A_RENOUVELER', reseau: 'COUPE' }, 'SYN-SESSION'],
+      // Q-ST022-STE-3 b) (guide v0.2.12) : hors ligne, SYN-SESSION n'est jamais exposé.
+      [{ acces: 'A_RENOUVELER', reseau: 'COUPE' }, 'SYN-HORS-LIGNE'],
+      [{ acces: 'A_RENOUVELER', reseau: 'COUPE', cycle: 'RETENTATIVE' }, 'SYN-RETENTATIVE'],
       [{ acces: 'PERDU', reseau: 'COUPE' }, 'SYN-ACTION'],
       [{ acces: 'A_RENOUVELER', actionRequise: 'DRIVE_PLEIN' }, 'SYN-ACTION'],
       [{ actionRequise: 'ECHEC_PERSISTANT' }, 'SYN-ACTION'],
@@ -35,12 +37,15 @@ describe('Indicateur de synchronisation (guide §6.6.2, conventions §8.5)', () 
     });
   });
 
-  it('UT-US-022-45 construireIndicateur — SYN-SESSION porte l’action et ERR-015 ; n et a-lire seulement quand ils ont un sens', () => {
+  it('UT-US-022-45 construireIndicateur — SYN-SESSION porte l’action et ERR-015, jamais hors ligne ; n et a-lire seulement quand ils ont un sens', () => {
     expect(construireIndicateur({ ...AU_REPOS, acces: 'A_RENOUVELER', enAttente: 2 })).toEqual({
       code: 'SYN-SESSION',
       action: 'REPRENDRE_LA_SYNCHRONISATION',
       messageFeuille: 'ERR-015',
     });
+    expect(
+      construireIndicateur({ ...AU_REPOS, acces: 'A_RENOUVELER', reseau: 'COUPE', enAttente: 2 }),
+    ).toEqual({ code: 'SYN-HORS-LIGNE', n: 2 });
     expect(construireIndicateur({ ...AU_REPOS, reseau: 'COUPE', enAttente: 0, aLire: 1 })).toEqual({
       code: 'SYN-HORS-LIGNE',
       n: 0,

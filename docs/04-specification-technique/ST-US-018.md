@@ -12,8 +12,8 @@
 | DAT / ADR | DAT v0.11.2 §4.1.5 bis, §4.1.6, §4.1.7, §3.3 ; ADR-013 (PWA installée, durabilité stricte, persistance) |
 | Résultats du test technique | M-PERSIST favorable (`persist()` accordé sans question à la PWA installée) ; M-DUR favorable (marqueur strict relu après arrêt forcé et redémarrage) ; hors ligne (étape 10) favorable |
 | Prérequis | Socle (rang 0 : écriture, durabilité stricte UT-SOC-44 à 46) ; ST-US-022 (rang 1 : ouverture hors ligne, bandeaux) ; ST-US-017 incrément 1 (rang 3 : cycle, `MEN-ATTENTE`, décompte) |
-| Questions ouvertes | Q-ST018-STE-1 (Steeve), Q-ST018-STA-1 (Starck) : §16 |
-| Version | 0.1 |
+| Questions | Q-ST018-STE-1 et Q-ST018-STA-1 **répondues** (2026-10-27) et intégrées ; aucune ouverte |
+| Version | 0.2 |
 | Statut | Conception arrêtée ; E10 avant l'E12 du rang 12 (§13) |
 | Auteur | Anthony |
 | Branche | `us/US-018-hors-ligne-smartphone` |
@@ -22,6 +22,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après M-RED, M-PERSIST, M-DUR). Le repli ADR-012 (SQLite, `@capacitor/network`, horloge native, APK) n'est pas réalisé. |
+| 0.2 | 2026-10-27 | Anthony | Réponses de Steeve (Q-ST018-STE-1 : `SYN-FEUILLE-STOCKAGE`, `ALR-015`) et de Starck (Q-ST018-STA-1 a) : rattachement strict ; vérifications sur appareil réel en E14). Table `installation` de la base technique (ST-US-022 v0.2 §5.1). UT-US-018-04 précisé. |
 
 ## 1. Résumé technique
 
@@ -56,7 +57,7 @@
 | 3 | `src/commun/infrastructure/persistance-navigateur.ts` | Infrastructure | Créer | `navigator.storage.persisted()` et `persist()` |
 | 4 | `src/synchronisation/application/cas-usage/demander-persistance.ts` | Application | Créer | `DemanderPersistance` (premier lancement : drapeau `persistanceDemandee` de la base technique) |
 | 5 | `src/synchronisation/application/cas-usage/masquer-rappel.ts` | Application | Créer | `MasquerRappel24h` → `MasquageRappel.masquer()` (rang 1) |
-| 6 | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts` | Modèle de vue | Modifier | Ligne « Stockage » et avertissement (Q-ST018-STE-1) |
+| 6 | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts` | Modèle de vue | Modifier | Ligne `SYN-FEUILLE-STOCKAGE`, toujours présente, `data-etat` `PROTEGE` ou `NON-PROTEGE` ; carte `ALR-015` (Attention) quand non protégé (guide v0.2.12 §6.6.2, §6.6.9) |
 | 7 | `src/presentation/ui/mise-a-jour/…`, `src/main.tsx` | UI, composition | Créer | Enregistrement du service worker **après** `consommerRetourRedirection` (RED-02) ; invite « nouvelle version » |
 | 8 | `src/composition/web.ts` | Composition | Modifier | Évaluation RG-057 : `planificateur.periodiquement(PERIODE_EVALUATION_RAPPEL_HORS_LIGNE)` et `visibilitychange` → nouveau calcul des modèles de vue de l'indicateur et du bandeau ; `DemanderPersistance` au premier lancement |
 | 9 | `src/composition/test-ihm.ts`, `tests/steps-ihm/**`, `cucumber.mjs` (profil `ihm`), `playwright.config.ts` | Test | Créer | Chaîne `@ihm` (conventions §11.8) |
@@ -84,12 +85,12 @@ export class MasquerRappel24h { constructor(masquage: MasquageRappel); executer(
 `MasquageRappel` (rang 1) est une instance de la composition : une nouvelle instance de l'application (lancement ou rechargement) la remet à faux ; un retour au premier plan ne la touche pas.
 
 ## 5. Modèle de données
-Base technique (ST-US-022 §5.1) : clé `persistanceDemandee` (booléen) dans la table `appareil`. Aucun impact sur le format Drive ni sur l'espace du compte.
+Base technique (ST-US-022 v0.2 §5.1) : clé `persistanceDemandee` (booléen) dans la table `installation`. Aucun impact sur le format Drive ni sur l'espace du compte.
 
 ## 6. Règles et algorithmes
 - **Service worker** : stratégie précache seule pour l'application ; aucune mise en cache d'une requête Google ; les navigations servent `index.html` du précache (le fragment n'atteint jamais le réseau ni le cache, RED-05). Une nouvelle version attend l'accord (« Mettre à jour ») ; elle n'interrompt jamais une saisie.
 - **RG-057** : la décision reste `construireBandeau` (ST-US-022 §6.9), seule fonction ; le rang 12 n'ajoute que les déclencheurs de recalcul et le masquage.
-- **Persistance** : `NON_PERSISTANT` ou `INDISPONIBLE` → avertissement dans la feuille (code : Q-ST018-STE-1), jamais de blocage.
+- **Persistance** : `PERSISTANT` → `SYN-FEUILLE-STOCKAGE` `PROTEGE` ; `NON_PERSISTANT` ou `INDISPONIBLE` → `SYN-FEUILLE-STOCKAGE` `NON-PROTEGE` et carte `ALR-015`, **dans la feuille seulement** : aucun bandeau, aucun point sur l'indicateur, jamais de blocage ; la carte n'est pas fermable et disparaît quand le stockage devient protégé.
 
 ## 7. Intégration Google
 Sans objet (aucune nouvelle requête).
@@ -97,7 +98,7 @@ Sans objet (aucune nouvelle requête).
 ## 8. Gestion des erreurs
 | Situation | Comportement | Code |
 |---|---|---|
-| `persist()` refusé | Avertissement dans la feuille | Q-ST018-STE-1 |
+| `persist()` refusé ou API absente | Ligne « non protégé » et carte dans la feuille | `SYN-FEUILLE-STOCKAGE`, `ALR-015` |
 | Première ouverture sans réseau, application jamais chargée | Page d'erreur du navigateur (aucun écran de l'application) | — (S19) |
 | Données du navigateur effacées | Modifications non déposées perdues ; rechargement depuis le Drive à la connexion | — (S18) |
 
@@ -143,7 +144,7 @@ Total : 30.
 | UT-US-018-01 | `DemanderPersistance` | premier lancement : `persist()` appelé une fois, demande notée ; lancements suivants : `persisted()` seulement |
 | UT-US-018-02 | idem | API absente → `INDISPONIBLE`, sans erreur |
 | UT-US-018-03 | `MasquerRappel24h` et `consulterEtatSynchronisation` | masqué jusqu'à une nouvelle instance ; non remis à zéro par un retour au premier plan |
-| UT-US-018-04 | `construireFeuilleSynchronisation` | ligne de stockage et avertissement selon l'état |
+| UT-US-018-04 | `construireFeuilleSynchronisation` | `SYN-FEUILLE-STOCKAGE` toujours présente (`PROTEGE` / `NON-PROTEGE`) ; `ALR-015` seulement si non protégé ; indicateur et bandeau inchangés |
 | UT-US-018-05 | Configuration du service worker (`vite.config.ts`, fonction pure `optionsPwa(env)`) | `navigateFallback` sous `VITE_BASE_PATH`, exclusion des pages publiques, nom de recette distinct |
 RG-057 est déjà couverte par UT-US-022-46 et 47.
 
@@ -157,9 +158,10 @@ Playwright : démarrage hors ligne, `location.hash` vide au premier rendu, axe s
 - **Q-ST018-STE-1 (Steeve)** : code et texte de l'état du stockage dans la feuille et de l'avertissement quand la persistance est refusée (R15, conventions §9.3, DAT §4.1.6). Le catalogue n'en a pas. Proposition : ligne `SYN-FEUILLE-STOCKAGE` « Stockage de cet appareil : protégé » / « non protégé » et carte `ALR-015` « Vos données ne sont pas protégées contre un nettoyage du navigateur. Installez l'application et gardez-la sur l'écran d'accueil. ».
 - **Réponse de Steeve à Q-ST018-STE-1 (E9, 2026-10-27, guide v0.2.12 §6.6.2, §6.6.9)** : proposition retenue. Ligne `SYN-FEUILLE-STOCKAGE`, toujours présente, discrète : « Stockage de cet appareil : protégé » / « non protégé » (persistance refusée ou API indisponible = non protégé). Carte `ALR-015` (Attention) : « Vos données ne sont pas protégées contre un nettoyage du navigateur. Installez l'application et gardez-la sur l'écran d'accueil. », dans la feuille seulement, sans bandeau, sans point sur l'indicateur, jamais de blocage.
 - **Q-ST018-STA-1 (Starck)** : la règle de rattachement place 25 des 30 scénarios d'US-018 aux rangs 5 à 9, puisque les capacités du hors ligne sont livrées par les rangs 0 à 3 (PWA unique). Le confirmez-vous, plutôt qu'une exécution groupée au rang 12 ? a) oui, rattachement strict ★ ; b) non, tout au rang 12.
+  - **Réponse de Starck (2026-10-27) : a) validé.** Les vérifications sur appareil réel restent en recette E14.
 - Hypothèses : aucune. Dette : aucune.
 
 ## 17. Checklist
 - [x] Fichiers, signatures, règles, steps, rangs.
 - [ ] Tests du §13 (E10 avant l'E12 du rang 12).
-- [ ] Q-ST018-STE-1 et Q-ST018-STA-1 répondues.
+- [x] Q-ST018-STE-1 et Q-ST018-STA-1 répondues et intégrées (v0.2).

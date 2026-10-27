@@ -52,7 +52,7 @@ describe('construireBandeau (RG-035, RG-057, RG-058 ; guide §6.6.3)', () => {
     ).toBe('BAN-ACCES-GOOGLE');
   });
 
-  it('UT-US-022-47 construireBandeau — rappel absent à 24 h exactement, sans attente ou masqué ; présent à 24 h + 1 min ; variante session ; consultation seule prioritaire', () => {
+  it('UT-US-022-47 construireBandeau — rappel absent à 24 h exactement, sans attente ou masqué ; présent à 24 h + 1 min ; variante session (en ligne seulement) ; consultation seule prioritaire', () => {
     expect(construireBandeau(ETAT, A_24H)).toBeUndefined();
     expect(construireBandeau(SANS_ATTENTE, A_24H_1MIN)).toBeUndefined();
     expect(construireBandeau({ ...ETAT, rappelMasque: true }, A_24H_1MIN)).toBeUndefined();
@@ -70,6 +70,14 @@ describe('construireBandeau (RG-035, RG-057, RG-058 ; guide §6.6.3)', () => {
       variante: 'session',
       n: 1,
       action: 'REPRENDRE_LA_SYNCHRONISATION',
+      fermable: true,
+      bloquant: false,
+      message: 'ALR-002',
+    });
+    // Q-ST022-STE-3 b) : hors ligne, l'indicateur n'est pas SYN-SESSION, donc rappel ordinaire.
+    expect(construireBandeau({ ...ETAT, acces: 'A_RENOUVELER' }, A_24H_1MIN)).toEqual({
+      code: 'BAN-RAPPEL-24H',
+      n: 1,
       fermable: true,
       bloquant: false,
       message: 'ALR-002',

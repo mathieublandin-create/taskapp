@@ -9,13 +9,13 @@
 | Fichier `.feature` | [`tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature`](../../tests/features/US-017-retrouver-mes-donnees-sur-smartphone-et-pc.feature), 46 scénarios |
 | RG couvertes | RG-017, RG-018, RG-020, RG-021, RG-035, RG-036, RG-044, RG-047, RG-048, RG-049, RG-053, RG-054, RG-056, RG-058 |
 | ENF concernées | ENF-01, ENF-02, ENF-04, ENF-06, ENF-07 ; ENF-T-03, ENF-T-04, ENF-T-05, ENF-T-07 |
-| DAT / ADR | DAT v0.11.2 §4.1.5 bis, §4.2, §4.2.1, §4.2.2, §4.3, §4.4.5, §6.1, §6.4 ; ADR-003, ADR-010, ADR-011, ADR-013 |
+| DAT / ADR | DAT v0.11.3 §4.1.4, §4.1.5 bis, §4.2, §4.2.1, §4.2.2, §4.3, §4.4.5, §6.1, §6.4 ; ADR-003, ADR-010, ADR-011, ADR-013 |
 | Prérequis | `ST-socle-ecriture.md` (rang 0, dont le contenu logique du schéma 1, §5.3) ; ST-US-022 (rang 1 : accès, `TransportSynchro.preparerDossier`, indicateur et bandeaux) ; ST-US-001 (rang 2) |
 | Hypothèses du contrôle d'explicitation appliquées | H-1, H-2 (incrément 2), H-4 (socle), H-5 (§12), H-6 (incréments 2 et 3) |
 | Q-US traitées | Q-US-017-1 à 12 (E8) ; DEC-030 (Q-US-017-3, A8) ; Q-DEC034-1 |
-| Questions ouvertes de cette ST | Q-ST017-PEP-1 (Pepper, **bloque S06b**), Q-ST017-STA-1 et 2 (Starck) : §16 |
-| Version | 0.1 |
-| Statut | **Incrément 1 : prêt pour E10** (tests du §13.1 livrés en rouge). Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
+| Questions de cette ST | Q-ST017-PEP-1, Q-ST017-STA-1 et 2 **répondues** (2026-10-27) et intégrées ; ouverte : Q-ST017-STA-3 (Starck, non bloquante avant le rang 10) : §16 |
+| Version | 0.2 |
+| Statut | **Incrément 1 : prêt pour E11** (tests du §13.1 livrés en rouge, v0.2 comprise). Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
 | Auteur | Anthony |
 | Branches | `us/US-017-1-synchronisation-de-base`, `us/US-017-2-conflits`, `us/US-017-3-restauration`, `us/US-017-4-horloge-versions` |
 
@@ -23,6 +23,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED ; R1 sans objet avec un client OAuth Web unique). Rangs d'exécution des scénarios revérifiés (§12.2). E10 de l'incrément 1 livrée. |
+| 0.2 | 2026-10-27 | Anthony | Réponses de Pepper (S06 et S06b corrigés : S06b exécuté au rang 3 sans condition) et de Starck (DAT v0.11.3). **Q-ST017-STA-1** : doublure `DepotLocalEnMemoire` et suite de contrat étendue (CT-DEPOT-08 à 11), une seule transaction stricte (§3.1, §4.2, §13.1). **Q-ST017-STA-2** : médiane de 5 mesures d'aller-retour < 3 s, seul un recul corrigé, contrôle chaque minute et au retour au premier plan (§6.8, constantes livrées). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace ; l'ancien fichier d'un appareil après suppression des données est celui d'un appareil inactif (§6.3). |
 
 ## 1. Résumé technique
 
@@ -97,6 +98,8 @@
 | 19 | `tests/doublures/faux-drive.ts` | Test | Compléter | §12.3 |
 | 20 | `tests/contrats/transport-synchro.contrat.ts` | Test | Créer | Suite de contrat (CT-TRANS-01 à 08), exécutée sur `FauxDrive` et, avec MSW, sur `TransportSynchroDrive` |
 | 21 | `tests/steps/synchronisation/echanges.steps.ts`, `drive.steps.ts`, `etat-affiche.steps.ts` | Test | Créer ou compléter | §12 |
+| 21 b | `tests/doublures/depot-local-memoire.ts` | Test | Compléter (squelette E10) | `DepotLocalEnMemoire` et `StockageDepotEnMemoire` : doublure du port `DepotLocal` complet, partagée par plusieurs instances ; passe CT-DEPOT-01 à 11 (condition de Starck, Q-ST017-STA-1) |
+| 21 c | `tests/contrats/depot-local.contrat.ts` | Test | Compléter (E10) | CT-DEPOT-08 à 11 (`lireMeta`, `appliquerSynchronisation`), exécutés sur `DepotLocalDexie` et `DepotLocalEnMemoire` |
 
 ### 3.2 Incréments 2 à 4
 | # | Fichier | Incr. | Responsabilité |
@@ -108,7 +111,7 @@
 | 26 | `src/synchronisation/application/requetes/consulter-modifications-non-retenues.ts` ; `presentation/modeles-de-vue/modifications-non-retenues.ts` | 2 | Liste ECR-011 C, codes `ALR-009` à `ALR-011`, `ALR-014` |
 | 27 | `src/synchronisation/domaine/controle-drive.ts` | 3 | `controlerDrive` (ordre DAT §4.2.2), `Generation`, `comparerGenerations` |
 | 28 | `src/synchronisation/application/cas-usage/choisir-restauration.ts` | 3 | `RestaurerDonnees`, `RepartirDeZero` (`evaluer`/`executer`, `CNF-REPARTIR-ZERO`), `DeciderPlusTard` |
-| 29 | `src/synchronisation/domaine/correction-horloge.ts` | 4 | `mesurerEcart`, `lisserCorrection`, `ajusterAuSaut`, `estHorlogeDereglee` |
+| 29 | `src/synchronisation/domaine/correction-horloge.ts` | 4 | `mesurerEcart` (rend `undefined` si l'aller-retour dure 3 s ou plus), `retenirMesure` (5 dernières), `medianeCorrection`, `qualifierSaut` (`RECUL` / `AVANCE` / `AUCUN`), `decalerMesures`, `estHorlogeDereglee` ; constantes dans `parametres-synchronisation.ts` (livrées en E10) |
 | 30 | `src/synchronisation/domaine/compatibilite.ts` | 4 | `verifierCompatibilite(schemaVersionLu)` |
 | 31 | `src/synchronisation/application/ports/mise-a-jour-application.ts` ; `infrastructure/mise-a-jour-service-worker.ts` | 4 | « Mettre à jour » (DAT §4.2) |
 | 32 | Base Dexie version 3 : tables `valeursEcartees`, `lectures` (incr. 2), `registresInconnus` (incr. 4) | 2, 4 | Ajouts purs |
@@ -175,8 +178,9 @@ export type PlanSynchronisation = { readonly plan: PlanEcriture; readonly meta: 
 export interface DepotLocal {
   // … méthodes du socle, inchangées
   lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>>;
-  /** Comme `appliquer`, en une transaction en durabilité stricte ; la méta est écrite dans la même transaction.
-   *  `version` n'augmente que si le plan est non vide. */
+  /** Comme `appliquer`, en **une seule** transaction en durabilité stricte (condition de Starck) ; la méta est écrite
+   *  dans la même transaction, fusionnée champ à champ (clé absente de `meta` : valeur inchangée). `version`
+   *  n'augmente et les observateurs ne sont prévenus que si le plan est non vide. Exception du calcul : rien n'est écrit. */
   appliquerSynchronisation(
     calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>>;
@@ -245,7 +249,7 @@ Contrat (CT-TRANS-01 à 08) : `preparerDossier` idempotent (deux appels → un s
 ## 5. Modèle de données et migrations
 
 ### 5.1 Stockage local
-Base de l'espace : **version Dexie 2** (incrément 1) : aucune nouvelle table ; table `meta` : clés `dossier`, `fichierPropre`, `manifeste`, `deposeJusquA`, `pageToken`, `dernierContactDrive`, `fusionNonDeposee`. Version 3 (incrément 2) : tables `valeursEcartees` (clé `id`) et `lectures` (clé `id`). Version 4 (incrément 4) : table `registresInconnus` (clé `cle`). Toutes sont des ajouts purs (aucune transformation de donnée).
+Base de l'espace : **version Dexie 2** (incrément 1) : aucune nouvelle table ; table `meta` : clés `dossier`, `fichierPropre`, `manifeste`, `deposeJusquA`, `pageToken`, `dernierContactDrive`, `fusionNonDeposee`. Version 3 (incrément 2) : tables `valeursEcartees` (clé `id`) et `lectures` (clé `id`). Version 4 (incrément 4) : table `registresInconnus` (clé `cle`) ; clé `mesuresHorloge` de la méta (tableau de millisecondes, 5 au plus). Toutes sont des ajouts purs (aucune transformation de donnée).
 
 ### 5.2 Fichier d'appareil, schéma 1 (contenu logique : ST-socle §5.3)
 JSON avant compression (clés dans l'ordre de la sérialisation canonique, tri lexicographique à tous les niveaux) :
@@ -318,7 +322,8 @@ synchroniserMaintenant() :
   pour chaque fichier f d'un autre appareil (f.appareil ≠ appareil local) :
       c ← transport.lireFichierAppareil(f.id) ; en FichierIllisible ou FormatPlusRecent : journal « avertissement », f ignoré (incr. 3 et 4 : traitement)
       sinon depot.appliquerSynchronisation(e ⇒ { plan: planifierFusion(e, c), meta: { fusionNonDeposee: plan non vide ? true : inchangé } })
-  le propre fichier de l'appareil, s'il est lu (premier passage après « Supprimer les données »), est fusionné comme les autres
+  un fichier dont l'appareil n'est pas l'appareil local est fusionné, y compris l'ancien fichier de cette installation après « Supprimer les données » :
+  l'appareilId naît avec l'espace (DAT v0.11.3 §4.1.4), ce fichier est donc celui d'un appareil inactif
   si aucun manifeste (meta.manifeste absent et lireManifeste = undefined) : ecrireManifeste({ schemaVersion: 1, generation: INITIALE }) et LISEZ-MOI
   deposer() ; meta.pageToken ← jeton ; état moteur ← REPOS ; tentatives ← 0
   si « à refaire » : relancer une fois
@@ -355,7 +360,7 @@ erreurs (à toute étape) :
 Ordre des contrôles du DAT §4.2.2 à chaque cycle, en un seul point (`controlerDrive`) : (1) dossier et manifeste ; (2) compatibilité (incrément 4) ; (3) génération effective = maximum des générations du ou des manifestes et des fichiers valides, `INITIALE` < `NOUVELLE(hlc)` ordonnées par HLC ; génération plus récente que la locale → valeurs en attente signalées (`ALR-014`), effacement de l'espace, relecture ; (4) fichier propre ; (5) autres fichiers. `ERR-012` : manifeste attendu absent, illisible ou modifié (tout appareil) ; fichier propre attendu altéré (cet appareil seulement) ; un autre fichier altéré est ignoré sans message. Tant que `ERR-012` est affiché, l'appareil n'écrit rien dans le Drive. « Restaurer » : réécrit le fichier propre et le manifeste (`restauration = (HLC, appareil)`, génération inchangée) ; hors ligne : mémorisé, exécuté après les contrôles 1 à 3 au retour du réseau. « Repartir de zéro » (`CNF-REPARTIR-ZERO`, réseau exigé) : manifeste avec `NOUVELLE(hlc)`, fichier propre vide, effacement local. Dossier ou manifeste en double : le plus ancien (`createdTime`, puis `id`) est canonique ; un appareil supprime seulement le double qu'il a créé. Une erreur transitoire n'est jamais une altération.
 
 ### 6.8 Incrément 4 (rang 11) : règles arrêtées
-- **Correction d'horloge** : à chaque réponse de Google portant un en-tête `Date` (précision à la seconde), `mesure = Date − (envoi + réception) / 2` (instants de l'appareil) ; `correctionHorloge` = moyenne glissante des 5 dernières mesures, arrondie à la milliseconde, écrite dans la méta. Saut d'horloge murale détecté quand, entre deux lectures, `|Δ murale − Δ monotone| > 2 s` : la correction est ajustée de l'écart, exactement (DAT §6.4 point 3). L'HLC ne recule jamais (socle). Le jour métier reste calculé sur l'heure non corrigée (conventions §7.1).
+- **Correction d'horloge (DAT v0.11.3 §6.4, Q-ST017-STA-2)** : à chaque réponse de Google portant un en-tête `Date` (précision à la seconde), `mesure = Date − (envoi + réception) / 2` (instants de l'appareil), retenue seulement si `réception − envoi < ALLER_RETOUR_MAX_MESURE_HORLOGE` (3 s, mesuré sur l'horloge monotone) ; la méta garde les `NOMBRE_MESURES_HORLOGE` (5) dernières mesures retenues (`mesuresHorloge`, donnée locale) ; `correctionHorloge` = **médiane** de ces mesures (nombre pair : moyenne des deux valeurs centrales, arrondie à la milliseconde inférieure). **Saut** : contrôlé toutes les `PERIODE_CONTROLE_SAUT_HORLOGE` (1 min, `Planificateur`) et à chaque retour au premier plan ; `d = Δ murale − Δ monotone` depuis le contrôle précédent ; `d < −SEUIL_SAUT_HORLOGE` (recul de plus de 2 s) → `correctionHorloge` augmentée de `−d` exactement et chaque mesure conservée décalée de `−d` ; `d > SEUIL_SAUT_HORLOGE` (avance) → **aucune correction**, entrée `info` « avance d'horloge » au journal technique (veille possible : `performance.now()` peut s'arrêter) ; une avance manuelle n'est rattrapée qu'au prochain échange avec Google. L'HLC ne recule jamais (socle). Le jour métier reste calculé sur l'heure non corrigée (conventions §7.1).
 - **`ALR-001`** : affiché si `|correctionHorloge| > SEUIL_HORLOGE_DEREGLEE` (strict), sur l'appareil qui mesure ; une valeur reçue datée de plus de 24 h dans le futur est seulement journalisée.
 - **Âge de la plus ancienne modification en attente** : `consulterEtatSynchronisation` retranche `correctionHorloge` à `premiereEcriture` (heure de l'appareil, ST-US-022 §4.5).
 - **RG-058** : `FormatPlusRecent` (fichier ou manifeste de `schemaVersion` > `SCHEMA_VERSION`) → consultation seule : aucune écriture Drive (y compris manifeste et dépôt), aucune fusion du plus récent, aucun effacement ; `actionRequise = FORMAT_PLUS_RECENT` ; saisie bloquée (`ModeSaisie = CONSULTATION_SEULE` : un décorateur unique de `ServiceEtatLocal.modifier`, posé dans la composition, renvoie `Echec({ type: 'ConsultationSeule' })` ; le socle ne change pas) ; « Mettre à jour » : `registration.update()`, `skipWaiting`, rechargement. Champs inconnus de même `schemaVersion` conservés et réécrits.
@@ -435,7 +440,7 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 ### 12.2 Rangs d'exécution revérifiés
 | Incrément | Scénarios | Rang d'exécution |
 |---|---|---|
-| 1 | S04, S17a, S17b, S29, **S02, S07** (corrigés : objectifs seulement), **S06b** | 3 (S06b : après la réponse à Q-ST017-PEP-1) |
+| 1 | S04, S17a, S17b, S29, **S02, S07** (corrigés : objectifs seulement), **S06b** | 3 |
 | 1 | S05, S06 | 5 |
 | 1 | S03, S08 | 7 |
 | 2 | **S12** (corrigé : fusion seule, tâches) | 5 |
@@ -444,7 +449,7 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 | 4 | **S28** (corrigé : terminer et retard, deux fuseaux) | 7 |
 | 4 | S12c, S12d, S13a, S13b, S27, S30, S30b, S31 | 11 |
 | 4 | S01 (en dernier, décision du contrôle d'explicitation) | 11 |
-Total : 46. Les corrections portent sur S02, S07 (rang 7 → 3), S12 (9 → 5), S28 (11 → 7) et l'ajout de S06b (DEC-034).
+Total : 46. Les corrections portent sur S02, S07 (rang 7 → 3), S12 (9 → 5), S28 (11 → 7) et l'ajout de S06b (DEC-034). **Vérification après la correction de Pepper (Q-ST017-PEP-1)** : S06 retrouve `Et le Drive du compte "A" contient la tâche "Envoyer le devis"` (phrase n° 11, rang 3, déjà définie) et reste au rang 5 ; S06b se termine par `Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15` (ST-US-001, rang 2) ; ses autres phrases relèvent de ST-US-022 (rangs 1 et 2) et de la phrase n° 8 : **S06b est exécutable au rang 3**, sans nouvelle step.
 
 ### 12.3 Banc
 - **`FauxDrive`** (par compte, dans `FauxGoogle`) : implémente `TransportSynchro` par appareil (`transportPour(appareil)`, soumis au `ReseauSimule` et à l'accès Google de l'appareil : réseau coupé → `ReseauIndisponible`, accès retiré → `NonAutorise`) ; stockage partagé de fichiers (`id`, nom, `appProperties`, octets, `createdTime`, `modifiedTime`, supprimé) ; journal des changements (jeton = numéro de séquence) ; pilotage : `plein()`, `liberer()`, `indisponible(n | 'toujours')`, `interrompreDepots(n)`, `desactiverPourLeCompte()` ; altérations (incrément 3) ; en-tête `Date` (incrément 4) ; observation : `fichiers()`, `nombreReponses(appareil)`, `ecrituresPar(appareil)`.
@@ -485,14 +490,16 @@ Suite de contrat : `tests/contrats/transport-synchro.contrat.ts` (CT-TRANS-01 à
 - `DepotLocalDexie` porte les deux nouvelles méthodes en squelette ; la classe de test `DepotAvecCorrection` (UT-SOC-36) les délègue.
 Bilan : **39 cas** (UT-US-017-01 à 31, dont des cas multiples pour 04 et 29 à 31, et CT-TRANS-01 à 08), tous en échec « NI ».
 
+**Compléments de la v0.2 (2026-10-27, condition de Starck sur Q-ST017-STA-1)** : CT-DEPOT-08 (`lireMeta` d'un espace neuf), 09 (plan vide : méta fusionnée, version et observateurs inchangés), 10 (plan et méta dans la même transaction, version + 1, observateurs), 11 (état et méta d'une autre instance transmis ; exception : ni plan ni méta écrits), exécutés sur `DepotLocalDexie` et sur `DepotLocalEnMemoire` ; CT-DEPOT-01 à 07 exécutés aussi sur `DepotLocalEnMemoire`. Constantes de l'incrément 4 livrées (`NOMBRE_MESURES_HORLOGE`, `ALLER_RETOUR_MAX_MESURE_HORLOGE`, `SEUIL_SAUT_HORLOGE`, `PERIODE_CONTROLE_SAUT_HORLOGE`). Bilan : **54 cas** (39 + 15), tous en échec « NI ».
+
 ### 13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)
-Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure et lissage de l'écart, saut détecté, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
+Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure retenue seulement sous 3 s d'aller-retour, médiane de 5 (nombre pair compris), recul corrigé et mesures décalées, avance seulement journalisée, contrôle à la minute et au retour au premier plan, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
 | Contrat | `TransportSynchroDrive` avec MSW | CT-TRANS-01 à 08 ; erreurs 401, 403 (deux raisons), 404, 429, 5xx |
-| Intégration | `DepotLocalDexie` : `appliquerSynchronisation` atomique, méta relue | 3 cas |
+| Intégration | `DepotLocalDexie` : `appliquerSynchronisation` atomique et en durabilité stricte (`FabriqueIndexedDbEspionne`), méta relue | 3 cas |
 | Performance | Encodage, décodage et fusion d'un état de 5 000 tâches | < 2 s en CI (indicatif) |
 
 ## 15. Plan de réalisation
@@ -501,12 +508,16 @@ Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compre
 ## 16. Dette, hypothèses et points ouverts
 
 - **Q-ST017-PEP-1 (Pepper, bloque S06b)** : US-017 S06b se termine par `Et le Drive du compte "A" contient la tâche "Envoyer le devis"`, alors qu'aucune étape de S06b ne crée cette tâche (reprise de S06, où le PC la crée). Tel quel, le scénario ne peut pas passer. a) retirer cette dernière ligne ★ ; b) ajouter, avant l'ouverture, `Et que sur le smartphone, l'utilisateur a créé une tâche … pas encore enregistrée dans le Drive` (forme à ajouter au glossaire).
-  - **Réponse de Pepper (2026-10-27) : ni a) ni b), correction d'une erreur de rédaction.** La ligne `Et le Drive du compte "A" contient la tâche "Envoyer le devis"` est la dernière assertion de **S06** (validée depuis E5) ; elle avait été déplacée par erreur dans S06b lors de son insertion (DEC-034). Elle est rendue à S06 et retirée de S06b. S06b se termine désormais par `Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15`. Aucune règle, aucun critère ni aucune étape du glossaire ne change ; **S06 retrouve son assertion finale** (à vérifier dans les steps du rang 3). Débloque S06b.
+  - **Réponse de Pepper (2026-10-27) : ni a) ni b), correction d'une erreur de rédaction.** La ligne `Et le Drive du compte "A" contient la tâche "Envoyer le devis"` est la dernière assertion de **S06** (validée depuis E5) ; elle avait été déplacée par erreur dans S06b lors de son insertion (DEC-034). Elle est rendue à S06 et retirée de S06b. S06b se termine désormais par `Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15`. Aucune règle, aucun critère ni aucune étape du glossaire ne change ; **S06 retrouve son assertion finale** (à vérifier dans les steps du rang 3). Débloque S06b. *Intégré en v0.2 : §12.2.*
 - **Q-ST017-STA-1 (Starck)** : l'incrément 1 ajoute au port `DepotLocal` deux méthodes (`lireMeta`, `appliquerSynchronisation`) et étend la méta locale, comme le prévoyait ST-socle §5.1, sans modifier aucun type du socle (condition 1). Le confirmez-vous conforme à la condition 1 ? a) oui ★ ; b) non.
+  - **Réponse de Starck (2026-10-27) : validé, à deux conditions**, intégrées : la suite de contrat et l'adaptateur en mémoire couvrent les deux méthodes (CT-DEPOT-08 à 11, `DepotLocalEnMemoire`) ; `appliquerSynchronisation` tient en une seule transaction stricte (§4.2).
 - **Q-ST017-STA-2 (Starck)** : DAT §6.4 ne fixe pas la méthode de lissage de l'écart mesuré par l'en-tête `Date`. Je retiens la moyenne glissante des 5 dernières mesures, chacune au milieu de l'aller-retour, et la détection d'un saut d'horloge murale au-delà de 2 s d'écart avec l'horloge monotone (§6.8). Validez-vous ? a) oui ★ ; b) autre méthode. Non bloquante avant l'E10 de l'incrément 4.
+  - **Réponse de Starck (2026-10-27, DAT v0.11.3 §6.4) : corrigé**, intégré au §6.8 : médiane des 5 dernières mesures prises au milieu de l'aller-retour, allers-retours de moins de 3 s seulement ; seuil de saut de 2 s contrôlé chaque minute et au retour au premier plan ; seul un recul est corrigé, une avance est journalisée ; mesures conservées décalées du saut.
+- **Q-ST017-STA-3 (nouvelle, non bloquante avant l'E10 du rang 10) — Archivage des appareils inactifs.** DAT §4.2 et v0.11.3 §4.1.4 : le fichier d'un appareil inactif depuis plus de 90 jours est « fusionné puis archivé ». Aucun scénario du lot ne le vérifie, et le DAT ne dit pas ce qu'est « archivé » (déplacé dans un sous-dossier, supprimé par qui ?). Comme le fichier est fusionné à chaque lecture de façon idempotente, l'absence d'archivage n'a pas de conséquence fonctionnelle. a) hors du lot 1, inscrit au registre de dette (DT) avec votre définition ★ ; b) à l'incrément 3 : précisez l'opération (déplacement dans `Done Juan/archives/` par l'appareil qui le constate ?).
 - **Dette** : aucune.
 
 ## 17. Checklist de complétude
 - [x] Incrément 1 : fichiers, signatures, format, algorithmes, erreurs, steps, tests (E10 livrée).
 - [x] Incréments 2 à 4 : règles arrêtées (§6.6 à §6.8) ; E10 et phrases détaillées à livrer avant leur E12.
-- [ ] Q-ST017-PEP-1 répondue (avant l'E13 du rang 3) ; Q-ST017-STA-1 (avant l'E12 du rang 3) ; Q-ST017-STA-2 (avant l'E10 de l'incrément 4).
+- [x] Q-ST017-PEP-1, Q-ST017-STA-1 et Q-ST017-STA-2 répondues et intégrées (v0.2).
+- [ ] Q-ST017-STA-3 (avant l'E10 du rang 10).

@@ -14,6 +14,7 @@ describe('URL d’autorisation (DAT §4.1.7)', () => {
         portees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'],
         state: 'etat',
         indice: 'a@exemple.test',
+        interaction: 'SILENCIEUSE',
       }),
     );
 
@@ -27,6 +28,30 @@ describe('URL d’autorisation (DAT §4.1.7)', () => {
       include_granted_scopes: 'true',
       login_hint: 'a@exemple.test',
       state: 'etat',
+    });
+  });
+
+  it('UT-US-022-43 construireUrlAutorisation — repli interactif d’un geste : mêmes paramètres, sans prompt (DAT v0.11.3 §4.1.7, Q-ST022-STA-2)', () => {
+    const url = new URL(
+      construireUrlAutorisation({
+        clientId: 'client.apps.googleusercontent.com',
+        redirectUri: 'https://mathieublandin-create.github.io/taskapp/',
+        portees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'],
+        state: 'Zq9xStateUnique',
+        indice: 'a@exemple.test',
+        interaction: 'INTERACTIVE',
+      }),
+    );
+
+    expect(url.searchParams.has('prompt')).toBe(false);
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      client_id: 'client.apps.googleusercontent.com',
+      redirect_uri: 'https://mathieublandin-create.github.io/taskapp/',
+      response_type: 'token',
+      scope: 'openid email https://www.googleapis.com/auth/drive.file',
+      include_granted_scopes: 'true',
+      login_hint: 'a@exemple.test',
+      state: 'Zq9xStateUnique',
     });
   });
 
