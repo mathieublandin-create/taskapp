@@ -7,12 +7,22 @@ describe('Identité (conventions §9.2)', () => {
     expect(IdCompte.depuisSub('')).toEqual(echec({ type: 'SubInvalide' }));
     expect(IdCompte.depuisSub('12 34')).toEqual(echec({ type: 'SubInvalide' }));
     expect(IdCompte.depuisSub('x'.repeat(256))).toEqual(echec({ type: 'SubInvalide' }));
-    expect(IdCompte.depuisSub('108234567890123456789')).toEqual({ ok: true, valeur: '108234567890123456789' });
+    expect(IdCompte.depuisSub('108234567890123456789')).toEqual({
+      ok: true,
+      valeur: '108234567890123456789',
+    });
     expect(AdresseGoogle.depuisTexte('')).toEqual(echec({ type: 'AdresseInvalide' }));
-    expect(AdresseGoogle.depuisTexte('a b@exemple.test')).toEqual(echec({ type: 'AdresseInvalide' }));
+    expect(AdresseGoogle.depuisTexte('a b@exemple.test')).toEqual(
+      echec({ type: 'AdresseInvalide' }),
+    );
     expect(AdresseGoogle.depuisTexte('exemple.test')).toEqual(echec({ type: 'AdresseInvalide' }));
     expect(AdresseGoogle.depuisTexte('@exemple.test')).toEqual(echec({ type: 'AdresseInvalide' }));
-    expect(AdresseGoogle.depuisTexte('a@b@exemple.test')).toEqual(echec({ type: 'AdresseInvalide' }));
-    expect(AdresseGoogle.depuisTexte('a@exemple.test')).toEqual({ ok: true, valeur: 'a@exemple.test' });
+    expect(AdresseGoogle.depuisTexte('a@b@exemple.test')).toEqual(
+      echec({ type: 'AdresseInvalide' }),
+    );
+    expect(AdresseGoogle.depuisTexte('a@exemple.test')).toEqual({
+      ok: true,
+      valeur: 'a@exemple.test',
+    });
   });
 });

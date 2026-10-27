@@ -6,7 +6,7 @@ import {
 
 /** Doublure de la navigation : journalise l'ordre des appels. */
 class NavigationEspionne implements NavigationRetour {
-  readonly appels: string[] = [];
+  readonly appels: Array<string> = [];
   constructor(private fragment: string) {}
   lireFragment(): string {
     this.appels.push('lire');
@@ -19,7 +19,10 @@ class NavigationEspionne implements NavigationRetour {
 }
 
 const CAS: ReadonlyArray<readonly [string, string]> = [
-  ['jeton', '#access_token=ya29.abc&expires_in=3599&scope=openid%20email&state=s1&token_type=Bearer'],
+  [
+    'jeton',
+    '#access_token=ya29.abc&expires_in=3599&scope=openid%20email&state=s1&token_type=Bearer',
+  ],
   ['erreur', '#error=interaction_required&state=s1'],
   ['mal formé', '#%%%&&=='],
   ['vide', ''],

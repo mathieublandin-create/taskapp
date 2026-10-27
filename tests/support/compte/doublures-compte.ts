@@ -28,7 +28,10 @@ import type {
   ErreurMemoireTechnique,
   MemoireRedirection,
 } from '@src/compte/application/ports/memoire-redirection';
-import type { MemoireSession, SessionMemorisee } from '@src/compte/application/ports/memoire-session';
+import type {
+  MemoireSession,
+  SessionMemorisee,
+} from '@src/compte/application/ports/memoire-session';
 import type {
   ErreurPreparation,
   PreparationStockage,
@@ -51,14 +54,14 @@ export class ReseauFixe implements EtatReseau {
 }
 
 export class JournalEnMemoire implements JournalTechnique {
-  readonly entrees: EntreeJournalTechnique[] = [];
+  readonly entrees: Array<EntreeJournalTechnique> = [];
   consigner(entree: EntreeJournalTechnique): void {
     this.entrees.push(entree);
   }
 }
 
 export class MemoireSessionEnMemoire implements MemoireSession {
-  constructor(public session: SessionMemorisee | undefined = undefined) {}
+  constructor(public session?: SessionMemorisee | undefined) {}
   lire(): Promise<SessionMemorisee | undefined> {
     return Promise.resolve(this.session);
   }
@@ -74,7 +77,7 @@ export class MemoireSessionEnMemoire implements MemoireSession {
 
 export class MemoireRedirectionEnMemoire implements MemoireRedirection {
   consommations = 0;
-  constructor(public depart: DepartMemorise | undefined = undefined) {}
+  constructor(public depart?: DepartMemorise | undefined) {}
   memoriser(depart: DepartMemorise): Promise<Resultat<undefined, ErreurMemoireTechnique>> {
     this.depart = depart;
     return Promise.resolve(succes(undefined));
@@ -132,7 +135,7 @@ export class DepotAvantSortieSimule implements DepotAvantSortie {
 
 export class PreparationSimulee implements PreparationStockage {
   appels = 0;
-  constructor(private readonly erreur: ErreurPreparation | undefined = undefined) {}
+  constructor(private readonly erreur?: ErreurPreparation | undefined) {}
   preparer(): Promise<Resultat<undefined, ErreurPreparation>> {
     this.appels += 1;
     return Promise.resolve(this.erreur === undefined ? succes(undefined) : echec(this.erreur));
@@ -141,11 +144,14 @@ export class PreparationSimulee implements PreparationStockage {
 
 /** Fournisseur scripté : réponses fixées par le test, demandes observées. */
 export class FournisseurScripte implements FournisseurAuth {
-  readonly demandes: DemandeJeton[] = [];
+  readonly demandes: Array<DemandeJeton> = [];
   readonly retoursRecus: Array<{ retour: RetourGoogle; depart: DepartMemorise | undefined }> = [];
   oublis = 0;
   reponseDemande: Resultat<IssueDemandeJeton, ErreurAuth> = succes({ type: 'REDIRECTION_LANCEE' });
-  reponseRetour: Resultat<RetourAccepte, ErreurAuth> = echec({ type: 'SessionARenouveler', code: 'interaction_required' });
+  reponseRetour: Resultat<RetourAccepte, ErreurAuth> = echec({
+    type: 'SessionARenouveler',
+    code: 'interaction_required',
+  });
   demanderJeton(demande: DemandeJeton): Promise<Resultat<IssueDemandeJeton, ErreurAuth>> {
     this.demandes.push(demande);
     return Promise.resolve(this.reponseDemande);

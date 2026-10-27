@@ -8,12 +8,16 @@ import type {
 import { PreparationDossierDrive } from '@src/synchronisation/application/preparation-dossier-drive';
 import { PlanificateurSimule } from '@tests/doublures/planificateur-simule';
 import { SourceAleatoireDeterministe } from '@tests/doublures/source-aleatoire-deterministe';
+import { TempsSimule } from '@tests/support/banc/temps-simule';
+import { instant } from '@tests/support/valeurs';
 
 const DOSSIER = 'dossier-1' as IdFichierDrive;
 
-class TransportScripte implements TransportSynchro {
+class TransportScripte implements Pick<TransportSynchro, 'preparerDossier'> {
   appels = 0;
-  constructor(private readonly reponses: ReadonlyArray<Resultat<IdFichierDrive, ErreurTransport>>) {}
+  constructor(
+    private readonly reponses: ReadonlyArray<Resultat<IdFichierDrive, ErreurTransport>>,
+  ) {}
   preparerDossier(): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
     const reponse = this.reponses[Math.min(this.appels, this.reponses.length - 1)];
     this.appels += 1;
@@ -24,7 +28,9 @@ class TransportScripte implements TransportSynchro {
 
 const preparer = (reponses: ReadonlyArray<Resultat<IdFichierDrive, ErreurTransport>>) => {
   const transport = new TransportScripte(reponses);
-  const planificateur = new PlanificateurSimule();
+  const planificateur = new PlanificateurSimule(
+    new TempsSimule(instant('2026-10-27T08:00:00.000Z')),
+  );
   const cas = new PreparationDossierDrive({
     transport,
     planificateur,
@@ -48,7 +54,9 @@ describe('PreparationDossierDrive (ST-US-022 §6.8)', () => {
     const reussite = preparer([echec({ type: 'ServeurIndisponible' }), succes(DOSSIER)]);
     const reseau = preparer([echec({ type: 'ReseauIndisponible' })]);
 
-    expect(await reussite.planificateur.executerJusquAuReglement(reussite.cas.preparer())).toEqual(succes(undefined));
+    expect(await reussite.planificateur.executerJusquAuReglement(reussite.cas.preparer())).toEqual(
+      succes(undefined),
+    );
     expect(reussite.transport.appels).toBe(2);
     expect(await reseau.planificateur.executerJusquAuReglement(reseau.cas.preparer())).toEqual(
       echec({ type: 'ReseauInterrompu' }),

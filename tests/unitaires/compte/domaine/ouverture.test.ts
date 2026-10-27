@@ -11,12 +11,16 @@ const BASE: EntreeOuverture = {
 describe('deciderOuverture (DAT §4.1.7, RED-08)', () => {
   it('UT-US-022-08 deciderOuverture — écran de connexion sans session mémorisée, même si la page revient de Google (RG-019)', () => {
     expect(deciderOuverture({ ...BASE, sessionMemorisee: false })).toBe('ECRAN_CONNEXION');
-    expect(deciderOuverture({ ...BASE, sessionMemorisee: false, retour: 'PRESENT' })).toBe('ECRAN_CONNEXION');
+    expect(deciderOuverture({ ...BASE, sessionMemorisee: false, retour: 'PRESENT' })).toBe(
+      'ECRAN_CONNEXION',
+    );
   });
 
   it('UT-US-022-09 deciderOuverture — traite le retour sans relancer de redirection, réseau coupé compris (RED-08)', () => {
     expect(deciderOuverture({ ...BASE, retour: 'PRESENT' })).toBe('TRAITER_RETOUR');
-    expect(deciderOuverture({ ...BASE, retour: 'PRESENT', reseau: 'COUPE' })).toBe('TRAITER_RETOUR');
+    expect(deciderOuverture({ ...BASE, retour: 'PRESENT', reseau: 'COUPE' })).toBe(
+      'TRAITER_RETOUR',
+    );
   });
 
   it('UT-US-022-10 deciderOuverture — lance une redirection silencieuse quand le réseau est là, sans retour ni départ en attente (DAT §4.1.7)', () => {

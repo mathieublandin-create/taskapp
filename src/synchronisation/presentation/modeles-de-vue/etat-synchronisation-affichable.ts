@@ -5,7 +5,8 @@ export type EtatSynchronisationAffichable = {
   readonly reseau: 'CONNECTE' | 'COUPE';
   readonly acces: 'VALIDE' | 'A_RENOUVELER' | 'PERDU';
   readonly cycle: 'REPOS' | 'EN_COURS' | 'RETENTATIVE';
-  readonly actionRequise?: 'DRIVE_PLEIN' | 'DONNEES_ABSENTES' | 'FORMAT_PLUS_RECENT' | 'ECHEC_PERSISTANT';
+  readonly actionRequise?:
+    'DRIVE_PLEIN' | 'DONNEES_ABSENTES' | 'FORMAT_PLUS_RECENT' | 'ECHEC_PERSISTANT';
   /** Décompte par élément (DAT §4.1.5 bis). */
   readonly enAttente: number;
   /** Heure de l'appareil. */

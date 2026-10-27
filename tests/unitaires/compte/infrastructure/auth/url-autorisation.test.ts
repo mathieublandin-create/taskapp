@@ -31,9 +31,12 @@ describe('URL d’autorisation (DAT §4.1.7)', () => {
   });
 
   it('UT-US-022-43 uriRedirection et encoderBase64Url — barre oblique finale ; base64url sans +, / ni =', () => {
-    expect(uriRedirection({ origine: 'https://mathieublandin-create.github.io', cheminDeBase: '/taskapp/' })).toBe(
-      'https://mathieublandin-create.github.io/taskapp/',
-    );
+    expect(
+      uriRedirection({
+        origine: 'https://mathieublandin-create.github.io',
+        cheminDeBase: '/taskapp/',
+      }),
+    ).toBe('https://mathieublandin-create.github.io/taskapp/');
     expect(encoderBase64Url(new Uint8Array([0xfb, 0xff, 0xbf, 0x00]))).toBe('-_-_AA');
     expect(encoderBase64Url(new Uint8Array(16).fill(0xff))).toMatch(/^[A-Za-z0-9_-]{22}$/);
   });

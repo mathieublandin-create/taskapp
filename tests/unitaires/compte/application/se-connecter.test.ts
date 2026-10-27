@@ -16,7 +16,10 @@ const preparer = (options: { connecte?: boolean; erreurPreparation?: ErreurPrepa
   const fournisseur = new FournisseurScripte();
   fournisseur.reponseDemande = succes({
     type: 'ACCES_OBTENU',
-    acces: { porteesAccordees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'], identite: IDENTITE_A },
+    acces: {
+      porteesAccordees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'],
+      identite: IDENTITE_A,
+    },
   });
   const espaces = new EspacesEnMemoire();
   const memoireSession = new MemoireSessionEnMemoire();
@@ -47,7 +50,9 @@ describe('SeConnecter (ST-US-022 §6.7)', () => {
     const resultat = await env.cas.executer();
 
     expect(resultat).toEqual(echec({ type: 'ConnexionImpossible', motif: 'ERR-001' }));
-    expect(env.fournisseur.demandes.map((d) => [d.mode, d.indice])).toEqual([['CONNEXION', undefined]]);
+    expect(env.fournisseur.demandes.map((d) => [d.mode, d.indice])).toEqual([
+      ['CONNEXION', undefined],
+    ]);
     await verifierRienCree(env);
   });
 

@@ -11,8 +11,7 @@ import type { SessionCourante } from '../session-courante';
 
 // ST-US-022 §6.7 (CA-2 à CA-4 ; cas limites de connexion).
 export type ErreurConnexion =
-  | { readonly type: 'ConnexionImpossible'; readonly motif: MotifEchecConnexion }
-  | ErreurEspace;
+  { readonly type: 'ConnexionImpossible'; readonly motif: MotifEchecConnexion } | ErreurEspace;
 
 export type DependancesSeConnecter = {
   readonly reseau: EtatReseau;

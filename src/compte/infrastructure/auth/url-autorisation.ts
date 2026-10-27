@@ -19,8 +19,10 @@ export const construireUrlAutorisation = (_p: ParametresAutorisation): string =>
   nonImplemente('construireUrlAutorisation');
 
 /** Origine suivie du chemin de base, barre oblique finale comprise (conventions.md §9.1). */
-export const uriRedirection = (_config: { readonly origine: string; readonly cheminDeBase: string }): string =>
-  nonImplemente('uriRedirection');
+export const uriRedirection = (_config: {
+  readonly origine: string;
+  readonly cheminDeBase: string;
+}): string => nonImplemente('uriRedirection');
 
 /** Base64url sans remplissage (RFC 4648 §5). */
 export const encoderBase64Url = (_octets: Uint8Array): string => nonImplemente('encoderBase64Url');

@@ -9,10 +9,7 @@ export type EntreeOuverture = {
 };
 
 export type DecisionOuverture =
-  | 'ECRAN_CONNEXION'
-  | 'TRAITER_RETOUR'
-  | 'OUVRIR_SANS_JETON'
-  | 'REDIRECTION_SILENCIEUSE';
+  'ECRAN_CONNEXION' | 'TRAITER_RETOUR' | 'OUVRIR_SANS_JETON' | 'REDIRECTION_SILENCIEUSE';
 
 export const deciderOuverture = (_entree: EntreeOuverture): DecisionOuverture =>
   nonImplemente('deciderOuverture');

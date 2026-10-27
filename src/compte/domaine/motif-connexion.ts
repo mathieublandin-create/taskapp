@@ -1,7 +1,8 @@
 import { nonImplemente } from '@non-implemente';
 
 // US-022 « Motifs de connexion » ; guide d'ergonomie §6.6.8 ; conventions.md §8.5.
-export type MotifEchecConnexion = 'ERR-001' | 'ERR-002' | 'ERR-003' | 'ERR-004' | 'ERR-005' | 'ERR-006';
+export type MotifEchecConnexion =
+  'ERR-001' | 'ERR-002' | 'ERR-003' | 'ERR-004' | 'ERR-005' | 'ERR-006';
 
 export type CauseEchecConnexion =
   | 'ANNULEE'

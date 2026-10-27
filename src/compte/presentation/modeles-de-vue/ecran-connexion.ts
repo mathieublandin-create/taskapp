@@ -6,7 +6,11 @@ export type PorteeAnnoncee = 'IDENTIFICATION_DU_COMPTE' | 'FICHIERS_DE_L_APPLICA
 
 export type ModeleVueConnexion = {
   readonly porteesAnnoncees: ReadonlyArray<PorteeAnnoncee>;
-  readonly message?: { readonly code: MotifEchecConnexion; readonly titre: string; readonly texte: string };
+  readonly message?: {
+    readonly code: MotifEchecConnexion;
+    readonly titre: string;
+    readonly texte: string;
+  };
   readonly action: 'CONTINUER_AVEC_GOOGLE' | 'REESSAYER' | 'CHOISIR_UN_AUTRE_COMPTE';
   readonly actionActive: boolean;
 };

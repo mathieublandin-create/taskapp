@@ -777,6 +777,15 @@ Raison d'échec en phase rouge : « NI » (`ErreurNonImplementee` des squelettes
 | UT-US-022-49 | `infrastructure-google/reprise.test.ts` | `delaiAvantTentative` | 1 s, 2 s, 4 s…, plafond 5 min, gigue entre 50 % et 100 % | DAT §4.4.5 |
 | UT-US-022-50 | `infrastructure-google/client-google.test.ts` | `traduireReponse` | table du §6.8 | DAT §4.4.5 |
 
+**Précisions de l'E10 (2026-10-27)** — les squelettes font foi :
+- `verifierRetour({ stateRecu, depart, maintenant })` renvoie `Resultat<DepartMemorise, MotifRejetRetour>` ;
+- `NavigationRetour` est un type (`lireFragment`, `effacerFragment`), implémenté dans la composition ;
+- `EcartTemps.depuisMillisecondes` (`commun/domaine/temps/ecart-temps.ts`) est livré complet : constructeur des constantes `MARGE_ECHEANCE_JETON`, `VALIDITE_STATE_REDIRECTION`, `DELAI_INITIAL_REPRISE`, `PLAFOND_REPRISE` et de `parametres-synchronisation.ts` (livrées complètes) ;
+- `ConfirmationCompte`, `EvaluationCompte`, `ErreurSansSession` : `src/compte/application/evaluation.ts` ; `REPRISE_ACCUEIL` : `memoire-redirection.ts` ;
+- `delaiAvantTentative` arrondit à la milliseconde inférieure ; `TENTATIVES_AVANT_ABANDON` = 3 sert à la connexion et au cycle ;
+- doublures livrées : `SourceAleatoireDeterministe` (complète), `PlanificateurSimule` (squelette documenté, avec `executerJusquAuReglement` et `attentesDemandees`) ; `tests/support/compte/doublures-compte.ts` (doublures simples des ports du compte, complètes).
+Bilan : **60 cas** (UT-US-022-01 à 50, dont des cas multiples pour 12, 20, 24, 27, 43), tous en échec « NI ».
+
 Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/presentation tests/unitaires/synchronisation/application/preparation-dossier-drive.test.ts tests/unitaires/infrastructure-google tests/unitaires/commun/infrastructure`.
 
 ## 14. Tests attendus de Benjamin

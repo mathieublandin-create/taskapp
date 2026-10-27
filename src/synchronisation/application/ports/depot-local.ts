@@ -1,5 +1,6 @@
 import type { Resultat } from '../../../commun/domaine/resultat';
 import type { EtatLocal } from '../../domaine/etat-local';
+import type { MetaSynchronisation, PlanSynchronisation } from '../../domaine/meta-synchronisation';
 import type { PlanEcriture } from '../../domaine/planifier-ecritures';
 
 // ST-socle-ecriture.md §4.3 ; contrat : tests/contrats/depot-local.contrat.ts.
@@ -18,4 +19,10 @@ export interface DepotLocal {
   ): Promise<Resultat<T, E | ErreurDepotLocal>>;
   /** Rappel après chaque transaction validée ; renvoie la fonction de désabonnement. */
   observer(rappel: () => void): () => void;
+  /** ST-US-017 §4.2 (ajout de l'incrément 1, annoncé par ST-socle-ecriture.md §5.1). */
+  lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>>;
+  /** Même transaction stricte que `appliquer` ; `version` n'augmente que si le plan est non vide. */
+  appliquerSynchronisation(
+    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+  ): Promise<Resultat<undefined, ErreurDepotLocal>>;
 }

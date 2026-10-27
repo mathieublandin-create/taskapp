@@ -7,8 +7,12 @@ describe('nomEspace (conventions §9.3, DEC-016)', () => {
     // SHA-256 de « abc » (FIPS 180-2, exemple B.1).
     const nom = await nomEspace('recette', compte('abc'));
 
-    expect(nom).toBe('donejuan-recette-ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
-    expect(await nomEspace('production', compte('sub-A'))).toMatch(/^donejuan-production-[0-9a-f]{64}$/);
+    expect(nom).toBe(
+      'donejuan-recette-ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    );
+    expect(await nomEspace('production', compte('sub-A'))).toMatch(
+      /^donejuan-production-[0-9a-f]{64}$/,
+    );
     expect(await nomEspace('production', compte('sub-A'))).not.toContain('sub-A');
   });
 });

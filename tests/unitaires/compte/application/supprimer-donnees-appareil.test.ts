@@ -19,7 +19,13 @@ const preparer = (enAttente: number, restants: number | undefined) => {
   espaces.ouvert = IDENTITE_B.compte;
   const session = new SessionCourante();
   session.ouvrir(IDENTITE_B, 'VALIDE');
-  const cas = new SupprimerDonneesAppareil({ depot, fournisseur, memoireSession, espaces, session });
+  const cas = new SupprimerDonneesAppareil({
+    depot,
+    fournisseur,
+    memoireSession,
+    espaces,
+    session,
+  });
   return { cas, depot, fournisseur, memoireSession, espaces, session };
 };
 
@@ -31,7 +37,10 @@ describe('SupprimerDonneesAppareil (RG-055, ST-US-022 §6.6)', () => {
       succes({ type: 'CONFIRMATION_REQUISE', confirmation: { code: 'CNF-SUPPR-DONNEES' } }),
     );
     expect(await env.cas.confirmer()).toEqual(
-      succes({ type: 'CONFIRMATION_REQUISE', confirmation: { code: 'CNF-SUPPR-DONNEES-PERTE', n: 3 } }),
+      succes({
+        type: 'CONFIRMATION_REQUISE',
+        confirmation: { code: 'CNF-SUPPR-DONNEES-PERTE', n: 3 },
+      }),
     );
     expect([...env.espaces.existants]).toEqual([IDENTITE_A.compte, IDENTITE_B.compte]);
     expect(env.session.etat()).toEqual({ type: 'OUVERTE', identite: IDENTITE_B, acces: 'VALIDE' });

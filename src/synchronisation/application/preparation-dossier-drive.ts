@@ -13,7 +13,7 @@ export type ErreurPreparationDossier =
   | { readonly type: 'ReseauInterrompu' };
 
 export type DependancesPreparationDossier = {
-  readonly transport: TransportSynchro;
+  readonly transport: Pick<TransportSynchro, 'preparerDossier'>;
   readonly planificateur: Planificateur;
   readonly aleatoire: SourceAleatoire;
 };

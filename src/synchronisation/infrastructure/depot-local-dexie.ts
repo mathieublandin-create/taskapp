@@ -2,6 +2,7 @@ import { nonImplemente } from '@non-implemente';
 import type { IdAppareil } from '../../commun/domaine/identifiants';
 import type { Resultat } from '../../commun/domaine/resultat';
 import type { EtatLocal } from '../domaine/etat-local';
+import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
 import type {
   DepotLocal,
   ErreurDepotLocal,
@@ -36,5 +37,15 @@ export class DepotLocalDexie implements DepotLocal {
 
   observer(_rappel: () => void): () => void {
     return nonImplemente('DepotLocalDexie.observer');
+  }
+
+  lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    return nonImplemente('DepotLocalDexie.lireMeta');
+  }
+
+  appliquerSynchronisation(
+    _calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+  ): Promise<Resultat<undefined, ErreurDepotLocal>> {
+    return nonImplemente('DepotLocalDexie.appliquerSynchronisation');
   }
 }

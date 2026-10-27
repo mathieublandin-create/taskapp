@@ -4,8 +4,14 @@ import type { Instant } from '../../../commun/domaine/temps/instant';
 // RED-03, RED-04 ; port interne au contexte compte (conventions.md §2.3), support : base technique (ST-US-022 §5.1).
 export type ModeDepart = 'RENOUVELLEMENT_OUVERTURE' | 'REPLI_GESTE';
 /** État d'écran restitué au retour : route opaque, sans donnée personnelle. */
-export type EtatReprise = { readonly ecran: string; readonly feuilleSynchronisationOuverte: boolean };
-export const REPRISE_ACCUEIL: EtatReprise = { ecran: 'accueil', feuilleSynchronisationOuverte: false };
+export type EtatReprise = {
+  readonly ecran: string;
+  readonly feuilleSynchronisationOuverte: boolean;
+};
+export const REPRISE_ACCUEIL: EtatReprise = {
+  ecran: 'accueil',
+  feuilleSynchronisationOuverte: false,
+};
 
 export type DepartMemorise = {
   readonly state: string;

@@ -19,13 +19,17 @@ import { instant } from '@tests/support/valeurs';
 const MAINTENANT = '2026-10-27T08:00:01.200Z';
 const REPRISE = { ecran: '/objectifs', feuilleSynchronisationOuverte: true };
 const DEPART: DepartMemorise = {
-  state: 'etat',
+  state: 'Zq9xStateUnique',
   lanceA: instant('2026-10-27T08:00:00.000Z'),
   expireA: instant('2026-10-27T08:10:00.000Z'),
   mode: 'RENOUVELLEMENT_OUVERTURE',
   reprise: REPRISE,
 };
-const RETOUR_ERREUR = (code: string): RetourGoogle => ({ type: 'ERREUR', code, state: 'etat' });
+const RETOUR_ERREUR = (code: string): RetourGoogle => ({
+  type: 'ERREUR',
+  code,
+  state: 'Zq9xStateUnique',
+});
 
 const preparer = (options: {
   session?: { accesPerdu: boolean } | undefined;
@@ -33,7 +37,9 @@ const preparer = (options: {
   depart?: DepartMemorise | undefined;
 }) => {
   const memoireSession = new MemoireSessionEnMemoire(
-    options.session === undefined ? undefined : { identite: IDENTITE_A, accesPerdu: options.session.accesPerdu },
+    options.session === undefined
+      ? undefined
+      : { identite: IDENTITE_A, accesPerdu: options.session.accesPerdu },
   );
   const memoireRedirection = new MemoireRedirectionEnMemoire(options.depart);
   const fournisseur = new FournisseurScripte();
@@ -61,14 +67,23 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
 
     expect(issue).toEqual({ type: 'SESSION_OUVERTE', acces: 'A_RENOUVELER' });
     expect(env.fournisseur.demandes).toEqual([]);
-    expect(env.fournisseur.retoursRecus).toEqual([{ retour: RETOUR_ERREUR('interaction_required'), depart: DEPART }]);
-    expect(env.session.etat()).toEqual({ type: 'OUVERTE', identite: IDENTITE_A, acces: 'A_RENOUVELER' });
+    expect(env.fournisseur.retoursRecus).toEqual([
+      { retour: RETOUR_ERREUR('interaction_required'), depart: DEPART },
+    ]);
+    expect(env.session.etat()).toEqual({
+      type: 'OUVERTE',
+      identite: IDENTITE_A,
+      acces: 'A_RENOUVELER',
+    });
     expect(env.espaces.ouvert).toBe(IDENTITE_A.compte);
   });
 
   it('UT-US-022-34 OuvrirApplication — une erreur de configuration ouvre la session à renouveler et journalise le seul code en erreur', async () => {
     const env = preparer({ session: { accesPerdu: false }, depart: DEPART });
-    env.fournisseur.reponseRetour = echec({ type: 'ConfigurationOAuthInvalide', code: 'redirect_uri_mismatch' });
+    env.fournisseur.reponseRetour = echec({
+      type: 'ConfigurationOAuthInvalide',
+      code: 'redirect_uri_mismatch',
+    });
 
     const issue = await env.cas.executer(RETOUR_ERREUR('redirect_uri_mismatch'));
 
@@ -76,7 +91,7 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
     const erreurs = env.journal.entrees.filter((e) => e.niveau === 'erreur');
     expect(erreurs).toHaveLength(1);
     expect(JSON.stringify(erreurs)).toContain('redirect_uri_mismatch');
-    expect(JSON.stringify(env.journal.entrees)).not.toContain('etat');
+    expect(JSON.stringify(env.journal.entrees)).not.toContain('Zq9xStateUnique');
     expect(JSON.stringify(env.journal.entrees)).not.toContain('a@exemple.test');
   });
 
@@ -98,14 +113,25 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
   });
 
   it('UT-US-022-36 OuvrirApplication — un jeton valide rend l’accès valide, restitue la reprise et efface l’accès perdu mémorisé (CA-5)', async () => {
-    const env = preparer({ session: { accesPerdu: true }, depart: { ...DEPART, mode: 'REPLI_GESTE' } });
+    const env = preparer({
+      session: { accesPerdu: true },
+      depart: { ...DEPART, mode: 'REPLI_GESTE' },
+    });
     env.fournisseur.reponseRetour = succes({
-      acces: { porteesAccordees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'], identite: IDENTITE_A },
+      acces: {
+        porteesAccordees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'],
+        identite: IDENTITE_A,
+      },
       mode: 'REPLI_GESTE',
       reprise: REPRISE,
     });
 
-    const issue = await env.cas.executer({ type: 'JETON', jeton: 'j', portees: [], state: 'etat' });
+    const issue = await env.cas.executer({
+      type: 'JETON',
+      jeton: 'j',
+      portees: [],
+      state: 'Zq9xStateUnique',
+    });
 
     expect(issue).toEqual({ type: 'SESSION_OUVERTE', acces: 'VALIDE', reprise: REPRISE });
     expect(env.memoireSession.session).toEqual({ identite: IDENTITE_A, accesPerdu: false });

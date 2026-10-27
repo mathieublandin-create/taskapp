@@ -5,10 +5,7 @@ import type { DepartMemorise, EtatReprise, ModeDepart } from './memoire-redirect
 
 // ADR-004, ADR-013, conventions.md §2.3 (ST-US-022 §4.3, §6.4).
 export type ModeDemande =
-  | 'CONNEXION'
-  | 'RENOUVELLEMENT_OUVERTURE'
-  | 'RENOUVELLEMENT_GESTE'
-  | 'RECONNEXION_GESTE';
+  'CONNEXION' | 'RENOUVELLEMENT_OUVERTURE' | 'RENOUVELLEMENT_GESTE' | 'RECONNEXION_GESTE';
 
 export type DemandeJeton = {
   readonly mode: ModeDemande;
@@ -18,7 +15,10 @@ export type DemandeJeton = {
   readonly reprise: EtatReprise;
 };
 
-export type AccesObtenu = { readonly porteesAccordees: ReadonlyArray<string>; readonly identite: Identite };
+export type AccesObtenu = {
+  readonly porteesAccordees: ReadonlyArray<string>;
+  readonly identite: Identite;
+};
 
 export type IssueDemandeJeton =
   | { readonly type: 'ACCES_OBTENU'; readonly acces: AccesObtenu }

@@ -53,6 +53,14 @@ class DepotAvecCorrection implements DepotLocal {
   observer(rappel: () => void): () => void {
     return this.interne.observer(rappel);
   }
+  lireMeta(): ReturnType<DepotLocal['lireMeta']> {
+    return this.interne.lireMeta();
+  }
+  appliquerSynchronisation(
+    calcul: Parameters<DepotLocal['appliquerSynchronisation']>[0],
+  ): ReturnType<DepotLocal['appliquerSynchronisation']> {
+    return this.interne.appliquerSynchronisation(calcul);
+  }
 }
 
 describe('ServiceEtatLocalTransactionnel (ST-socle-ecriture.md §6.8)', () => {

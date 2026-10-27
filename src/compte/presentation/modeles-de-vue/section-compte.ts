@@ -10,5 +10,6 @@ export type ModeleVueSectionCompte = {
   readonly dossier: { readonly code: 'SYN-FEUILLE-DOSSIER'; readonly libelle: string };
 };
 
-export const construireSectionCompte = (_c: { readonly adresse: AdresseGoogle }): ModeleVueSectionCompte =>
-  nonImplemente('construireSectionCompte');
+export const construireSectionCompte = (_c: {
+  readonly adresse: AdresseGoogle;
+}): ModeleVueSectionCompte => nonImplemente('construireSectionCompte');
