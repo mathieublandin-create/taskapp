@@ -49,3 +49,20 @@ Prochaines mesures, décisives pour DEC-034 :
   - Cause probable : le PoC n'envoie pas `login_hint` à `initTokenClient`, alors que le téléphone porte plusieurs comptes Google.
   - Correctif demandé à Benjamin : transmettre `login_hint` (l'adresse en cache) et revenir sur la redirection `prompt=none` si nécessaire.
   - Étape 16 à refaire après la remise en ligne.
+
+## Analyse du journal du téléphone (export CSV du 2026-10-27)
+Le journal couvre les 25, 26 et 27 octobre. Toutes les mesures sont faites dans la PWA installée (`standalone`, `web-android`), à une exception près, signalée ci-dessous. L'adresse du compte n'est pas reproduite ici.
+
+| Mesure | Résultat | Verdict |
+|---|---|---|
+| **M-RED** (redirection automatique à l'ouverture) | 12 redirections `prompt=none` avec `login_hint`, toutes réussies (« JetonObtenu »). Aller-retour de 414 à 1 840 ms ; 4 804 ms une fois, juste après le redémarrage. Les ouvertures du 26 à 20 h 21 et du 27 à 14 h 21, plus d'une heure après la précédente, renouvellent l'accès **sans aucune action**. Pas de boucle : chaque retour est suivi de « Non lancé : la page revient de Google ». | **Favorable** |
+| **M-PERSIST** | `persisted()` = faux avant la demande ; `persist()` donne « Stockage persistant », accordé sans question. | **Favorable** |
+| **M-DUR** (marqueur IndexedDB en durabilité stricte) | Marqueur posé à 22 h 30, relu présent après l'arrêt forcé (22 h 32). Marqueurs posés à 22 h 33 et 22 h 35, relus présents après le redémarrage. Les identifiants sont identiques à chaque fois. | **Favorable** |
+| **Hors ligne** (étape 10) | L'application s'ouvre en mode avion avec l'identité en cache ; « Non lancé : réseau indisponible », comme attendu. | **Favorable** |
+| **Étape 16** (« Synchroniser » en cours d'usage, GIS) | Jeton obtenu, mais le commanditaire a dû choisir le compte puis valider. **Les entrées ne portent pas la mention `login_hint`** : elles viennent donc de l'ancienne version, et le correctif `af859e3` n'était pas encore chargé sur le téléphone. | **À refaire** après la remise en ligne et la mise à jour de la PWA |
+
+Une mesure a été faite dans un onglet de Chrome (`navigateur`), le 27 à 14 h 22. Elle réussit aussi, mais elle ne compte pas pour la condition de DEC-034.
+
+**Conclusion : la condition de DEC-034 (M-RED et M-PERSIST) est remplie.** M-DUR est également favorable. ADR-013 peut passer au statut Accepté lors de la clôture du lot, et l'annexe « repli Android » n'est pas déclenchée. Il reste deux points :
+- refaire l'étape 16 avec le correctif ;
+- confirmer l'état « En production » pour R11.
