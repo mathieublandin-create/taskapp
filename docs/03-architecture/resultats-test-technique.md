@@ -66,3 +66,8 @@ Une mesure a été faite dans un onglet de Chrome (`navigateur`), le 27 à 14 h 
 **Conclusion : la condition de DEC-034 (M-RED et M-PERSIST) est remplie.** M-DUR est également favorable. ADR-013 peut passer au statut Accepté lors de la clôture du lot, et l'annexe « repli Android » n'est pas déclenchée. Il reste deux points :
 - refaire l'étape 16 avec le correctif ;
 - confirmer l'état « En production » pour R11.
+
+## R11 : verdict
+Le commanditaire confirme le 2026-10-27 que l'état de publication était **« En production »** lors des essais sur PC et sur Android. **R11 est favorable** : aucun écran « Google n'a pas validé cette application ». Le nom affiché est le domaine, ce qui est accepté. Q-R11-1 est sans objet.
+
+**Condition de l'E9 d'US-022 et d'US-017 (R11 et M-RED) : remplie le 2026-10-27.** Seule l'étape 16 reste à refaire, ce qui ne bloque pas l'E9. Si le choix du compte persiste malgré `login_hint`, le renouvellement en cours d'usage passera par la redirection `prompt=none` (ADR-013).
