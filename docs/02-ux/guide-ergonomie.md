@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.13, 2026-10-27 (Steeve).** Q-ST031-PEP-1 : fin de session dans un autre onglet du PC, confirmation de « sans message » (§6.6.11). Aucun code créé.
+>
 > **Version 0.2.12, 2026-10-27 (Steeve).** E9 d'US-022, 017, 018 et 031, réponses à Q-ST022-STE-1 à 3 et Q-ST018-STE-1 : écran d'attente `SYN-REDIRECTION` ; `SYN-SESSION` et `ERR-015` valables sur smartphone (PWA unique, DEC-034, DEC-036) ; hors ligne, `SYN-HORS-LIGNE` l'emporte sur `SYN-SESSION` ; ligne `SYN-FEUILLE-STOCKAGE` et carte `ALR-015`. ECR-010 complété (cadre « Attente »). Aucune règle de gestion modifiée.
 >
 > **Version 0.2.11, 2026-10-22 (Steeve).** DEC-032, réponse à Q-US-025-3 : reprise d'une sous-tâche abandonnée sous une tâche parente terminée ; confirmation `CNF-REPRENDRE-SOUS-TACHE` créée (§6.6.7, ECR-007 D3). Choix d'un code distinct de `CNF-ROUVRIR-SOUS-TACHE` : l'action demandée est une reprise (titre et bouton différents), la réouverture de la tâche parente n'en est que la conséquence annoncée.
@@ -869,6 +871,7 @@ Les scénarios qui citent déjà `ERR-011`, `ERR-012`, `ERR-003` à `ERR-006` et
 | Q-US-002-1 | Filtre par défaut « À faire » ; valeurs `à faire`, `terminée`, `abandonnée`, pas de « tous » ; tri par délai, puis création, puis intitulé ; terminées par date de fin décroissante ; sous-tâches jamais listées | §5.7, ECR-002 L1, L4, L5 |
 | Q-US-017-6 | Option a), sans modifier RG-056 : le point « à lire » est un signal indépendant (`data-a-lire`), présent dans tous les états ; `SYN-INFO` devient un code dérivé de `SYN-OK` | §4.8, §6.5, §6.6.2, ECR-011 M |
 | Q-US-018-1 | Option a) : nombre d'éléments distincts portant `MEN-ATTENTE` (exemple : n = 2). Aucun journal d'opérations. Départ des 24 h : première écriture locale non déposée, tous éléments | §6.6.1, ECR-011 M |
+| Q-ST031-PEP-1 (E9, v0.2.13) | Confirmé : les autres onglets se rechargent sur l'écran de connexion (ECR-010) **sans message, ni toast ni bandeau**. Besoin : l'utilisateur vient de demander lui-même la fin de session, l'écran de connexion est le résultat attendu ; un message ajouterait du bruit à un geste volontaire. Pas de code de catalogue | §6.6.11, ECR-010 |
 | Q-ST022-STE-1 (E9, v0.2.12) | Code `SYN-REDIRECTION`, « Connexion à Google… », logo, sans action | §6.6.2, ECR-010 (cadre Attente) |
 | Q-ST022-STE-2 | Oui : `SYN-SESSION`, `ERR-015` et variante `session` valables sur smartphone ; `{appareil}` / `{autre appareil}` ; titre d'`ERR-015` « de cet appareil » | §6.6.2, §6.6.3, §6.6.8 |
 | Q-ST022-STE-3 | b) : `SYN-HORS-LIGNE` tant que le réseau est coupé, `SYN-SESSION` au retour | §6.6.2 |
