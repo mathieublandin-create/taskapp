@@ -41,6 +41,20 @@ const estResultat = (valeur: unknown): valeur is Resultat<unknown, unknown> =>
   valeur !== null &&
   typeof (valeur as { ok?: unknown }).ok === 'boolean';
 
+/** Nombre de groupes capturants d'une expression régulière. */
+const nombreDeGroupes = (motif: RegExp): number =>
+  (new RegExp(`${motif.source}|`).exec('')?.length ?? 1) - 1;
+
+/**
+ * cucumber-js exige que le nombre de paramètres déclarés de la fonction égale celui des groupes capturés ; les
+ * fonctions ci-dessous reçoivent les groupes du motif par un paramètre du reste, qui ne compte pas : leur arité
+ * est donc fixée sur le motif complet.
+ */
+const avecArite = <F extends (...arguments_: Array<never>) => unknown>(
+  motif: RegExp,
+  fonction: F,
+): F => Object.defineProperty(fonction, 'length', { value: nombreDeGroupes(motif) });
+
 export type OptionsAction = {
   /** Appareil visé quand l'étape n'a pas de préfixe et que le banc en compte deux (H-5, conventions.md §11.6). */
   readonly appareilImplicite?: (monde: MondeDoneJuan) => NomAppareil | undefined;
@@ -48,12 +62,16 @@ export type OptionsAction = {
 
 /** Précondition (« Étant donné »). Sans préfixe : valide si le banc ne comporte qu'un appareil. */
 export const etapeContexte = (motif: RegExp, corps: CorpsEtape): void => {
+  const complet = motifContexte(motif);
   Given(
-    motifContexte(motif),
-    async function (this: MondeDoneJuan, prefixe: unknown, ...reste: Array<unknown>) {
-      const appareil = appareilDuPrefixe(this, texteOuUndefined(prefixe));
-      await corps({ monde: this, appareil }, ...reste);
-    },
+    complet,
+    avecArite(
+      complet,
+      async function (this: MondeDoneJuan, prefixe: unknown, ...reste: Array<unknown>) {
+        const appareil = appareilDuPrefixe(this, texteOuUndefined(prefixe));
+        await corps({ monde: this, appareil }, ...reste);
+      },
+    ),
   );
 };
 
@@ -66,31 +84,35 @@ export const etapeAction = (
   corps: CorpsEtape,
   options: OptionsAction = {},
 ): void => {
+  const complet = motifAction(motif);
   When(
-    motifAction(motif),
-    async function (
-      this: MondeDoneJuan,
-      ecart: unknown,
-      exact: unknown,
-      prefixe: unknown,
-      ...reste: Array<unknown>
-    ) {
-      const appareil = appareilDuPrefixe(
-        this,
-        texteOuUndefined(prefixe),
-        options.appareilImplicite,
-      );
-      const ecartTexte = texteOuUndefined(ecart);
-      if (ecartTexte !== undefined) this.banc.avancerTemps(convertirEcart(ecartTexte));
-      if (texteOuUndefined(exact) !== undefined) {
-        if (this.instantDerniereAction === undefined)
-          throw new Error('Aucune action précédente à rejouer');
-        this.banc.temps.positionner(this.instantDerniereAction);
-      }
-      this.instantDerniereAction = this.banc.temps.maintenant();
-      const resultat = await corps({ monde: this, appareil }, ...reste);
-      if (estResultat(resultat)) this.resultats.set(appareil.nom, resultat);
-    },
+    complet,
+    avecArite(
+      complet,
+      async function (
+        this: MondeDoneJuan,
+        ecart: unknown,
+        exact: unknown,
+        prefixe: unknown,
+        ...reste: Array<unknown>
+      ) {
+        const appareil = appareilDuPrefixe(
+          this,
+          texteOuUndefined(prefixe),
+          options.appareilImplicite,
+        );
+        const ecartTexte = texteOuUndefined(ecart);
+        if (ecartTexte !== undefined) this.banc.avancerTemps(convertirEcart(ecartTexte));
+        if (texteOuUndefined(exact) !== undefined) {
+          if (this.instantDerniereAction === undefined)
+            throw new Error('Aucune action précédente à rejouer');
+          this.banc.temps.positionner(this.instantDerniereAction);
+        }
+        this.instantDerniereAction = this.banc.temps.maintenant();
+        const resultat = await corps({ monde: this, appareil }, ...reste);
+        if (estResultat(resultat)) this.resultats.set(appareil.nom, resultat);
+      },
+    ),
   );
 };
 
@@ -99,19 +121,23 @@ export const etapeAction = (
  * appareil du banc (Q-US-017-7).
  */
 export const etapeAssertion = (motif: RegExp, corps: CorpsEtape): void => {
+  const complet = motifAssertion(motif);
   Then(
-    motifAssertion(motif),
-    async function (
-      this: MondeDoneJuan,
-      prefixe: unknown,
-      _deux: unknown,
-      ...reste: Array<unknown>
-    ) {
-      const nom = texteOuUndefined(prefixe);
-      const cibles =
-        nom === undefined ? this.banc.appareils() : [this.banc.appareil(convertirAppareil(nom))];
-      const appareils = cibles.length === 0 ? [this.banc.appareil('smartphone')] : cibles;
-      for (const appareil of appareils) await corps({ monde: this, appareil }, ...reste);
-    },
+    complet,
+    avecArite(
+      complet,
+      async function (
+        this: MondeDoneJuan,
+        prefixe: unknown,
+        _deux: unknown,
+        ...reste: Array<unknown>
+      ) {
+        const nom = texteOuUndefined(prefixe);
+        const cibles =
+          nom === undefined ? this.banc.appareils() : [this.banc.appareil(convertirAppareil(nom))];
+        const appareils = cibles.length === 0 ? [this.banc.appareil('smartphone')] : cibles;
+        for (const appareil of appareils) await corps({ monde: this, appareil }, ...reste);
+      },
+    ),
   );
 };

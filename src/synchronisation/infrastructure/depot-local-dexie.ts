@@ -2,7 +2,7 @@ import { nonImplemente } from '@non-implemente';
 import Dexie from 'dexie';
 import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
 import { ErreurProgrammation } from '../../commun/domaine/erreur-programmation';
-import type { IdAppareil } from '../../commun/domaine/identifiants';
+import { IdAppareil } from '../../commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
 import type {
   DepotLocal,
@@ -57,6 +57,39 @@ const TABLES = ['registres', 'journal', 'enAttente', 'meta'];
 type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
 
 const ESPACE_ILLISIBLE = echec({ type: 'DonneesLocalesIllisibles' } as const);
+const ESPACE_NON_OUVERT = echec({ type: 'EspaceLocalNonOuvert' } as const);
+
+/** Base Dexie d'un espace, en durabilité stricte (conventions.md §10.1, ADR-013). */
+const creerBase = (nomBase: string, fabrique: IDBFactory | undefined): Dexie => {
+  const base = new Dexie(nomBase, {
+    chromeTransactionDurability: 'strict',
+    ...(fabrique === undefined ? {} : { indexedDB: fabrique }),
+  });
+  base.version(1).stores({
+    registres: 'cle, [type+id]',
+    journal: 'id, [elementType+elementId], hlcTri',
+    enAttente: 'cle',
+    meta: 'nom',
+  });
+  return base;
+};
+
+/**
+ * Lit `meta.appareilId`, ou le crée avec une `meta` vide si l'espace est neuf, dans une transaction stricte
+ * résolue à `complete` ; le générateur n'est appelé que pour un espace neuf. Illisible → undefined.
+ */
+const etablirAppareil = async (
+  base: Dexie,
+  generateur: GenerateurIdentifiants,
+): Promise<IdAppareil | undefined> =>
+  base.transaction('rw', ['meta'], async () => {
+    const meta = base.table('meta');
+    const lignes = await meta.toArray();
+    if (lignes.length > 0) return decoderMeta(lignes)?.appareilId;
+    const appareilId = IdAppareil.depuisUuid(generateur.genererUuidV7());
+    await meta.bulkPut([...encoderMeta(ETAT_LOCAL_VIDE(appareilId))]);
+    return appareilId;
+  });
 const ECRITURE_IMPOSSIBLE = echec({ type: 'EcritureLocaleImpossible' } as const);
 
 const planEstVide = (plan: PlanEcriture): boolean =>
@@ -92,18 +125,18 @@ export class DepotLocalDexie implements DepotLocal {
   private ouverture: Promise<Ouverture> | undefined;
   private versionNotifiee = 0;
   private desabonnementStockage: (() => void) | undefined;
+  private ferme = false;
 
   constructor(private readonly options: OptionsDepotLocalDexie) {
     // Durabilité stricte (conventions.md §10.1, ADR-013) : toute transaction d'écriture l'exige.
-    this.base = new Dexie(options.nomBase, {
-      chromeTransactionDurability: 'strict',
-      ...(options.fabrique === undefined ? {} : { indexedDB: options.fabrique }),
-    });
-    this.base.version(1).stores({
-      registres: 'cle, [type+id]',
-      journal: 'id, [elementType+elementId], hlcTri',
-      enAttente: 'cle',
-      meta: 'nom',
+    this.base = creerBase(options.nomBase, options.fabrique);
+    // RL-LOT-001-A1 : une autre connexion supprime ou monte la base ; fermeture sans réouverture automatique.
+    // Rendre false empêche la fermeture par défaut de Dexie, qui autoriserait une réouverture.
+    this.base.on('versionchange', () => {
+      const dejaFerme = this.ferme;
+      this.fermer();
+      if (!dejaFerme) options.surFermetureImposee?.();
+      return false;
     });
   }
 
@@ -112,15 +145,36 @@ export class DepotLocalDexie implements DepotLocal {
    * `meta.appareilId` par une transaction stricte confirmée à `complete` ; base existante → identifiant relu,
    * générateur non appelé. Base supprimée puis rouverte → nouvel identifiant. Ligne illisible → Echec.
    */
-  static ouvrirEspace(
-    _options: OptionsOuvertureEspace,
+  static async ouvrirEspace(
+    options: OptionsOuvertureEspace,
   ): Promise<Resultat<DepotLocalDexie, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.ouvrirEspace');
+    const provisoire = creerBase(options.nomBase, options.fabrique);
+    let appareilId: IdAppareil | undefined;
+    try {
+      appareilId = await etablirAppareil(provisoire, options.generateur);
+    } catch {
+      return ECRITURE_IMPOSSIBLE;
+    } finally {
+      provisoire.close({ disableAutoOpen: true });
+    }
+    if (appareilId === undefined) return ESPACE_ILLISIBLE;
+    const depot = new DepotLocalDexie({
+      nomBase: options.nomBase,
+      appareilId,
+      ...(options.fabrique === undefined ? {} : { fabrique: options.fabrique }),
+      ...(options.surFermetureImposee === undefined
+        ? {}
+        : { surFermetureImposee: options.surFermetureImposee }),
+    });
+    // La connexion reste ouverte : l'instance reçoit `versionchange` (RL-LOT-001-A1).
+    const ouverture = await depot.lire();
+    return ouverture.ok ? succes(depot) : ouverture;
   }
 
   /** Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Idempotent. */
   fermer(): void {
-    nonImplemente('DepotLocalDexie.fermer');
+    this.ferme = true;
+    this.base.close({ disableAutoOpen: true });
   }
 
   /** Identifiant de l'appareil pour cet espace (celui du constructeur ou de `ouvrirEspace`). */
@@ -129,6 +183,7 @@ export class DepotLocalDexie implements DepotLocal {
   }
 
   async lire(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
     try {
       const ouverture = await this.ouvrir();
       if (!ouverture.ok) return ouverture;
@@ -141,6 +196,7 @@ export class DepotLocalDexie implements DepotLocal {
   async appliquer<T, E extends { readonly type: string }>(
     calcul: (etat: EtatLocal) => Resultat<IssueTransaction<T>, E>,
   ): Promise<Resultat<T, E | ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
     const surveillance: Surveillance = { exception: undefined };
     try {
       const ouverture = await this.ouvrir();
@@ -172,6 +228,7 @@ export class DepotLocalDexie implements DepotLocal {
   }
 
   lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    if (this.ferme) return Promise.resolve(ESPACE_NON_OUVERT);
     return nonImplemente('DepotLocalDexie.lireMeta');
   }
 
@@ -315,6 +372,6 @@ export class DepotLocalDexie implements DepotLocal {
 
   private traduire(erreur: unknown): Resultat<never, ErreurDepotLocal> {
     if (erreur instanceof ErreurProgrammation) throw erreur;
-    return ECRITURE_IMPOSSIBLE;
+    return this.ferme ? ESPACE_NON_OUVERT : ECRITURE_IMPOSSIBLE;
   }
 }

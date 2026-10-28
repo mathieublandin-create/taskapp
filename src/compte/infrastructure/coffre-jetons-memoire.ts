@@ -1,17 +1,18 @@
-import { nonImplemente } from '@non-implemente';
 import type { CoffreJetons, JetonEnCoffre } from '../application/ports/coffre-jetons';
 
 // DS-06, RED-05 : adaptateur réel, en mémoire ; seul détenteur du jeton d'accès (sert aussi de doublure).
 export class CoffreJetonsMemoire implements CoffreJetons {
-  placer(_jeton: JetonEnCoffre): void {
-    nonImplemente('CoffreJetonsMemoire.placer');
+  #jeton: JetonEnCoffre | undefined;
+
+  placer(jeton: JetonEnCoffre): void {
+    this.#jeton = jeton;
   }
 
   lire(): JetonEnCoffre | undefined {
-    return nonImplemente('CoffreJetonsMemoire.lire');
+    return this.#jeton;
   }
 
   vider(): void {
-    nonImplemente('CoffreJetonsMemoire.vider');
+    this.#jeton = undefined;
   }
 }
