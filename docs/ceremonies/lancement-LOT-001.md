@@ -30,7 +30,7 @@ Toutes les remarques sont corrigées ou justifiées par Anthony. Leurs réponses
 ## 4. Points ouverts
 | Point | Pour | Échéance |
 |---|---|---|
-| **Q-RL-P6** : accepter un second geste si la fenêtre Google tombe en panne pendant une saisie (exception à RG-017) | Commanditaire | Avant l'E12 du rang 1 |
+| ~~Q-RL-P6~~ : tranchée le 2026-10-28, réponse a) (DEC-039). Pepper reporte le cas limite dans RG-017 et dans US-018 | Pepper | Avant l'E12 du rang 1 |
 | A5 : outillage (Node 24, Cucumber, MSW, Playwright, dependency-cruiser, React, Ionic, vite-plugin-pwa) et CI de l'application | Benjamin | Condition de l'E13 du rang 0 ; protection de `main` ensuite (DEC-029) |
 | Tests de l'E10 des incréments 2 à 4 d'US-017, d'US-018 et d'US-031 | Anthony | Avant l'E12 de chaque rang |
 | Q-BEN-LOT001-10 : identifiant du client OAuth de développement et origine de développement | Jarvis → Benjamin, hors dépôt | Avant toute vérification manuelle au rang 1 |
