@@ -54,6 +54,8 @@ export type OptionsOuvertureEspace = {
 
 const TABLES = ['registres', 'journal', 'enAttente', 'meta'];
 
+type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
+
 const ESPACE_ILLISIBLE = echec({ type: 'DonneesLocalesIllisibles' } as const);
 const ECRITURE_IMPOSSIBLE = echec({ type: 'EcritureLocaleImpossible' } as const);
 
@@ -87,7 +89,7 @@ export class DepotLocalDexie implements DepotLocal {
   private readonly base: Dexie;
   private readonly observateurs = new Set<() => void>();
   private cache: EtatLocal | undefined;
-  private ouverture: Promise<void> | undefined;
+  private ouverture: Promise<Ouverture> | undefined;
   private versionNotifiee = 0;
   private desabonnementStockage: (() => void) | undefined;
 
@@ -128,7 +130,8 @@ export class DepotLocalDexie implements DepotLocal {
 
   async lire(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
     try {
-      await this.ouvrir();
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
       return await this.base.transaction('r', TABLES, () => this.etatAJour());
     } catch (erreur) {
       return this.traduire(erreur);
@@ -140,7 +143,8 @@ export class DepotLocalDexie implements DepotLocal {
   ): Promise<Resultat<T, E | ErreurDepotLocal>> {
     const surveillance: Surveillance = { exception: undefined };
     try {
-      await this.ouvrir();
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
       const issue = await this.base.transaction('rw', TABLES, () =>
         this.executer(calcul, surveillance),
       );
@@ -177,25 +181,37 @@ export class DepotLocalDexie implements DepotLocal {
     return nonImplemente('DepotLocalDexie.appliquerSynchronisation');
   }
 
-  /** Première ouverture : écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon ErreurProgrammation). */
-  private ouvrir(): Promise<void> {
-    this.ouverture ??= this.initialiser().catch((erreur: unknown) => {
-      this.ouverture = undefined;
-      throw erreur;
-    });
+  /**
+   * Première ouverture : écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon ErreurProgrammation).
+   * Une `meta` illisible donne DonneesLocalesIllisibles, sans mémoriser l'échec : l'ouverture peut être retentée.
+   */
+  private ouvrir(): Promise<Ouverture> {
+    this.ouverture ??= this.initialiser().then(
+      (ouverture) => {
+        if (!ouverture.ok) this.ouverture = undefined;
+        return ouverture;
+      },
+      (erreur: unknown) => {
+        this.ouverture = undefined;
+        throw erreur;
+      },
+    );
     return this.ouverture;
   }
 
-  private async initialiser(): Promise<void> {
+  private async initialiser(): Promise<Ouverture> {
     const meta = this.base.table('meta');
     const lignes = await meta.toArray();
     if (lignes.length === 0) {
       await meta.bulkPut([...encoderMeta(ETAT_LOCAL_VIDE(this.options.appareilId))]);
-      return;
+      return succes(undefined);
     }
-    if (decoderMeta(lignes)?.appareilId !== this.options.appareilId) {
+    const lues = decoderMeta(lignes);
+    if (lues === undefined) return ESPACE_ILLISIBLE;
+    if (lues.appareilId !== this.options.appareilId) {
       throw new ErreurProgrammation("L'espace local appartient à un autre appareil");
     }
+    return succes(undefined);
   }
 
   /** État à jour : le cache si `meta.version` n'a pas changé, sinon rechargement complet (autre onglet). */
