@@ -106,17 +106,17 @@ jobs:
           curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check -
           tar -xzf gitleaks.tar.gz gitleaks
-          ./gitleaks git --no-banner --redact --verbose
+          ./gitleaks git --no-banner --redact --verbose > gitleaks.log 2>&1 || { echo "::error title=gitleaks::$(tail -c 2500 gitleaks.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: osv-scanner
         run: |
           curl -sSfL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
           echo "${OSV_SCANNER_SHA256}  osv-scanner" | sha256sum --check -
           chmod +x osv-scanner
-          ./osv-scanner scan source --lockfile=pnpm-lock.yaml
+          ./osv-scanner scan source --lockfile=pnpm-lock.yaml > osv.log 2>&1 || { echo "::error title=osv-scanner::$(tail -c 3500 osv.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: Licences
-        run: pnpm licences
+        run: pnpm licences > licences.log 2>&1 || { echo "::error title=licences::$(tail -c 2500 licences.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: Semgrep
-        run: pipx run "semgrep==${SEMGREP_VERSION}" scan --config p/typescript --config p/security-audit --error --metrics=off src
+        run: pipx run "semgrep==${SEMGREP_VERSION}" scan --config p/typescript --config p/security-audit --error --metrics=off src > semgrep.log 2>&1 || { echo "::error title=semgrep::$(tail -c 3500 semgrep.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   build:
     name: build
