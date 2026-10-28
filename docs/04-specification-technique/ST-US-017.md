@@ -115,7 +115,7 @@
 | 29 | `src/synchronisation/domaine/correction-horloge.ts` | 4 | `mesurerEcart` (rend `undefined` si l'aller-retour dure 3 s ou plus), `retenirMesure` (5 dernières), `medianeCorrection`, `qualifierSaut` (`RECUL` / `AVANCE` / `AUCUN`), `decalerMesures`, `estHorlogeDereglee` ; constantes dans `parametres-synchronisation.ts` (livrées en E10) |
 | 30 | `src/synchronisation/domaine/compatibilite.ts` | 4 | `verifierCompatibilite(schemaVersionLu)` |
 | 31 | `src/synchronisation/application/ports/mise-a-jour-application.ts` ; `infrastructure/mise-a-jour-service-worker.ts` | 4 | « Mettre à jour » (DAT §4.2) |
-| 32 | Base Dexie version 3 : tables `valeursEcartees`, `lectures` (incr. 2), `registresInconnus` (incr. 4) | 2, 4 | Ajouts purs |
+| 32 | Base Dexie version 3 (incr. 2) : tables `valeursEcartees`, `lectures` ; version 4 (incr. 4) : table `registresInconnus` (§5.1, qui fait foi ; Q-BEN-LOT001-9) | 2, 4 | Ajouts purs |
 
 ## 4. Interfaces et signatures (incrément 1, et ce que les incréments suivants doivent respecter)
 

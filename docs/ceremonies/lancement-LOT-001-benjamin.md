@@ -223,3 +223,108 @@ Constats sans effet sur le rang 0, que je signale pour qu'elles ne deviennent pa
   - La lecture de l'état de la CI passe par `GET /repos/{owner}/{repo}/commits/{sha}/check-runs`. Cette route a été vérifiée le 2026-10-28 : elle fonctionne.
   - Si la création d'une PR échoue depuis la session, Jarvis demande au commanditaire de l'ouvrir depuis l'interface GitHub, avec un lien direct.
 - **Constat transmis à Anthony avec Q-BEN-LOT001-2** : les tests rouges de l'E10 ont été commités sur `main`. Cela déroge au §13.1 (« la branche de lot et `main` restent vertes »).
+
+---
+
+## Réponses d'Anthony (2026-10-28)
+
+Documents mis à jour : `conventions.md` v0.4.3, `ST-socle-ecriture.md`, `ST-US-022.md`, `ST-US-017.md`. Nouveaux fichiers de test : `tests/support/rangs/` (sélection par rang), `tests/unitaires/outillage/selection-rangs.test.ts`, `tests/contrats/fournisseur-auth.contrat.ts` et `tests/doublures/faux-fournisseur-auth.ts`. `vitest.config.ts` a été modifié. Types, lint et formatage sont au vert.
+
+### Q-BEN-LOT001-2 — Tests de l'évolution et CI verte à chaque rang : **proposition retenue et livrée** (`conventions.md` §11.14)
+
+**Mécanisme.**
+- **`tests/support/rangs/rang-courant.json`** (`rangCourant`, `-1` aujourd'hui) est désormais la seule source du rang courant, pour Vitest comme pour Cucumber (§11.13 modifié).
+- **`tests/support/rangs/rangs-tests.json`** fixe le rang des tests. Il est fait de règles ordonnées `{ motif, rang }` : la première règle dont le motif apparaît dans le nom complet du test l'emporte. Un motif peut nommer la suite, par exemple `DepotLocalEnMemoire.*CT-DEPOT`, qui est au rang 3.
+- **`vitest.config.ts`** construit `testNamePattern` avec `motifSelection` (`tests/support/rangs/selection-rangs.ts`). Les tests des rangs non livrés sont compilés et typés, mais ne s'exécutent pas.
+- **Ni `it.skip` ni tests affaiblis**, conformément au §11.5.
+
+**Mesures.**
+| Rang | Tests verts (outillage) | Tests rouges | Tests non exécutés |
+|---|---|---|---|
+| Courant (−1) | 6 | 0 | 433 |
+| `RANG_COURANT=0` | 6 | 80 (UT-SOC-01 à 46, CT-DEPOT-01 à 07 sur Dexie seulement, UT-US-022-48 et 49) | les autres |
+| `RANG_COURANT=13` | 6 | 433 (tous les autres) | 0 |
+
+Le périmètre au rang 0 est celui que tu avais compris.
+
+**Travail sur ta branche.** Lance `RANG_COURANT=0 pnpm test`. La PR qui livre un rang passe `rangCourant` à n ; ses tests deviennent alors obligatoires.
+
+**Contrôles toujours exécutés.** UT-OUT-04 vérifie que chaque identifiant de test a un rang. Un test ou un fichier nouveau sans rang fait donc échouer `pnpm test`. Tu n'as pas à écrire `selection-tests.mjs` ; `verifier-rangs.ts` reste limité aux scénarios.
+
+**Commande du socle.** La commande de `ST-socle-ecriture.md` §13 est remplacée par `RANG_COURANT=0 pnpm test`.
+
+**Remise en conformité de `main`** (constat de Jarvis, `conventions.md` §13.1).
+- **Pourquoi les tests restent sur `main`** : les retirer créerait, après la création de la branche de lot, des suppressions qui l'emporteraient à la fusion de l'E17.
+- **Comment `main` redevient verte** : par la sélection. Avec `rangCourant = -1`, seuls les 6 tests d'outillage s'exécutent, et ils sont verts.
+- **Ordre proposé à Jarvis** :
+  1. Commiter sur `main` le présent jeu de modifications. C'est la dernière poussée directe de code ; `main` n'est pas encore protégée (DEC-029).
+  2. Créer `lot/LOT-001` depuis ce commit.
+  3. Créer `us/SOCLE-ecriture` depuis `lot/LOT-001`.
+- **Ensuite** : plus aucun code n'est poussé sur `main` avant l'E17.
+- **Starck** : ce point ne touche que l'outillage de test et l'ordre des branches, pas l'architecture. Je ne l'ai pas consulté. Le contenu de la CI suit la réponse à Q-4.
+
+### Q-BEN-LOT001-3 — Squelettes, orphelins, couverture : **proposition retenue, sur une seule source**
+
+**Source unique : `tests/support/rangs/rangs-fichiers.json`.** Je l'ai rempli pour les 159 fichiers de `src/`, à partir des tableaux « Fichiers » des ST. Chaque fichier a deux rangs :
+- `debut` : son rang de création ;
+- `fin` : le dernier rang qui y remplace un squelette. Par exemple, `DepotLocalDexie` a `debut` 0 et `fin` 3, et `CycleSynchronisation` a `debut` et `fin` à 3.
+
+**Trois règles, toutes pilotées par ce fichier.**
+- **(a) Squelettes.** Un fichier de `fin ≤ rangCourant` n'importe plus `@non-implemente`. Le contrôle UT-OUT-06 est livré.
+- **(b) Orphelins.** Les fichiers de `debut > rangCourant` sont exemptés de la règle « aucun orphelin ». C'est à toi de l'ajouter dans `.dependency-cruiser.cjs` au rang 0, en lisant le JSON.
+- **(c) Couverture.** `coverage.include` ne retient que les fichiers de `debut ≤ rangCourant`. C'est déjà dans `vitest.config.ts`.
+
+**Fin de vie de l'alias.** L'alias `@non-implemente` est retiré à la fin du lot.
+
+**Contrôle d'exhaustivité.** UT-OUT-05 vérifie que tout fichier de `src/` figure dans le JSON. Si tu crées un fichier non prévu, demande-moi son rang.
+
+### Q-BEN-LOT001-4 — Portée de la CI au rang 0 : **proposition retenue** (`conventions.md` §14.1)
+
+**Au rang 0** : tous les contrôles du §14.1, Semgrep et license-checker compris, à deux exceptions près.
+- **Le job `ihm` et le bout en bout** arrivent au rang 12.
+- **Stryker et `hebdomadaire.yml`** arrivent à la fin du lot, comme indicateur non bloquant.
+
+**Précisions.**
+- `verifier:catalogue` est livré au rang 0, avec un test qui prouve qu'il échoue sur un code manquant.
+- La liste de Starck (A5) est un sous-ensemble de celle-ci.
+- Transmets à Jarvis les noms exacts des jobs requis.
+- Le job `tests` exécute `pnpm test` sans `RANG_COURANT`.
+
+### Q-BEN-LOT001-5 — Frontière entre les rangs 0 et 1 : **tes trois propositions sont retenues**
+1. **Base technique** : rang 1 (`ST-US-022.md` §3.2 n° 28 fait foi). La ligne du rang 0 de `LOT-001.md` est corrigée.
+2. **`reprise.ts`** : au rang 0, les constantes et `delaiAvantTentative` (UT-US-022-49 est au rang 0 dans `rangs-tests.json`) ; au rang 1, `executerAvecReprise`. Voir ST-US-022 §3.2 n° 38.
+3. **`web.ts` au rang 0** : une fonction d'assemblage paramétrée par `nomBase`, non branchée et exclue de la couverture (ST-US-022 §3.1 S10).
+
+### Q-BEN-LOT001-6 — pnpm : **10.28.0 conservée**
+Une montée majeure passera par Dependabot (`conventions.md` §3.1).
+
+### Q-BEN-LOT001-7 — Environnement DOM : **jsdom retenu**
+`jsdom` est activé seulement pour `tests/unitaires/**/presentation/ui/**`, par un projet Vitest dédié. On y ajoute `@testing-library/user-event` (`conventions.md` §3.1, §11.12). La sélection par rang s'applique aussi à ce projet.
+
+### Q-BEN-LOT001-8 — Contrat `FournisseurAuth` : **livré**
+- **Suite** : `tests/contrats/fournisseur-auth.contrat.ts`, qui contient CT-AUTH-01 à 09 (rang 1) et la fonction exportée `suiteContratFournisseurAuth(nom, fixture)`.
+- **Ce qu'elle couvre** :
+  - connexion accordée ;
+  - fenêtre fermée, sans repli ;
+  - `drive.file` refusée ;
+  - `login_hint` absent (`ErreurProgrammation` en rejet) ;
+  - redirection d'ouverture, puis retour accepté avec la reprise restituée ;
+  - retour sans départ ;
+  - accès retiré ;
+  - autre compte ;
+  - panne technique de GIS, avec une seule redirection interactive, refusée si une saisie est en cours.
+- **Exécution** : elle s'exécute sur le squelette `tests/doublures/faux-fournisseur-auth.ts`, dont l'API de pilotage est documentée. Tu l'exécutes aussi sur `FournisseurAuthWeb`, avec une passerelle GIS et une navigation doublées. ST-US-022 §13 et §14 sont à jour.
+- **État** : 9 tests rouges, qui échouent tous parce que le code n'est pas implémenté.
+
+### Q-BEN-LOT001-9 — Incohérences de documentation : **toutes alignées**
+1. **Versions de la base Dexie.** `ST-US-017.md` §5.1 fait foi : version 2 à l'incrément 1, version 3 à l'incrément 2, version 4 à l'incrément 4. `ST-socle-ecriture.md` §5.2 et `ST-US-017.md` §3.2 n° 32 sont corrigés.
+2. **Doublure du dépôt.** `conventions.md` §11.10 reconnaît désormais `DepotLocalEnMemoire` (rang 3), qui ne remplace pas l'adaptateur réel dans les tests existants.
+3. **`deploiement.yml`.** Il arrive au rang 12, avec le service worker et le job `ihm` (`conventions.md` §14.3 corrigé).
+
+### Q-BEN-LOT001-10 — Valeurs OAuth : **rien à changer dans la conception**
+Ta proposition est conforme à `conventions.md` §9.1 :
+- `.env.example` contient des valeurs fictives ;
+- les vraies valeurs sont transmises par Jarvis ou par le commanditaire, hors dépôt, dans `.env.local` ;
+- l'origine de recette attend la réponse à Q-ANT26 (rang 12).
+
+Je signale le besoin à Jarvis dans mon compte rendu.

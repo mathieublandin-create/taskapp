@@ -78,7 +78,7 @@
 | S7 | `tests/support/banc/banc-synchro.ts`, `appareil-simule.ts` | Test | Compléter | Banc à deux appareils (§12.3) |
 | S8 | `package.json`, `.npmrc`, `.nvmrc`, `.dependency-cruiser.cjs`, `cucumber.mjs`, `.prettierrc`, `.github/workflows/ci.yml`, `.github/dependabot.yml`, `.github/pull_request_template.md`, `.env.example`, `.gitignore` (complété, §9.1 des conventions) | Outillage | Créer ou modifier | `conventions.md` §3, §9.1, §11.8, §13, §14 |
 | S9 | `scripts/verifier-catalogue.ts`, `verifier-tags.ts`, `verifier-rangs.ts`, `verifier-depot.ts`, `selection-scenarios.mjs`, `verifier-etapes-inutilisees.mjs` ; `tests/support/rangs-scenarios.json` | Outillage | Créer | Contrôles de CI (`conventions.md` §8.5, §11.8, §11.13, §9.1) ; le fichier des rangs reprend la liste nominative de `LOT-001.md` |
-| S10 | `src/composition/web.ts`, `src/main.tsx`, `index.html`, `vite.config.ts` | Composition | Créer | Assemblage (complété à chaque rang) ; `index.html` porte `<meta name="referrer" content="no-referrer">` et la CSP (RED-07) |
+| S10 | `src/composition/web.ts`, `src/main.tsx`, `index.html`, `vite.config.ts` | Composition | Créer | Assemblage (complété à chaque rang) ; `index.html` porte `<meta name="referrer" content="no-referrer">` et la CSP (RED-07) ; **au rang 0 (Q-BEN-LOT001-5)** : `web.ts` n'est qu'une fonction d'assemblage du socle paramétrée par `nomBase`, non branchée sur `main.tsx`, exclue de la couverture (§12 des conventions) ; la base technique (§3.2 n° 28) et le branchement de `main.tsx` arrivent au rang 1 |
 
 **Condition de l'E13 du rang 0 (RL-LOT-001-A5, Starck)** : dépendances installées et figées dans `pnpm-lock.yaml` (`@cucumber/cucumber`, `msw`, `@playwright/test`, `dependency-cruiser`, `react`, `react-dom`, `@ionic/react`, `vite-plugin-pwa`, `dexie`, `zod`, `fake-indexeddb`, `fast-check`) ; workflow `.github/workflows/ci.yml` avec les jobs lint (ESLint, Prettier), types (`tsc`), Vitest, `cucumber-js --strict` restreint au rang courant (`selection-scenarios.mjs`), dependency-cruiser, gitleaks et osv-scanner, tous bloquants ; après le premier passage vert, Anthony demande à Jarvis d'activer la protection de `main` (DEC-029).
 
@@ -128,7 +128,7 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 35 | `src/compte/presentation/modeles-de-vue/confirmations-compte.ts` | Modèle de vue | Créer | `CNF-DECONNEXION`, `CNF-SUPPR-DONNEES`, `CNF-SUPPR-DONNEES-PERTE` | 18, 19 |
 | 36 | `src/compte/index.ts` | Interface publique | Créer | Types et cas d'usage nécessaires à la composition et aux autres contextes : `EtatAcces`, `Identite`, `IdCompte`, `SessionCourante` (type), `SignalerRefusJeton` | — |
 | 37 | `src/infrastructure-google/client-google.ts` | Infrastructure | Créer | `ClientGoogle` : `fetch`, en-tête `Authorization`, traduction des erreurs (`traduireReponse`), en-tête `Date` | 7 |
-| 38 | `src/infrastructure-google/reprise.ts` | Infrastructure | Créer | Constantes et `delaiAvantTentative` (DAT §4.4.5), `executerAvecReprise` | commun |
+| 38 | `src/infrastructure-google/reprise.ts` | Infrastructure | Créer | **Rang 0** : constantes et `delaiAvantTentative` (DAT §4.4.5, UT-US-022-49) ; **rang 1** : `executerAvecReprise` (Q-BEN-LOT001-5) | commun |
 | 39 | `src/synchronisation/application/ports/transport-synchro.ts` | Application | Créer | Port `TransportSynchro`, **méthode `preparerDossier` seulement à ce rang** (le reste : ST-US-017) | — |
 | 40 | `src/synchronisation/application/ports/acces-google.ts` | Application | Créer | Port `AccesGoogle` (vue de l'accès par la synchronisation) | — |
 | 41 | `src/synchronisation/application/ports/suivi-cycle.ts` | Application | Créer | Port `SuiviCycle` ; constante `SUIVI_CYCLE_AU_REPOS` utilisée par la composition jusqu'au rang 3 | — |
@@ -875,6 +875,8 @@ Bilan : **60 cas** (UT-US-022-01 à 50, dont des cas multiples pour 12, 20, 24, 
 
 **Compléments de la v0.3 (E11, 2026-10-28)** : UT-US-022-35 attend `redirectionPermise: true` ; UT-US-022-54 complété (toast) ; UT-US-022-56 à 61 ajoutés ; squelettes `avis-onglets.ts`, `gestion-espaces-indexeddb.ts`, `racine.ts`, `retour-reprise.ts`, `DELAI_MAX_ATTENTE_REDIRECTION`, `DELAI_SUPPRESSION_BLOQUEE`, `SupprimerDonneesAppareil.reessayer` / `fermerApresBlocage`, `OuvrirApplication.abandonnerAttenteGoogle`, `DepotLocalDexie.fermer` et `surFermetureImposee`. Bilan : **80 cas**, tous en échec « NI ».
 
+**Compléments de la v0.3, suite (Q-BEN-LOT001-8)** : suite de contrat `tests/contrats/fournisseur-auth.contrat.ts` (CT-AUTH-01 : connexion accordée ; 02 : fenêtre fermée, sans repli ; 03 : `drive.file` refusée ; 04 : mode autre que `CONNEXION` sans `login_hint` → `ErreurProgrammation` en rejet ; 05 : redirection d'ouverture puis retour accepté, reprise restituée ; 06 : retour sans départ → `SANS_DEPART` ; 07 : accès retiré → `AccesGoogleRevoque`, sans repli ; 08 : autre compte → `CompteDifferent` ; 09 : panne technique de GIS → une redirection interactive `REPLI_GESTE`, refusée si une saisie est en cours) et squelette `FauxFournisseurAuth`. 9 cas, rang 1, en échec « NI ».
+
 Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/presentation tests/unitaires/synchronisation/application/preparation-dossier-drive.test.ts tests/unitaires/infrastructure-google tests/unitaires/commun/infrastructure tests/integration/synchronisation/depot-local-dexie-espace.test.ts`.
 
 ## 14. Tests attendus de Benjamin
@@ -884,7 +886,7 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 | Intégration | `GestionEspacesIndexedDb` : création, `existeUnEspace`, suppression sans toucher un autre espace | 3 cas (en plus d'UT-US-022-60 et 61) |
 | Intégration | Base technique : `versionchange` sans réouverture, deux connexions | 1 cas |
 | Intégration | `AvisOngletsBroadcast` : non reçu par l'émetteur, reçu par une autre instance | 1 cas |
-| Contrat | `FournisseurAuth` : `FauxFournisseurAuth` et `FournisseurAuthWeb` (GIS et navigation doublés) | Suite `tests/contrats/fournisseur-auth.contrat.ts` (écrite par Anthony au rang 1, E12 avant la revue) |
+| Contrat | `FournisseurAuth` : `FauxFournisseurAuth` et `FournisseurAuthWeb` (GIS et navigation doublés) | Suite `tests/contrats/fournisseur-auth.contrat.ts`, **livrée par Anthony en E11** (CT-AUTH-01 à 09, rang 1, Q-BEN-LOT001-8) : exécutée sur `FauxFournisseurAuth` (squelette `tests/doublures/faux-fournisseur-auth.ts`) ; Benjamin l'exécute aussi sur `FournisseurAuthWeb` par la fonction exportée `suiteContratFournisseurAuth(nom, fixture)` |
 | Unitaires | `FournisseurAuthWeb` : repli par redirection **interactive** pour chaque erreur technique de GIS (URL sans `prompt`), une seule navigation par geste, aucun repli sur `popup_closed` ni `access_denied`, web-ios sans GIS, `redirectionPermise` faux → aucune navigation | Un test par code |
 | Bout en bout | Au premier rendu, `location.hash` est vide (RED-02) | Playwright, rang 12 (service worker) |
 

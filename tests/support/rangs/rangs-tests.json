@@ -1,0 +1,89 @@
+{
+  "commentaire": "conventions.md §11.14. Première règle qui s'applique. Rangs : LOT-001.md, « Ordre de réalisation ». Tenu par Anthony.",
+  "regles": [
+    {
+      "motif": "UT-OUT-\\d+",
+      "rang": -1
+    },
+    {
+      "motif": "DepotLocalEnMemoire.*CT-DEPOT-\\d+",
+      "rang": 3
+    },
+    {
+      "motif": "CT-DEPOT-(?:0[1-7])\\b",
+      "rang": 0
+    },
+    {
+      "motif": "CT-DEPOT-(?:0[89]|1[01])\\b",
+      "rang": 3
+    },
+    {
+      "motif": "UT-SOC-\\d+",
+      "rang": 0
+    },
+    {
+      "motif": "UT-US-022-(?:48|49)\\b",
+      "rang": 0
+    },
+    {
+      "motif": "UT-US-022-\\d+",
+      "rang": 1
+    },
+    {
+      "motif": "CT-AUTH-\\d+",
+      "rang": 1
+    },
+    {
+      "motif": "UT-US-001-\\d+",
+      "rang": 2
+    },
+    {
+      "motif": "UT-US-017-(?:0[1-9]|[12]\\d|3[0-9])\\b",
+      "rang": 3
+    },
+    {
+      "motif": "CT-TRANS-\\d+",
+      "rang": 3
+    },
+    {
+      "motif": "UT-US-023-\\d+",
+      "rang": 4
+    },
+    {
+      "motif": "UT-US-002-\\d+",
+      "rang": 5
+    },
+    {
+      "motif": "UT-US-024-\\d+",
+      "rang": 6
+    },
+    {
+      "motif": "UT-US-003-\\d+",
+      "rang": 7
+    },
+    {
+      "motif": "UT-US-025-\\d+",
+      "rang": 8
+    },
+    {
+      "motif": "UT-US-017-(?:4\\d|5\\d)\\b",
+      "rang": 9
+    },
+    {
+      "motif": "UT-US-017-(?:6\\d|7[0-4])\\b",
+      "rang": 10
+    },
+    {
+      "motif": "UT-US-017-(?:7[5-9]|8\\d)\\b",
+      "rang": 11
+    },
+    {
+      "motif": "UT-US-018-\\d+",
+      "rang": 12
+    },
+    {
+      "motif": "(?:UT-US-031|CT-VER)-\\d+",
+      "rang": 13
+    }
+  ]
+}

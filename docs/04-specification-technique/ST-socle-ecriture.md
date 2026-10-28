@@ -461,7 +461,7 @@ Taille cible (ENF-T-05) : 5 000 tâches, environ 40 000 registres et 50 000 entr
 |---|---|---|---|---|---|
 | Base Dexie 1 | — → 1 | Création des tables | Aucune (rien n'est publié) | Sans objet | UT-SOC-35 |
 
-L'incrément 2 d'US-017 ajoutera la version 2 de la base (tables `valeursEcartees` et `lectures`) : ajout pur, sans transformation de données.
+Versions suivantes de la base (ST-US-017 §5.1, qui fait foi ; Q-BEN-LOT001-9) : version 2 à l'incrément 1 (méta étendue, aucune table), version 3 à l'incrément 2 (tables `valeursEcartees` et `lectures`), version 4 à l'incrément 4 (table `registresInconnus`) : ajouts purs, sans transformation de données.
 
 ### 5.3 Contenu logique du fichier d'appareil dans le Drive, schéma 1
 **Hypothèse retenue (DAT §4.2, §4.2.1, §4.2.2, §6.1)** : un dossier visible `Done Juan/` (portée `drive.file`), un fichier `<appareilId>.etat.json.gz` par appareil, **directement dans le dossier** (sans sous-dossier, reconnu par ses `appProperties` : DAT v0.11.4 §4.2, RL-LOT-001-A2), écrit par lui seul, et un `manifeste.json`. Avec un client OAuth Web unique (ADR-013), R1 est sans objet (DAT v0.11 §10.1). **En repli seulement** (`conventions.md` §19), si le test R1 échouait (fichiers d'un client invisibles de l'autre), le repli `drive.appdata` (arbitrage A6 à rouvrir) changerait l'emplacement et la visibilité, **pas** le contenu logique ci-dessous. La sérialisation physique (compression, table d'appareils, schéma Zod `v1.ts`, empreinte) est spécifiée par ST-US-017, incrément 1.
@@ -743,7 +743,7 @@ Suites de contrat : `DepotLocal` → `tests/contrats/depot-local.contrat.ts` (é
 - `Resultat`, `succes`, `echec`, `Marque`, `assertNever`, `ErreurProgrammation`, `FUSEAU_REFERENCE`, `COMPTEUR_HLC_MAX`, `CONTEXTE_VIDE`, `PAS_DUREE_MINUTES` sont livrés complets (types fondateurs et constantes).
 - Support de test livré par Anthony : `tests/support/valeurs.ts`, `fabriques/etat-local.ts`, `environnement.ts`, `modifications.ts`, `plans.ts`, `fast-check.ts` (graine `FC_SEED`, défaut 20261022).
 Cas temporels couverts : minuit de Paris, PT-16 (hiver et été), fin d'année, année bissextile.
-Commande : `pnpm test -- tests/unitaires/commun tests/unitaires/synchronisation tests/integration/synchronisation tests/contrats/depot-local.contrat.ts`.
+Commande (v0.3, Q-BEN-LOT001-2) : `RANG_COURANT=0 pnpm test` ; la sélection par rang (`conventions.md` §11.14) exécute UT-SOC-01 à 46, CT-DEPOT-01 à 07 sur `DepotLocalDexie` seulement, UT-US-022-48 et 49, et les tests d'outillage. Les autres tests des mêmes fichiers appartiennent à des rangs ultérieurs.
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère de suffisance |

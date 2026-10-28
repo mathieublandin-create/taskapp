@@ -1,0 +1,641 @@
+{
+  "commentaire": "conventions.md §11.14 : debut = rang de création, fin = dernier rang qui y remplace un squelette. Tenu par Anthony ; tout fichier de src/ y figure (contrôle de CI).",
+  "fichiers": {
+    "src/commun/application/ports/etat-reseau.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/application/ports/generateur-identifiants.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/application/ports/horloge.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/application/ports/journal-technique.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/application/ports/planificateur.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/application/ports/source-aleatoire.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/assert-never.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/duree.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/erreur-programmation.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/identifiants.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/marque.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/resultat.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/date-calendaire.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/ecart-temps.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/fuseau-reference.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/fuseau.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/instant.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/domaine/temps/jour-de-reference.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/generateur-uuid-v7.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/horloge-systeme.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/journal-technique-local.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/presentation/format/date.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/format/duree.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/commun/presentation/messages/codes.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/messages/libelle.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/compte/application/cas-usage/ouvrir-application.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/cas-usage/reprendre-session.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/cas-usage/se-connecter.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/cas-usage/se-deconnecter.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/cas-usage/signaler-refus-jeton.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/cas-usage/supprimer-donnees-appareil.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/evaluation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/avis-onglets.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/coffre-jetons.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/depot-avant-sortie.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/fournisseur-auth.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/garde-saisie.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/gestion-espaces.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/memoire-redirection.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/memoire-session.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/ports/preparation-stockage.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/session-courante.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/domaine/acces.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/domaine/identite.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/domaine/motif-connexion.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/domaine/ouverture.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/domaine/portees.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/retour-redirection.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/strategie-geste.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/url-autorisation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/verification-retour.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/coffre-jetons-memoire.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/espaces/gestion-espaces-indexeddb.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/espaces/nom-espace.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/modeles-de-vue/ecran-connexion.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/modeles-de-vue/racine.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/modeles-de-vue/retour-reprise.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/modeles-de-vue/section-compte.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/infrastructure-google/client-google.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/infrastructure-google/reprise.ts": {
+      "debut": 0,
+      "fin": 1
+    },
+    "src/objectifs-taches/application/cas-usage/abandonner-tache.ts": {
+      "debut": 8,
+      "fin": 8
+    },
+    "src/objectifs-taches/application/cas-usage/creer-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/cas-usage/creer-sous-objectif.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/application/cas-usage/creer-sous-tache.ts": {
+      "debut": 6,
+      "fin": 6
+    },
+    "src/objectifs-taches/application/cas-usage/creer-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/application/cas-usage/modifier-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/cas-usage/modifier-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/application/cas-usage/placer-objectif.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/application/cas-usage/rattacher-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/application/cas-usage/reprendre-tache.ts": {
+      "debut": 8,
+      "fin": 8
+    },
+    "src/objectifs-taches/application/cas-usage/rouvrir-tache.ts": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/application/cas-usage/supprimer-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/cas-usage/supprimer-tache.ts": {
+      "debut": 5,
+      "fin": 6
+    },
+    "src/objectifs-taches/application/cas-usage/terminer-tache.ts": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/application/requetes/consulter-detail-objectif.ts": {
+      "debut": 2,
+      "fin": 5
+    },
+    "src/objectifs-taches/application/requetes/consulter-detail-tache.ts": {
+      "debut": 5,
+      "fin": 6
+    },
+    "src/objectifs-taches/application/requetes/consulter-historique.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/requetes/consulter-objectifs.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/requetes/consulter-selecteur-parent.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/application/requetes/consulter-taches.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/application/requetes/lecture-courante.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/application/requetes/resumes.ts": {
+      "debut": 2,
+      "fin": 6
+    },
+    "src/objectifs-taches/domaine/actions.ts": {
+      "debut": 2,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/alertes-delai.ts": {
+      "debut": 4,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/confirmation.ts": {
+      "debut": 2,
+      "fin": 8
+    },
+    "src/objectifs-taches/domaine/decisions/abandonner-tache.ts": {
+      "debut": 8,
+      "fin": 8
+    },
+    "src/objectifs-taches/domaine/decisions/creer-objectif.ts": {
+      "debut": 2,
+      "fin": 4
+    },
+    "src/objectifs-taches/domaine/decisions/creer-sous-tache.ts": {
+      "debut": 6,
+      "fin": 6
+    },
+    "src/objectifs-taches/domaine/decisions/creer-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/decisions/modifier-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/domaine/decisions/modifier-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/decisions/placer-objectif.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/domaine/decisions/rattacher-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/decisions/reprendre-tache.ts": {
+      "debut": 8,
+      "fin": 8
+    },
+    "src/objectifs-taches/domaine/decisions/rouvrir-tache.ts": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/domaine/decisions/supprimer-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/domaine/decisions/supprimer-tache.ts": {
+      "debut": 5,
+      "fin": 6
+    },
+    "src/objectifs-taches/domaine/decisions/terminer-tache.ts": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/domaine/description.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/domaine/estimation.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/etat-journal.ts": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/domaine/etat-objectif.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/domaine/hierarchie-objectifs.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/domaine/incoherence.ts": {
+      "debut": 6,
+      "fin": 6
+    },
+    "src/objectifs-taches/domaine/intitule.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/domaine/refus.ts": {
+      "debut": 2,
+      "fin": 7
+    },
+    "src/objectifs-taches/domaine/retard.ts": {
+      "debut": 2,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/saisie-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/domaine/vue-metier.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/confirmation.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/detail-objectif.ts": {
+      "debut": 2,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts": {
+      "debut": 6,
+      "fin": 8
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/formulaire-sous-tache.ts": {
+      "debut": 6,
+      "fin": 6
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/formulaire-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/ligne-objectif.ts": {
+      "debut": 2,
+      "fin": 4
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/ligne-tache.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/liste-objectifs.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/liste-taches.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/messages-de-refus.ts": {
+      "debut": 2,
+      "fin": 4
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/ordre-reference.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/selecteur-parent.ts": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/presentation/modeles-de-vue/vues-exposees.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/synchronisation/application/cycle-synchronisation.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/application/ports/acces-google.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/application/ports/depot-local.ts": {
+      "debut": 0,
+      "fin": 3
+    },
+    "src/synchronisation/application/ports/suivi-cycle.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/application/ports/transport-synchro.ts": {
+      "debut": 1,
+      "fin": 3
+    },
+    "src/synchronisation/application/preparation-dossier-drive.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/application/service-etat-local-transactionnel.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/application/service-etat-local.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/contenu-fichier.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/domaine/contexte-causal.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/depot.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/domaine/ecriture.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/etat-local.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/etat-metier.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/evenement-journal.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/fusion.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/domaine/hlc.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/identifiant-evenement.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/index-en-attente.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/information.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/meta-synchronisation.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/domaine/modification.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/parametres-synchronisation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/domaine/pierre-tombale.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/planifier-ecritures.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/projection.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/synchronisation/domaine/version-schema.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/index.ts": {
+      "debut": 0,
+      "fin": 1
+    },
+    "src/synchronisation/infrastructure/depot-local-dexie.ts": {
+      "debut": 0,
+      "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/compression.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/format-v1.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/serialisation-canonique.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/modeles-de-vue/etat-synchronisation-affichable.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/modeles-de-vue/mention-attente.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/presentation/modeles-de-vue/ordre-feuille.ts": {
+      "debut": 3,
+      "fin": 3
+    }
+  }
+}
