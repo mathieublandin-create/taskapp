@@ -72,3 +72,23 @@ La conception est conforme à l'architecture sur l'essentiel :
   - créer l'entrée de dette de l'archivage.
 - **Steeve** : un code de message pour la suppression bloquée par une autre fenêtre (A1, point 3).
 - **Starck** : je vérifie la correction d'A1 dès qu'elle est livrée. Je lève alors la réserve sans nouvelle cérémonie.
+
+## 6. Réponse d'Anthony (2026-10-28)
+
+Versions produites : ST-US-022 v0.3, ST-US-017 v0.3, ST-US-031 v0.3, ST-socle-ecriture v0.3, `conventions.md` v0.4.2, registre de dette v0.4. Types, lint et formatage au vert ; 424 tests en échec « non implémenté » (phase rouge), dont 16 ajoutés pour cette revue.
+
+| # | Réponse | Où |
+|---|---|---|
+| **A1** | **Corrigée, à vérifier par Starck.** (1) `versionchange` : `DepotLocalDexie` et la base technique ferment la connexion par `close({ disableAutoOpen: true })`, sans aucune réouverture automatique, puis appellent `surFermetureImposee`. Ensuite, toute méthode rend `EspaceLocalNonOuvert`. La composition arrête la coordination et le cycle, puis recharge la page. Une montée de version est traitée de la même façon. (2) Ordre imposé. Suppression : `memoireSession.effacer → avis.diffuser('SESSION_FERMEE') → espaces.supprimer → fournisseur.oublier → session.fermer`. Déconnexion : `oublier → effacer → diffuser → fermer`. Le port `AvisOnglets` et son adaptateur `BroadcastChannel` passent du rang 13 au rang 1. (3) Suppression bloquée au-delà de 5 s : `SuppressionBloquee` → `SUPPRESSION_BLOQUEE` → `ERR-017` (guide v0.2.15), avec « Réessayer » (`reessayer`, sans nouvelle confirmation) et « Fermer » (`fermerApresBlocage`). **Point à connaître** : IndexedDB ne permet pas d'annuler une demande `deleteDatabase` en attente. Une fois la confirmation donnée, la suppression aboutit dès que l'autre fenêtre ferme l'espace. Comme la session mémorisée est déjà effacée, une ouverture ultérieure ne rouvre pas l'espace. « Fermer » ramène donc cet onglet à l'écran de connexion. Je l'ai signalé à Steeve, car son texte d'`ERR-017` (« la session reste ouverte, vos données n'ont pas été supprimées ») ne peut pas être tenu tel quel. (4) Tests : UT-US-022-56 (ordre des appels pour la déconnexion et la suppression), UT-US-022-57 (bloquée, réessayer, fermer), UT-US-022-60 (intégration `fake-indexeddb`, deux connexions : fermeture sans réouverture, base non recréée) et UT-US-022-61 (connexion qui ne se ferme pas : `SuppressionBloquee` après 5 s, puis la suppression aboutit à sa fermeture). | ST-US-022 §3.2 n° 10 b, §4.3, §5.2, §6.5, §6.6, §6.11, §8 n° 7 d, §13 ; ST-US-031 §6.4 ; ST-socle §4.4 |
+| A2 | Corrigée : les fichiers d'appareil sont à la racine du dossier, reconnus par leurs `appProperties`. | ST-socle §5.3, ST-US-022 §6.6, ST-US-017 §6.3 |
+| A3 | Corrigée. (a) Le jeton de départ est obtenu avant l'inventaire. (b) Un jeton refusé rend `JetonChangementsInvalide`, nouvelle variante d'`ErreurTransport`. Le jeton est alors oublié et un inventaire complet est fait dans le même cycle, sans tentative comptée. Tests : CT-TRANS-09 et 10, UT-US-017-32. Ajouts au `FauxDrive` : `pendantLeProchainInventaire` et `invaliderJetons`. | ST-US-017 §4.3, §6.3, §13.1 |
+| A4 | Corrigée : RED-04 est réécrit (base technique IndexedDB, écriture confirmée avant la navigation, lecture destructive, reprise sans contenu métier) et la dérogation `sessionStorage` est retirée. | `conventions.md` v0.4.2 |
+| A5 | Acceptée. C'est une condition explicite de l'E13 du rang 0 : liste des dépendances figées, jobs de CI bloquants, puis demande de protection de `main` à Jarvis. | ST-US-022 §3.1 |
+| A6 | Corrigée : l'absence de `navigator.locks` est journalisée en `erreur`. L'hypothèse H-031-1 est inscrite. | ST-US-031 §4, §8, §13, §16 |
+| A7 | Corrigée : la mesure est prise par l'observateur `ObservateurEchangesGoogle` de `ClientGoogle`, pour toutes les réponses Google. Aucun changement de port. | ST-US-017 §6.8 |
+| A8 | Close (corrigée par Starck). | — |
+| A9 | Corrigée : la mention de l'archivage est retirée des ST et l'entrée **DT-002** est créée (Conception, P3, conditions et déclencheur fixés par Starck). | ST-US-022 §6.6, ST-US-017 §6.3, `dette-technique.md` |
+| Q-ST022-STA-4 | Réponse a) prise en compte. Le §6.3 est inchangé. | ST-US-022 §16 |
+| Q-ST017-STA-3 | Réponse intégrée (DT-002). | ST-US-017 §16 |
+
+**Reste ouvert** : la levée d'A1 par Starck.

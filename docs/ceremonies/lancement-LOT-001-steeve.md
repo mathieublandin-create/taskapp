@@ -44,3 +44,21 @@ Quand une saisie en cours empêche le repli par redirection (`RedirectionNonPerm
 - `docs/02-ux/guide-ergonomie.md` v0.2.14 : `TST-SAISIE-A-TERMINER`, `EVD-OBJECTIFS-TOUS-ATTEINTS`, §5.8 (f) et (g), ligne du §6.6.11.
 - `docs/02-ux/maquettes/ECR-003-detail-objectif.html` : dans le cadre « Cible, tous lots » (objectif vide, sous-objectif de « Remise en forme »), le bouton « Ajouter un sous-objectif » contredisait RG-022 (un seul niveau) et la légende ; il est remplacé par la mention déjà présente dans la maquette LOT-001. Le périmètre de LOT-001 n'était pas touché.
 - `docs/04-specification-technique/ST-US-022.md` : seule la ligne de réponse à Q-ST022-STE-4 a été ajoutée au §16.
+
+## 6. Réponse d'Anthony (2026-10-28)
+
+| # | Réponse | Où |
+|---|---|---|
+| S1 | Corrigée : `etatVide` accepte `EVD-OBJECTIFS-TOUS-ATTEINTS`, produit quand `lignes` est vide et que la section des atteints est présente. Test ajouté à UT-US-001-30. | ST-US-001 §4.5, §6.6, §13 |
+| S2 | Corrigée : la règle de rendu du §5.8 (g) est ajoutée au §6.6 et à la colonne « États » du §4.5. Le modèle de vue est inchangé. | ST-US-002 §4.5, §6.6 |
+| S3 | Corrigée : `comparerLignesFeuille` (la plus récente d'abord, à égalité l'intitulé, puis l'identifiant) sert aux modifications en attente (incrément 1) et aux informations à lire (incrément 2). Test UT-US-017-33. | ST-US-017 §4.5, §13.1 |
+| S4 | Corrigée : `nomAccessible` est ajouté à la ligne de sous-tâche, et `caseTerminer.nomAccessible` (« Terminer « {intitulé} » ») à sa case. Test ajouté à UT-US-024-16. | ST-US-024 §4.5, §13 |
+| S5 | Corrigée : `racine.ts` est créé (`ATTENTE_GOOGLE` → `SYN-REDIRECTION`, avec son nom accessible). Test UT-US-022-59. | ST-US-022 §4.5, §13 |
+| S6 | Corrigée. (1) `construireRetourReprise` produit `TST-SAISIE-A-TERMINER`, testé dans UT-US-022-54. (2) Avec l'accord de Starck (guide v0.2.15), l'écran d'attente dure au plus 10 s. Ensuite, `abandonnerAttenteGoogle` ouvre l'application sans jeton (`SYN-SESSION` avec `ERR-015`), sans nouvelle redirection. Test UT-US-022-58. DEC-038 confirme l'écran à chaque ouverture avec réseau. | ST-US-022 §6.2, §6.10, §8 n° 7 e, §13 |
+| S7 | Corrigée : la ligne « Stockage » est du texte simple avec `data-etat`, et la carte `ALR-015` est en `role="status"`, non fermable. Ajouté à UT-US-018-04, qui sera écrit en E10 au rang 12. | ST-US-018 §6, §13 |
+
+**Point soumis à Steeve, issu de RL-LOT-001-A1 et non bloquant pour l'E11, à trancher avant l'E12 du rang 1.** Pour `ERR-017`, le guide v0.2.15 indique « la session reste ouverte, aucune donnée touchée » et « Vos données n'ont pas été supprimées ». Or une demande de suppression IndexedDB en attente ne peut pas être annulée : elle aboutira dès que l'autre fenêtre se fermera. La conception retient donc le comportement suivant :
+- « Réessayer » attend de nouveau, au plus 5 s ;
+- « Fermer » ramène cet onglet à l'écran de connexion, car la session mémorisée est déjà effacée.
+
+Je propose ce texte : « La suppression se terminera dès que les autres fenêtres de Done Juan seront fermées. Fermez-les, puis réessayez. »

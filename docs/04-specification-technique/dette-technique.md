@@ -1,11 +1,12 @@
 # Registre de la dette technique
 
-> **Version 0.3 — 2026-10-22 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
+> **Version 0.4 — 2026-10-28 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
 
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Registre initialisé, vide. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001 : inscription de DT-001 (données locales non chiffrées au repos, DS-07, RG-043, DEC-015). |
+| 0.4 | 2026-10-28 | Anthony | E11 de LOT-001 : inscription de DT-002 (archivage des appareils inactifs hors du lot 1, Q-ST017-STA-3, RL-LOT-001-A9, DAT v0.11.4 §4.2). |
 | 0.3 | 2026-10-22 | Anthony | DT-001 alignée sur `conventions.md` v0.4 (DEC-034, ADR-013) : IndexedDB sur tous les appareils ; SQLite et SQLCipher renvoyés au repli. |
 
 ## Règles de tenue
@@ -43,6 +44,7 @@
 | Id | Date | Origine (US / RC / ANO) | Catégorie | Description | Localisation | Impact | Priorité | Plan de remboursement | Statut |
 |---|---|---|---|---|---|---|---|---|---|
 | DT-001 | 2026-10-21 | Constat (DAT v0.5 DS-07, §7.1 ; RG-043 ; DEC-015 ; DAT v0.11, ADR-013) | Sécurité | Les données locales (IndexedDB du profil du navigateur, sur le PC et sur le téléphone ; *repli* : SQLite sur Android) ne sont pas chiffrées au repos et restent sur l'appareil après une déconnexion. | `DepotLocalDexie` (contexte `synchronisation`, LOT-001) ; *repli* : `DepotLocalSqlite` | Lecture possible par une personne disposant du téléphone déverrouillé (profil Chrome) ou du même profil de navigateur sur PC ; sensibilité accrue avec les réponses de bilan (lot DEM-002) | P3 | Réévaluation avant la conception du lot DEM-002 (bilan du soir) et à toute évolution des données sensibles ; option de chiffrement applicatif par clé WebCrypto non extractible ; *repli* : SQLCipher sur Android (DAT §7.1) | Identifiée |
+| DT-002 | 2026-10-28 | Q-ST017-STA-3, RL-LOT-001-A9 (DAT v0.11.4 §4.2, §4.1.4) | Conception | L'archivage des fichiers d'appareil inactifs depuis plus de 90 jours (DAT §4.2) n'est pas réalisé au lot 1 : un fichier inactif (ancienne installation, espace supprimé puis recréé avec un nouvel `appareilId`) est fusionné comme les autres et reste dans le dossier `Done Juan/`. | `CycleSynchronisation` et `controlerDrive` (contexte `synchronisation`, ST-US-017 §6.3, §6.7) | Fichiers inactifs accumulés dans le Drive ; chacun relu une fois au premier inventaire de chaque appareil, puis jamais (inchangé) ; aucune perte, aucun effet fonctionnel au lot 1 | P3 | Conception propre (dérogation à « un seul écrivain par fichier ») avec Starck. Conditions fixées : n'archiver qu'un fichier non modifié depuis 90 jours **et** dont toutes les écritures sont connues du fichier de l'appareil qui archive (contexte causal). Déclencheur : plus de 10 fichiers d'appareil dans un dossier, ou le premier lot d'EPI-001 (plusieurs comptes), au plus tard | Identifiée |
 
 ## Gabarit de fiche détaillée
 

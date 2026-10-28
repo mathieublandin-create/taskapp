@@ -13,7 +13,7 @@
 | Résultats du test technique | M-PERSIST favorable (`persist()` accordé sans question à la PWA installée) ; M-DUR favorable (marqueur strict relu après arrêt forcé et redémarrage) ; hors ligne (étape 10) favorable |
 | Prérequis | Socle (rang 0 : écriture, durabilité stricte UT-SOC-44 à 46) ; ST-US-022 (rang 1 : ouverture hors ligne, bandeaux) ; ST-US-017 incrément 1 (rang 3 : cycle, `MEN-ATTENTE`, décompte) |
 | Questions | Q-ST018-STE-1 et Q-ST018-STA-1 **répondues** (2026-10-27) et intégrées ; aucune ouverte |
-| Version | 0.2 |
+| Version | 0.3 |
 | Statut | Conception arrêtée ; E10 avant l'E12 du rang 12 (§13) |
 | Auteur | Anthony |
 | Branche | `us/US-018-hors-ligne-smartphone` |
@@ -23,6 +23,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après M-RED, M-PERSIST, M-DUR). Le repli ADR-012 (SQLite, `@capacitor/network`, horloge native, APK) n'est pas réalisé. |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Steeve (Q-ST018-STE-1 : `SYN-FEUILLE-STOCKAGE`, `ALR-015`) et de Starck (Q-ST018-STA-1 a) : rattachement strict ; vérifications sur appareil réel en E14). Table `installation` de la base technique (ST-US-022 v0.2 §5.1). UT-US-018-04 précisé. |
+| 0.3 | 2026-10-28 | Anthony | E11, RL-LOT-001-S7 : accessibilité de la ligne « Stockage » et de la carte `ALR-015` (§6, UT-US-018-04) ; RL-A2 et S5 de Steeve sans effet ici. |
 
 ## 1. Résumé technique
 
@@ -90,7 +91,7 @@ Base technique (ST-US-022 v0.2 §5.1) : clé `persistanceDemandee` (booléen) da
 ## 6. Règles et algorithmes
 - **Service worker** : stratégie précache seule pour l'application ; aucune mise en cache d'une requête Google ; les navigations servent `index.html` du précache (le fragment n'atteint jamais le réseau ni le cache, RED-05). Une nouvelle version attend l'accord (« Mettre à jour ») ; elle n'interrompt jamais une saisie.
 - **RG-057** : la décision reste `construireBandeau` (ST-US-022 §6.9), seule fonction ; le rang 12 n'ajoute que les déclencheurs de recalcul et le masquage.
-- **Persistance** : `PERSISTANT` → `SYN-FEUILLE-STOCKAGE` `PROTEGE` ; `NON_PERSISTANT` ou `INDISPONIBLE` → `SYN-FEUILLE-STOCKAGE` `NON-PROTEGE` et carte `ALR-015`, **dans la feuille seulement** : aucun bandeau, aucun point sur l'indicateur, jamais de blocage ; la carte n'est pas fermable et disparaît quand le stockage devient protégé.
+- **Persistance** : `PERSISTANT` → `SYN-FEUILLE-STOCKAGE` `PROTEGE` ; `NON_PERSISTANT` ou `INDISPONIBLE` → `SYN-FEUILLE-STOCKAGE` `NON-PROTEGE` et carte `ALR-015`, **dans la feuille seulement** : aucun bandeau, aucun point sur l'indicateur, jamais de blocage ; la carte n'est pas fermable et disparaît quand le stockage devient protégé. **Accessibilité (RL-LOT-001-S7)** : la ligne « Stockage » est du texte simple (aucun contrôle), avec `data-etat` `PROTEGE` ou `NON-PROTEGE` ; la carte `ALR-015` est en `role="status"` (non urgent, jamais bloquant ; pas `alert`), non fermable.
 
 ## 7. Intégration Google
 Sans objet (aucune nouvelle requête).
@@ -144,7 +145,7 @@ Total : 30.
 | UT-US-018-01 | `DemanderPersistance` | premier lancement : `persist()` appelé une fois, demande notée ; lancements suivants : `persisted()` seulement |
 | UT-US-018-02 | idem | API absente → `INDISPONIBLE`, sans erreur |
 | UT-US-018-03 | `MasquerRappel24h` et `consulterEtatSynchronisation` | masqué jusqu'à une nouvelle instance ; non remis à zéro par un retour au premier plan |
-| UT-US-018-04 | `construireFeuilleSynchronisation` | `SYN-FEUILLE-STOCKAGE` toujours présente (`PROTEGE` / `NON-PROTEGE`) ; `ALR-015` seulement si non protégé ; indicateur et bandeau inchangés |
+| UT-US-018-04 | `construireFeuilleSynchronisation` | `SYN-FEUILLE-STOCKAGE` toujours présente (`PROTEGE` / `NON-PROTEGE`) ; `ALR-015` seulement si non protégé, avec `role: 'status'` et `fermable: false` ; ligne sans action, `data-etat` observable (RL-S7) ; indicateur et bandeau inchangés |
 | UT-US-018-05 | Configuration du service worker (`vite.config.ts`, fonction pure `optionsPwa(env)`) | `navigateFallback` sous `VITE_BASE_PATH`, exclusion des pages publiques, nom de recette distinct |
 RG-057 est déjà couverte par UT-US-022-46 et 47.
 

@@ -13,9 +13,9 @@
 | Prérequis | `ST-socle-ecriture.md` (rang 0, dont le contenu logique du schéma 1, §5.3) ; ST-US-022 (rang 1 : accès, `TransportSynchro.preparerDossier`, indicateur et bandeaux) ; ST-US-001 (rang 2) |
 | Hypothèses du contrôle d'explicitation appliquées | H-1, H-2 (incrément 2), H-4 (socle), H-5 (§12), H-6 (incréments 2 et 3) |
 | Q-US traitées | Q-US-017-1 à 12 (E8) ; DEC-030 (Q-US-017-3, A8) ; Q-DEC034-1 |
-| Questions de cette ST | Q-ST017-PEP-1, Q-ST017-STA-1 et 2 **répondues** (2026-10-27) et intégrées ; ouverte : Q-ST017-STA-3 (Starck, non bloquante avant le rang 10) : §16 |
-| Version | 0.2 |
-| Statut | **Incrément 1 : prêt pour E11** (tests du §13.1 livrés en rouge, v0.2 comprise). Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
+| Questions de cette ST | Toutes répondues et intégrées (Q-ST017-PEP-1, Q-ST017-STA-1 à 3) |
+| Version | 0.3 |
+| Statut | **E11 : remarques traitées (v0.3)**. Incrément 1 : tests du §13.1 livrés en rouge. Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
 | Auteur | Anthony |
 | Branches | `us/US-017-1-synchronisation-de-base`, `us/US-017-2-conflits`, `us/US-017-3-restauration`, `us/US-017-4-horloge-versions` |
 
@@ -24,6 +24,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED ; R1 sans objet avec un client OAuth Web unique). Rangs d'exécution des scénarios revérifiés (§12.2). E10 de l'incrément 1 livrée. |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Pepper (S06 et S06b corrigés : S06b exécuté au rang 3 sans condition) et de Starck (DAT v0.11.3). **Q-ST017-STA-1** : doublure `DepotLocalEnMemoire` et suite de contrat étendue (CT-DEPOT-08 à 11), une seule transaction stricte (§3.1, §4.2, §13.1). **Q-ST017-STA-2** : médiane de 5 mesures d'aller-retour < 3 s, seul un recul corrigé, contrôle chaque minute et au retour au premier plan (§6.8, constantes livrées). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace ; l'ancien fichier d'un appareil après suppression des données est celui d'un appareil inactif (§6.3). |
+| 0.3 | 2026-10-28 | Anthony | E11. **RL-LOT-001-A3** : jeton de départ obtenu avant l'inventaire ; jeton refusé (`JetonChangementsInvalide`) → nouvel inventaire complet dans le même cycle, sans tentative comptée (§4.3, §6.3) ; CT-TRANS-09, 10 et UT-US-017-32. **RL-A7** : mesure d'horloge par un observateur de `ClientGoogle` (§6.8). **RL-A9 / Q-ST017-STA-3** : archivage hors du lot 1, dette DT-002 (§6.3, §16). **RL-S3** : ordre des listes de la feuille (`comparerLignesFeuille`, UT-US-017-33). **RL-P2** : étape n° 10 en échec tant que la racine est `ATTENTE_GOOGLE` (glossaire v1.10 §12). **RL-P3** : étape de S27 définie (n° 23), S27 exécuté au rang 2. |
 
 ## 1. Résumé technique
 
@@ -51,7 +52,7 @@
 | CA-8 valeur écartée | S10, S11 | 2 | §13.2 | `detecterValeursEcartees` |
 | CA-9 RG-044 | S18 à S23, S32, S32b, S33 | 3 | §13.2 | Contrôles du cycle |
 | CA-10 réparations | S24, S25, S26 | 2 | §13.2 | `reparerHierarchie`, dérivation RG-049 |
-| CA-11 heure de Paris | S27 | 4 | §13.2 | Feuille |
+| CA-11 heure de Paris | S27 | Exécuté au rang 2 (RL-LOT-001-P3) ; ligne « Fuseau » : 4 | ST-US-001 UT-US-001-29 | `ModeleVueListeObjectifs.mentionHeureParis` (ST-US-001) ; feuille (incrément 4) |
 | CA-12 RG-058 | S30, S30b, S31 | 4 | §13.2 | Garde de compatibilité |
 | CA-13 horloge | S12, S12c, S12d, S13a, S13b | 1 (S12), 4 | §13.2 | `CorrectionHorloge` |
 | CA-14 RG-056 | S14, S15, S15b, S16 | 2 | §13.2 | `ModificationsNonRetenues` |
@@ -96,7 +97,7 @@
 | 17 | `src/synchronisation/presentation/modeles-de-vue/mention-attente.ts` | Modèle de vue | Créer | `mentionAttente(element, elementsEnAttente)` → `MEN-ATTENTE` ou rien (lu par les modèles de vue des lignes, ST-US-001 et ST-US-002) |
 | 18 | `src/composition/web.ts` | Composition | Modifier | Cycle, déclencheurs (`visibilitychange`, `online`, observateur du dépôt, accès), `DepotAvantSortie` réel |
 | 19 | `tests/doublures/faux-drive.ts` | Test | Compléter | §12.3 |
-| 20 | `tests/contrats/transport-synchro.contrat.ts` | Test | Créer | Suite de contrat (CT-TRANS-01 à 08), exécutée sur `FauxDrive` et, avec MSW, sur `TransportSynchroDrive` |
+| 20 | `tests/contrats/transport-synchro.contrat.ts` | Test | Créer | Suite de contrat (CT-TRANS-01 à 10 ; 09 et 10 : RL-LOT-001-A3), exécutée sur `FauxDrive` et, avec MSW, sur `TransportSynchroDrive` |
 | 21 | `tests/steps/synchronisation/echanges.steps.ts`, `drive.steps.ts`, `etat-affiche.steps.ts` | Test | Créer ou compléter | §12 |
 | 21 b | `tests/doublures/depot-local-memoire.ts` | Test | Compléter (squelette E10) | `DepotLocalEnMemoire` et `StockageDepotEnMemoire` : doublure du port `DepotLocal` complet, partagée par plusieurs instances ; passe CT-DEPOT-01 à 11 (condition de Starck, Q-ST017-STA-1) |
 | 21 c | `tests/contrats/depot-local.contrat.ts` | Test | Compléter (E10) | CT-DEPOT-08 à 11 (`lireMeta`, `appliquerSynchronisation`), exécutés sur `DepotLocalDexie` et `DepotLocalEnMemoire` |
@@ -231,7 +232,7 @@ export interface TransportSynchro {
     Promise<Resultat<IdFichierDrive, ErreurTransport>>;
 }
 ```
-Contrat (CT-TRANS-01 à 08) : `preparerDossier` idempotent (deux appels → un seul dossier) ; un dépôt suivi d'une lecture rend un contenu égal ; un second dépôt sur `fichierExistant` ne crée pas de second fichier ; `changements` ne renvoie que les fichiers modifiés depuis le jeton ; un fichier altéré rend `FichierIllisible` (cause exacte) ; un `schemaVersion` supérieur à `SCHEMA_VERSION` rend `FormatPlusRecent` ; aucune méthode ne lève d'exception ; `NonAutorise` sur un accès retiré.
+Ordre et jeton (DAT v0.11.4 §4.3, RL-LOT-001-A3) : `listerFichiersAppareils` obtient le jeton de départ (`changes.getStartPageToken`) **avant** l'inventaire (`files.list`) ; un fichier modifié entre les deux est retrouvé par `changements` (au pire vu deux fois : sans effet, fusion idempotente). `changements` traduit un jeton refusé par Drive (400 ou 404 sur `changes.list`) en `{ type: 'JetonChangementsInvalide' }`, ajouté à `ErreurTransport`. Contrat (CT-TRANS-01 à 08 ; 09 : fichier modifié pendant l'inventaire retrouvé par `changements` ; 10 : jeton refusé → `JetonChangementsInvalide`) : `preparerDossier` idempotent (deux appels → un seul dossier) ; un dépôt suivi d'une lecture rend un contenu égal ; un second dépôt sur `fichierExistant` ne crée pas de second fichier ; `changements` ne renvoie que les fichiers modifiés depuis le jeton ; un fichier altéré rend `FichierIllisible` (cause exacte) ; un `schemaVersion` supérieur à `SCHEMA_VERSION` rend `FormatPlusRecent` ; aucune méthode ne lève d'exception ; `NonAutorise` sur un accès retiré.
 
 ### 4.4 Adaptateurs
 | Adaptateur | Points d'attention |
@@ -244,7 +245,7 @@ Contrat (CT-TRANS-01 à 08) : `preparerDossier` idempotent (deux appels → un s
 |---|---|---|
 | Point « en attente » d'une ligne | `mentionAttente(element: RefElementMetier, enAttente: ReadonlySet<string>): { code: 'MEN-ATTENTE' } \| undefined` | `MEN-ATTENTE` |
 | Indicateur, bandeaux | ST-US-022 §4.5 (données réelles à partir du rang 3) | `SYN-…`, `BAN-…` |
-| Feuille (ECR-011) : dernier échange, modifications en attente, erreurs | `construireFeuilleSynchronisation(e)` (ECR-011 ; incrément 1 : `SYN-FEUILLE-DERNIER-ECHANGE`, `SYN-FEUILLE-RIEN-EN-ATTENTE`, `SYN-FEUILLE-EN-ATTENTE` (une ligne par élément), `SYN-FEUILLE-HORS-LIGNE`, `SYN-FEUILLE-BOUTON`, `SYN-FEUILLE-DOSSIER` ; cartes `ERR-011`, `ERR-016`) | idem |
+| Feuille (ECR-011) : dernier échange, modifications en attente, erreurs | `construireFeuilleSynchronisation(e)` (ECR-011 ; incrément 1 : `SYN-FEUILLE-DERNIER-ECHANGE`, `SYN-FEUILLE-RIEN-EN-ATTENTE`, `SYN-FEUILLE-EN-ATTENTE` (une ligne par élément), `SYN-FEUILLE-HORS-LIGNE`, `SYN-FEUILLE-BOUTON`, `SYN-FEUILLE-DOSSIER` ; cartes `ERR-011`, `ERR-016`) | idem ; **ordre des lignes** (guide v0.2.14 §5.8 f, RL-LOT-001-S3) : `comparerLignesFeuille` (`ordre-feuille.ts`) : la plus récente d'abord (physique du `derniereHlc` de l'élément), à égalité intitulé, puis id ; même ordre pour les informations à lire (incrément 2), `ALR-014` groupé sous `ALR-008` |
 
 ## 5. Modèle de données et migrations
 
@@ -319,11 +320,14 @@ synchroniserMaintenant() :
   état moteur ← EN_COURS
   dossier ← meta.dossier ?? transport.preparerDossier()
   (fichiers, jeton) ← meta.pageToken ? transport.changements(dossier, pageToken) : transport.listerFichiersAppareils(dossier)
+      JetonChangementsInvalide → meta.pageToken oublié ; (fichiers, jeton) ← transport.listerFichiersAppareils(dossier), dans le même cycle,
+                                 sans tentative comptée ni attente (DAT v0.11.4 §4.3 ; UT-US-017-32)
   pour chaque fichier f d'un autre appareil (f.appareil ≠ appareil local) :
       c ← transport.lireFichierAppareil(f.id) ; en FichierIllisible ou FormatPlusRecent : journal « avertissement », f ignoré (incr. 3 et 4 : traitement)
       sinon depot.appliquerSynchronisation(e ⇒ { plan: planifierFusion(e, c), meta: { fusionNonDeposee: plan non vide ? true : inchangé } })
   un fichier dont l'appareil n'est pas l'appareil local est fusionné, y compris l'ancien fichier de cette installation après « Supprimer les données » :
-  l'appareilId naît avec l'espace (DAT v0.11.3 §4.1.4), ce fichier est donc celui d'un appareil inactif
+  l'appareilId naît avec l'espace (DAT v0.11.3 §4.1.4), ce fichier est donc celui d'un appareil inactif ; il est fusionné sans traitement
+  particulier, l'archivage étant hors du lot 1 (DAT v0.11.4 §4.2, dette DT-002) ; les fichiers d'appareil sont à la racine du dossier (RL-A2)
   si aucun manifeste (meta.manifeste absent et lireManifeste = undefined) : ecrireManifeste({ schemaVersion: 1, generation: INITIALE }) et LISEZ-MOI
   deposer() ; meta.pageToken ← jeton ; état moteur ← REPOS ; tentatives ← 0
   si « à refaire » : relancer une fois
@@ -360,7 +364,7 @@ erreurs (à toute étape) :
 Ordre des contrôles du DAT §4.2.2 à chaque cycle, en un seul point (`controlerDrive`) : (1) dossier et manifeste ; (2) compatibilité (incrément 4) ; (3) génération effective = maximum des générations du ou des manifestes et des fichiers valides, `INITIALE` < `NOUVELLE(hlc)` ordonnées par HLC ; génération plus récente que la locale → valeurs en attente signalées (`ALR-014`), effacement de l'espace, relecture ; (4) fichier propre ; (5) autres fichiers. `ERR-012` : manifeste attendu absent, illisible ou modifié (tout appareil) ; fichier propre attendu altéré (cet appareil seulement) ; un autre fichier altéré est ignoré sans message. Tant que `ERR-012` est affiché, l'appareil n'écrit rien dans le Drive. « Restaurer » : réécrit le fichier propre et le manifeste (`restauration = (HLC, appareil)`, génération inchangée) ; hors ligne : mémorisé, exécuté après les contrôles 1 à 3 au retour du réseau. « Repartir de zéro » (`CNF-REPARTIR-ZERO`, réseau exigé) : manifeste avec `NOUVELLE(hlc)`, fichier propre vide, effacement local. Dossier ou manifeste en double : le plus ancien (`createdTime`, puis `id`) est canonique ; un appareil supprime seulement le double qu'il a créé. Une erreur transitoire n'est jamais une altération.
 
 ### 6.8 Incrément 4 (rang 11) : règles arrêtées
-- **Correction d'horloge (DAT v0.11.3 §6.4, Q-ST017-STA-2)** : à chaque réponse de Google portant un en-tête `Date` (précision à la seconde), `mesure = Date − (envoi + réception) / 2` (instants de l'appareil), retenue seulement si `réception − envoi < ALLER_RETOUR_MAX_MESURE_HORLOGE` (3 s, mesuré sur l'horloge monotone) ; la méta garde les `NOMBRE_MESURES_HORLOGE` (5) dernières mesures retenues (`mesuresHorloge`, donnée locale) ; `correctionHorloge` = **médiane** de ces mesures (nombre pair : moyenne des deux valeurs centrales, arrondie à la milliseconde inférieure). **Saut** : contrôlé toutes les `PERIODE_CONTROLE_SAUT_HORLOGE` (1 min, `Planificateur`) et à chaque retour au premier plan ; `d = Δ murale − Δ monotone` depuis le contrôle précédent ; `d < −SEUIL_SAUT_HORLOGE` (recul de plus de 2 s) → `correctionHorloge` augmentée de `−d` exactement et chaque mesure conservée décalée de `−d` ; `d > SEUIL_SAUT_HORLOGE` (avance) → **aucune correction**, entrée `info` « avance d'horloge » au journal technique (veille possible : `performance.now()` peut s'arrêter) ; une avance manuelle n'est rattrapée qu'au prochain échange avec Google. L'HLC ne recule jamais (socle). Le jour métier reste calculé sur l'heure non corrigée (conventions §7.1).
+- **Correction d'horloge (DAT v0.11.3 §6.4, Q-ST017-STA-2)** : à chaque réponse de Google portant un en-tête `Date` (précision à la seconde), `mesure = Date − (envoi + réception) / 2` (instants de l'appareil), retenue seulement si `réception − envoi < ALLER_RETOUR_MAX_MESURE_HORLOGE` (3 s, mesuré sur l'horloge monotone) ; la méta garde les `NOMBRE_MESURES_HORLOGE` (5) dernières mesures retenues (`mesuresHorloge`, donnée locale) ; `correctionHorloge` = **médiane** de ces mesures (nombre pair : moyenne des deux valeurs centrales, arrondie à la milliseconde inférieure). **Saut** : contrôlé toutes les `PERIODE_CONTROLE_SAUT_HORLOGE` (1 min, `Planificateur`) et à chaque retour au premier plan ; `d = Δ murale − Δ monotone` depuis le contrôle précédent ; `d < −SEUIL_SAUT_HORLOGE` (recul de plus de 2 s) → `correctionHorloge` augmentée de `−d` exactement et chaque mesure conservée décalée de `−d` ; `d > SEUIL_SAUT_HORLOGE` (avance) → **aucune correction**, entrée `info` « avance d'horloge » au journal technique (veille possible : `performance.now()` peut s'arrêter) ; une avance manuelle n'est rattrapée qu'au prochain échange avec Google. L'HLC ne recule jamais (socle). Le jour métier reste calculé sur l'heure non corrigée (conventions §7.1). **Point de mesure (RL-LOT-001-A7)** : l'en-tête `Date` ne transite pas par `TransportSynchro` ; la mesure est prise par un observateur de `ClientGoogle` (`ObservateurEchangesGoogle.surReponse({ envoiMonotone, receptionMonotone, envoiMurale, receptionMurale, date })`), appelé pour **toutes** les réponses Google (Drive, userinfo, plus tard Calendar) et injecté dans la correction d'horloge par la composition. Aucun changement de port.
 - **`ALR-001`** : affiché si `|correctionHorloge| > SEUIL_HORLOGE_DEREGLEE` (strict), sur l'appareil qui mesure ; une valeur reçue datée de plus de 24 h dans le futur est seulement journalisée.
 - **Âge de la plus ancienne modification en attente** : `consulterEtatSynchronisation` retranche `correctionHorloge` à `premiereEcriture` (heure de l'appareil, ST-US-022 §4.5).
 - **RG-058** : `FormatPlusRecent` (fichier ou manifeste de `schemaVersion` > `SCHEMA_VERSION`) → consultation seule : aucune écriture Drive (y compris manifeste et dépôt), aucune fusion du plus récent, aucun effacement ; `actionRequise = FORMAT_PLUS_RECENT` ; saisie bloquée (`ModeSaisie = CONSULTATION_SEULE` : un décorateur unique de `ServiceEtatLocal.modifier`, posé dans la composition, renvoie `Echec({ type: 'ConsultationSeule' })` ; le socle ne change pas) ; « Mettre à jour » : `registration.update()`, `skipWaiting`, rechargement. Champs inconnus de même `schemaVersion` conservés et réécrits.
@@ -421,7 +425,7 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 | 7 | `que le réseau du smartphone est intermittent` ; `l'envoi au Drive est interrompu {int} fois avant d'aboutir` | idem, `drive.steps.ts` | 3 | `FauxDrive.interrompreDepots(n)` ; le banc laisse passer le temps jusqu'au dépôt réussi |
 | 8 | `l'horloge avance de {ecart}, sans aucune action de l'utilisateur` ; `l'horloge avance de {ecart} depuis l'ouverture` ; `… depuis la reconnexion` | `commun/temps.steps.ts` | 3 | `banc.avancerTemps(ecart)` (exécute les échéances et attend les cycles en cours) |
 | 9 | `que l'application est ouverte sur le smartphone et sur le PC, connectés au réseau` | `commun/appareils.steps.ts` | 3 | Les deux ouverts, cycles démarrés |
-| 10 | `les données présentes sur le {appareil} s'affichent aussitôt` | `synchronisation/etat-affiche.steps.ts` | 3 | Instantané d'ouverture (ST-US-022 §12.3) : produit avant toute réponse du `FauxDrive` à cet appareil, et égal à la vue des données locales |
+| 10 | `les données présentes sur le {appareil} s'affichent aussitôt` | `synchronisation/etat-affiche.steps.ts` | 3 | Instantané d'ouverture (ST-US-022 §12.3) : produit avant toute réponse du `FauxDrive` à cet appareil, et égal à la vue des données locales. **L'étape échoue tant que la racine de l'appareil est `ATTENTE_GOOGLE`** (`construireRacine`, écran `SYN-REDIRECTION`) : aucun faux positif sur des données non affichées ; « aussitôt » se compte depuis la fin du passage par Google (glossaire v1.10 §12, DEC-038, RL-LOT-001-P2) |
 | 11 | `le Drive du compte {string} contient l'objectif {string}` ; `… la tâche {string}` ; `… à l'état {string}` ; `… exactement une fois` ; `… avec le délai {date}` ; `le Drive du compte {string} ne contient pas l'objectif {string}` ; `… ne contient pas encore la tâche {string}` | `drive.steps.ts` | 3 | Décode les fichiers d'appareil valides du `FauxDrive` du compte par `decoderFichierAppareil`, fusionne, projette ; « exactement une fois » : un seul élément non supprimé de cet intitulé |
 | 12 | `aucune donnée de l'application n'a été transmise ailleurs que dans le Drive du compte {string}` | idem | 3 | Enregistreur de `fetch` du monde vide ; toutes les requêtes du banc passent par `FauxGoogle` |
 | 13 | `que le Drive du compte {string} est plein` ; `de l'espace est libéré dans le Drive du compte {string}` ; `le Drive redevient disponible` ; `que le Drive est momentanément indisponible` | idem | 3 | Pilotage du `FauxDrive` |
@@ -433,6 +437,7 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 | 19 | `l'indicateur de synchronisation est "SYN-HORS-LIGNE" avec {int} modification(s) en attente` | idem | 3 | `construireIndicateur` : code et `n` |
 | 20 | `les données sont identiques à celles enregistrées` | idem | 7 | `EtatMetier` de l'appareil égal à la projection du Drive |
 | 21 | `le message d'erreur {string} est affiché` ; `… n'est pas affiché` ; `que … le message d'erreur … est affiché` | idem | 3 (`ERR-011`), 10 (`ERR-012`) | `messageFeuille` |
+| 23 | `sur le {appareil}, la mention "MEN-HEURE-PARIS" apparaît` ; `… n'apparaît pas` | `synchronisation/etat-affiche.steps.ts` | 2 | Glossaire v1.10 §12 (RL-LOT-001-P3) : `construireListeObjectifs(…, { horloge })` de l'appareil (ST-US-001 §4.5) ; `mentionHeureParis` présente si et seulement si le fuseau de l'appareil n'est pas Europe/Paris. La liste « Tâches » et la ligne « Fuseau » ne sont pas vérifiées par cette étape |
 | 22 | Phrases des incréments 2 à 4 (modifications non retenues, RG-044, horloge, versions, fuseau, `ALR-…`) | `modifications-non-retenues.steps.ts`, `drive.steps.ts`, `etat-affiche.steps.ts`, `commun/temps.steps.ts` | 9, 10, 11 | Spécifiées dans la mise à jour de cette ST qui précède l'E10 de chaque incrément (§13.2) ; formes : glossaire v1.8 §1, §3, §6, §7, §8 |
 
 Étapes réutilisées : objectifs, tâches, sous-objectifs, terminer, rouvrir, abandonner, reprendre, supprimer, « l'opération est acceptée » (ST-US-001 à ST-US-025) ; connexion et session (ST-US-022).
@@ -447,9 +452,10 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 | 2 | S09, S10, S11, S12b, S14, S15, S15b, S16, S24, S25, S26 | 9 |
 | 3 | S18, S19, S20, S20b, S21, S22, S22b, S22c, S22d, S23, S32, S32b, S33 | 10 |
 | 4 | **S28** (corrigé : terminer et retard, deux fuseaux) | 7 |
-| 4 | S12c, S12d, S13a, S13b, S27, S30, S30b, S31 | 11 |
+| 4 | **S27** (corrigé : puce de la liste des objectifs, RL-LOT-001-P3) | 2 |
+| 4 | S12c, S12d, S13a, S13b, S30, S30b, S31 | 11 |
 | 4 | S01 (en dernier, décision du contrôle d'explicitation) | 11 |
-Total : 46. Les corrections portent sur S02, S07 (rang 7 → 3), S12 (9 → 5), S28 (11 → 7) et l'ajout de S06b (DEC-034). **Vérification après la correction de Pepper (Q-ST017-PEP-1)** : S06 retrouve `Et le Drive du compte "A" contient la tâche "Envoyer le devis"` (phrase n° 11, rang 3, déjà définie) et reste au rang 5 ; S06b se termine par `Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15` (ST-US-001, rang 2) ; ses autres phrases relèvent de ST-US-022 (rangs 1 et 2) et de la phrase n° 8 : **S06b est exécutable au rang 3**, sans nouvelle step.
+Total : 46. Les corrections portent sur S02, S07 (rang 7 → 3), S12 (9 → 5), S28 (11 → 7) et l'ajout de S06b (DEC-034) ; E11 : S27 (rang 11 → 2, RL-LOT-001-P3). **Vérification après la correction de Pepper (Q-ST017-PEP-1)** : S06 retrouve `Et le Drive du compte "A" contient la tâche "Envoyer le devis"` (phrase n° 11, rang 3, déjà définie) et reste au rang 5 ; S06b se termine par `Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15` (ST-US-001, rang 2) ; ses autres phrases relèvent de ST-US-022 (rangs 1 et 2) et de la phrase n° 8 : **S06b est exécutable au rang 3**, sans nouvelle step.
 
 ### 12.3 Banc
 - **`FauxDrive`** (par compte, dans `FauxGoogle`) : implémente `TransportSynchro` par appareil (`transportPour(appareil)`, soumis au `ReseauSimule` et à l'accès Google de l'appareil : réseau coupé → `ReseauIndisponible`, accès retiré → `NonAutorise`) ; stockage partagé de fichiers (`id`, nom, `appProperties`, octets, `createdTime`, `modifiedTime`, supprimé) ; journal des changements (jeton = numéro de séquence) ; pilotage : `plein()`, `liberer()`, `indisponible(n | 'toujours')`, `interrompreDepots(n)`, `desactiverPourLeCompte()` ; altérations (incrément 3) ; en-tête `Date` (incrément 4) ; observation : `fichiers()`, `nombreReponses(appareil)`, `ecrituresPar(appareil)`.
@@ -478,9 +484,10 @@ Total : 46. Les corrections portent sur S02, S07 (rang 7 → 3), S12 (9 → 5), 
 | UT-US-017-14 | idem | idem | champ inconnu au premier niveau et registre de champ inconnu tolérés (registre ignoré à l'incrément 1) ; `schemaVersion` 2 → `FormatPlusRecent` | RG-058, ANT-19 |
 | UT-US-017-15 | idem | `encoderManifeste` / `decoderManifeste` | aller-retour ; empreinte vérifiée | DAT §4.2.2 |
 | UT-US-017-16 | `synchronisation/presentation/mention-attente.test.ts` | `mentionAttente` | `MEN-ATTENTE` seulement pour un élément en attente | US-018 CA-3 |
-| UT-US-017-17 à 31 | `synchronisation/application/cycle-synchronisation.test.ts` (sur `FauxDrive`, `DepotLocalDexie` et `fake-indexeddb`) | `CycleSynchronisation` | 17 : premier cycle → manifeste, `LISEZ-MOI`, fichier propre, `fichierPropre` et `deposeJusquA` mémorisés, index vidé ; 18 : fusion du fichier de l'autre appareil ; 19 : panne après le dépôt, avant la confirmation → `deposeJusquA` inchangé, l'entrée reste ; 20 : réseau coupé → `NON_LANCE_HORS_LIGNE`, rien d'écrit ; 21 : temporisation de 5 s après une modification ; 22 : cycle toutes les 2 min ; 23 : retour du réseau ; 24 : écriture pendant le dépôt reste en attente ; 25 : retour du jeton → cycle ; 26 : 401 → `signalerRefus` ; 27 : Drive plein → `DRIVE_PLEIN`, puis effacé au dépôt suivant réussi ; 28 : trois 5xx → `RETENTATIVE` puis `ECHEC_PERSISTANT`, tentatives poursuivies ; 29 : convergence (propriété) ; 30 : idempotence ; 31 : reprise après arrêt brutal (propriété) | §6 |
+| UT-US-017-33 | `synchronisation/presentation/ordre-feuille.test.ts` | `comparerLignesFeuille` | la plus récente d'abord ; à égalité, intitulé (sans casse ni accents), puis id | Guide v0.2.14 §5.8 f, RL-S3 |
+| UT-US-017-17 à 32 | `synchronisation/application/cycle-synchronisation.test.ts` (sur `FauxDrive`, `DepotLocalDexie` et `fake-indexeddb`) | `CycleSynchronisation` | 17 : premier cycle → manifeste, `LISEZ-MOI`, fichier propre, `fichierPropre` et `deposeJusquA` mémorisés, index vidé ; 18 : fusion du fichier de l'autre appareil ; 19 : panne après le dépôt, avant la confirmation → `deposeJusquA` inchangé, l'entrée reste ; 20 : réseau coupé → `NON_LANCE_HORS_LIGNE`, rien d'écrit ; 21 : temporisation de 5 s après une modification ; 22 : cycle toutes les 2 min ; 23 : retour du réseau ; 24 : écriture pendant le dépôt reste en attente ; 25 : retour du jeton → cycle ; 26 : 401 → `signalerRefus` ; 27 : Drive plein → `DRIVE_PLEIN`, puis effacé au dépôt suivant réussi ; 28 : trois 5xx → `RETENTATIVE` puis `ECHEC_PERSISTANT`, tentatives poursuivies ; 29 : convergence (propriété) ; 30 : idempotence ; 31 : reprise après arrêt brutal (propriété) ; 32 : jeton de changements refusé → oublié, inventaire complet dans le même cycle, sans tentative (RL-A3) | §6 |
 
-Suite de contrat : `tests/contrats/transport-synchro.contrat.ts` (CT-TRANS-01 à 08), exécutée sur `FauxDrive` (E10) et sur `TransportSynchroDrive` avec MSW (Benjamin), par la fonction exportée `suiteContratTransport(nom, fixture)`.
+Suite de contrat : `tests/contrats/transport-synchro.contrat.ts` (CT-TRANS-01 à 10), exécutée sur `FauxDrive` (E10) et sur `TransportSynchroDrive` avec MSW (Benjamin), par la fonction exportée `suiteContratTransport(nom, fixture)`.
 
 **Précisions de l'E10 (2026-10-27)** — les squelettes font foi :
 - `IssueCycle` : une coupure du réseau ou une réponse perdue **pendant** un cycle donne `ECHEC_TRANSITOIRE` (la reprise est celle du §6.3 ; avant le cycle, `NON_LANCE_HORS_LIGNE`) ;
@@ -492,13 +499,15 @@ Bilan : **39 cas** (UT-US-017-01 à 31, dont des cas multiples pour 04 et 29 à 
 
 **Compléments de la v0.2 (2026-10-27, condition de Starck sur Q-ST017-STA-1)** : CT-DEPOT-08 (`lireMeta` d'un espace neuf), 09 (plan vide : méta fusionnée, version et observateurs inchangés), 10 (plan et méta dans la même transaction, version + 1, observateurs), 11 (état et méta d'une autre instance transmis ; exception : ni plan ni méta écrits), exécutés sur `DepotLocalDexie` et sur `DepotLocalEnMemoire` ; CT-DEPOT-01 à 07 exécutés aussi sur `DepotLocalEnMemoire`. Constantes de l'incrément 4 livrées (`NOMBRE_MESURES_HORLOGE`, `ALLER_RETOUR_MAX_MESURE_HORLOGE`, `SEUIL_SAUT_HORLOGE`, `PERIODE_CONTROLE_SAUT_HORLOGE`). Bilan : **54 cas** (39 + 15), tous en échec « NI ».
 
+**Compléments de la v0.3 (E11, 2026-10-28)** : CT-TRANS-09 et 10, UT-US-017-32 (jeton), UT-US-017-33 (ordre de la feuille) ; squelettes `JetonChangementsInvalide`, `FauxDrive.pendantLeProchainInventaire` et `invaliderJetons`, `ordre-feuille.ts`. Bilan : **58 cas**, tous en échec « NI ».
+
 ### 13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)
 Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure retenue seulement sous 3 s d'aller-retour, médiane de 5 (nombre pair compris), recul corrigé et mesures décalées, avance seulement journalisée, contrôle à la minute et au retour au premier plan, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
-| Contrat | `TransportSynchroDrive` avec MSW | CT-TRANS-01 à 08 ; erreurs 401, 403 (deux raisons), 404, 429, 5xx |
+| Contrat | `TransportSynchroDrive` avec MSW | CT-TRANS-01 à 10 ; erreurs 401, 403 (deux raisons), 404, 429, 5xx |
 | Intégration | `DepotLocalDexie` : `appliquerSynchronisation` atomique et en durabilité stricte (`FabriqueIndexedDbEspionne`), méta relue | 3 cas |
 | Performance | Encodage, décodage et fusion d'un état de 5 000 tâches | < 2 s en CI (indicatif) |
 
@@ -514,10 +523,11 @@ Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compre
 - **Q-ST017-STA-2 (Starck)** : DAT §6.4 ne fixe pas la méthode de lissage de l'écart mesuré par l'en-tête `Date`. Je retiens la moyenne glissante des 5 dernières mesures, chacune au milieu de l'aller-retour, et la détection d'un saut d'horloge murale au-delà de 2 s d'écart avec l'horloge monotone (§6.8). Validez-vous ? a) oui ★ ; b) autre méthode. Non bloquante avant l'E10 de l'incrément 4.
   - **Réponse de Starck (2026-10-27, DAT v0.11.3 §6.4) : corrigé**, intégré au §6.8 : médiane des 5 dernières mesures prises au milieu de l'aller-retour, allers-retours de moins de 3 s seulement ; seuil de saut de 2 s contrôlé chaque minute et au retour au premier plan ; seul un recul est corrigé, une avance est journalisée ; mesures conservées décalées du saut.
 - **Q-ST017-STA-3 (nouvelle, non bloquante avant l'E10 du rang 10) — Archivage des appareils inactifs.** DAT §4.2 et v0.11.3 §4.1.4 : le fichier d'un appareil inactif depuis plus de 90 jours est « fusionné puis archivé ». Aucun scénario du lot ne le vérifie, et le DAT ne dit pas ce qu'est « archivé » (déplacé dans un sous-dossier, supprimé par qui ?). Comme le fichier est fusionné à chaque lecture de façon idempotente, l'absence d'archivage n'a pas de conséquence fonctionnelle. a) hors du lot 1, inscrit au registre de dette (DT) avec votre définition ★ ; b) à l'incrément 3 : précisez l'opération (déplacement dans `Done Juan/archives/` par l'appareil qui le constate ?).
+  - **Réponse de Starck (E11, DAT v0.11.4 §4.2) : a)**, intégrée : archivage hors du lot 1 ; les fichiers inactifs sont fusionnés comme les autres ; entrée DT-002 créée au registre de dette (conditions et déclencheur de Starck).
 - **Dette** : aucune.
 
 ## 17. Checklist de complétude
 - [x] Incrément 1 : fichiers, signatures, format, algorithmes, erreurs, steps, tests (E10 livrée).
 - [x] Incréments 2 à 4 : règles arrêtées (§6.6 à §6.8) ; E10 et phrases détaillées à livrer avant leur E12.
 - [x] Q-ST017-PEP-1, Q-ST017-STA-1 et Q-ST017-STA-2 répondues et intégrées (v0.2).
-- [ ] Q-ST017-STA-3 (avant l'E10 du rang 10).
+- [x] Q-ST017-STA-3 répondue (DT-002).

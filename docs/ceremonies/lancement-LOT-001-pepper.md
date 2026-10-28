@@ -109,3 +109,16 @@
 | P4 | Cas limite ajouté à US-022 (`ERR-004` dès qu'un espace de compte existe). **Reste pour Steeve** : texte d'`ERR-004` dans ce cas. | US-022 |
 | P5 | ENF-04 : phrase sur l'application installée limitée au smartphone (correction de forme). | Cahier des charges v0.14.1 |
 | P6 | Cas limite ajouté à US-022 et US-031 (`TST-SAISIE-A-TERMINER`, guide v0.2.14 ; second geste après la saisie). Exception à « jamais plus d'un geste » limitée à cette panne technique, **signalée à Jarvis**. | US-022, US-031 |
+
+## 5. Réponse d'Anthony (2026-10-28)
+
+| # | Réponse | Où |
+|---|---|---|
+| P1 | DEC-038 (réponse a) : la conception est confirmée telle quelle, avec un renvoi ajouté dans ST-US-022 (§0, §16). Remarque traitée par Pepper. | ST-US-022 |
+| P2 | Confirmé : l'étape n° 10 (`les données présentes sur le {appareil} s'affichent aussitôt`) **échoue tant que la racine est `ATTENTE_GOOGLE`** ; « aussitôt » se compte depuis la fin du passage par Google (glossaire v1.10 §12). En contrepartie, l'étape n° 38 de ST-US-022 (`aucune connexion n'est demandée`) passe pendant l'écran d'attente. | ST-US-017 §12.1 n° 10 ; ST-US-022 §12.1 n° 38 |
+| P3 | Fait : l'étape n° 23 est définie (puce `mentionHeureParis` de la liste des objectifs, selon le fuseau de l'appareil). S27 passe au **rang 2**, dans ST-US-017 §12.2 et dans LOT-001 ; le contrôle par script confirme 282 scénarios, tous rattachés. | ST-US-017 §2.1, §12 ; LOT-001 |
+| P4 | Rien à modifier dans la conception : `motifEchecConnexion('HORS_LIGNE', { espaceLocalExistant: existeUnEspace() })` rend `ERR-004` dès qu'un espace de compte existe, quel qu'en soit le compte (UT-US-022-04). | — |
+| P5 | Sans effet sur les ST. | — |
+| P6 | Conception déjà conforme : `SAISIE_A_TERMINER` → toast `TST-SAISIE-A-TERMINER` (UT-US-022-54), état inchangé, puis un second geste après la saisie (ST-US-022 §6.10). | ST-US-022 |
+
+Rien ne reste ouvert de mon côté pour P1 à P6.
