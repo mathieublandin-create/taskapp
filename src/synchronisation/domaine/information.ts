@@ -1,6 +1,5 @@
-import { nonImplemente } from '@non-implemente';
 import type { Duree } from '../../commun/domaine/duree';
-import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
+import { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
 import type { Marque } from '../../commun/domaine/marque';
 import type { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
 import type { Instant } from '../../commun/domaine/temps/instant';
@@ -12,11 +11,14 @@ export type TypeElement = 'OBJECTIF' | 'TACHE' | 'LIEN_TACHE_OBJECTIF';
 
 /** `${IdTache}|${IdObjectif}` (DS-08, clé déterministe). */
 export type IdLien = Marque<string, 'IdLien'>;
-export const idLien = (_tacheId: IdTache, _objectifId: IdObjectif): IdLien =>
-  nonImplemente('idLien');
+export const idLien = (tacheId: IdTache, objectifId: IdObjectif): IdLien =>
+  `${tacheId}|${objectifId}` as IdLien;
 export const partiesDuLien = (
-  _id: IdLien,
-): { readonly tacheId: IdTache; readonly objectifId: IdObjectif } => nonImplemente('partiesDuLien');
+  id: IdLien,
+): { readonly tacheId: IdTache; readonly objectifId: IdObjectif } => {
+  const [tacheId = '', objectifId = ''] = id.split('|');
+  return { tacheId: IdTache.depuisUuid(tacheId), objectifId: IdObjectif.depuisUuid(objectifId) };
+};
 
 export type RefElementMetier =
   | { readonly type: 'OBJECTIF'; readonly id: IdObjectif }
@@ -79,8 +81,17 @@ export type CleInformation = {
 export type CleTexte = Marque<string, 'CleTexte'>;
 
 /** `${type}/${id}/${champ}`. */
-export const cleEnTexte = (_cle: CleInformation): CleTexte => nonImplemente('cleEnTexte');
+export const cleEnTexte = (cle: CleInformation): CleTexte =>
+  `${cle.type}/${cle.id}/${cle.champ}` as CleTexte;
 
 /** LIEN (t|o) → { TACHE, t } ; sinon l'élément lui-même. */
-export const elementDeCle = (_cle: CleInformation): RefElementMetier =>
-  nonImplemente('elementDeCle');
+export const elementDeCle = (cle: CleInformation): RefElementMetier => {
+  if (cle.type === 'LIEN_TACHE_OBJECTIF') {
+    return { type: 'TACHE', id: partiesDuLien(cle.id).tacheId };
+  }
+  return { type: cle.type, id: cle.id } as RefElementMetier;
+};
+
+/** Clé d'un champ d'objectif ou de tâche ; le typage fin de CleInformation est relâché ici, en un seul point. */
+export const cleDeChamp = (element: RefElementMetier, champ: string): CleInformation =>
+  ({ type: element.type, id: element.id, champ }) as CleInformation;
