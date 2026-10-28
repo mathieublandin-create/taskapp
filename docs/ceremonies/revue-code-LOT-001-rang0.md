@@ -107,3 +107,31 @@ Points vérifiés sans remarque :
 
 ## 6. Suite
 Benjamin corrige RC-SOCLE-1 à 5. Les suggestions RC-SOCLE-7 à 10 sont à sa discrétion. Il demande ensuite une nouvelle revue, qui portera uniquement sur ces remarques et sur le nouveau différentiel.
+
+---
+
+## 7. Passage 2 — nouvelle revue (2026-10-28)
+
+**Périmètre** : `git diff 819c589..b234c69`, soit les commits `9867048`, `ced759f` et `b234c69` de Benjamin. Conformément à `checklist-revue-code.md` §1.5, la revue porte uniquement sur les remarques ouvertes et sur ce différentiel.
+
+### 7.1 Contrôles
+- Sous Node 24, sur `b234c69`, sont verts : `pnpm types`, `lint`, `architecture`, `verifier` et `test:couverture`. Les tests passent à 165 verts, dont 16 nouveaux `UT-COMP`, avec 0 échec ; c'est aussi le cas sous `TZ=America/New_York`. Couverture : lignes 97,5 %, branches 90,5 %, seuils du §12 respectés.
+- GitHub Actions sur `b234c69` : les 6 contrôles sont verts, y compris `securite` avec les nouveaux jeux Semgrep.
+- Aucun test existant n'est modifié ni supprimé. Les ajouts sont `tests/integration/synchronisation/depot-local-dexie.relecture.test.ts` (UT-COMP-100 à 115) et le support `tests/support/ligne-brute.ts`.
+
+### 7.2 Statut des remarques
+| Id | Statut | Constat |
+|---|---|---|
+| RC-SOCLE-1 | **Close** | La relecture construit désormais les valeurs par les constructeurs du domaine : `IdAppareil`, `IdObjectif`, `IdTache`, `creerHlc` (compteur borné), `Duree.calculee`, `lireIdEvenement`, `Instant` et `DateCalendaire`. Les `as unknown as` ont disparu. `VALEURS_STOCKEES` est typé par `satisfies SchemasDesValeurs`. Le journal est discriminé par type d'élément. Chaque invariant a un test de rejet. **L'écart des trois conversions restantes est validé** : il entre dans le cadre fixé par la remarque (« une conversion unique, nommée, commentée, sur des champs déjà construits ») ou relève d'une contrainte du compilateur. (1) `assemblerRegistre` (`schemas.ts`) est le seul rétablissement de l'union `RegistreQuelconque`, appliqué à une clé, une valeur et une écriture déjà validées. (2) `sansIndefini` est un utilitaire générique imposé par `exactOptionalPropertyTypes` ; il ne fabrique aucun type marqué. (3) `as CleInformation` dans `lireCle` n'intervient qu'après la construction de l'identifiant selon son type, la vérification du champ connu et la cohérence avec la colonne `cle`. **UUID v7 en minuscules à la relecture : accepté.** C'est la forme produite par `GenerateurUuidV7` et par la doublure séquentielle ; une ligne qui ne l'a pas a été altérée. |
+| RC-SOCLE-2 | **Close** | Semgrep s'exécute avec `p/typescript`, `p/react`, `p/owasp-top-ten` et `p/secrets`, plus `p/security-audit`. Le contrôle est bloquant et vert. |
+| RC-SOCLE-3 | **Close** | Une `meta` illisible donne `Echec({ type: 'DonneesLocalesIllisibles' })` dans `lire` et `appliquer`, sans mémoriser l'échec : l'ouverture peut être retentée. Un appareil différent lève toujours `ErreurProgrammation`. Testé par UT-COMP-115. |
+| RC-SOCLE-4 | **Close** | `src/main.tsx` lève `ErreurProgrammation`. |
+| RC-SOCLE-5 | **Close** | (a) Déclencheurs `push` : `us/**`, `ano/**`, `lot/**`, `main`. (b) `pnpm.peerDependencyRules.allowedVersions` pour jsx-a11y et ESLint 10, conformément à DT-004. |
+| RC-SOCLE-6 | Acceptée en dette (DT-005) | Inchangé. |
+| RC-SOCLE-7 à 10 | Suggestions non retenues | Laissées à la discrétion de Benjamin (sans effet sur le verdict). |
+
+**Observation, sans remarque.** Les constructeurs de `src/commun/domaine/identifiants.ts` vérifient la forme UUID mais pas la version 7, alors que la relecture l'exige. Le fichier, déjà approuvé, n'est pas concerné par une exigence nouvelle (§1.5). Je propose de l'aligner sur la relecture quand un rang ultérieur le touchera.
+
+### 7.3 Verdict final du rang 0
+
+**Approuvé.** Aucune remarque bloquante, majeure ni mineure n'est ouverte. La branche `us/SOCLE-ecriture` peut être fusionnée dans `lot/LOT-001` par commit de fusion (`conventions.md` §13.1). Jarvis peut ensuite demander l'activation de la protection des branches (DEC-029), avec les contrôles requis listés au §2.4.
