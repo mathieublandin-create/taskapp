@@ -213,6 +213,22 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/infrastructure/auth/fournisseur-auth-web.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/lecture-identite.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/passerelle-gis-navigateur.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/passerelle-gis.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/infrastructure/auth/retour-redirection.ts": {
       "debut": 1,
       "fin": 1

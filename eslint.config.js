@@ -76,6 +76,13 @@ const proprietesInterdites = [
     dispenses: [RETOUR_REDIRECTION],
   },
   {
+    object: 'location',
+    property: 'assign',
+    message:
+      'Redirection vers Google : seul FournisseurAuthWeb quitte l’application (ST-US-022 §3.2).',
+    dispenses: ['src/compte/infrastructure/auth/fournisseur-auth-web.ts'],
+  },
+  {
     object: 'history',
     property: 'pushState',
     message: 'Navigation : routeur de la ST-US concernée (§14.2).',
