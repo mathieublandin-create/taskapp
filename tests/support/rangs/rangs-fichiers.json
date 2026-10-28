@@ -105,10 +105,6 @@
       "debut": 5,
       "fin": 5
     },
-    "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
-      "debut": 2,
-      "fin": 2
-    },
     "src/commun/presentation/messages/catalogue.fr.ts": {
       "debut": 2,
       "fin": 2
@@ -121,6 +117,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/composition/application.ts": {
       "debut": 1,
       "fin": 1
@@ -128,6 +128,10 @@
     "src/composition/controleur-interface.ts": {
       "debut": 1,
       "fin": 1
+    },
+    "src/composition/objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
     },
     "src/composition/web.ts": {
       "debut": 0,
@@ -546,6 +550,10 @@
       "fin": 2
     },
     "src/objectifs-taches/domaine/vue-metier.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/index.ts": {
       "debut": 2,
       "fin": 2
     },
