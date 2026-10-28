@@ -7,7 +7,7 @@ import {
   motifSelection,
   type RangsFichier,
   type RegleRang,
-} from './tests/support/rangs/selection-rangs';
+} from './tests/support/rangs/selection-rangs.ts';
 
 const chemin = (relatif: string): string => fileURLToPath(new URL(relatif, import.meta.url));
 const lireJson = (relatif: string): unknown => JSON.parse(readFileSync(chemin(relatif), 'utf8'));
@@ -51,14 +51,19 @@ export default defineConfig({
       provider: 'v8',
       include: [...fichiersCouverts(fichiers, rangCourant)],
       exclude: ['src/composition/**', 'src/main.tsx', '**/*.d.ts'],
-      // conventions.md §12 : seuils par motif de chemin (motifs sans fichier couvert ajoutés avec leur rang).
+      // conventions.md §12 : tous les seuils par motif de chemin, dès le rang 0 (Q-BEN-E12-2). Un motif qui ne
+      // couvre encore aucun fichier (`coverage.include` limité aux rangs livrés) est sans effet jusqu'à son rang.
       thresholds: {
         lines: 85,
         branches: 75,
         'src/*/domaine/**': { lines: 95, branches: 90 },
         'src/synchronisation/{domaine,application}/**': { lines: 95, branches: 90 },
         'src/*/application/**': { lines: 90, branches: 85 },
+        'src/*/presentation/modeles-de-vue/**': { lines: 90, branches: 85 },
+        'src/commun/presentation/{format,messages}/**': { lines: 90, branches: 85 },
+        'src/*/presentation/ui/**': { lines: 70, branches: 60 },
         'src/*/infrastructure/**': { lines: 70, branches: 60 },
+        'src/infrastructure-google/**': { lines: 70, branches: 60 },
       },
     },
   },
