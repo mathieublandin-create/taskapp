@@ -261,6 +261,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/infrastructure-google/index.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/infrastructure-google/reprise.ts": {
       "debut": 0,
       "fin": 1
@@ -644,6 +648,10 @@
     "src/synchronisation/infrastructure/drive/serialisation-canonique.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/transport-synchro-drive.ts": {
+      "debut": 1,
+      "fin": 1
     },
     "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
       "debut": 0,
