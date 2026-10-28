@@ -54,7 +54,12 @@ type Travail = {
 };
 
 /** Une modification en cours de traduction : son HLC et le contexte de planification. */
-type Pas = { readonly hlc: Hlc; readonly contexte: ContextePlanification };
+type Pas = {
+  readonly hlc: Hlc;
+  readonly contexte: ContextePlanification;
+  /** Contexte causal imposé à l'écriture (pierre tombale, §6.4) au lieu de celui de la valeur précédente. */
+  readonly contexteImpose?: ContexteCausal;
+};
 
 const incoherence = (message: string): never => {
   throw new ErreurProgrammation(`Modification incohérente : ${message}`);
@@ -84,16 +89,10 @@ const exigerAbsent = (etat: EtatLocal, element: RefElementMetier): void => {
 };
 
 /** Écrit un registre ; le contexte vient de la valeur précédente, sauf s'il est imposé (pierre tombale). */
-const ecrire = (
-  travail: Travail,
-  pas: Pas,
-  cle: CleInformation,
-  valeur: unknown,
-  contexteImpose?: ContexteCausal,
-): Travail => {
+const ecrire = (travail: Travail, pas: Pas, cle: CleInformation, valeur: unknown): Travail => {
   const { etat } = travail;
   const precedente = etat.registres.get(cleEnTexte(cle))?.ecriture;
-  const contexte = contexteImpose ?? contexteDeNouvelleEcriture(precedente, etat.appareilId);
+  const contexte = pas.contexteImpose ?? contexteDeNouvelleEcriture(precedente, etat.appareilId);
   // Seul point où le typage fin des registres est relâché : la valeur est typée par la clé à l'appel.
   const registre = { cle, ecriture: { valeur, hlc: pas.hlc, contexte } } as RegistreQuelconque;
   const texte = cleEnTexte(cle);
@@ -192,7 +191,12 @@ const supprimer = (travail: Travail, pas: Pas, element: RefElementMetier): Trava
   const { etat } = travail;
   const contexte = contexteDePierreTombale(etat, element, etat.appareilId);
   const descendantsSupprimes = descendantsSupprimesParDerivation(etat, element);
-  const ecrit = ecrire(travail, pas, cleDeChamp(element, 'suppression'), true, contexte);
+  const ecrit = ecrire(
+    travail,
+    { ...pas, contexteImpose: contexte },
+    cleDeChamp(element, 'suppression'),
+    true,
+  );
   const enAttente = purgerPourSuppression(etat.enAttente, {
     element,
     descendantsSupprimes,

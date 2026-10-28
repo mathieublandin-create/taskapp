@@ -637,6 +637,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
+      "debut": 0,
+      "fin": 0
+    },
     "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
       "debut": 1,
       "fin": 1

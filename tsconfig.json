@@ -16,6 +16,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@src/*": ["src/*"],
@@ -23,5 +24,5 @@
       "@non-implemente": ["tests/support/erreur-non-implementee.ts"]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts", "eslint.config.js"]
+  "include": ["src", "tests", "vitest.config.ts", "vite.config.ts", "eslint.config.js"]
 }

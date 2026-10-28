@@ -1,5 +1,5 @@
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
-import { estRegistre, type RegistreQuelconque } from './ecriture';
+import { estRegistre } from './ecriture';
 import { registreDe, type EtatLocal } from './etat-local';
 import type { EtatMetier, ObjectifEnregistre, TacheEnregistree } from './etat-metier';
 import { comparerHlc } from './hlc';
@@ -58,10 +58,8 @@ const projeterObjectif = (
   };
 };
 
-const projeterTache = (
-  { etat, enAttente, liens }: Lecture,
-  id: IdTache,
-): TacheEnregistree | undefined => {
+/** Valeurs des champs obligatoires d'une tâche ; undefined si l'un d'eux manque (incohérence ignorée). */
+const champsObligatoires = (etat: EtatLocal, id: IdTache) => {
   const creation = lireTache(etat, id, 'creation');
   const intitule = lireTache(etat, id, 'intitule');
   const delai = lireTache(etat, id, 'delai');
@@ -76,6 +74,16 @@ const projeterTache = (
   ) {
     return undefined;
   }
+  return { creation, intitule, delai, estimationInitiale, cycleDeVie };
+};
+
+const projeterTache = (
+  { etat, enAttente, liens }: Lecture,
+  id: IdTache,
+): TacheEnregistree | undefined => {
+  const champs = champsObligatoires(etat, id);
+  if (champs === undefined) return undefined;
+  const { creation, intitule, delai, estimationInitiale, cycleDeVie } = champs;
   return {
     id,
     intitule,
@@ -111,13 +119,14 @@ const idsDes = (etat: EtatLocal, type: 'OBJECTIF' | 'TACHE'): ReadonlyArray<stri
 const projeterTous = <I extends string, E>(
   ids: ReadonlyArray<string>,
   projeter: (id: I) => E | undefined,
-): ReadonlyMap<I, E> =>
-  new Map(
-    ids.flatMap((id) => {
-      const element = projeter(id as I);
-      return element === undefined ? [] : [[id as I, element] as const];
-    }),
-  );
+): ReadonlyMap<I, E> => {
+  const projetes = new Map<I, E>();
+  for (const id of ids as ReadonlyArray<I>) {
+    const element = projeter(id);
+    if (element !== undefined) projetes.set(id, element);
+  }
+  return projetes;
+};
 
 export const projeterEtatMetier = (etat: EtatLocal): EtatMetier => {
   const lecture: Lecture = {

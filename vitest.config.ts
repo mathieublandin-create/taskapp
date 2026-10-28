@@ -45,7 +45,7 @@ export default defineConfig({
     ],
     testNamePattern: motifSelection(regles, rangCourant),
     environment: 'node',
-    setupFiles: ['tests/support/fast-check.ts'],
+    setupFiles: ['tests/support/fast-check.ts', 'tests/support/indexeddb-fake.ts'],
     sequence: { shuffle: process.env['CI'] === 'true' },
     coverage: {
       provider: 'v8',
