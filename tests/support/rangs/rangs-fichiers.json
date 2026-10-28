@@ -105,6 +105,14 @@
       "debut": 5,
       "fin": 5
     },
+    "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/messages/catalogue.fr.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/messages/codes.ts": {
       "debut": 2,
       "fin": 2
@@ -532,6 +540,10 @@
     "src/objectifs-taches/domaine/saisie-tache.ts": {
       "debut": 5,
       "fin": 5
+    },
+    "src/objectifs-taches/domaine/types-actions.ts": {
+      "debut": 2,
+      "fin": 2
     },
     "src/objectifs-taches/domaine/vue-metier.ts": {
       "debut": 2,

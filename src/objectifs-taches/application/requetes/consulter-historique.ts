@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { Resultat } from '../../../commun/domaine/resultat';
 import type {
   ErreurDepotLocal,
@@ -12,8 +11,8 @@ export class ConsulterHistorique {
   constructor(private readonly service: ServiceEtatLocal) {}
 
   executer(
-    _element: RefElementMetier,
+    element: RefElementMetier,
   ): Promise<Resultat<ReadonlyArray<EvenementJournal>, ErreurDepotLocal>> {
-    return nonImplemente('ConsulterHistorique.executer');
+    return this.service.lireJournal(element);
   }
 }
