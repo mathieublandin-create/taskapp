@@ -174,3 +174,36 @@ Les deux corrections sont **justes et acceptées**.
 ## 14. Suite
 
 Retour en E12 pour Bruce, sur RC-US022-10 seulement. Le passage 3 ne portera que sur cette remarque et sur son différentiel.
+
+---
+
+# Nouvelle revue — passage 3
+
+| Élément | Valeur |
+|---|---|
+| Relecteur | Anthony |
+| Date | 2026-10-28 |
+| Branche | `us/US-022-connexion` @ `0b3baba` |
+| Périmètre | RC-US022-10 ; différentiel `5d412a6..0b3baba` : `54f227c` (correction) et `0b3baba` (fusion d'`origin/lot/LOT-001`, rang 0 fusionné, sans autre fichier modifié) |
+| Passage | 3 |
+
+## 15. Verdict final : **Approuvé**
+
+| Commande (Node 24, `0b3baba`) | Résultat |
+|---|---|
+| `pnpm test` | Vert : 354 tests, 266 non sélectionnés, 0 échec |
+| `pnpm verifier` | Vert |
+| `pnpm test:couverture` | Vert : lignes 97,24 %, branches 91,51 % |
+| `pnpm cucumber` | Vert : 11 scénarios, 91 étapes |
+| `pnpm cucumber:steps-inutilises` | Vert : 0 définition inutilisée |
+
+| Id | Constat | Statut |
+|---|---|---|
+| RC-US022-10 | Conforme à la ST v0.3.2. `OuvrirApplication.executer` rend `{ type: 'ESPACE_INACCESSIBLE' }` après le journal `erreur` `EspaceInaccessible` et `session.fermer()`, sans appeler le fournisseur. `apresOuverture` pose le toast sur cette seule issue, puis rafraîchit. `demarrerWeb` l'appelle à la place de `rafraichir()`. UT-COMP-US-022-89 est vert : le retour n'est toujours lu qu'une fois. UT-US-022-62, UT-COMP-US-022-107 et 108 sont verts, et leurs fichiers sont inchangés depuis `1406264`. | **Levée** |
+
+Les deux points signalés sont **acceptés**.
+
+- **Modification d'UT-COMP-US-022-62.** C'est un test complémentaire de Bruce, pas un test fourni en E10 (CR-60 ne s'applique pas). Le changement aligne son attente sur l'issue `ESPACE_INACCESSIBLE` que j'ai introduite en v0.3.2. L'assertion reste aussi stricte qu'avant (égalité exacte de l'issue et du journal), donc le test n'est pas affaibli. La seconde moitié (`RetourRedirectionRejete` sans session) est intacte.
+- **`RetourRedirectionRejete` n'est plus consigné quand l'espace est inaccessible et qu'un retour est présent.** Ce comportement est voulu : le §6.2, étape 5, de la v0.3.2 ne prévoit que le journal `EspaceInaccessible`. L'ancien chemin écrivait le motif `SANS_DEPART`, ce qui était faux dans ce cas : une session est mémorisée et un départ valide peut exister. Le retour est abandonné sans être lu, donc le jeton n'est conservé nulle part (RED-05). L'entrée `erreur` suffit au diagnostic. Ce n'est pas une dette.
+
+Les suggestions RC-US022-7 à 9 restent facultatives et ouvertes ; elles sont sans effet sur le verdict. La dette du rang est inscrite au registre : DT-006 et DT-007, à rembourser au rang 2. Le rang 1 peut passer à l'étape suivante du workflow.
