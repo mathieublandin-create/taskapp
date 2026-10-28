@@ -25,3 +25,6 @@ android/app/build/
 .idea/
 .vscode/
 .DS_Store
+
+# Worktrees des agents (isolation)
+.claude/worktrees/
