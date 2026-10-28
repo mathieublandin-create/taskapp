@@ -110,11 +110,11 @@ const ouvrir = (options: { depart?: DepartMemorise; maintenant?: string } = {}) 
 };
 
 describe('OuvrirApplication — compléments (ST-US-022 §6.2, §8)', () => {
-  it('UT-COMP-US-022-62 espace inaccessible : écran de connexion, journal « erreur » ; retour sans session : rejet journalisé', async () => {
+  it('UT-COMP-US-022-62 espace inaccessible : issue ESPACE_INACCESSIBLE (v0.3.2), journal « erreur » ; retour sans session : rejet journalisé', async () => {
     const env = ouvrir();
     env.espaces.ouvrir = ECHEC_ESPACE;
 
-    expect(await env.cas.executer({ type: 'AUCUN' })).toEqual({ type: 'ECRAN_CONNEXION' });
+    expect(await env.cas.executer({ type: 'AUCUN' })).toEqual({ type: 'ESPACE_INACCESSIBLE' });
     expect(env.journal.entrees.map((e) => [e.niveau, e.evenement])).toEqual([
       ['erreur', 'EspaceInaccessible'],
     ]);

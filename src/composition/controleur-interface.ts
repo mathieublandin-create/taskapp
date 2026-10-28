@@ -120,10 +120,11 @@ export class ControleurInterface {
   }
 
   /**
-   * Squelette E10 (RC-US022-10, ST-US-022 v0.3.2 §8 n° 12) : à compléter par Bruce. Attendu : sur ESPACE_INACCESSIBLE,
-   * toast TST-ERREUR-ENREGISTREMENT ; dans tous les cas, rafraichir().
+   * Issue de l'ouverture (ST-US-022 v0.3.2 §8 n° 12, RC-US022-10) : sur ESPACE_INACCESSIBLE, toast
+   * TST-ERREUR-ENREGISTREMENT (ERR-014), effacé au geste suivant ; pour toute autre issue, aucun toast ; puis rafraichir().
    */
-  readonly apresOuverture = async (_issue: IssueOuverture): Promise<void> => {
+  readonly apresOuverture = async (issue: IssueOuverture): Promise<void> => {
+    if (issue.type === 'ESPACE_INACCESSIBLE') this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
     await this.rafraichir();
   };
 

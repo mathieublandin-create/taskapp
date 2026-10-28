@@ -66,7 +66,11 @@ export class OuvrirApplication {
     if (memorisee === undefined || decision === 'ECRAN_CONNEXION') {
       return this.#ecranConnexion(retour);
     }
-    if (!(await this.#ouvrirEspace(memorisee.identite))) return this.#ecranConnexion(retour);
+    if (!(await this.#ouvrirEspace(memorisee.identite))) {
+      // §6.2 étape 5 (v0.3.2, Q-BRU-3) : journal déjà consigné, aucun appel au fournisseur.
+      this.dependances.session.fermer();
+      return { type: 'ESPACE_INACCESSIBLE' };
+    }
     return this.#poursuivre(decision, {
       retour,
       memorisee,

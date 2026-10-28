@@ -116,7 +116,7 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
         void application.ouvrirApplication.abandonnerAttenteGoogle();
       });
     }
-    await controleur.rafraichir();
+    await controleur.apresOuverture(issue);
   });
   return controleur;
 };
