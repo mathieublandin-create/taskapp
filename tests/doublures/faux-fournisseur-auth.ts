@@ -37,7 +37,7 @@ type Redirection = { readonly state: string; readonly mode: ModeDepart };
  * - `acheverRedirection()` : rend le retour que Google placerait dans le fragment pour la dernière redirection
  *   lancée (jeton, ou erreur `interaction_required` sans session Google), avec le `state` mémorisé.
  * Pilotage complémentaire du banc : `couperLaProchaineConnexion()` (réseau perdu pendant la connexion),
- * `expirerSession()` ; observation : `demandes`, `nombreDemandes(mode)`, `jetonEnMemoire()`.
+ * `expirerSession()`, `expirerJeton()` ; `compteAccorde()` ; observation : `demandes`, `nombreDemandes(mode)`, `jetonEnMemoire()`.
  * Les redirections passent par la `MemoireRedirection` fournie, comme l'adaptateur réel.
  */
 export class FauxFournisseurAuth implements FournisseurAuth {
@@ -72,6 +72,16 @@ export class FauxFournisseurAuth implements FournisseurAuth {
   /** La session Google du navigateur a expiré : une redirection silencieuse revient en interaction_required. */
   expirerSession(): void {
     this.#session = undefined;
+  }
+
+  /** Le jeton d'accès en mémoire est échu : les API Google le refusent (la session Google reste active). */
+  expirerJeton(): void {
+    this.#jeton = undefined;
+  }
+
+  /** Compte auquel l'utilisateur a accordé l'accès sur cet appareil, s'il y en a un. */
+  compteAccorde(): IdCompte | undefined {
+    return this.#accorde?.identite.compte;
   }
 
   fermerLaProchaineFenetre(): void {

@@ -8,7 +8,9 @@
 import { IDBFactory } from 'fake-indexeddb';
 import type { Planificateur } from '@src/commun/application/ports/planificateur';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
+import { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { IssueOuverture } from '@src/compte/application/cas-usage/ouvrir-application';
+import type { JetonAcces } from '@src/compte/application/ports/coffre-jetons';
 import type { RetourGoogle } from '@src/compte/application/ports/fournisseur-auth';
 import { BaseTechnique, MemoireRedirectionDexie } from '@src/compte/infrastructure/base-technique';
 import { assemblerApplication, type Application } from '@src/composition/application';
@@ -41,6 +43,15 @@ export const IDENTIFIANTS_APPAREILS: Readonly<Record<NomAppareil, IdAppareil>> =
 
 const PREFIXES_GENERATEUR: Readonly<Record<NomAppareil, string>> = { smartphone: '01', pc: '02' };
 
+/** Durée de vie d'un jeton simulé placé dans le coffre (Google : 1 h). */
+const VALIDITE_JETON = EcartTemps.depuisMillisecondes(3_600_000);
+
+/**
+ * Observations depuis la dernière ouverture (ST-US-022 §12.1 n° 36, 38) : demandes faites à Google avant
+ * l'ouverture, et écran de connexion affiché depuis.
+ */
+export type DepuisOuverture = { readonly demandesAvant: number; ecranConnexion: boolean };
+
 export type DependancesAppareil = {
   readonly planificateur: Planificateur;
   readonly google: FauxGoogle;
@@ -58,6 +69,7 @@ export class AppareilSimule {
   retourDiffere = false;
   /** Fermetures imposées par une autre connexion (versionchange), observées par les scénarios. */
   fermeturesImposees = 0;
+  depuisOuverture: DepuisOuverture = { demandesAvant: 0, ecranConnexion: false };
   private instance: Application | undefined;
 
   constructor(
@@ -92,6 +104,10 @@ export class AppareilSimule {
    * (jeton ou erreur), sauf retour différé : l'instance reste alors en attente de Google.
    */
   async ouvrirApplication(): Promise<IssueOuverture> {
+    this.depuisOuverture = {
+      demandesAvant: this.fournisseur.demandes.length,
+      ecranConnexion: false,
+    };
     const issue = await this.demarrer({ type: 'AUCUN' });
     if (issue.type !== 'REDIRECTION_LANCEE' || this.retourDiffere) return issue;
     return this.demarrer(this.fournisseur.acheverRedirection());
@@ -101,6 +117,39 @@ export class AppareilSimule {
   livrerRetourDiffere(): Promise<IssueOuverture> {
     this.retourDiffere = false;
     return this.demarrer(this.fournisseur.acheverRedirection());
+  }
+
+  /**
+   * Demandes faites à Google depuis l'ouverture, hors redirection silencieuse d'ouverture : connexion, geste ou
+   * saisie (ST-US-022 §12.1 n° 36, 38).
+   */
+  demandesInteractivesDepuisOuverture(): ReadonlyArray<string> {
+    return this.fournisseur.demandes
+      .slice(this.depuisOuverture.demandesAvant)
+      .filter((d) => d.mode !== 'RENOUVELLEMENT_OUVERTURE')
+      .map((d) => d.mode);
+  }
+
+  /**
+   * La session Google a expiré (ST-US-022 §12.1 n° 34) : le jeton est échu (échéance atteinte dans le coffre de
+   * l'instance ouverte, jeton oublié par Google simulé) et le retour de la prochaine redirection d'ouverture est
+   * différé jusqu'à « l'accès à Google est renouvelé sans saisie ».
+   */
+  expirerSessionGoogle(): void {
+    this.fournisseur.expirerJeton();
+    this.instance?.coffre.placer({
+      jeton: 'jeton-simule-echu' as JetonAcces,
+      echeance: this.horloge.monotone(),
+    });
+    this.retourDiffere = true;
+  }
+
+  /** Place un jeton non échu dans le coffre de l'instance ouverte (refus constaté d'un accès retiré, n° 32). */
+  placerJetonNonEchu(): void {
+    this.application.coffre.placer({
+      jeton: 'jeton-simule-valide' as JetonAcces,
+      echeance: EcartTemps.depuisMillisecondes(this.horloge.monotone() + VALIDITE_JETON),
+    });
   }
 
   /** Ouvre l'application si elle ne l'est pas encore. */
@@ -148,8 +197,12 @@ export class AppareilSimule {
 
   private demarrer(retour: RetourGoogle): Promise<IssueOuverture> {
     this.fermerApplication();
-    this.instance = this.assembler();
-    return this.instance.ouvrirApplication.executer(retour);
+    const instance = this.assembler();
+    this.instance = instance;
+    instance.session.observer((etat) => {
+      if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
+    });
+    return instance.ouvrirApplication.executer(retour);
   }
 
   private assembler(): Application {
