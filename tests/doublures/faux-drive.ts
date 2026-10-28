@@ -1,8 +1,17 @@
 import { nonImplemente } from '@non-implemente';
 import type { EtatReseau } from '@src/commun/application/ports/etat-reseau';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
-import type { TransportSynchro } from '@src/synchronisation/application/ports/transport-synchro';
+import { echec, succes, type Resultat } from '@src/commun/domaine/resultat';
+import type {
+  ErreurTransport,
+  IdFichierDrive,
+  TransportSynchro,
+} from '@src/synchronisation/application/ports/transport-synchro';
 import type { TempsSimule } from '../support/banc/temps-simule';
+
+type Conditions = { readonly reseau: EtatReseau; readonly accesAccorde: () => boolean };
+
+const TYPE_DOSSIER = 'application/vnd.google-apps.folder';
 
 /** Fichier du Drive simulé (API d'observation). */
 export type FichierFaux = {
@@ -31,13 +40,71 @@ export type FichierFaux = {
  * - observation : `fichiers()`, `nombreReponses(appareil)`, `ecrituresPar(appareil)` (créations et remplacements).
  */
 export class FauxDrive {
+  readonly #fichiers: Array<FichierFaux> = [];
+  readonly #reponses = new Map<IdAppareil, number>();
+  #indisponibles: number | 'toujours' = 0;
+  #desactive = false;
+  #numero = 0;
+
   constructor(private readonly temps: TempsSimule) {}
 
-  transportPour(
-    _appareil: IdAppareil,
-    _conditions: { readonly reseau: EtatReseau; readonly accesAccorde: () => boolean },
-  ): TransportSynchro {
-    return nonImplemente('FauxDrive.transportPour');
+  /** Rang 1 : `preparerDossier` seulement ; les autres opérations arrivent au rang 3 (ST-US-017). */
+  transportPour(appareil: IdAppareil, conditions: Conditions): TransportSynchro {
+    const rang3 = (operation: string) => (): never => nonImplemente(`FauxDrive.${operation}`);
+    return {
+      preparerDossier: () => Promise.resolve(this.#preparerDossier(appareil, conditions)),
+      listerFichiersAppareils: rang3('listerFichiersAppareils'),
+      changements: rang3('changements'),
+      lireFichierAppareil: rang3('lireFichierAppareil'),
+      deposerFichierAppareil: rang3('deposerFichierAppareil'),
+      lireManifeste: rang3('lireManifeste'),
+      ecrireManifeste: rang3('ecrireManifeste'),
+    };
+  }
+
+  /** Recherche le dossier de l'application (le plus ancien non supprimé), le crée à la racine s'il manque. */
+  #preparerDossier(
+    appareil: IdAppareil,
+    conditions: Conditions,
+  ): Resultat<IdFichierDrive, ErreurTransport> {
+    const refus = this.#refus(conditions);
+    if (refus?.type === 'ReseauIndisponible') return echec(refus);
+    this.#reponses.set(appareil, this.nombreReponses(appareil) + 1);
+    if (refus !== undefined) return echec(refus);
+    const existant = this.#fichiers.find(
+      (f) =>
+        !f.supprime && f.mimeType === TYPE_DOSSIER && f.appProperties['donejuan'] === 'dossier',
+    );
+    return succes((existant ?? this.#creerDossier()).id as IdFichierDrive);
+  }
+
+  #refus(conditions: Conditions): ErreurTransport | undefined {
+    if (!conditions.reseau.estConnecte()) return { type: 'ReseauIndisponible' };
+    if (!conditions.accesAccorde()) return { type: 'NonAutorise' };
+    if (this.#desactive) return { type: 'DriveIndisponible' };
+    if (this.#indisponibles === 'toujours') return { type: 'ServeurIndisponible' };
+    if (this.#indisponibles > 0) {
+      this.#indisponibles -= 1;
+      return { type: 'ServeurIndisponible' };
+    }
+    return undefined;
+  }
+
+  #creerDossier(): FichierFaux {
+    this.#numero += 1;
+    const maintenant = this.temps.maintenant();
+    const dossier: FichierFaux = {
+      id: `fichier-${String(this.#numero)}`,
+      nom: 'Done Juan',
+      mimeType: TYPE_DOSSIER,
+      appProperties: { donejuan: 'dossier' },
+      octets: new Uint8Array(),
+      creeA: maintenant,
+      modifieA: maintenant,
+      supprime: false,
+    };
+    this.#fichiers.push(dossier);
+    return dossier;
   }
 
   plein(): void {
@@ -48,12 +115,12 @@ export class FauxDrive {
     nonImplemente('FauxDrive.liberer');
   }
 
-  indisponible(_fois: number | 'toujours'): void {
-    nonImplemente('FauxDrive.indisponible');
+  indisponible(fois: number | 'toujours'): void {
+    this.#indisponibles = fois;
   }
 
   retablir(): void {
-    nonImplemente('FauxDrive.retablir');
+    this.#indisponibles = 0;
   }
 
   interrompreDepots(_n: number): void {
@@ -87,15 +154,15 @@ export class FauxDrive {
   }
 
   desactiverPourLeCompte(): void {
-    nonImplemente('FauxDrive.desactiverPourLeCompte');
+    this.#desactive = true;
   }
 
   fichiers(): ReadonlyArray<FichierFaux> {
-    return nonImplemente('FauxDrive.fichiers');
+    return [...this.#fichiers];
   }
 
-  nombreReponses(_appareil: IdAppareil): number {
-    return nonImplemente('FauxDrive.nombreReponses');
+  nombreReponses(appareil: IdAppareil): number {
+    return this.#reponses.get(appareil) ?? 0;
   }
 
   ecrituresPar(_appareil: IdAppareil): number {

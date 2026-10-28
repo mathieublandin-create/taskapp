@@ -120,6 +120,11 @@ export class FauxFournisseurAuth implements FournisseurAuth {
     return this.#jeton !== undefined;
   }
 
+  /** Compte du jeton en mémoire : le Drive auquel l'appareil s'adresse. */
+  identiteDuJetonEnMemoire(): Identite | undefined {
+    return this.#jeton;
+  }
+
   demanderJeton(demande: DemandeJeton): Promise<Resultat<IssueDemandeJeton, ErreurAuth>> {
     if (demande.mode !== 'CONNEXION' && demande.indice === undefined) {
       return Promise.reject(new ErreurProgrammation(`login_hint absent en mode ${demande.mode}`));

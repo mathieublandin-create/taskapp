@@ -17,6 +17,8 @@ export class MondeDoneJuan extends World {
   readonly references = new References();
   /** Instant simulé de la dernière action : « au même instant exact, » y revient (conventions.md §11.7). */
   instantDerniereAction: Instant | undefined;
+  /** URL des requêtes `fetch` tentées : aucune n'est admise (ST-US-022 §12.3). */
+  readonly requetesInterdites: Array<string> = [];
 }
 
 setWorldConstructor(MondeDoneJuan);

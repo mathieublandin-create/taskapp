@@ -113,6 +113,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/composition/application.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/composition/web.ts": {
       "debut": 0,
       "fin": 1
