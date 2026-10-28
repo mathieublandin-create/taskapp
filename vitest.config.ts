@@ -38,13 +38,31 @@ export default defineConfig({
     },
   },
   test: {
-    include: [
-      'tests/unitaires/**/*.test.ts',
-      'tests/integration/**/*.test.ts',
-      'tests/contrats/**/*.contrat.ts',
-    ],
     testNamePattern: motifSelection(regles, rangCourant),
-    environment: 'node',
+    // Q-BEN-LOT001-7 : jsdom pour les seuls tests de composants (presentation/ui), dans un projet dédié ; la
+    // sélection par rang (testNamePattern) et la couverture s'appliquent aux deux projets.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          include: [
+            'tests/unitaires/**/*.test.ts',
+            'tests/integration/**/*.test.ts',
+            'tests/contrats/**/*.contrat.ts',
+          ],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'ihm',
+          include: ['tests/unitaires/**/presentation/ui/**/*.test.tsx'],
+          environment: 'jsdom',
+        },
+      },
+    ],
     setupFiles: ['tests/support/fast-check.ts', 'tests/support/indexeddb-fake.ts'],
     sequence: { shuffle: process.env['CI'] === 'true' },
     coverage: {
