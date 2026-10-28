@@ -225,6 +225,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/index.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/infrastructure/auth/fournisseur-auth-web.ts": {
       "debut": 1,
       "fin": 1
