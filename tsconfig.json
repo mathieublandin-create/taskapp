@@ -24,5 +24,12 @@
       "@non-implemente": ["tests/support/erreur-non-implementee.ts"]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts", "vite.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts",
+    "vitest.performance.config.ts",
+    "vite.config.ts",
+    "eslint.config.js"
+  ]
 }

@@ -1,51 +1,54 @@
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
-import { estRegistre } from './ecriture';
-import { registreDe, type EtatLocal } from './etat-local';
+import { estRegistre, type RegistreQuelconque } from './ecriture';
+import type { EtatLocal } from './etat-local';
 import type { EtatMetier, ObjectifEnregistre, TacheEnregistree } from './etat-metier';
 import { comparerHlc } from './hlc';
 import { elementsEnAttente } from './index-en-attente';
 import { partiesDuLien, type ChampDe, type ValeursParChamp } from './information';
 
-// ST-socle-ecriture.md §6.6.
+// ST-socle-ecriture.md §6.6. Une seule passe sur les registres : ils sont regroupés par élément, puis lus par champ.
+
+type ChampsDeLElement = ReadonlyMap<string, RegistreQuelconque>;
+type ChampsParElement = ReadonlyMap<string, ChampsDeLElement>;
 
 type Lecture = {
-  readonly etat: EtatLocal;
   readonly enAttente: ReadonlySet<string>;
   readonly liens: ReadonlyMap<string, ReadonlyArray<IdObjectif>>;
 };
 
-const lireObjectif = <C extends ChampDe<'OBJECTIF'>>(
-  etat: EtatLocal,
-  id: IdObjectif,
-  champ: C,
-): ValeursParChamp['OBJECTIF'][C] | undefined => {
-  const registre = registreDe(etat, { type: 'OBJECTIF', id }, champ);
-  return registre !== undefined && estRegistre(registre, 'OBJECTIF', champ)
-    ? registre.ecriture.valeur
-    : undefined;
+/** Registres d'un type d'élément, regroupés par identifiant puis par champ. */
+const grouperParElement = (etat: EtatLocal, type: 'OBJECTIF' | 'TACHE'): ChampsParElement => {
+  const groupes = new Map<string, Map<string, RegistreQuelconque>>();
+  for (const registre of etat.registres.values()) {
+    if (registre.cle.type !== type) continue;
+    const groupe = groupes.get(registre.cle.id) ?? new Map<string, RegistreQuelconque>();
+    groupes.set(registre.cle.id, groupe.set(registre.cle.champ, registre));
+  }
+  return groupes;
 };
 
-const lireTache = <C extends ChampDe<'TACHE'>>(
-  etat: EtatLocal,
-  id: IdTache,
+const valeurDe = <T extends 'OBJECTIF' | 'TACHE', C extends ChampDe<T>>(
+  champs: ChampsDeLElement,
+  type: T,
   champ: C,
-): ValeursParChamp['TACHE'][C] | undefined => {
-  const registre = registreDe(etat, { type: 'TACHE', id }, champ);
-  return registre !== undefined && estRegistre(registre, 'TACHE', champ)
+): ValeursParChamp[T][C] | undefined => {
+  const registre = champs.get(champ);
+  return registre !== undefined && estRegistre(registre, type, champ)
     ? registre.ecriture.valeur
     : undefined;
 };
 
 const projeterObjectif = (
-  { etat, enAttente }: Lecture,
+  { enAttente }: Lecture,
   id: IdObjectif,
+  champs: ChampsDeLElement,
 ): ObjectifEnregistre | undefined => {
-  const creation = lireObjectif(etat, id, 'creation');
-  const intitule = lireObjectif(etat, id, 'intitule');
+  const creation = valeurDe(champs, 'OBJECTIF', 'creation');
+  const intitule = valeurDe(champs, 'OBJECTIF', 'intitule');
   if (creation === undefined || intitule === undefined) return undefined;
-  const description = lireObjectif(etat, id, 'description');
-  const delai = lireObjectif(etat, id, 'delai');
-  const parentId = lireObjectif(etat, id, 'parent')?.parentId;
+  const description = valeurDe(champs, 'OBJECTIF', 'description');
+  const delai = valeurDe(champs, 'OBJECTIF', 'delai');
+  const parentId = valeurDe(champs, 'OBJECTIF', 'parent')?.parentId;
   return {
     id,
     intitule,
@@ -53,18 +56,18 @@ const projeterObjectif = (
     ...(delai === undefined ? {} : { delai }),
     ...(parentId === undefined ? {} : { parentIdEnregistre: parentId }),
     creeLe: creation.creeLe,
-    supprime: lireObjectif(etat, id, 'suppression') !== undefined,
+    supprime: champs.has('suppression'),
     enAttente: enAttente.has(id),
   };
 };
 
 /** Valeurs des champs obligatoires d'une tâche ; undefined si l'un d'eux manque (incohérence ignorée). */
-const champsObligatoires = (etat: EtatLocal, id: IdTache) => {
-  const creation = lireTache(etat, id, 'creation');
-  const intitule = lireTache(etat, id, 'intitule');
-  const delai = lireTache(etat, id, 'delai');
-  const estimationInitiale = lireTache(etat, id, 'estimationInitiale');
-  const cycleDeVie = lireTache(etat, id, 'cycleDeVie');
+const champsObligatoires = (champs: ChampsDeLElement) => {
+  const creation = valeurDe(champs, 'TACHE', 'creation');
+  const intitule = valeurDe(champs, 'TACHE', 'intitule');
+  const delai = valeurDe(champs, 'TACHE', 'delai');
+  const estimationInitiale = valeurDe(champs, 'TACHE', 'estimationInitiale');
+  const cycleDeVie = valeurDe(champs, 'TACHE', 'cycleDeVie');
   if (
     creation === undefined ||
     intitule === undefined ||
@@ -78,12 +81,13 @@ const champsObligatoires = (etat: EtatLocal, id: IdTache) => {
 };
 
 const projeterTache = (
-  { etat, enAttente, liens }: Lecture,
+  { enAttente, liens }: Lecture,
   id: IdTache,
+  champs: ChampsDeLElement,
 ): TacheEnregistree | undefined => {
-  const champs = champsObligatoires(etat, id);
-  if (champs === undefined) return undefined;
-  const { creation, intitule, delai, estimationInitiale, cycleDeVie } = champs;
+  const obligatoires = champsObligatoires(champs);
+  if (obligatoires === undefined) return undefined;
+  const { creation, intitule, delai, estimationInitiale, cycleDeVie } = obligatoires;
   return {
     id,
     intitule,
@@ -93,7 +97,7 @@ const projeterTache = (
     ...(creation.tacheParenteId === undefined ? {} : { tacheParenteId: creation.tacheParenteId }),
     objectifIdsActifs: liens.get(id) ?? [],
     creeLe: creation.creeLe,
-    supprime: lireTache(etat, id, 'suppression') !== undefined,
+    supprime: champs.has('suppression'),
     enAttente: enAttente.has(id),
   };
 };
@@ -105,24 +109,21 @@ const liensActifsParTache = (etat: EtatLocal): ReadonlyMap<string, ReadonlyArray
       estRegistre(r, 'LIEN_TACHE_OBJECTIF', 'actif') && r.ecriture.valeur ? [r] : [],
     )
     .sort((a, b) => comparerHlc(a.ecriture.hlc, b.ecriture.hlc));
-  return actifs.reduce((parTache, registre) => {
+  const parTache = new Map<string, Array<IdObjectif>>();
+  for (const registre of actifs) {
     const { tacheId, objectifId } = partiesDuLien(registre.cle.id);
-    return new Map(parTache).set(tacheId, [...(parTache.get(tacheId) ?? []), objectifId]);
-  }, new Map<string, ReadonlyArray<IdObjectif>>());
+    parTache.set(tacheId, [...(parTache.get(tacheId) ?? []), objectifId]);
+  }
+  return parTache;
 };
 
-const idsDes = (etat: EtatLocal, type: 'OBJECTIF' | 'TACHE'): ReadonlyArray<string> =>
-  [...etat.registres.values()]
-    .filter((r) => r.cle.type === type && r.cle.champ === 'creation')
-    .map((r) => r.cle.id);
-
 const projeterTous = <I extends string, E>(
-  ids: ReadonlyArray<string>,
-  projeter: (id: I) => E | undefined,
+  groupes: ChampsParElement,
+  projeter: (id: I, champs: ChampsDeLElement) => E | undefined,
 ): ReadonlyMap<I, E> => {
   const projetes = new Map<I, E>();
-  for (const id of ids as ReadonlyArray<I>) {
-    const element = projeter(id);
+  for (const [id, champs] of groupes as ReadonlyMap<I, ChampsDeLElement>) {
+    const element = projeter(id, champs);
     if (element !== undefined) projetes.set(id, element);
   }
   return projetes;
@@ -130,16 +131,17 @@ const projeterTous = <I extends string, E>(
 
 export const projeterEtatMetier = (etat: EtatLocal): EtatMetier => {
   const lecture: Lecture = {
-    etat,
     enAttente: elementsEnAttente(etat.enAttente),
     liens: liensActifsParTache(etat),
   };
   return {
-    objectifs: projeterTous<IdObjectif, ObjectifEnregistre>(idsDes(etat, 'OBJECTIF'), (id) =>
-      projeterObjectif(lecture, id),
+    objectifs: projeterTous<IdObjectif, ObjectifEnregistre>(
+      grouperParElement(etat, 'OBJECTIF'),
+      (id, champs) => projeterObjectif(lecture, id, champs),
     ),
-    taches: projeterTous<IdTache, TacheEnregistree>(idsDes(etat, 'TACHE'), (id) =>
-      projeterTache(lecture, id),
+    taches: projeterTous<IdTache, TacheEnregistree>(
+      grouperParElement(etat, 'TACHE'),
+      (id, champs) => projeterTache(lecture, id, champs),
     ),
   };
 };
