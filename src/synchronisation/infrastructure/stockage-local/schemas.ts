@@ -1,28 +1,47 @@
 import { z } from 'zod';
-import type { IdAppareil } from '../../../commun/domaine/identifiants';
+import { Duree } from '../../../commun/domaine/duree';
+import { IdAppareil, IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 import { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { Instant } from '../../../commun/domaine/temps/instant';
+import type { ContexteCausal } from '../../domaine/contexte-causal';
 import type { RegistreQuelconque } from '../../domaine/ecriture';
 import type { EtatLocal } from '../../domaine/etat-local';
 import type { EvenementJournal } from '../../domaine/evenement-journal';
-import type { Hlc } from '../../domaine/hlc';
+import { creerHlc, type Hlc } from '../../domaine/hlc';
+import { lireIdEvenement } from '../../domaine/identifiant-evenement';
 import type { EntreeEnAttente } from '../../domaine/index-en-attente';
 import {
   cleEnTexte,
+  idLien,
+  type ChampDe,
   type CleInformation,
   type CycleDeVie,
   type PlacementObjectif,
+  type TypeElement,
+  type ValeursParChamp,
 } from '../../domaine/information';
-import type { ContexteCausal } from '../../domaine/contexte-causal';
 
 // Lignes IndexedDB de DepotLocalDexie (ST-socle-ecriture.md §5.1) : encodage du domaine vers des valeurs
 // structurées, et relecture validée par Zod (conventions.md §6.2, « unknown aux frontières »).
-// Les `as` de ce fichier suivent une validation Zod ; ils rétablissent les types marqués du domaine.
+// La relecture reconstruit chaque valeur par les constructeurs du domaine (identifiants UUID v7, HLC, durée) :
+// une ligne altérée est rejetée, jamais convertie de force.
 
 // --- Schémas de relecture -----------------------------------------------------------------------
 
-const guid = z.guid();
+const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const uuidV7 = z.string().regex(UUID_V7);
+const idAppareil = uuidV7.transform(IdAppareil.depuisUuid);
+const idObjectif = uuidV7.transform(IdObjectif.depuisUuid);
+const idTache = uuidV7.transform(IdTache.depuisUuid);
+
+/** Texte au format `IdEvenement` (`${operation}:${rang}`). */
+const idEvenement = z.string().transform((texte, ctx) => {
+  const id = lireIdEvenement(texte);
+  if (id === undefined)
+    ctx.issues.push({ code: 'custom', message: 'Événement invalide', input: texte });
+  return id ?? z.NEVER;
+});
 const instantIso = z.string().transform((texte, ctx) => {
   const instant = Instant.depuisIso(texte);
   if (!instant.ok) ctx.issues.push({ code: 'custom', message: 'Instant invalide', input: texte });
@@ -33,57 +52,95 @@ const dateCalendaire = z.string().transform((texte, ctx) => {
   if (!date.ok) ctx.issues.push({ code: 'custom', message: 'Date invalide', input: texte });
   return date.ok ? date.valeur : z.NEVER;
 });
+/** Durée multiple de 30 minutes, zéro admis (RG-028). */
+const duree = z.number().transform((minutes, ctx) => {
+  const lue = Duree.calculee(minutes);
+  if (!lue.ok) ctx.issues.push({ code: 'custom', message: 'Durée invalide', input: minutes });
+  return lue.ok ? lue.valeur : z.NEVER;
+});
 const dateOuNull = dateCalendaire.nullable().transform((valeur) => valeur ?? undefined);
 const texteOuNull = z
   .string()
   .nullable()
   .transform((valeur) => valeur ?? undefined);
 
-const hlcStocke = z.object({
-  physique: instantIso,
-  compteur: z.number().int().nonnegative(),
-  appareil: guid,
-});
-const contexteStocke = z.record(guid, hlcStocke);
+/** Retire les propriétés `undefined` : le domaine n'admet pas `propriete: undefined` (exactOptionalPropertyTypes). */
+type SansIndefini<T> = { [K in keyof T]: Exclude<T[K], undefined> };
+const sansIndefini = <T extends object>(objet: T): SansIndefini<T> =>
+  Object.fromEntries(
+    Object.entries(objet).filter(([, valeur]) => valeur !== undefined),
+  ) as SansIndefini<T>;
 
-const placementStocke = z.object({
-  parentId: guid.optional(),
-  origine: z.enum(['CREATION', 'DEPLACEMENT']),
-  hlcOrigine: hlcStocke,
-});
+const hlcStocke = z
+  .object({ physique: instantIso, compteur: z.number(), appareil: idAppareil })
+  .transform((brut, ctx): Hlc => {
+    const hlc = creerHlc(brut.physique, brut.compteur, brut.appareil);
+    if (!hlc.ok) ctx.issues.push({ code: 'custom', message: 'Compteur HLC invalide', input: brut });
+    return hlc.ok ? hlc.valeur : z.NEVER;
+  });
+const contexteStocke = z.record(uuidV7, hlcStocke);
+
+const placementStocke = z
+  .object({
+    parentId: idObjectif.optional(),
+    origine: z.enum(['CREATION', 'DEPLACEMENT']),
+    hlcOrigine: hlcStocke,
+  })
+  .transform((placement): PlacementObjectif => sansIndefini(placement));
 
 const cycleDeVieStocke = z.discriminatedUnion('etat', [
   z.object({ etat: z.literal('A_FAIRE') }),
   z.object({ etat: z.literal('TERMINEE'), dateFin: dateCalendaire, instantFin: instantIso }),
-  z.object({
-    etat: z.literal('ABANDONNEE'),
-    dateAbandon: dateCalendaire,
-    instantAbandon: instantIso,
-    evenementAbandon: z.string(),
-    abandonParCascade: z.string().optional(),
-  }),
+  z
+    .object({
+      etat: z.literal('ABANDONNEE'),
+      dateAbandon: dateCalendaire,
+      instantAbandon: instantIso,
+      evenementAbandon: idEvenement,
+      abandonParCascade: idEvenement.optional(),
+    })
+    .transform((cycle) => sansIndefini(cycle)),
 ]);
 
-/** Valeur stockée de chaque champ d'information, par `type/champ`. */
-const VALEURS_STOCKEES: Readonly<Record<string, z.ZodType>> = {
-  'OBJECTIF/creation': z.object({ creeLe: instantIso }),
-  'OBJECTIF/intitule': z.string(),
-  'OBJECTIF/description': texteOuNull,
-  'OBJECTIF/delai': dateOuNull,
-  'OBJECTIF/parent': placementStocke,
-  'OBJECTIF/suppression': z.literal(true),
-  'TACHE/creation': z.object({ creeLe: instantIso, tacheParenteId: guid.optional() }),
-  'TACHE/intitule': z.string(),
-  'TACHE/delai': dateCalendaire,
-  'TACHE/estimationInitiale': z.number().int().nonnegative(),
-  'TACHE/cycleDeVie': cycleDeVieStocke,
-  'TACHE/suppression': z.literal(true),
-  'LIEN_TACHE_OBJECTIF/actif': z.boolean(),
+type SchemasDesValeurs = {
+  [T in TypeElement]: { [C in ChampDe<T>]: z.ZodType<ValeursParChamp[T][C]> };
 };
+
+/** Valeur stockée de chaque champ d'information, par type puis champ ; le compilateur vérifie la correspondance. */
+const VALEURS_STOCKEES = {
+  OBJECTIF: {
+    creation: z.object({ creeLe: instantIso }),
+    intitule: z.string(),
+    description: texteOuNull,
+    delai: dateOuNull,
+    parent: placementStocke,
+    suppression: z.literal(true),
+  },
+  TACHE: {
+    creation: z
+      .object({ creeLe: instantIso, tacheParenteId: idTache.optional() })
+      .transform((creation) => sansIndefini(creation)),
+    intitule: z.string(),
+    delai: dateCalendaire,
+    estimationInitiale: duree,
+    cycleDeVie: cycleDeVieStocke.transform((cycle): CycleDeVie => cycle),
+    suppression: z.literal(true),
+  },
+  LIEN_TACHE_OBJECTIF: { actif: z.boolean() },
+} satisfies SchemasDesValeurs;
+
+const schemaDeValeur = (type: TypeElement, champ: string): z.ZodType | undefined => {
+  const schemas: ReadonlyArray<readonly [string, z.ZodType]> = Object.entries(
+    VALEURS_STOCKEES[type],
+  );
+  return schemas.find(([nom]) => nom === champ)?.[1];
+};
+
+const typeElement = z.enum(['OBJECTIF', 'TACHE', 'LIEN_TACHE_OBJECTIF']);
 
 const ligneRegistre = z.object({
   cle: z.string(),
-  type: z.enum(['OBJECTIF', 'TACHE', 'LIEN_TACHE_OBJECTIF']),
+  type: typeElement,
   id: z.string(),
   champ: z.string(),
   valeur: z.unknown(),
@@ -93,68 +150,83 @@ const ligneRegistre = z.object({
 
 const ligneEnAttente = z.object({
   cle: z.string(),
-  type: z.enum(['OBJECTIF', 'TACHE', 'LIEN_TACHE_OBJECTIF']),
+  type: typeElement,
   id: z.string(),
   champ: z.string(),
   premiereEcriture: instantIso,
   derniereHlc: hlcStocke,
 });
 
-const refElement = z.object({ type: z.enum(['OBJECTIF', 'TACHE']), id: guid });
+const refObjectif = z.object({ type: z.literal('OBJECTIF'), id: idObjectif });
+const refTache = z.object({ type: z.literal('TACHE'), id: idTache });
+const refElement = z.discriminatedUnion('type', [refObjectif, refTache]);
 const vide = z.object({});
-const etatJournal = z.object({
-  etat: z.enum(['A_FAIRE', 'TERMINEE', 'ABANDONNEE']),
-  dateFin: dateCalendaire.optional(),
-  dateAbandon: dateCalendaire.optional(),
-});
-const placementJournal = placementStocke;
+const etatJournal = z
+  .object({
+    etat: z.enum(['A_FAIRE', 'TERMINEE', 'ABANDONNEE']),
+    dateFin: dateCalendaire.optional(),
+    dateAbandon: dateCalendaire.optional(),
+  })
+  .transform((etat) => sansIndefini(etat));
+const delaiJournal = z
+  .object({ delai: dateCalendaire.optional() })
+  .transform((delai) => sansIndefini(delai));
 
-const contenuEvenement = z.discriminatedUnion('type', [
+const contenuEvenement = z.union([
   z.object({
     type: z.literal('CREATION'),
-    element: refElement,
+    element: refObjectif,
     avant: vide,
-    apres: z.object({
-      parentId: guid.optional(),
-      tacheParenteId: guid.optional(),
-      delai: dateCalendaire.optional(),
-      estimation: z.number().int().nonnegative().optional(),
-      objectifIds: z.array(guid).optional(),
-    }),
+    apres: z
+      .object({ parentId: idObjectif.optional(), delai: dateCalendaire.optional() })
+      .transform((apres) => sansIndefini(apres)),
+  }),
+  z.object({
+    type: z.literal('CREATION'),
+    element: refTache,
+    avant: vide,
+    apres: z
+      .object({
+        tacheParenteId: idTache.optional(),
+        delai: dateCalendaire,
+        estimation: duree,
+        objectifIds: z.array(idObjectif),
+      })
+      .transform((apres) => sansIndefini(apres)),
   }),
   z.object({
     type: z.literal('MODIFICATION_DELAI'),
     element: refElement,
-    avant: z.object({ delai: dateCalendaire.optional() }),
-    apres: z.object({ delai: dateCalendaire.optional() }),
+    avant: delaiJournal,
+    apres: delaiJournal,
   }),
   z.object({
     type: z.literal('MODIFICATION_ESTIMATION'),
-    element: refElement,
-    avant: z.object({ estimation: z.number().int().nonnegative() }),
-    apres: z.object({ estimation: z.number().int().nonnegative() }),
+    element: refTache,
+    avant: z.object({ estimation: duree }),
+    apres: z.object({ estimation: duree }),
   }),
   z.object({
     type: z.literal('RATTACHEMENT'),
-    element: refElement,
+    element: refTache,
     avant: vide,
-    apres: z.object({ objectifId: guid }),
+    apres: z.object({ objectifId: idObjectif }),
   }),
   z.object({
     type: z.literal('DETACHEMENT'),
-    element: refElement,
-    avant: z.object({ objectifId: guid }),
+    element: refTache,
+    avant: z.object({ objectifId: idObjectif }),
     apres: vide,
   }),
   z.object({
     type: z.literal('CHANGEMENT_PARENT'),
-    element: refElement,
-    avant: placementJournal,
-    apres: placementJournal,
+    element: refObjectif,
+    avant: placementStocke,
+    apres: placementStocke,
   }),
   z.object({
     type: z.enum(['FIN', 'REOUVERTURE', 'ABANDON', 'REPRISE']),
-    element: refElement,
+    element: refTache,
     avant: etatJournal,
     apres: etatJournal,
   }),
@@ -162,11 +234,11 @@ const contenuEvenement = z.discriminatedUnion('type', [
 ]);
 
 const ligneJournal = z.object({
-  id: z.string(),
+  id: idEvenement,
   hlc: hlcStocke,
   instant: instantIso,
   jour: dateCalendaire,
-  cause: z.string().optional(),
+  cause: idEvenement.optional(),
   contenu: contenuEvenement,
 });
 
@@ -274,31 +346,58 @@ export const encoderEvenement = (evenement: EvenementJournal): object => {
 
 // --- Décodage -----------------------------------------------------------------------------------
 
-const versHlc = (stocke: z.output<typeof hlcStocke>): Hlc => stocke as unknown as Hlc;
+/** Identifiant d'un élément relu, construit selon son type ; undefined s'il n'a pas la forme attendue. */
+const lireIdElement = (type: TypeElement, id: string): CleInformation['id'] | undefined => {
+  if (type === 'OBJECTIF') return idObjectif.safeParse(id).data;
+  if (type === 'TACHE') return idTache.safeParse(id).data;
+  const [tache, objectif, reste] = id.split('|');
+  const tacheId = idTache.safeParse(tache).data;
+  const objectifId = idObjectif.safeParse(objectif).data;
+  return reste === undefined && tacheId !== undefined && objectifId !== undefined
+    ? idLien(tacheId, objectifId)
+    : undefined;
+};
 
-const versContexte = (stocke: Record<string, z.output<typeof hlcStocke>>): ContexteCausal =>
-  stocke as unknown as ContexteCausal;
+/**
+ * Seul rétablissement de type de la relecture : la clé, la valeur et l'écriture sont déjà construites,
+ * et la valeur a été validée par le schéma du couple type/champ (VALEURS_STOCKEES).
+ */
+const assemblerRegistre = (
+  cle: CleInformation,
+  valeur: unknown,
+  hlc: Hlc,
+  contexte: ContexteCausal,
+): RegistreQuelconque => ({ cle, ecriture: { valeur, hlc, contexte } }) as RegistreQuelconque;
+
+/** Clé relue, cohérente avec ses colonnes (`type/id/champ`) et désignant un champ connu ; undefined sinon. */
+const lireCle = (ligne: {
+  cle: string;
+  type: TypeElement;
+  id: string;
+  champ: string;
+}): CleInformation | undefined => {
+  const id = lireIdElement(ligne.type, ligne.id);
+  if (id === undefined || schemaDeValeur(ligne.type, ligne.champ) === undefined) return undefined;
+  if (ligne.cle !== `${ligne.type}/${ligne.id}/${ligne.champ}`) return undefined;
+  return { type: ligne.type, id, champ: ligne.champ } as CleInformation;
+};
 
 /** Relit une ligne de la table `registres` ; undefined si elle est invalide. */
 export const decoderRegistre = (ligne: unknown): RegistreQuelconque | undefined => {
   const lue = ligneRegistre.safeParse(ligne);
   if (!lue.success) return undefined;
-  const { type, id, champ, hlc, contexte } = lue.data;
-  const schemaValeur = VALEURS_STOCKEES[`${type}/${champ}`];
-  const valeur = schemaValeur?.safeParse(lue.data.valeur);
-  if (valeur?.success !== true || lue.data.cle !== `${type}/${id}/${champ}`) return undefined;
-  return {
-    cle: { type, id, champ },
-    ecriture: { valeur: valeur.data, hlc: versHlc(hlc), contexte: versContexte(contexte) },
-  } as unknown as RegistreQuelconque;
+  const cle = lireCle(lue.data);
+  const valeur = schemaDeValeur(lue.data.type, lue.data.champ)?.safeParse(lue.data.valeur);
+  if (cle === undefined || valeur?.success !== true) return undefined;
+  return assemblerRegistre(cle, valeur.data, lue.data.hlc, lue.data.contexte);
 };
 
 /** Relit une ligne de la table `journal` ; undefined si elle est invalide. */
 export const decoderEvenement = (ligne: unknown): EvenementJournal | undefined => {
   const lue = ligneJournal.safeParse(ligne);
   if (!lue.success) return undefined;
-  const { contenu, hlc, ...commun } = lue.data;
-  return { ...contenu, ...commun, hlc: versHlc(hlc) } as unknown as EvenementJournal;
+  const { contenu, ...commun } = lue.data;
+  return sansIndefini({ ...contenu, ...commun });
 };
 
 /** Relit une ligne de la table `enAttente` ; undefined si elle est invalide. */
@@ -307,11 +406,10 @@ export const decoderEnAttente = (
 ): { readonly cle: CleInformation; readonly entree: EntreeEnAttente } | undefined => {
   const lue = ligneEnAttente.safeParse(ligne);
   if (!lue.success) return undefined;
-  const { type, id, champ, premiereEcriture, derniereHlc } = lue.data;
-  return {
-    cle: { type, id, champ } as unknown as CleInformation,
-    entree: { premiereEcriture, derniereHlc: versHlc(derniereHlc) },
-  };
+  const cle = lireCle(lue.data);
+  if (cle === undefined) return undefined;
+  const { premiereEcriture, derniereHlc } = lue.data;
+  return { cle, entree: { premiereEcriture, derniereHlc } };
 };
 
 // --- Table meta ---------------------------------------------------------------------------------
@@ -319,7 +417,7 @@ export const decoderEnAttente = (
 export type LigneMeta = { readonly nom: string; readonly valeur: unknown };
 
 const schemasMeta = {
-  appareilId: guid,
+  appareilId: idAppareil,
   version: z.number().int().nonnegative(),
   dernierHlc: hlcStocke.nullable(),
   correctionHorloge: z.number().int(),
@@ -356,9 +454,9 @@ export const decoderMeta = (lignes: ReadonlyArray<unknown>): ValeursMeta | undef
     return undefined;
   }
   return {
-    appareilId: appareilId.data as IdAppareil,
+    appareilId: appareilId.data,
     version: version.data,
-    dernierHlc: dernierHlc.data === null ? undefined : versHlc(dernierHlc.data),
+    dernierHlc: dernierHlc.data ?? undefined,
     correctionHorloge: EcartTemps.depuisMillisecondes(correction.data),
   };
 };

@@ -6,3 +6,10 @@ export type IdEvenement = Marque<string, 'IdEvenement'>;
 
 export const idEvenement = (operation: IdOperation, rang: number): IdEvenement =>
   `${operation}:${String(rang)}` as IdEvenement;
+
+const FORME_ID_EVENEMENT =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:(0|[1-9][0-9]*)$/;
+
+/** Relit un identifiant d'événement stocké ; undefined s'il n'a pas la forme `${operation}:${rang}`. */
+export const lireIdEvenement = (texte: string): IdEvenement | undefined =>
+  FORME_ID_EVENEMENT.test(texte) ? (texte as IdEvenement) : undefined;
