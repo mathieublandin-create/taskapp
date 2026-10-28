@@ -103,3 +103,74 @@ Aucun fichier de test livré en E10 n'est modifié : `tests/unitaires/**` et `te
 ## 8. Suite
 
 Retour en E12 pour Bruce, sur RC-US022-1 à RC-US022-6. Les suggestions RC-US022-7 à 9 sont facultatives. La nouvelle revue portera seulement sur ces remarques et sur le différentiel introduit (`checklist-revue-code.md` §1.5).
+
+---
+
+# Nouvelle revue — passage 2
+
+| Élément | Valeur |
+|---|---|
+| Relecteur | Anthony |
+| Date | 2026-10-28 |
+| Branche | `us/US-022-connexion` @ `a6a8fb7` |
+| Périmètre | Remarques ouvertes RC-US022-1 à 6 ; différentiel `010676a..a6a8fb7` (6 commits de Bruce, 21 fichiers) ; question Q-BRU-3 (`checklist-revue-code.md` §1.5) |
+| Passage | 2 |
+
+## 9. Verdict du passage 2
+
+**Changements requis**, sur un seul point : **RC-US022-10** (Q-BRU-3). Ce point découle de ma décision ci-dessous, pas d'un défaut de Bruce. RC-US022-1 à 6 sont **levées**. Les corrections sont propres, ciblées et testées, sans test affaibli. Le prochain passage ne portera que sur RC-US022-10.
+
+## 10. Contrôles exécutés (Node 24, `a6a8fb7`, avant mes commits)
+
+| Commande | Résultat |
+|---|---|
+| `pnpm test` | Vert : 351 tests, 266 non sélectionnés, 0 échec |
+| `pnpm verifier` | Vert : formatage, lint, types, architecture, catalogue, tags, rangs, dépôt |
+| `pnpm test:couverture` | Vert : lignes 97,23 %, branches 91,51 % |
+| `pnpm cucumber` | Vert : 11 scénarios, 91 étapes |
+| `pnpm cucumber:steps-inutilises` | Vert : 0 définition inutilisée |
+| `cucumber-js --dry-run` sur `US-022-*.feature` (contrôle de sortie de RC-US022-2) | Restent indéfinies : n° 29, n° 30 pour n > 0, n° 41 à 43, et des phrases d'objectifs et d'échange avec le Drive qui relèvent des ST des rangs 2, 3 et 5. Aucune phrase du rang 1 ne manque |
+
+Après mes commits, UT-US-022-62 et UT-COMP-US-022-107 sont **rouges** pour la raison attendue : l'issue reçue est `ECRAN_CONNEXION`, et le squelette d'`apresOuverture` ne pose pas de toast. C'est la phase rouge de RC-US022-10. UT-COMP-US-022-108 est déjà vert : il garde contre la régression (pas de toast sur `ECRAN_CONNEXION`, effacement au geste suivant). `pnpm verifier` et `pnpm cucumber` restent verts.
+
+## 11. Suivi des remarques
+
+| Id | Constat au passage 2 | Statut |
+|---|---|---|
+| RC-US022-1 | Dans `main.tsx`, la première instruction est `const controleur = demarrerWeb(consommerRetourRedirection(…), {…})`. Aucun nom de module ne reçoit le retour. Dans `demarrerWeb`, `retour` n'est lu qu'une fois, en argument d'`ouvrirApplication.executer`, et aucune fermeture ne le capture. Un verrou statique sur l'arbre syntaxique le garantit (UT-COMP-US-022-87 à 89). | **Levée** |
+| RC-US022-2 | Les définitions sont livrées dans les fichiers du §12.1, dont `etat-affiche.steps.ts` (n° 39 et 40, sur `construireIndicateur` et `construireBandeau`). Le contrôle de sortie est satisfait (§10). | **Levée** |
+| RC-US022-3 | `EspaceInaccessible` est signalé par le toast `TST-ERREUR-ENREGISTREMENT` à la connexion, à la confirmation de suppression et au « Réessayer » d'`ERR-017`. Le toast est effacé au geste suivant. `ApplicationInterface` (`Pick<Application, …>`) permet de tester le contrôleur sans l'assemblage complet (ISP). `controleur-interface.test.ts` couvre tous les cas demandés (UT-COMP-US-022-90 à 105). Le toast d'erreur porte `role="alert"`. | **Levée** |
+| RC-US022-4 | `executerAvecReprise` est générique par surcharges : sans critère, `E = ErreurGoogle` ; avec `estTransitoire`, la famille d'erreurs est libre. La conversion `as` interne est sûre grâce à la première signature. `PreparationDossierDrive.preparer` repose sur cette fonction. UT-US-022-27 et les tests de reprise sont inchangés et verts. | **Levée** |
+| RC-US022-5 | `location.replace`, `location.href`, `window.location`, `globalThis.location` et `document.location` sont interdits, sans dispense. Les deux dernières règles vont au-delà de la demande, à bon escient. La règle sur `location.href` en interdit aussi la lecture ; c'est acceptable, car aucun code ne la lit. | **Levée** |
+| RC-US022-6 | Les nouvelles définitions sont des expressions Cucumber avec `{appareil}` et `{string}`. Deux cas gardent une expression régulière : les définitions passées par `etapeContexte`, `etapeAction` et `etapeAssertion` (préfixes, §11.6), et `appareils.steps.ts:56`, qui vient du rang 0 approuvé. | **Levée** |
+| RC-US022-7 à 9 | Bruce n'a pas repris ces suggestions. Elles restent facultatives et ne conditionnent pas l'approbation. | Ouvertes (facultatives) |
+| RC-US022-10 | Voir le §12 (Q-BRU-3). | **Ouverte** |
+
+### Corrections du support de tests du rang 0 (commit `c5aeaf0`)
+
+Les deux corrections sont **justes et acceptées**.
+- **`prefixes.ts`.** cucumber-js compare l'arité de la fonction au nombre de groupes capturants, sans compter le paramètre du reste. `avecArite` fixe donc `length` d'après le motif complet. `nombreDeGroupes` exécute la source suivie d'une alternative vide (`source|`) sur la chaîne vide : la correspondance réussit toujours, et la longueur du résultat moins un donne le nombre exact de groupes capturants, quels que soient les ancres et les groupes non capturants. Le corps des trois fonctions est inchangé, au retrait près.
+- **`convertirAppareil`.** La fonction devient idempotente, car le groupe de préfixe arrive déjà converti en `'pc'` par le type `{appareil}`. Sans cette correction, « sur le PC, » désignait le smartphone : ce défaut réel aurait faussé les scénarios à deux appareils. UT-COMP-US-022-106 le verrouille.
+
+## 12. Décisions sur Q-BRU-3
+
+**a) `EspaceInaccessible` à l'ouverture : nouvelle issue, à corriger dans ce rang (RC-US022-10).** La ST v0.3.1 exigeait le toast à l'ouverture (§8 n° 12), mais son §4.2 n'offrait aucun moyen de l'exprimer. Le défaut vient donc de ma ST, pas du code. La correction est petite et entièrement spécifiée. La renvoyer en dette laisserait une ouverture qui échoue en silence (CR-41), ce que la règle « jamais d'échec silencieux » interdit. ST-US-022 passe en **v0.3.2** :
+- **§4.2 et §6.2, étape 5.** `IssueOuverture` reçoit la variante `{ type: 'ESPACE_INACCESSIBLE' }`. Je préfère une variante distincte à un champ optionnel sur `ECRAN_CONNEXION` : tout consommateur devra la traiter explicitement.
+- **§8 n° 12.** Dans `demarrerWeb`, `ControleurInterface.apresOuverture(issue)` remplace l'appel direct à `rafraichir()` qui suit `executer`.
+
+| Id | Gravité | Critère | Localisation | Constat | Action attendue | Statut | Itération |
+|---|---|---|---|---|---|---|---|
+| RC-US022-10 | Majeure | CR-41 ; ST v0.3.2 §4.2, §6.2 étape 5, §8 n° 12 | `src/compte/application/cas-usage/ouvrir-application.ts:21-24`, `:67` ; `src/composition/controleur-interface.ts` ; `src/composition/web.ts:112-120` | À l'ouverture, un espace local inaccessible rend `ECRAN_CONNEXION` sans aucun signal pour l'utilisateur. | 1) Ajouter `{ readonly type: 'ESPACE_INACCESSIBLE' }` à `IssueOuverture`. Quand `#ouvrirEspace` échoue, garder le journal `erreur` `EspaceInaccessible` et l'appel à `session.fermer()`, puis rendre cette issue sans appeler le fournisseur. Ne pas modifier le chemin `ECRAN_CONNEXION` (`#ecranConnexion`). 2) Ajouter au contrôleur `readonly apresOuverture = async (issue: IssueOuverture): Promise<void>`. Sur `ESPACE_INACCESSIBLE`, elle pose `toast = 'TST-ERREUR-ENREGISTREMENT'` ; dans tous les cas, elle appelle `rafraichir()`. 3) Dans `demarrerWeb`, remplacer `await controleur.rafraichir()` par `await controleur.apresOuverture(issue)`. UT-COMP-US-022-89 doit rester vert. 4) Rendre verts UT-US-022-62, UT-COMP-US-022-107 et 108 **sans les modifier**. Toutes les commandes du §10 doivent rester vertes, couverture comprise. | Ouverte | 2 |
+
+**b) Bouton « Réessayer » du toast : le renvoi en dette est accepté, mais pas vers l'E14.** Au rang 1, l'utilisateur réessaie par le geste d'origine. Rien n'est perdu, puisque rien n'a été écrit. Le bouton dépend du composant toast Ionic, attendu au rang 2 avec DT-006. Je refuse en revanche le renvoi à l'E14 : cette étape contrôle mais ne livre rien, et un écart connu au guide d'ergonomie doit figurer au registre. L'écart est inscrit en **DT-007** (P2), à rembourser **au rang 2**. Le bouton rejouera le dernier geste échoué ; après l'ouverture, il appellera `executer({ type: 'AUCUN' })` puis `apresOuverture`. Les tests du contrôleur seront fournis en E10 du rang 2 (ST v0.3.2 §16).
+
+## 13. Documents et tests livrés par Anthony (commits locaux de ce passage)
+
+- `docs/04-specification-technique/ST-US-022.md` passe en v0.3.2 : §4.2, §6.2, §8 n° 12, §13 (UT-US-022-62) et §16 (DT-007).
+- `docs/04-specification-technique/dette-technique.md` passe en v0.7 : ajout de DT-007.
+- Tests : `tests/unitaires/compte/application/ouvrir-application.test.ts` (UT-US-022-62, rouge) et `tests/unitaires/composition/controleur-interface.test.ts` (UT-COMP-US-022-107, rouge, et 108).
+- Squelettes sans implémentation, pour que les types restent valides : variante `ESPACE_INACCESSIBLE` dans `IssueOuverture` (`ouvrir-application.ts`), et `apresOuverture` réduite à `rafraichir()` dans `controleur-interface.ts`. `@non-implemente` n'est pas utilisé, car ces fichiers sont à `fin = 1` (`conventions.md` §11.14 a). Bruce les complète.
+
+## 14. Suite
+
+Retour en E12 pour Bruce, sur RC-US022-10 seulement. Le passage 3 ne portera que sur cette remarque et sur son différentiel.
