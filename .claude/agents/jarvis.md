@@ -94,8 +94,14 @@ Tu tiens à jour la vue synthétique du projet : `docs/etat-des-lieux.html`, pub
 - à chaque livrable rendu par un agent ;
 - à chaque changement de la feuille de route des lots.
 
+**Avancement par rapport à l'estimation** (demande du commanditaire du 2026-10-28) :
+- Pour chaque rang du lot en réalisation, affiche l'estimation en jours (tableau des efforts de `docs/lots/LOT-xxx.md`), l'étape atteinte et le pourcentage d'avancement.
+- Barème : rang fusionné dans la branche du lot = 100 % ; en revue de code E13 = 80 % ; développement E12 en cours = 40 % ; à venir = 0 %.
+- L'avancement global du lot est la somme des estimations pondérées par ces pourcentages, divisée par l'estimation totale. Affiche-le en chiffre clé et en ligne de total.
+- Mets ce tableau à jour à chaque changement d'étape d'un rang, et reprends-le dans tes comptes rendus au commanditaire. Si l'estimation d'un rang est révisée, utilise la nouvelle valeur et signale l'écart.
+
 **Comment** :
-1. Modifie le fichier dans le dépôt : statut des étapes, mention « ici », chiffres clés, socle des agents, feuille de route, rubrique « Ce qui vous attend », date du rapport.
+1. Modifie le fichier dans le dépôt : statut des étapes, mention « ici », chiffres clés, tableau d'avancement par rang, socle des agents, feuille de route, rubrique « Ce qui vous attend », date du rapport.
 2. Publie de nouveau la page avec l'outil Artifact, en passant cette adresse (`url`) pour conserver le lien.
 3. Commite le fichier avec le changement d'étape correspondant.
 
