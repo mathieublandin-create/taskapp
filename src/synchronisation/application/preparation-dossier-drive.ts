@@ -1,7 +1,7 @@
 import type { Planificateur } from '../../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../../commun/application/ports/source-aleatoire';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
-import { delaiAvantTentative, TENTATIVES_AVANT_ABANDON } from '../../infrastructure-google';
+import { executerAvecReprise } from '../../infrastructure-google';
 import type { ErreurTransport, TransportSynchro } from './ports/transport-synchro';
 
 // ST-US-022 §6.8 : au plus 3 essais (reprise sur ServeurIndisponible et ReseauIndisponible), attentes par
@@ -33,14 +33,11 @@ export class PreparationDossierDrive {
 
   async preparer(): Promise<Resultat<undefined, ErreurPreparationDossier>> {
     const { transport, planificateur, aleatoire } = this.dependances;
-    for (let tentative = 1; ; tentative += 1) {
-      const resultat = await transport.preparerDossier();
-      if (resultat.ok) return succes(undefined);
-      if (!estTransitoire(resultat.erreur) || tentative >= TENTATIVES_AVANT_ABANDON) {
-        return echec(traduire(resultat.erreur));
-      }
-      const gigue = aleatoire.entierEntre(0, 999) / 1000;
-      await planificateur.attendre(delaiAvantTentative(tentative, gigue));
-    }
+    const resultat = await executerAvecReprise(() => transport.preparerDossier(), {
+      planificateur,
+      aleatoire,
+      estTransitoire,
+    });
+    return resultat.ok ? succes(undefined) : echec(traduire(resultat.erreur));
   }
 }
