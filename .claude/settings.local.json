@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(GH_TOKEN= gh api repos/mathieublandin-create/taskapp/pulls/*/merge -X PUT *)"
+    ]
+  }
+}
