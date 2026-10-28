@@ -82,6 +82,18 @@ const proprietesInterdites = [
       'Redirection vers Google : seul FournisseurAuthWeb quitte l’application (ST-US-022 §3.2).',
     dispenses: ['src/compte/infrastructure/auth/fournisseur-auth-web.ts'],
   },
+  // RC-US022-5 : les autres façons de quitter l'application, sans dispense.
+  ...[
+    { object: 'location', property: 'replace' },
+    { object: 'location', property: 'href' },
+    { object: 'window', property: 'location' },
+    { object: 'globalThis', property: 'location' },
+    { object: 'document', property: 'location' },
+  ].map((propriete) => ({
+    ...propriete,
+    message: "Navigation hors de l'application : FournisseurAuthWeb seul (ST-US-022 §3.2).",
+    dispenses: [],
+  })),
   {
     object: 'history',
     property: 'pushState',
