@@ -49,18 +49,19 @@ const MESSAGES_ACTION: Readonly<
   ECHEC_PERSISTANT: 'ERR-016',
 };
 
+/** L'accès perdu l'emporte sur une action requise (ERR-010). */
+const messageAction = (e: EtatSynchronisationAffichable): MessageFeuille =>
+  e.acces === 'PERDU' || e.actionRequise === undefined
+    ? 'ERR-010'
+    : MESSAGES_ACTION[e.actionRequise];
+
 const complementCode = (
   code: CodeIndicateur,
   e: EtatSynchronisationAffichable,
 ): Omit<ModeleVueIndicateur, 'code' | 'aLire'> => {
   switch (code) {
     case 'SYN-ACTION':
-      return {
-        messageFeuille:
-          e.acces === 'PERDU' || e.actionRequise === undefined
-            ? 'ERR-010'
-            : MESSAGES_ACTION[e.actionRequise],
-      };
+      return { messageFeuille: messageAction(e) };
     case 'SYN-SESSION':
       return { action: 'REPRENDRE_LA_SYNCHRONISATION', messageFeuille: 'ERR-015' };
     case 'SYN-HORS-LIGNE':
