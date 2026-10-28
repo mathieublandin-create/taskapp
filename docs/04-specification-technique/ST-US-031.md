@@ -162,7 +162,7 @@ Un onglet suiveur n'installe aucun déclencheur. Ses modifications sont déposé
 La mécanique est livrée au **rang 1** (ST-US-022 v0.3 §5.2, §6.5, §6.6, §6.11), car elle protège l'intégrité des données dès qu'un second onglet existe :
 - **ordre imposé** : déconnexion `fournisseur.oublier → memoireSession.effacer → avis.diffuser('SESSION_FERMEE') → espaces.fermer` ; suppression `memoireSession.effacer → avis.diffuser('SESSION_FERMEE') → espaces.supprimer → fournisseur.oublier → session.fermer`. La session mémorisée est effacée **avant** l'avis : un onglet qui se recharge ne retrouve pas de session et ne rouvre pas l'espace ;
 - **chaque autre onglet**, à la réception de l'avis ou à l'événement `versionchange` (filet de sécurité), ferme sa connexion **sans réouverture automatique** (`close({ disableAutoOpen: true })`), appelle `coordination.arreter()` (rang 13 ; avant, `cycle.arreter()`), puis `location.reload()` : la nouvelle ouverture suit `deciderOuverture`, donc l'écran de connexion, **sans message** (Steeve) ;
-- **suppression bloquée** par une connexion qui ne réagit pas (ancienne version, onglet gelé) : au-delà de 5 s, `ERR-017` (« Réessayer », « Fermer ») ;
+- **suppression bloquée** par une connexion qui ne réagit pas (ancienne version, onglet gelé) : au-delà de 5 s, `ERR-017` (« Réessayer », « Aller à la connexion ») ;
 - une saisie non validée dans l'onglet rechargé n'est pas conservée (ce n'est pas une modification enregistrée, Pepper) ; les modifications en attente, faites dans n'importe quel onglet, sont traitées par l'action elle-même (déposées, ou annoncées par `CNF-DECONNEXION` / `CNF-SUPPR-DONNEES-PERTE`).
 
 Ce rang ajoute seulement l'arrêt de la coordination dans le traitement de l'avis, et les scénarios S16b et S16c (`@ihm`).

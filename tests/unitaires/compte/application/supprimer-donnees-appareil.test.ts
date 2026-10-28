@@ -100,7 +100,7 @@ describe('SupprimerDonneesAppareil (RG-055, ST-US-022 §6.6)', () => {
     expect(env.avis.diffusions).toEqual(['SESSION_FERMEE']);
   });
 
-  it('UT-US-022-57 fermerApresBlocage — « Fermer » d’ERR-017 : jeton oublié, session fermée, aucune nouvelle demande de suppression', async () => {
+  it('UT-US-022-57 fermerApresBlocage — « Aller à la connexion » d’ERR-017 : jeton oublié, session fermée, aucune nouvelle demande de suppression', async () => {
     const env = preparer(0, 0);
     env.espaces.suppressionsBloquees = 1;
     await env.cas.confirmer();
