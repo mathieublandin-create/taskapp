@@ -117,6 +117,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/composition/controleur-interface.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/composition/web.ts": {
       "debut": 0,
       "fin": 1
@@ -294,6 +298,26 @@
       "fin": 1
     },
     "src/compte/presentation/modeles-de-vue/section-compte.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/DialogueConfirmation.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/EcranConnexion.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/Racine.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/SectionCompte.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/SuppressionBloquee.tsx": {
       "debut": 1,
       "fin": 1
     },
@@ -724,6 +748,14 @@
     "src/synchronisation/presentation/modeles-de-vue/ordre-feuille.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/presentation/ui/Bandeau.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
+      "debut": 1,
+      "fin": 1
     }
   }
 }
