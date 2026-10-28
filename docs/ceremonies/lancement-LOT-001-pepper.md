@@ -96,3 +96,16 @@
 | RL-LOT-001-P6 | Second geste en cas d'échec de la fenêtre Google pendant une saisie | Non | Steeve (Q-ST022-STE-4), Pepper | Avant l'E12 du rang 1 |
 
 **Avis de Pepper** : la conception et les tests unitaires sont conformes aux US, aux règles et aux scénarios sur tous les points contrôlés : couverture des critères, codes du catalogue, rattachement des 282 scénarios aux rangs, règles RG-044, RG-056, RG-057 et RG-058, fin de session entre onglets. Je ne m'oppose pas au lancement du lot, sous deux conditions. L'E12 du rang 1 (US-022) attend la réponse du commanditaire à P1 : le socle (rang 0) peut démarrer sans elle. L'E13 du rang 3 attend la correction de P2.
+
+---
+
+## 4. Suites données par Pepper (2026-10-27)
+
+| Remarque | Suite | Fichiers |
+|---|---|---|
+| P1 | **DEC-038** (réponse « a) » du commanditaire, qui valide la précision proposée). RG-017 et le glossaire « Accès Google à renouveler » précisés : passage par Google à chaque ouverture avec le réseau, sans geste ni saisie, données juste après ; sans réseau, données aussitôt. US-017 CA-3 aligné. | Cahier des charges v0.14.1 ; US-017 |
+| P2 | US-017 S06b et US-022 S23b réordonnés : assertions sur les données après `l'accès à Google est renouvelé sans saisie`. Glossaire d'étapes v1.10 : « aussitôt » compté depuis la fin du passage par Google ; l'écran d'attente n'est pas une demande de connexion. **Reste pour Anthony** : définition de l'étape n° 10 de ST-US-017 (échec pendant l'attente). | `.feature` d'US-017 et d'US-022 ; glossaire v1.10 |
+| P3 | Sens de l'étape de S27 fixé : puce `MEN-HEURE-PARIS` sous le titre de la liste des objectifs. **Reste pour Anthony** : définition de l'étape et rang de S27. | Glossaire v1.10 |
+| P4 | Cas limite ajouté à US-022 (`ERR-004` dès qu'un espace de compte existe). **Reste pour Steeve** : texte d'`ERR-004` dans ce cas. | US-022 |
+| P5 | ENF-04 : phrase sur l'application installée limitée au smartphone (correction de forme). | Cahier des charges v0.14.1 |
+| P6 | Cas limite ajouté à US-022 et US-031 (`TST-SAISIE-A-TERMINER`, guide v0.2.14 ; second geste après la saisie). Exception à « jamais plus d'un geste » limitée à cette panne technique, **signalée à Jarvis**. | US-022, US-031 |

@@ -117,16 +117,18 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   # Q-ST017-PEP-1 (2026-10-27) : la dernière ligne de S06 avait été déplacée par erreur dans S06b lors de son insertion (DEC-034) ; elle est rendue à S06.
   # DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
+  # RL-LOT-001-P2, DEC-038 (2026-10-27) : les données s'affichent juste après le passage par Google ; les assertions sur les données suivent donc l'étape de renouvellement.
   @US-017 @RG-017 @RG-035 @LOT-001 @DEC-034
-  Scénario: S06b — Sur le smartphone, accès Google à renouveler à l'ouverture : données du smartphone affichées aussitôt, mise à jour une minute au plus après un renouvellement sans saisie
+  Scénario: S06b — Sur le smartphone, accès Google à renouveler à l'ouverture : passage par Google sans saisie, données du smartphone affichées juste après, mise à jour une minute au plus après
     Étant donné que l'application est fermée sur le smartphone
     Et que la session Google du smartphone a expiré
     Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
     Quand l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
+    Alors sur le smartphone, aucune connexion n'est demandée
+    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
     Alors sur le smartphone, les données présentes sur le smartphone s'affichent aussitôt
     Et sur le smartphone, aucune connexion n'est demandée avant d'afficher les données
-    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
-    Et l'horloge avance de 1 minute depuis la reconnexion
+    Quand l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)

@@ -340,19 +340,20 @@ Fonctionnalité: Se connecter avec mon compte Google
     Et sur le PC, l'objectif "Publier le guide" existe avec le délai 2026-12-15
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
 
-# DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
+  # DEC-034 ; réponse de Starck à Q-DEC034-1 (ADR-013) : à l'ouverture, l'accès se renouvelle sans geste, par une redirection silencieuse (une seule tentative).
+  # RL-LOT-001-P2, DEC-038 (2026-10-27) : les données s'affichent juste après le passage par Google ; les assertions sur les données suivent l'étape de renouvellement.
   @US-022 @RG-017 @RG-035 @LOT-001 @DEC-034
-  Scénario: S23b — Sur le smartphone, accès Google à renouveler à l'ouverture : données affichées sans écran de connexion, accès renouvelé sans saisie
+  Scénario: S23b — Sur le smartphone, accès Google à renouveler à l'ouverture : accès renouvelé sans saisie, puis données affichées sans écran de connexion
     Étant donné que l'utilisateur est connecté avec le compte "A" sur le smartphone
     Et un objectif "Publier le guide" de délai 2026-12-15
     Et que l'application est fermée sur le smartphone
     Et que la session Google du smartphone a expiré
     Quand l'utilisateur ouvre l'application sur le smartphone, connecté au réseau
+    Alors sur le smartphone, aucune connexion n'est demandée
+    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
     Alors sur le smartphone, aucune connexion n'est demandée avant d'afficher les données
     Et sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
-    Et sur le smartphone, le bandeau "BAN-ACCES-GOOGLE" n'est pas affiché
-    Quand sur le smartphone, l'accès à Google est renouvelé sans saisie
-    Alors sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-SESSION"
+    Et sur le smartphone, l'indicateur de synchronisation n'est plus "SYN-SESSION"
     Et sur le smartphone, aucun bandeau n'est affiché
 
   # E8, Q-US-022-3 : en consultation seule (RG-058), aucune action de compte n'écrit dans le Drive.
