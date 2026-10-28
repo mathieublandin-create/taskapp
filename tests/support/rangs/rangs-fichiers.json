@@ -185,6 +185,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/application/requetes/consulter-compte.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/application/session-courante.ts": {
       "debut": 1,
       "fin": 1
@@ -266,6 +270,10 @@
       "fin": 1
     },
     "src/compte/infrastructure/espaces/nom-espace.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/modeles-de-vue/confirmations-compte.ts": {
       "debut": 1,
       "fin": 1
     },
@@ -553,6 +561,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/application/masquage-rappel.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/synchronisation/application/ports/acces-google.ts": {
       "debut": 1,
       "fin": 1
@@ -570,6 +582,10 @@
       "fin": 3
     },
     "src/synchronisation/application/preparation-dossier-drive.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/application/requetes/consulter-etat-synchronisation.ts": {
       "debut": 1,
       "fin": 1
     },
