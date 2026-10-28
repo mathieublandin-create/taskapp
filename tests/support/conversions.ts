@@ -18,8 +18,12 @@ export const FRAGMENT_FUSEAU = String.raw`UTC|[A-Z][A-Za-z_]+(?:\/[A-Za-z_]+)+`;
 
 const MS_PAR_MINUTE = 60_000;
 
+/**
+ * Idempotente : un groupe capturant d'expression régulière dont le motif est celui de `{appareil}` (préfixes,
+ * pluriels « (s) ») est déjà converti par cucumber-js et arrive ici sous la forme `'pc'` ou `'smartphone'`.
+ */
 export const convertirAppareil = (texte: string): NomAppareil =>
-  texte === 'PC' ? 'pc' : 'smartphone';
+  texte === 'PC' || texte === 'pc' ? 'pc' : 'smartphone';
 
 /** « 2 h 30 », « 1 h », « 0 h » ou « 30 min », en minutes (non validé). */
 export const convertirDuree = (texte: string): number => {
