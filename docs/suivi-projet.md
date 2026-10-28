@@ -9,7 +9,7 @@
 ## Lots
 | Lot | Objectif | Typologie (majeure / mineure) | US | Statut | Étape |
 |---|---|---|---|---|---|
-| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | Validé (2026-10-20) | **E7 terminée : lot Ready** ; **E8 terminée** : 10 US explicites ; **E9 en cours** (US métier, Anthony) et préparation du test technique (Starck) ; ordre : socle, US-022, US-001, US-017 incr. 1, US-023, 002, 024, 003, 025, US-017 incr. 2 à 4, US-018, US-031 ; E9 d'US-022 et d'US-017 conditionnée au test technique R1/R2/R11 (actions du commanditaire) |
+| [LOT-001](lots/LOT-001.md) | Socle et objectifs/tâches, smartphone + PC, compte Google, stockage personnel | Majeure | US-022, 017, 018, 031, 001, 023, 002, 024, 003, 025 | **En réalisation** (E11 close le 2026-10-28) | **E12 rang 0 (socle d'écriture)**, branche `us/SOCLE-ecriture` ; compte rendu E11 : `ceremonies/lancement-LOT-001.md` |
 
 ## État des user stories
 | US | Titre | Lot | Statut | Étape (E0–E17) | Agent en cours | Remarques |
