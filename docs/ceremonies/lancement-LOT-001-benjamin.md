@@ -213,3 +213,13 @@ Constats sans effet sur le rang 0, que je signale pour qu'elles ne deviennent pa
 - **Compris et sans ambiguïté** : le contenu des rangs 0 et 1, leur ordre interne, les tests qui les définissent, les scénarios exécutés (aucun au rang 0, dix au rang 1) et les règles de rattachement des scénarios différés.
 - **Questions** : 10, dont **une seule bloque le démarrage de l'E12 du rang 0** (Q-BEN-LOT001-1, branches et accès). Les questions 2, 3 et 4 doivent avoir une réponse avant la clôture du rang 0 (CI verte, protection de `main`) ; la question 8 avant l'E12 du rang 1 ; les questions 5, 6, 7, 9 et 10 ont une proposition par défaut que j'applique sans réponse.
 - **Dette que je signale d'emblée** : DT-001 (données locales non chiffrées) s'applique à `DepotLocalDexie` et à la base technique ; DT-002 (archivage des fichiers d'appareil inactifs) ne me concerne pas au lot 1. Je ne vois pas d'autre dette à inscrire avant le début du développement.
+
+---
+
+## Réponse de Jarvis à Q-BEN-LOT001-1 (2026-10-28)
+- **Branches** (conventions §13.1) : `lot/LOT-001` part de `main`, puis `us/SOCLE-ecriture` part de `lot/LOT-001` pour tout le rang 0, comme Benjamin le propose. Ensuite, une branche `us/US-xxx-<slug>` par US, ou `us/US-017-<n>-<slug>` par incrément. Benjamin crée les branches et commite **en local**.
+- **Poussée** : Jarvis pousse les branches, comme il le fait déjà pour `main`. Benjamin ne pousse pas.
+- **Pull requests** : Jarvis les ouvre au moment de l'E13 par l'API REST de GitHub. L'API GraphQL n'est pas accessible depuis la session.
+  - La lecture de l'état de la CI passe par `GET /repos/{owner}/{repo}/commits/{sha}/check-runs`. Cette route a été vérifiée le 2026-10-28 : elle fonctionne.
+  - Si la création d'une PR échoue depuis la session, Jarvis demande au commanditaire de l'ouvrir depuis l'interface GitHub, avec un lien direct.
+- **Constat transmis à Anthony avec Q-BEN-LOT001-2** : les tests rouges de l'E10 ont été commités sur `main`. Cela déroge au §13.1 (« la branche de lot et `main` restent vertes »).
