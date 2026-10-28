@@ -6,7 +6,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: ['lot/**']
+    branches: ['us/**', 'ano/**', 'lot/**', 'main']
 
 permissions:
   contents: read
@@ -116,7 +116,7 @@ jobs:
       - name: Licences
         run: pnpm licences > licences.log 2>&1 || { echo "::error title=licences::$(tail -c 2500 licences.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: Semgrep
-        run: pipx run "semgrep==${SEMGREP_VERSION}" scan --config p/typescript --config p/security-audit --error --metrics=off src > semgrep.log 2>&1 || { echo "::error title=semgrep::$(tail -c 3500 semgrep.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+        run: pipx run "semgrep==${SEMGREP_VERSION}" scan --config p/typescript --config p/react --config p/owasp-top-ten --config p/secrets --config p/security-audit --error --metrics=off src > semgrep.log 2>&1 || { echo "::error title=semgrep::$(tail -c 3500 semgrep.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   build:
     name: build
