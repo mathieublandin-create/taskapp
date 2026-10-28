@@ -245,7 +245,19 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/infrastructure/avis-onglets-broadcast.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/base-technique.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/infrastructure/coffre-jetons-memoire.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/configuration.ts": {
       "debut": 1,
       "fin": 1
     },
