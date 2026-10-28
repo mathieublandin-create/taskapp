@@ -49,6 +49,21 @@ describe('construireDetailTache (ECR-007)', () => {
     expect(m.infoFinImpossible).toMatchObject({ code: 'ALR-013', n: 2 });
   });
 
+  it('UT-US-024-16 construireDetailTache — chaque ligne de sous-tâche et sa case « Terminer » ont un nom accessible (WCAG 4.1.2, RL-LOT-001-S4)', () => {
+    const tache = resumeTache({
+      id: PARENTE,
+      intitule: 'Chapitre 1',
+      estimationCalculee: true,
+      sousTaches: { terminees: 0, nonAbandonnees: 1 },
+    });
+    const sousTache = resumeTache({ id: t(2), intitule: 'Section A', tacheParente: parente });
+
+    const ligne = modele(detail(tache, [sousTache])).sousTaches?.lignes[0];
+
+    expect(ligne?.caseTerminer).toEqual({ nomAccessible: 'Terminer « Section A »' });
+    expect(ligne?.nomAccessible).toMatch(/^Section A, à faire, délai /);
+  });
+
   it('UT-US-024-16 construireDetailTache — pas d’ALR-013 quand aucune sous-tâche n’est à faire (US-024 CA-8)', () => {
     const tache = resumeTache({
       id: PARENTE,

@@ -103,7 +103,9 @@ Sans objet.
 readonly sousTaches?: {                                   // section SEC-SOUS-TACHES (guide v0.2.9 §5.8 e)
   readonly code: 'SEC-SOUS-TACHES'; readonly libelle: string;   // « Sous-tâches » + compteur « {t} / {n} »
   readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: DateCalendaire; readonly estimation: { readonly minutes: number; readonly libelle: string };
-                                  readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'] }>;   // une seule liste, tous états, ordre de référence (§6.7)
+                                  readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'];
+                                  readonly nomAccessible: string;                       // « {intitulé}, {état en toutes lettres}, délai {date} » (+ « , en retard »), comme LigneTache (RL-LOT-001-S4)
+                                  readonly caseTerminer: { readonly nomAccessible: string } }>;   // « Terminer « {intitulé} » » ; une seule liste, tous états, ordre de référence (§6.7)
   readonly compteur: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string };   // « 1 / 3 »
 };
 readonly infoFinImpossible?: { readonly code: 'ALR-013'; readonly n: number; readonly libelle: string };   // n = sous-tâches à faire ; absent si n = 0
@@ -235,7 +237,7 @@ Agrégations en O(nombre de sous-tâches).
 | UT-US-024-13 | `…/domaine/alertes-delai.test.ts` | `alertesDelaiTache` | sous-tâche 2026-12-05 sous une tâche au 2026-11-30 → `TACHE_PARENTE` ; délai égal ou antérieur → aucune | CA-6 | NI |
 | UT-US-024-14 | `…/domaine/actions.test.ts` | `actionsTache` | sous-tâche : pas de `CREER_SOUS_TACHE` ; tâche abandonnée sans tâche parente : `CREER_SOUS_TACHE` présent | CA-1 | NI |
 | UT-US-024-15 | `…/presentation/formulaire-sous-tache.test.ts` | `construireFormulaireSousTache` | première sous-tâche d'une tâche de 3 h → `ALR-012` (180 min) ; sinon absent ; aucune présélection | CA-2, CA-5 | NI |
-| UT-US-024-16 | `…/presentation/detail-tache.test.ts` | `construireDetailTache` | tâche parente : lignes, compteur 1 / 3 (S05), `MEN-ESTIMATION-CALCULEE`, `ALR-013` (n = 2) ; aucune sous-tâche à faire → pas d'`ALR-013` | CA-3, CA-4, CA-8 | NI |
+| UT-US-024-16 | `…/presentation/detail-tache.test.ts` | `construireDetailTache` | tâche parente : lignes, compteur 1 / 3 (S05), `MEN-ESTIMATION-CALCULEE`, `ALR-013` (n = 2) ; aucune sous-tâche à faire → pas d'`ALR-013` ; noms accessibles de la ligne et de la case « Terminer » (E11, RL-LOT-001-S4) | CA-3, CA-4, CA-8 | NI |
 | UT-US-024-17 | idem | `construireDetailTache` | sous-tâche : `MEN-OBJECTIFS-HERITES`, objectifs de la tâche parente, tâche parente nommée | CA-7 | NI |
 | UT-US-024-18 | `…/presentation/messages-de-refus.test.ts`, `confirmation.test.ts` | `messagesDeRefus`, `construireConfirmation` | `ERR-032` ; `CNF-AJOUT-SOUS-TACHE-TERMINEE` avec l'élément | S17, S18 | NI |
 | UT-US-024-19 | `tests/unitaires/objectifs-taches/application/creer-sous-tache.test.ts` | `CreerSousTache.executer` | sous une tâche terminée (préparée par `Modification`) : sous-tâche créée, tâche parente à faire, deux entrées de journal | S17 | NI |

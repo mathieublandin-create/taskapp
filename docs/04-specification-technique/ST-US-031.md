@@ -13,7 +13,7 @@
 | Résultats du test technique | M-RED favorable (redirection à l'ouverture), étape 16 refaite (GIS avec `login_hint` pour le geste) ; hors ligne (étape 10) favorable |
 | Prérequis | Rangs 0 à 12, en particulier ST-US-022 (rang 1), ST-US-017 incrément 1 (rang 3 : `CycleSynchronisation`), ST-US-018 (rang 12 : service worker, chaîne `@ihm`, masquage du rappel) |
 | Questions | Q-ST031-STA-1, Q-ST031-STA-2 et Q-ST031-PEP-1 **répondues** (2026-10-27) et intégrées ; aucune ouverte |
-| Version | 0.2 |
+| Version | 0.3 |
 | Statut | Conception arrêtée sous réserve du §16 ; E10 avant l'E12 du rang 13 (§13) |
 | Auteur | Anthony |
 | Branche | `us/US-031-hors-ligne-pc` |
@@ -23,6 +23,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après M-RED et l'étape 16). |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Starck (DAT v0.11.3 : Q-ST031-STA-1 a), noms des verrous, verrou « cycle » jusqu'à la mise à jour de `deposeJusquA` ; Q-ST031-STA-2 a)), de Pepper (Q-ST031-PEP-1 a) : S16b et S16c, rang 13) et de Steeve (sans message, guide v0.2.13). Avis de fin de session **ferme** (§6.4, UT-US-031-11). |
+| 0.3 | 2026-10-28 | Anthony | E11. **RL-LOT-001-A1** : ordre « effacer la session → prévenir → supprimer », `versionchange` sans réouverture, `ERR-017` ; port `AvisOnglets`, adaptateur et leurs tests avancés au rang 1 (ST-US-022 v0.3) ; UT-US-031-11 remplacé par UT-US-022-56 (§6.4, §13). **RL-LOT-001-A6** : `navigator.locks` absent journalisé en `erreur`, hypothèse inscrite (§8, §16). Estimation ramenée à 3,5 j. |
 
 ## 1. Résumé technique
 
@@ -60,7 +61,7 @@
 | 5 | `src/synchronisation/application/noms-verrous.ts` | Application | Créer | `nomVerrouMeneur(nomEspace)`, `nomVerrouCycle(nomEspace)` |
 | 6 | `src/synchronisation/application/cycle-synchronisation.ts` | Application | Modifier | Dépendance facultative `exclusion?: ExclusionCycle` (défaut `SANS_EXCLUSION`) ; corps de `synchroniserMaintenant` et de `deposerMaintenant` exécuté sous l'exclusion (§6.2) |
 | 7 | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts` | Modèle de vue | Modifier | Entrée `role: RoleOnglet` ; ligne `SYN-FEUILLE-AUTRE-ONGLET` quand `role = 'SUIVEUR'` et `autreMeneur = true` |
-| 8 | `src/compte/application/ports/avis-onglets.ts`, `src/compte/infrastructure/avis-onglets-broadcast.ts` | Application, infrastructure | Créer | Port `AvisOnglets` et adaptateur `BroadcastChannel` (canal `donejuan-<env>-session`) (Q-ST031-PEP-1 a) |
+| 8 | `src/compte/application/ports/avis-onglets.ts`, `src/compte/infrastructure/avis-onglets-broadcast.ts` | Application, infrastructure | Créer | Port `AvisOnglets` et adaptateur `BroadcastChannel` (canal `donejuan-<env>-session`) : **livrés au rang 1** (ST-US-022 v0.3 §3.2 n° 10 b, RL-LOT-001-A1) ; ce rang ne fait que les utiliser |
 | 9 | `src/composition/test-ihm/transport-par-pont.ts`, `tests/steps-ihm/support/pont-faux-drive.ts` | Composition de test, test | Créer **au rang 12** (ST-US-018 §3 n° 12) | `TransportSynchro` de la composition `test-ihm` qui appelle un `FauxDrive` **unique** tenu par le processus cucumber, via `context.exposeBinding('donejuanFauxDrive', …)` de Playwright (partagé par tous les onglets et survivant à leur fermeture) ; contenus échangés en base64 de `encoderFichierAppareil` / `encoderManifeste` ; `ReseauIndisponible` si `navigator.onLine` est faux (§6.5) |
 | 10 | `src/composition/web.ts`, `src/composition/test-ihm.ts` | Composition | Modifier | `VerrouOngletsWeb`, `exclusionParVerrou`, `CoordinationOnglets.demarrer()` à la place de `cycle.demarrer()` à l'ouverture d'une session ; `coordination.arreter()` à la fermeture de session ; `AvisOnglets` : à la réception, `coordination.arreter()` puis `location.reload()` |
 | 11 | `tests/steps-ihm/onglets.steps.ts`, `tests/steps-ihm/compte.steps.ts` | Test | Créer | Steps de S16, S16b et S16c (§12.1) |
@@ -127,7 +128,7 @@ export interface AvisOnglets {
   ecouter(rappel: (avis: AvisOnglet) => void): Annulation;
 }
 ```
-`VerrouOngletsWeb` : constructeur `new VerrouOngletsWeb(gestionnaire: LockManager | undefined)` (la composition passe `navigator.locks`). `executerExclusivement` → `request(nom, { mode: 'exclusive' }, tache)`. `demanderLaMain` → `request(nom, { mode: 'exclusive', signal }, () => { quandObtenue(); return promesseRendue })` ; `rendre` résout `promesseRendue` si la main est tenue, sinon `abort()` (le rejet `AbortError` de la demande abandonnée est absorbé). `estTenu` → `query()` et recherche de `nom` dans `held`. Sans `LockManager` (API absente) : `executerExclusivement` exécute directement, `demanderLaMain` appelle `quandObtenue` aussitôt, `estTenu` renvoie `false`, et une entrée `avertissement` « verrou entre onglets indisponible » est journalisée une fois.
+`VerrouOngletsWeb` : constructeur `new VerrouOngletsWeb(gestionnaire: LockManager | undefined)` (la composition passe `navigator.locks`). `executerExclusivement` → `request(nom, { mode: 'exclusive' }, tache)`. `demanderLaMain` → `request(nom, { mode: 'exclusive', signal }, () => { quandObtenue(); return promesseRendue })` ; `rendre` résout `promesseRendue` si la main est tenue, sinon `abort()` (le rejet `AbortError` de la demande abandonnée est absorbé). `estTenu` → `query()` et recherche de `nom` dans `held`. Sans `LockManager` (API absente) : `executerExclusivement` exécute directement, `demanderLaMain` appelle `quandObtenue` aussitôt, `estTenu` renvoie `false`, et une entrée **`erreur`** « verrou entre onglets indisponible » est journalisée une fois (RL-LOT-001-A6).
 
 ## 5. Modèle de données
 Aucun. Les noms de verrous et le canal d'avis ne sont pas des données. L'`appareilId` est unique par profil de navigateur **et par compte** : il est rangé dans l'espace du compte, que les onglets partagent (DAT v0.11.3 §4.1.4, ST-US-022 v0.2 §5.2) ; l'HLC est lu et avancé dans la transaction IndexedDB, donc partagé entre onglets (socle, UT-SOC-39).
@@ -157,8 +158,14 @@ Un onglet suiveur n'installe aucun déclencheur. Ses modifications sont déposé
 ### 6.3 Feuille
 `construireFeuilleSynchronisation` reçoit `EtatCoordination` ; la ligne `SYN-FEUILLE-AUTRE-ONGLET` (guide §6.6.2) est présente si et seulement si `role = SUIVEUR` et `autreMeneur`. L'indicateur et les bandeaux ne changent pas : aucun message n'interrompt l'onglet suiveur.
 
-### 6.4 Fin de session dans un autre onglet (Q-ST031-PEP-1 a), US-022 CA-1 ; guide v0.2.13 §6.6.11)
-`SeDeconnecter` et `SupprimerDonneesAppareil` (ST-US-022 §6.5, §6.6), après leur dernière écriture, appellent `avisOnglets.diffuser('SESSION_FERMEE')`. Chaque autre onglet, à la réception, appelle `coordination.arreter()` puis `location.reload()` (composition) : la nouvelle ouverture suit `deciderOuverture` (ST-US-022 §6.1), donc l'écran de connexion. Aucun message, ni toast ni bandeau, dans l'onglet qui se recharge (Steeve). Une saisie non validée dans cet onglet n'est pas conservée (ce n'est pas une modification enregistrée, Pepper). Les modifications en attente, faites dans n'importe quel onglet, sont dans l'espace partagé : elles sont traitées par l'action elle-même (déposées, ou annoncées par `CNF-DECONNEXION` / `CNF-SUPPR-DONNEES-PERTE`). **Suppression** : Dexie ferme d'office ses connexions à l'événement `versionchange`, ce qui débloque `deleteDatabase` ; la composition ajoute à cet événement le même rechargement que pour l'avis (filet de sécurité si l'avis n'arrive pas). L'avis est émis **après** la dernière écriture (session effacée, espace supprimé), pour qu'un onglet rechargé ne retrouve ni session ni espace.
+### 6.4 Fin de session dans un autre onglet (Q-ST031-PEP-1 a), US-022 CA-1 ; guide v0.2.13 §6.6.11 ; DAT v0.11.4 §4.1.6, RL-LOT-001-A1)
+La mécanique est livrée au **rang 1** (ST-US-022 v0.3 §5.2, §6.5, §6.6, §6.11), car elle protège l'intégrité des données dès qu'un second onglet existe :
+- **ordre imposé** : déconnexion `fournisseur.oublier → memoireSession.effacer → avis.diffuser('SESSION_FERMEE') → espaces.fermer` ; suppression `memoireSession.effacer → avis.diffuser('SESSION_FERMEE') → espaces.supprimer → fournisseur.oublier → session.fermer`. La session mémorisée est effacée **avant** l'avis : un onglet qui se recharge ne retrouve pas de session et ne rouvre pas l'espace ;
+- **chaque autre onglet**, à la réception de l'avis ou à l'événement `versionchange` (filet de sécurité), ferme sa connexion **sans réouverture automatique** (`close({ disableAutoOpen: true })`), appelle `coordination.arreter()` (rang 13 ; avant, `cycle.arreter()`), puis `location.reload()` : la nouvelle ouverture suit `deciderOuverture`, donc l'écran de connexion, **sans message** (Steeve) ;
+- **suppression bloquée** par une connexion qui ne réagit pas (ancienne version, onglet gelé) : au-delà de 5 s, `ERR-017` (« Réessayer », « Fermer ») ;
+- une saisie non validée dans l'onglet rechargé n'est pas conservée (ce n'est pas une modification enregistrée, Pepper) ; les modifications en attente, faites dans n'importe quel onglet, sont traitées par l'action elle-même (déposées, ou annoncées par `CNF-DECONNEXION` / `CNF-SUPPR-DONNEES-PERTE`).
+
+Ce rang ajoute seulement l'arrêt de la coordination dans le traitement de l'avis, et les scénarios S16b et S16c (`@ihm`).
 
 ### 6.5 Pont du `FauxDrive` (composition `test-ihm`)
 - Le processus cucumber tient un `FauxDrive` par scénario ; `pont-faux-drive.ts` l'expose par `context.exposeBinding('donejuanFauxDrive', (_source, methode: string, argumentsJson: string) => …)` sur le **contexte persistant** Playwright (`chromium.launchPersistentContext(dossierProfil)`), seul moyen de conserver IndexedDB et le service worker à travers la fermeture d'un onglet, du navigateur ou une « extinction » (S08).
@@ -171,7 +178,7 @@ Sans nouvelle requête. Chaque onglet a son propre jeton en mémoire (DAT §4.1.
 ## 8. Gestion des erreurs
 | Situation | Comportement | Code |
 |---|---|---|
-| `navigator.locks` absent | Exécution sans verrou, onglet meneur d'office, journal `avertissement` une fois | — |
+| `navigator.locks` absent | Exécution sans verrou, onglet meneur d'office, journal **`erreur`** une fois (RL-LOT-001-A6 : situation contraire à ADR-003, impossible sur les navigateurs cibles) | — |
 | Tâche exécutée sous verrou en échec | Verrou rendu ; l'erreur est traitée par le cycle comme aujourd'hui (ST-US-017 §8) | Selon le cycle |
 | Demande de main abandonnée (`AbortError`) | Absorbée par l'adaptateur | — |
 | Onglet meneur fermé pendant un dépôt | Le dépôt est interrompu ; `deposeJusquA` n'a pas avancé (ENF-T-07) ; le nouveau meneur redépose, sans doublon (dépôt idempotent, ST-US-017 §6.2) | — |
@@ -229,21 +236,21 @@ Total : 30.
 | UT-US-031-07 | `synchronisation/presentation/feuille-synchronisation.test.ts` | `construireFeuilleSynchronisation` | `SYN-FEUILLE-AUTRE-ONGLET` présent pour `SUIVEUR` avec `autreMeneur`, absent sinon ; indicateur inchangé | §6.3 |
 | UT-US-031-08 | `synchronisation/integration/deux-onglets.test.ts` (`DepotLocalDexie` × 2 sur une même `IDBFactory`, `FauxDrive`, `VerrouOngletsEnMemoire`) | Deux cycles, deux onglets | modifications dans les deux onglets, dépôts concurrents → un seul fichier d'appareil, chaque élément exactement une fois, aucune entrée en attente perdue (propriété fast-check sur l'entrelacement) | ENF-06, S16 |
 | UT-US-031-09 | idem | Meneur et observation | une modification dans l'onglet suiveur arme la temporisation de 5 s du meneur | §6.1 |
-| UT-US-031-10 | `synchronisation/infrastructure/verrou-onglets-web.test.ts` | `VerrouOngletsWeb` | `LockManager` absent → exécution directe, meneur d'office, un seul avertissement ; `AbortError` absorbé | §4 |
+| UT-US-031-10 | `synchronisation/infrastructure/verrou-onglets-web.test.ts` | `VerrouOngletsWeb` | `LockManager` absent → exécution directe, meneur d'office, une seule entrée `erreur` ; `AbortError` absorbé | §4, RL-A6 |
 | CT-VER-01 à 05 | `tests/contrats/verrou-onglets.contrat.ts` | `VerrouOngletsEnMemoire`, `VerrouOngletsWeb` (sur un `LockManager` simulé conforme à la spécification Web Locks) | 01 exclusion ; 02 FIFO ; 03 verrou rendu sur rejet ; 04 `demanderLaMain` puis `rendre` → le suivant obtient ; 05 `rendre` avant obtention → `quandObtenue` jamais appelée | §4 |
-| UT-US-031-11 | `compte/application/se-deconnecter.test.ts`, `supprimer-donnees-appareil.test.ts` | Avis de fin de session | `diffuser('SESSION_FERMEE')` après la dernière écriture ; jamais en cas d'échec ni de confirmation demandée | §6.4 |
+| UT-US-031-11 | `synchronisation/application/coordination-onglets.test.ts` | Traitement de l'avis | à la réception de `SESSION_FERMEE` : `coordination.arreter()` (main rendue, cycle arrêté) avant le rechargement. *L'ordre des appels des cas d'usage est couvert au rang 1 par UT-US-022-56, la suppression à deux connexions par UT-US-022-60 et 61* | §6.4 |
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
 | Bout en bout | S16, S16b, S16c réels : deux pages, coupure, retour du réseau, fin de session | Profil `ihm` |
 | Bout en bout | `VerrouOngletsWeb` sur Chromium réel : fermeture de la page meneur → l'autre devient meneur | `tests/e2e/onglets.spec.ts` |
-| Intégration | `AvisOngletsBroadcast` : non reçu par l'émetteur, reçu par une autre instance | jsdom ou Playwright |
+| Intégration | `AvisOngletsBroadcast` : livré et testé au rang 1 (ST-US-022 v0.3 §14) | — |
 
 ## 15. Plan de réalisation
-1. Port, doublure, contrat (CT-VER) ; `VerrouOngletsWeb` (UT 10). 2. `exclusionParVerrou` et intégration au cycle (UT 05, 06). 3. `CoordinationOnglets` (UT 01 à 04, 09). 4. Feuille (UT 07). 5. Intégration deux onglets (UT 08). 6. Composition, pont, steps S16. 7. Avis de fin de session (UT 11), steps S16b et S16c.
+1. Port, doublure, contrat (CT-VER) ; `VerrouOngletsWeb` (UT 10). 2. `exclusionParVerrou` et intégration au cycle (UT 05, 06). 3. `CoordinationOnglets` (UT 01 à 04, 09). 4. Feuille (UT 07). 5. Intégration deux onglets (UT 08). 6. Composition, pont, steps S16. 7. Arrêt de la coordination sur l'avis (UT 11), steps S16b et S16c.
 
-Estimation : 4 j (dont 0,5 j pour S16, 1 j pour l'avis de fin de session, S16b et S16c ; le pont du `FauxDrive` est compté au rang 12).
+Estimation : 3,5 j (dont 0,5 j pour S16, 0,5 j pour S16b et S16c ; l'avis de fin de session est compté au rang 1 ; le pont du `FauxDrive` est compté au rang 12).
 
 ## 16. Points ouverts (tous répondus)
 - **Q-ST031-STA-1 (Starck) — Port interne `VerrouOnglets`** (signalement imposé par conventions §2.3) : port `VerrouOnglets` du contexte `synchronisation`, deux verrous par espace (`…:synchronisation-meneur` tenu par l'onglet meneur, `…:synchronisation-cycle` autour de chaque cycle). Validez-vous ? a) oui ★ ; b) un seul verrou par cycle, sans meneur (tous les onglets synchronisent à tour de rôle ; `SYN-FEUILLE-AUTRE-ONGLET` devient sans objet, ce qui contredit le guide §6.4).
@@ -253,7 +260,8 @@ Estimation : 4 j (dont 0,5 j pour S16, 1 j pour l'avis de fin de session, S16b e
 - **Q-ST031-PEP-1 (Pepper) — Déconnexion ou suppression des données avec deux onglets ouverts.** L'US ne dit pas ce que devient l'autre onglet. Proposition : a) il se recharge et affiche l'écran de connexion (ECR-010), sans message ★ ; b) il reste ouvert sur les données jusqu'à sa fermeture (impossible après « Supprimer les données de cet appareil » : la base n'existe plus) ; c) autre. Si a), un scénario de cas limite est à ajouter, ou le cas est vérifié en recette ; Steeve est consulté si un message est souhaité.
   - **Réponse de Pepper (2026-10-27) : a), précision sans changement de règle.** La session est celle de l'appareil : après « Se déconnecter » ou « Supprimer les données de cet appareil » dans un onglet, l'appareil n'a plus de session ouverte, et US-022 CA-1 impose alors de n'afficher que l'invitation à se connecter, sans aucune donnée (RG-019, RG-043 ; RG-055 et CA-10 : « la session prend fin et l'application revient à l'écran de connexion »). L'option b) contredirait CA-1. Pas de question au commanditaire. Report : US-031 (cas limites, S16b et S16c, `@ihm`), US-022 (cas limite), glossaire d'étapes v1.9. Les modifications en attente sont traitées par l'action elle-même, quel que soit l'onglet où elles ont été faites ; une saisie non validée dans l'autre onglet n'est pas conservée (ce n'est pas une modification enregistrée). « Sans message » : choix d'ergonomie à confirmer par Steeve, non bloquant ; les scénarios ne vérifient aucun message.
   - **Réponse de Steeve (E9, 2026-10-27, guide v0.2.13 §6.6.11)** : « sans message » confirmé. L'autre onglet se recharge sur l'écran de connexion sans toast ni bandeau (l'utilisateur a demandé lui-même la fin de session) ; aucun code de catalogue créé.
-- Hypothèses : aucune. Dette : aucune.
+- **Hypothèse H-031-1 (RL-LOT-001-A6)** : l'API Web Locks (`navigator.locks`) est disponible sur tous les navigateurs cibles (Chrome et Edge pour ordinateur, Chrome Android ; Safari 15.4 et plus pour EPI-001). Sans elle, plusieurs onglets pourraient écrire le même fichier d'appareil (ADR-003) ; le cas est journalisé en `erreur`.
+- Dette : aucune.
 
 ## 17. Checklist
 - [x] Fichiers, signatures, règles, steps, rangs.

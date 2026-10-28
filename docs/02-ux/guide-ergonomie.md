@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.16, 2026-10-28 (Steeve).** RL-LOT-001-P4 (Pepper) : texte d'`ERR-004` rendu neutre quant au compte (hors réseau, l'application ne sait pas quel compte tente de se connecter ; l'espace présent peut être celui d'un autre compte). Code et déclencheur inchangés.
+>
 > **Version 0.2.15, 2026-10-27 (Steeve).** E11 de LOT-001, réserve RL-LOT-001-A1 de Starck : code `ERR-017` créé (suppression des données de cet appareil bloquée par une autre fenêtre ou un autre onglet de Done Juan, §6.6.8) ; écran d'attente `SYN-REDIRECTION` limité à 10 s (§6.6.2, remarque S6). Aucune règle de gestion modifiée.
 >
 > **Version 0.2.14, 2026-10-27 (Steeve).** E11 de LOT-001 (`ceremonies/lancement-LOT-001-steeve.md`) : réponse à Q-ST022-STE-4 (`TST-SAISIE-A-TERMINER`, §6.6.6) ; §5.8 complété : ordre des deux listes de la feuille (modifications en attente, informations à lire) et rendu des sections vides du détail d'un objectif. Code `EVD-OBJECTIFS-TOUS-ATTEINTS` créé (§6.6.5). Aucune règle de gestion modifiée.
@@ -781,7 +783,7 @@ Chaque erreur a un **titre** et un **texte** (« ce qui s'est passé, ce qui est
 | `ERR-001` | « annule la connexion » | « Connexion annulée » | « Une connexion à un compte Google est nécessaire pour utiliser l'application. Rien n'a été créé. » | « Continuer avec Google » | S06 |
 | `ERR-002` | « refuse les autorisations demandées » | « Connexion annulée » (**même texte que `ERR-001`**, imposé par US-022 CA-4 ; seul le code diffère) | idem | « Continuer avec Google » | S06 |
 | `ERR-003` | « réseau nécessaire pour la première connexion » (première connexion, ou rechargement après suppression des données de l'appareil) | « Pas de connexion à Internet » | « Une connexion est nécessaire pour vous connecter la première fois. Réessayez dès que vous avez du réseau. Rien n'a été créé. » | « Réessayer » | S18, S20 |
-| `ERR-004` | « réseau nécessaire pour se connecter » (reconnexion après une déconnexion) | « Pas de connexion à Internet » | « Une connexion est nécessaire pour vous reconnecter. Vos données sont conservées sur cet appareil. Réessayez dès que vous avez du réseau. » | « Réessayer » | S22 |
+| `ERR-004` | « réseau nécessaire pour se connecter » (reconnexion après une déconnexion) | « Pas de connexion à Internet » | « Une connexion est nécessaire pour vous connecter. Les données déjà enregistrées sur cet appareil sont conservées. Réessayez dès que vous avez du réseau. » (v0.2.16 : vrai que l'espace présent soit celui de ce compte ou d'un autre, car hors réseau le compte qui se connecte n'est pas connu) | « Réessayer » | S22 |
 | `ERR-005` | « connexion interrompue » ; **aussi** Drive momentanément indisponible à la (re)connexion (5xx ou 429 persistants après les nouvelles tentatives ; v0.2.7, Q-US-022-2 a) | « Connexion interrompue » | « La connexion a été interrompue. Aucune donnée n'a été créée à moitié. Réessayez. » | « Réessayer » | S20 |
 | `ERR-006` | « Drive indisponible pour ce compte » (réservé au Drive désactivé ou refusé, 403 permanent) | « Google Drive n'est pas disponible pour ce compte » | « C'est le cas, par exemple, d'un compte d'organisation sans accès au Drive. L'application en a besoin pour enregistrer vos données. Essayez avec un autre compte Google. » | « Choisir un autre compte » (aucune autre fonction accessible) | S21 |
 

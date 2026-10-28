@@ -13,9 +13,9 @@
 | Résultats du test technique | `03-architecture/resultats-test-technique.md` : R11 favorable (en production) ; M-RED 12/12 ; M-PERSIST et M-DUR favorables ; **étape 16 refaite (information de Jarvis, 2026-10-27)** : avec `login_hint` transmis à GIS, le renouvellement par geste ne demande plus de choisir le compte |
 | Maquettes | ECR-010 (connexion, premier lancement, cadre « Attente »), ECR-011 section « Compte » ; guide d'ergonomie v0.2.13 §6.6 |
 | Q-US traitées | Q-US-022-1 à Q-US-022-4 (E8) ; Q-US-031-1 (DAT §4.1.6 bis) ; Q-DEC034-1 (Starck) |
-| Questions de cette ST | Q-ST022-STA-1 à 3 et Q-ST022-STE-1 à 3 **répondues** (2026-10-27) et intégrées ; ouvertes : Q-ST022-STA-4 (Starck), Q-ST022-STE-4 (Steeve), non bloquantes pour l'E10 : §16 |
-| Version de la ST | 0.2 |
-| Statut | **Prête pour E11** (tests du §13 livrés en rouge, v0.2 comprise) |
+| Questions de cette ST | Toutes répondues et intégrées : Q-ST022-STA-1 à 4, Q-ST022-STE-1 à 4 ; Q-RL-P1 tranchée par le commanditaire (**DEC-038** : écran d'attente `SYN-REDIRECTION` à chaque ouverture avec réseau, aucun jeton conservé) |
+| Version de la ST | 0.3 |
+| Statut | **E11 : remarques traitées** (v0.3 ; RL-LOT-001-A1 en attente de levée par Starck) ; tests du §13 livrés en rouge |
 | Auteur | Anthony |
 | Branches Git | `us/SOCLE-complement` (rang 0) puis `us/US-022-connexion` (rang 1), depuis `lot/LOT-001-socle-objectifs-taches` |
 
@@ -24,6 +24,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED). Stratégies d'authentification arrêtées d'après l'étape 16 refaite : geste par GIS avec `login_hint`, redirection `prompt=none` à l'ouverture et en repli d'une erreur technique de GIS. E10 du rang 1 livrée. |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Starck (DAT v0.11.3) et de Steeve (guide v0.2.13). **Q-ST022-STA-1** : écriture du départ confirmée avant la navigation, reprise sans contenu métier (`ROUTE_REPRISE`), garde de saisie (`GardeSaisie`, `redirectionPermise`) (§4.3, §5.1, §6.4, §6.10). **Q-ST022-STA-2** : repli de GIS par **redirection interactive** (`prompt` absent), une seule par geste ; web-ios : redirection interactive d'emblée (`strategie-geste.ts`, §6.4). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace du compte (`DepotLocalDexie.ouvrirEspace`) ; `RegistreAppareil` supprimé ; table `appareil` remplacée par `installation` (§5.1, §5.2, §6.6). **Q-ST022-STE-3** : `SYN-SESSION` jamais hors ligne (§6.9). E10 complétée : UT-US-022-43 (repli interactif), 44, 45, 47 (hors ligne), 51 à 55. |
+| 0.3 | 2026-10-28 | Anthony | E11 (revue de lancement). **RL-LOT-001-A1** : `versionchange` traité sans réouverture (`surFermetureImposee`, `DepotLocalDexie.fermer`) ; ordre « effacer la session → prévenir les autres onglets → supprimer » ; suppression bloquée au-delà de 5 s → `ERR-017` (`SUPPRESSION_BLOQUEE`, `reessayer`, `fermerApresBlocage`) ; port `AvisOnglets` avancé au rang 1 ; `GestionEspacesIndexedDb` (§4.3, §5.2, §6.5, §6.6, §6.11). **RL-S6** : écran d'attente limité à 10 s (`abandonnerAttenteGoogle`, §6.2) ; toast `TST-SAISIE-A-TERMINER` (`construireRetourReprise`). **RL-S5** : `construireRacine` testé. **RL-A2** : fichiers d'appareil à la racine du dossier. **RL-A9** : archivage retiré (DT-002). **Q-ST022-STA-4** : a) confirmé. **DEC-038** : conception confirmée. Tests : UT-US-022-35 (`redirectionPermise`), 54 (toast), 56 à 61 ajoutés. |
 
 ## 1. Résumé technique
 
@@ -94,6 +95,7 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 7 | `src/compte/application/ports/coffre-jetons.ts` | Application | Créer | Port `CoffreJetons`, type `JetonAcces` | — |
 | 8 | `src/compte/application/ports/memoire-redirection.ts` | Application | Créer | Port interne `MemoireRedirection`, `DepartMemorise`, `EtatReprise` | — |
 | 9 | `src/compte/application/ports/memoire-session.ts` | Application | Créer | Port `MemoireSession`, `SessionMemorisee` | 1 |
+| 10 b | `src/compte/application/ports/avis-onglets.ts`, `src/compte/infrastructure/avis-onglets-broadcast.ts` | Application, infrastructure | Créer | Port `AvisOnglets` (`SESSION_FERMEE`) et adaptateur `BroadcastChannel` `donejuan-<env>-session` ; **avancé au rang 1** (RL-LOT-001-A1 ; ST-US-031 v0.2 le prévoyait au rang 13) | — |
 | 10 | `src/compte/application/ports/garde-saisie.ts` | Application | Créer | Port `GardeSaisie` (saisie en cours : aucune redirection, DAT v0.11.3 §4.1.7). *Le port `RegistreAppareil` de la v0.1 est supprimé (Q-ST022-STA-3)* | — |
 | 11 | `src/compte/application/ports/gestion-espaces.ts` | Application | Créer | Port `GestionEspaces` | 1 |
 | 12 | `src/compte/application/ports/preparation-stockage.ts` | Application | Créer | Port `PreparationStockage` | — |
@@ -118,7 +120,8 @@ Le socle complémentaire n'a pas d'autre test fourni que UT-US-022-48 (masquage 
 | 30 | `src/compte/infrastructure/espaces/gestion-espaces-indexeddb.ts` | Infrastructure | Créer | `GestionEspacesIndexedDb` | 11, 29 |
 | 31 | `src/compte/infrastructure/configuration.ts` | Infrastructure | Créer | `lireConfiguration(env)` : `VITE_ENV`, `VITE_GOOGLE_WEB_CLIENT_ID`, `VITE_BASE_PATH`, `VITE_APP_ORIGIN` ; `plateforme` (`web-ios` si l'agent utilisateur est Safari sur iPhone ou iPad, sinon `web`) | — |
 | 32 | `src/compte/presentation/modeles-de-vue/ecran-connexion.ts` | Modèle de vue | Créer | ECR-010 (invitation, portées annoncées, messages `ERR-001` à `ERR-006`) | 3 |
-| 33 | `src/compte/presentation/modeles-de-vue/racine.ts` | Modèle de vue | Créer | Écran racine : connexion, attente de Google, application | 14 |
+| 33 | `src/compte/presentation/modeles-de-vue/racine.ts` | Modèle de vue | Créer | Écran racine : connexion, attente de Google (`SYN-REDIRECTION`), application (UT-US-022-59) | 14 |
+| 33 b | `src/compte/presentation/modeles-de-vue/retour-reprise.ts` | Modèle de vue | Créer | `construireRetourReprise(issue)` : toast `TST-SAISIE-A-TERMINER` pour `SAISIE_A_TERMINER` (guide v0.2.14 §6.6.6) | 17 |
 | 34 | `src/compte/presentation/modeles-de-vue/section-compte.ts` | Modèle de vue | Créer | ECR-011, section « Compte » | 21 |
 | 35 | `src/compte/presentation/modeles-de-vue/confirmations-compte.ts` | Modèle de vue | Créer | `CNF-DECONNEXION`, `CNF-SUPPR-DONNEES`, `CNF-SUPPR-DONNEES-PERTE` | 18, 19 |
 | 36 | `src/compte/index.ts` | Interface publique | Créer | Types et cas d'usage nécessaires à la composition et aux autres contextes : `EtatAcces`, `Identite`, `IdCompte`, `SessionCourante` (type), `SignalerRefusJeton` | — |
@@ -222,10 +225,13 @@ export class SessionCourante {
 | `SeConnecter.executer()` | — | `Identite` | `{ type: 'ConnexionImpossible'; motif: MotifEchecConnexion }`, `{ type: 'EspaceInaccessible' }` | `EtatReseau`, `FournisseurAuth`, `PreparationStockage`, `GestionEspaces`, `MemoireSession`, `SessionCourante` | Dossier Drive, espace local, session mémorisée |
 | `ReprendreSession.executer(reprise: EtatReprise)` | État d'écran courant | `IssueReprise` : `{ type: 'ACCES_RENOUVELE' }` \| `{ type: 'REDIRECTION_LANCEE' }` \| `{ type: 'SAISIE_A_TERMINER' }` \| `{ type: 'ACCES_PERDU' }` \| `{ type: 'INCHANGE' }` | `{ type: 'HorsLigne' }`, `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `SessionCourante`, `EtatReseau`, `GardeSaisie` | §6.10 ; jeton dans le coffre ; `accesPerdu` effacé si renouvelé, mémorisé si perdu |
 | `SeDeconnecter.evaluer()` | — | `Evaluation` (`CNF-DECONNEXION` avec `n`, ou sans confirmation) | `{ type: 'SansSession' }` | `DepotAvantSortie`, `SessionCourante` | Tente un dépôt (§6.5), aucune écriture locale métier |
-| `SeDeconnecter.executer()` | — | `undefined` | `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `GestionEspaces`, `SessionCourante` | §6.5 |
+| `SeDeconnecter.executer()` | — | `undefined` | `{ type: 'SansSession' }` | `FournisseurAuth`, `MemoireSession`, `AvisOnglets`, `GestionEspaces`, `SessionCourante` | §6.5 |
 | `SupprimerDonneesAppareil.evaluer()` | — | `Evaluation` (`CNF-SUPPR-DONNEES`, toujours) | `SansSession` | `SessionCourante` | Aucun |
-| `SupprimerDonneesAppareil.confirmer()` | — | `{ type: 'SUPPRIMEES' }` \| `{ type: 'CONFIRMATION_REQUISE'; confirmation: { code: 'CNF-SUPPR-DONNEES-PERTE'; n: number } }` | `SansSession`, `EspaceInaccessible` | `DepotAvantSortie`, `GestionEspaces`, `FournisseurAuth`, `MemoireSession`, `SessionCourante` | §6.6 |
-| `SupprimerDonneesAppareil.confirmerPerte()` | — | `{ type: 'SUPPRIMEES' }` | idem | idem | Suppression de l'espace |
+| `SupprimerDonneesAppareil.confirmer()` | — | `{ type: 'SUPPRIMEES' }` \| `{ type: 'CONFIRMATION_REQUISE'; confirmation: { code: 'CNF-SUPPR-DONNEES-PERTE'; n: number } }` \| `{ type: 'SUPPRESSION_BLOQUEE' }` (`ERR-017`) | `SansSession`, `EspaceInaccessible` | `DepotAvantSortie`, `GestionEspaces`, `FournisseurAuth`, `MemoireSession`, `SessionCourante` | §6.6 |
+| `SupprimerDonneesAppareil.confirmerPerte()` | — | `{ type: 'SUPPRIMEES' }` \| `{ type: 'SUPPRESSION_BLOQUEE' }` | idem | idem + `AvisOnglets` | Suppression de l'espace |
+| `SupprimerDonneesAppareil.reessayer()` | — (« Réessayer » d'`ERR-017`, sans nouvelle confirmation) | `SUPPRIMEES` \| `SUPPRESSION_BLOQUEE` | idem | idem | Attend la même suppression |
+| `SupprimerDonneesAppareil.fermerApresBlocage()` | — (« Fermer » d'`ERR-017`) | `undefined` | `SansSession` | `FournisseurAuth`, `SessionCourante` | §6.6 |
+| `OuvrirApplication.abandonnerAttenteGoogle()` | — (échéance de `DELAI_MAX_ATTENTE_REDIRECTION`, 10 s) | `IssueOuverture \| undefined` | — | `MemoireRedirection`, `MemoireSession`, `SessionCourante`, `JournalTechnique` | §6.2 |
 | `SignalerRefusJeton.executer()` | — | `'A_RENOUVELER' \| 'PERDU'` | — | `CoffreJetons`, `Horloge`, `MemoireSession`, `SessionCourante` | Coffre vidé ; `accesPerdu` mémorisé si perdu |
 | `consulterCompte(session)` | — | `{ racine: 'CONNEXION' \| 'ATTENTE_GOOGLE' \| 'APPLICATION'; adresse?: AdresseGoogle }` | — | `SessionCourante` | Aucun |
 
@@ -292,14 +298,22 @@ export interface MemoireSession {
 export interface GardeSaisie { saisieEnCours(): boolean }   // vrai si un formulaire est ouvert et modifié
 // (v0.1 : RegistreAppareil, supprimé — l'appareilId naît avec l'espace du compte, §5.2)
 
-// src/compte/application/ports/gestion-espaces.ts — DEC-016, conventions §9.3
+// src/compte/application/ports/gestion-espaces.ts — DEC-016, conventions §9.3 ; DAT v0.11.4 §4.1.6 (RL-LOT-001-A1)
 export type ErreurEspace = { readonly type: 'EspaceInaccessible' };
+export type ErreurSuppressionBloquee = { readonly type: 'SuppressionBloquee' };
+export const DELAI_SUPPRESSION_BLOQUEE: EcartTemps;                       // 5 s (guide v0.2.15, ERR-017)
 export interface GestionEspaces {
   ouvrir(compte: IdCompte): Promise<Resultat<undefined, ErreurEspace>>; // crée si absent ; ferme l'espace ouvert auparavant
   fermer(): Promise<void>;
   existeUnEspace(): Promise<boolean>;                                     // au moins un espace de compte sur l'appareil
-  supprimer(compte: IdCompte): Promise<Resultat<undefined, ErreurEspace>>;
+  /** Ferme l'espace ouvert, puis deleteDatabase ; bloquée > 5 s → SuppressionBloquee, la demande restant en cours
+   *  (IndexedDB ne permet pas de l'annuler) ; un nouvel appel attend la même demande. */
+  supprimer(compte: IdCompte): Promise<Resultat<undefined, ErreurEspace | ErreurSuppressionBloquee>>;
 }
+
+// src/compte/application/ports/avis-onglets.ts — RL-LOT-001-A1 (rang 1)
+export type AvisOnglet = 'SESSION_FERMEE';
+export interface AvisOnglets { diffuser(avis: AvisOnglet): void; ecouter(rappel: (avis: AvisOnglet) => void): Annulation }
 
 // src/compte/application/ports/preparation-stockage.ts — RG-020, CA-3
 export type ErreurPreparation =
@@ -392,7 +406,8 @@ export const SUIVI_CYCLE_AU_REPOS: SuiviCycle;   // { cycle: 'REPOS', aLire: 0 }
 | `PasserelleGisNavigateur` | `PasserelleGis` (interface interne) | Script `https://accounts.google.com/gsi/client` chargé à la demande | Hors ligne : `ScriptIndisponible` sans attente (R12) |
 | `CoffreJetonsMemoire` | `CoffreJetons` | Variable privée | Seul détenteur du jeton |
 | `MemoireSessionDexie`, `MemoireRedirectionDexie` | ports 8, 9 | Base `donejuan-<env>-technique`, durabilité stricte ; `memoriser` confirmé à `complete` | §5.1 |
-| `GestionEspacesIndexedDb` | `GestionEspaces` | `indexedDB.databases()`, `deleteDatabase` ; rappel `surOuverture(nomBase)` fourni par la composition, qui appelle `DepotLocalDexie.ouvrirEspace` (§5.2) | Le nom ne contient ni `sub` ni adresse (`nomEspace`) |
+| `GestionEspacesIndexedDb` | `GestionEspaces` | `indexedDB.databases()`, `deleteDatabase` ; options `{ env, fabrique?, planificateur, surOuverture(nomBase), surFermeture() }` : la composition ouvre (`DepotLocalDexie.ouvrirEspace`) et ferme (`DepotLocalDexie.fermer`) l'espace | Le nom ne contient ni `sub` ni adresse (`nomEspace`) ; suppression : §6.11 |
+| `AvisOngletsBroadcast` | `AvisOnglets` | `BroadcastChannel('donejuan-<env>-session')` | Seul fichier autorisé à utiliser `BroadcastChannel` (règle ESLint) |
 | `ClientGoogle` | (utilitaire d'infrastructure) | `fetch`, `AbortSignal` | §6.8 |
 | `TransportSynchroDrive` | `TransportSynchro` | Drive v3 REST | `appProperties` `{ donejuan: 'dossier' }`, dossier racine, `trashed = false` |
 | `EtatReseauNavigateur` | `EtatReseau` | `navigator.onLine`, événements `online` et `offline` | — |
@@ -477,7 +492,9 @@ Relecture par Zod (`compte/infrastructure/base-technique.ts`) ; une ligne invali
 ### 5.2 Espaces par compte
 Nom : `nomEspace(env, compte)` = `donejuan-<env>-` + SHA-256 hexadécimal (64 caractères minuscules) du `sub` encodé en UTF-8. Contenu : base de `ST-socle-ecriture.md` §5.1.
 
-**`appareilId` (DAT v0.11.3 §4.1.4, Q-ST022-STA-3)** : il est rangé dans l'espace (`meta.appareilId` du socle) et **naît avec lui**, un par couple installation et compte. La composition ouvre l'espace par `DepotLocalDexie.ouvrirEspace({ nomBase, fabrique?, generateur })` : base neuve → `IdAppareil.depuisUuid(generateur.genererUuidV7())` écrit dans `meta.appareilId` en transaction stricte confirmée à `complete` ; base existante → identifiant relu, générateur non appelé ; ligne illisible → `Echec(DonneesLocalesIllisibles)`. Le rappel `surOuverture(nomBase): Promise<Resultat<undefined, ErreurEspace>>` de `GestionEspacesIndexedDb` rend `EspaceInaccessible` sur tout échec. Après « Supprimer les données de cet appareil », la reconnexion crée un espace neuf, donc un **nouvel** `appareilId` (UT-US-022-55). `existeUnEspace()` : vrai si `indexedDB.databases()` contient au moins un nom de la forme `donejuan-<env>-` suivi de 64 caractères hexadécimaux.
+**`appareilId` (DAT v0.11.3 §4.1.4, Q-ST022-STA-3)** : il est rangé dans l'espace (`meta.appareilId` du socle) et **naît avec lui**, un par couple installation et compte. La composition ouvre l'espace par `DepotLocalDexie.ouvrirEspace({ nomBase, fabrique?, generateur })` : base neuve → `IdAppareil.depuisUuid(generateur.genererUuidV7())` écrit dans `meta.appareilId` en transaction stricte confirmée à `complete` ; base existante → identifiant relu, générateur non appelé ; ligne illisible → `Echec(DonneesLocalesIllisibles)`. Le rappel `surOuverture(nomBase): Promise<Resultat<undefined, ErreurEspace>>` de `GestionEspacesIndexedDb` rend `EspaceInaccessible` sur tout échec. Après « Supprimer les données de cet appareil », la reconnexion crée un espace neuf, donc un **nouvel** `appareilId` (UT-US-022-55).
+
+**Connexions des autres onglets (DAT v0.11.4 §4.1.6, RL-LOT-001-A1)** : toute instance qui ouvre une base (espace par `DepotLocalDexie`, base technique par `base-technique.ts`) traite `versionchange` : `db.close({ disableAutoOpen: true })` (Dexie 4 : aucune réouverture automatique au prochain accès), puis rappel `surFermetureImposee` ; toute méthode rend ensuite `Echec(EspaceLocalNonOuvert)` (base technique : lecture `undefined`, écriture `MemoireTechniqueIndisponible`). Dans la composition, ce rappel arrête la coordination et le cycle, puis recharge la page ; la nouvelle ouverture suit `deciderOuverture`. Une montée de version (versions 2 à 4 de l'espace, ST-US-017) est traitée de la même façon. `existeUnEspace()` : vrai si `indexedDB.databases()` contient au moins un nom de la forme `donejuan-<env>-` suivi de 64 caractères hexadécimaux.
 
 ### 5.3 Drive (rang 1)
 Seul le **dossier** est créé : `name = "Done Juan"`, `mimeType = application/vnd.google-apps.folder`, `appProperties = { donejuan: "dossier" }`, à la racine. Recherche : `q = "appProperties has { key='donejuan' and value='dossier' } and trashed = false and mimeType = 'application/vnd.google-apps.folder'"`, `orderBy = createdTime`, premier résultat retenu (dossier canonique, DAT §4.2.2 d ; le dédoublonnage est fait au rang 3). Le manifeste et les fichiers d'appareil relèvent de ST-US-017.
@@ -518,6 +535,8 @@ Base technique version 1 : création. Aucune donnée existante. Aucun impact sur
 8. OUVRIR_SANS_JETON : acces ← accesInitial (si departEnAttente : journal 'RetourAbsent')
 9. sessionCourante.ouvrir(identite, acces) ; renvoyer { type: 'SESSION_OUVERTE', acces, reprise? }
 ```
+**Écran d'attente limité à 10 s (guide v0.2.15 §6.6.2, RL-LOT-001-S6 ; DEC-038)** : quand `executer` rend `REDIRECTION_LANCEE`, la composition arme `planificateur.apres(DELAI_MAX_ATTENTE_REDIRECTION (10 s), …)`. À l'échéance, si la page n'a pas quitté l'application : `navigation.annuler()` (`window.stop()`), puis `abandonnerAttenteGoogle()` : `memoireRedirection.consommer()` ; journal `avertissement` `RedirectionSansReponse` ; `session.ouvrir(identite, accesPerdu ? PERDU : A_RENOUVELER)` → `SESSION_OUVERTE` (en ligne : `SYN-SESSION` avec `ERR-015`). Aucune nouvelle redirection dans cette ouverture (pas de boucle) ; hors état `ATTENTE_GOOGLE` : `undefined`, rien ne change (UT-US-022-58).
+
 `REPRISE_ACCUEIL` = `{ ecran: 'accueil', feuilleSynchronisationOuverte: false }`. `issueDe` : `SessionARenouveler` → `ERREUR_INTERACTION` ; `ConfigurationOAuthInvalide` → `ERREUR_CONFIGURATION` ; `RetourRedirectionRejete` → `RETOUR_REJETE` ; `AccesGoogleRevoque` → `REFUS` ; `PorteeInsuffisante` → `PORTEES_PARTIELLES` ; `CompteDifferent`, `MemoireTechniqueIndisponible`, `ReseauIndisponible` → `ERREUR_TECHNIQUE` ; `ConnexionAnnulee` → `ANNULATION`.
 
 ### 6.3 `accesApresRetour` (DAT §4.1.6 bis, ADR-013, EC-7)
@@ -559,8 +578,9 @@ Redirection (ouverture silencieuse, ou repli interactif d'un geste) :
 ```text
 evaluer : n ← depot.compterEnAttente() ; si n > 0 : depot.deposerSiPossible() ; n ← depot.compterEnAttente()
           n = 0 → SANS_CONFIRMATION ; sinon CONFIRMATION_REQUISE { code: 'CNF-DECONNEXION', n }
-executer : fournisseur.oublier() ; memoireSession.effacer() ; espaces.fermer() ; sessionCourante.fermer()
-           (la mémoire de redirection est effacée par fournisseur.oublier ; aucune donnée de l'espace n'est supprimée ; aucune révocation)
+executer : fournisseur.oublier() ; memoireSession.effacer() ; avis.diffuser('SESSION_FERMEE') ; espaces.fermer() ; sessionCourante.fermer()
+           (la mémoire de redirection est effacée par fournisseur.oublier ; aucune donnée de l'espace n'est supprimée ; aucune révocation ;
+            les autres onglets se rechargent sur l'écran de connexion, sans message : ST-US-031 §6.4 ; UT-US-022-56)
 ```
 En consultation seule (RG-058, S25), `deposerSiPossible` renvoie `NON_TENTE` (garde du port, ST-US-017 incrément 4).
 
@@ -570,9 +590,15 @@ evaluer   : CONFIRMATION_REQUISE { code: 'CNF-SUPPR-DONNEES' }
 confirmer : n ← compter ; si n > 0 : deposerSiPossible ; n ← compter
             n > 0 → CONFIRMATION_REQUISE { code: 'CNF-SUPPR-DONNEES-PERTE', n } ; sinon supprimer
 confirmerPerte : supprimer
-supprimer : espaces.supprimer(compte) (échec → EspaceInaccessible, rien d'autre) ; fournisseur.oublier ; memoireSession.effacer ; sessionCourante.fermer → { type: 'SUPPRIMEES' }
+supprimer : memoireSession.effacer ; avis.diffuser('SESSION_FERMEE') ; r ← espaces.supprimer(compte)      // ordre imposé : DAT v0.11.4 §4.1.6
+            r = SuppressionBloquee → { type: 'SUPPRESSION_BLOQUEE' } (ERR-017 ; jeton et session en mémoire gardés, aucune autre action)
+            r = EspaceInaccessible → memoireSession.ecrire(session d'avant) ; Echec(EspaceInaccessible)
+            r = Succes → fournisseur.oublier ; sessionCourante.fermer → { type: 'SUPPRIMEES' }
+reessayer : r ← espaces.supprimer(compte) (attend la même demande, au plus 5 s) ; mêmes suites
+fermerApresBlocage : fournisseur.oublier ; sessionCourante.fermer (écran de connexion) ; aucune nouvelle demande
 ```
-Le Drive n'est jamais modifié par cette action. Les espaces d'autres comptes ne sont pas touchés (S19). **L'`appareilId` disparaît avec l'espace** (DAT v0.11.3 §4.1.4, réponse b) à Q-ST022-STA-3) : la reconnexion crée un espace neuf et un nouvel `appareilId` ; l'ancien fichier `appareils/<ancien id>.etat.json.gz` est celui d'un appareil inactif, fusionné comme les autres puis archivé après 90 jours (ST-US-017 §6.7).
+**`ERR-017` et irréversibilité (RL-LOT-001-A1)** : IndexedDB ne permet pas d'annuler une demande `deleteDatabase` en attente. Une fois la confirmation donnée, la suppression **aboutira** dès que l'autre fenêtre fermera l'espace ; « Réessayer » attend de nouveau (au plus 5 s), « Fermer » ramène cet onglet à l'écran de connexion. La session mémorisée a été effacée avant la suppression : une ouverture ultérieure ne rouvre pas l'espace. Écart au guide v0.2.15 (« la session reste ouverte, aucune donnée touchée ») signalé à Steeve : RL-LOT-001-A1, réponse d'Anthony, point 3.
+Le Drive n'est jamais modifié par cette action. Les espaces d'autres comptes ne sont pas touchés (S19). **L'`appareilId` disparaît avec l'espace** (DAT v0.11.3 §4.1.4, réponse b) à Q-ST022-STA-3) : la reconnexion crée un espace neuf et un nouvel `appareilId` ; l'ancien fichier `<ancien id>.etat.json.gz` (à la racine du dossier `Done Juan/`, DAT v0.11.4 §4.2) est celui d'un appareil inactif, fusionné comme les autres ; l'archivage est hors du lot 1 (DAT v0.11.4 §4.2, dette DT-002).
 
 ### 6.7 `SeConnecter`
 ```text
@@ -627,6 +653,15 @@ Rien n'est écrit dans l'appareil (espace, session) avant l'étape 4 : un échec
 ```
 Au retour d'un repli interactif, `OuvrirApplication` traite le retour (§6.2, origine `GESTE`) : `access_denied` → accès perdu ; toute autre erreur → `A_RENOUVELER` (`SYN-SESSION`), sauf si l'accès était déjà perdu (règle du §6.3, Q-ST022-STA-4).
 
+### 6.11 `GestionEspacesIndexedDb.supprimer` (DAT v0.11.4 §4.1.6, RL-LOT-001-A1)
+```text
+si une demande de suppression de ce compte est en cours : attendre son issue, au plus DELAI_SUPPRESSION_BLOQUEE (5 s)
+sinon : surFermeture() (ferme l'espace de cet onglet) ; demande ← fabrique.deleteDatabase(nomEspace(env, compte))
+        issue ← course(succès de la demande, planificateur.apres(5 s))
+        succès → Succes ; erreur → EspaceInaccessible ; échéance → SuppressionBloquee (la demande reste mémorisée et en cours)
+```
+Les autres onglets coopérants ferment leur connexion sur `versionchange` (§5.2) : la suppression aboutit sans attendre. Seule une connexion qui ne réagit pas (ancienne version de l'application, onglet gelé) la bloque.
+
 ## 7. Intégration Google
 
 | Opération | Portée | Données | Idempotence | Erreurs |
@@ -650,6 +685,8 @@ Nouvelle portée : non. Aucun événement d'agenda.
 | 6 | Retour `prompt=none` en erreur d'interaction | `recevoirRetour` | `SessionARenouveler` | `SYN-SESSION`, aucune nouvelle redirection | `SYN-SESSION`, `ERR-015` | `info` : code | UT-US-022-33 |
 | 7 | Erreur de configuration OAuth | idem | `ConfigurationOAuthInvalide` | Comme 6 ; anomalie | `SYN-SESSION` | `erreur` : code Google seul | UT-US-022-34 |
 | 7 b | Repli de GIS nécessaire alors qu'une saisie est en cours | `FournisseurAuthWeb` (`redirectionPermise` faux) | `RedirectionNonPermise` | Aucune navigation ; `SAISIE_A_TERMINER` ; état inchangé | Q-ST022-STE-4 | `info` | UT-US-022-54 |
+| 7 d | Suppression bloquée par une autre fenêtre | `GestionEspacesIndexedDb` (5 s) | `SuppressionBloquee` | `SUPPRESSION_BLOQUEE` ; « Réessayer » / « Fermer » | `ERR-017` | `avertissement` | UT-US-022-57, 61 |
+| 7 e | Aucun retour de Google 10 s après le départ de la redirection d'ouverture | Composition (`Planificateur`) | — | `abandonnerAttenteGoogle` : ouverture sans jeton, sans boucle | `SYN-SESSION`, `ERR-015` | `avertissement` | UT-US-022-58 |
 | 7 c | Base technique indisponible | `MemoireRedirectionDexie` | `MemoireTechniqueIndisponible` | Aucune redirection ; ouverture sans jeton | `SYN-SESSION` (en ligne) | `avertissement` | Intégration de la base technique (§14) |
 | 8 | `state` absent, inconnu, rejoué, expiré | `verifierRetour` | `RetourRedirectionRejete` | Jeton ignoré | `SYN-SESSION` | `avertissement` : motif | UT-US-022-18, 19 |
 | 9 | Jeton d'un autre compte | `FournisseurAuthWeb` | `CompteDifferent` | Jeton jeté | `SYN-SESSION` | `avertissement` | UT-US-022-36 |
@@ -814,7 +851,13 @@ Raison d'échec en phase rouge : « NI » (`ErreurNonImplementee` des squelettes
 | UT-US-022-51 | `compte/infrastructure/auth/strategie-geste.test.ts` | `mecanismeGeste` | `web` → GIS ; `web-ios` → redirection interactive d'emblée | DAT v0.11.3 §4.1.7 |
 | UT-US-022-52 | idem | `suiteErreurGis` | repli interactif pour script indisponible avec réseau, `popup_failed_to_open`, erreur inconnue ; script indisponible hors ligne → `ReseauIndisponible` ; `popup_closed` → `ConnexionAnnulee` ; `access_denied` → `AccesGoogleRevoque` | Q-ST022-STA-2 |
 | UT-US-022-53 | `compte/application/reprendre-session.test.ts` | `ReprendreSession` | demande `RENOUVELLEMENT_GESTE` avec `login_hint` et `redirectionPermise` → `VALIDE` ; après `PERDU` : `RECONNEXION_GESTE`, `accesPerdu` effacé | RG-017, RG-035 |
-| UT-US-022-54 | idem | idem | saisie en cours → `redirectionPermise` faux, `RedirectionNonPermise` → `SAISIE_A_TERMINER`, état inchangé ; `access_denied` → `ACCES_PERDU` mémorisé ; fenêtre fermée → `INCHANGE` ; hors ligne → `HorsLigne` sans demande | Q-ST022-STA-1 |
+| UT-US-022-54 | idem ; `compte/presentation/retour-reprise.test.ts` | idem ; `construireRetourReprise` | toast `TST-SAISIE-A-TERMINER` pour `SAISIE_A_TERMINER` (RL-S6) ; saisie en cours → `redirectionPermise` faux, `RedirectionNonPermise` → `SAISIE_A_TERMINER`, état inchangé ; `access_denied` → `ACCES_PERDU` mémorisé ; fenêtre fermée → `INCHANGE` ; hors ligne → `HorsLigne` sans demande | Q-ST022-STA-1 |
+| UT-US-022-56 | `compte/application/se-deconnecter.test.ts`, `supprimer-donnees-appareil.test.ts` | `SeDeconnecter.executer`, `SupprimerDonneesAppareil.confirmer` | ordre des appels : déconnexion `oublier → effacer → diffuser → fermer` ; suppression `effacer → diffuser → supprimer → oublier` | RL-LOT-001-A1 |
+| UT-US-022-57 | `compte/application/supprimer-donnees-appareil.test.ts` | `confirmer`, `reessayer`, `fermerApresBlocage` | suppression bloquée → `SUPPRESSION_BLOQUEE`, ni jeton oublié ni session fermée ; « Réessayer » aboutit ; « Fermer » : jeton oublié, session fermée, aucune nouvelle demande | `ERR-017` |
+| UT-US-022-58 | `compte/application/ouvrir-application.test.ts` | `abandonnerAttenteGoogle` | après 10 s sans retour : départ consommé, session sans jeton (`A_RENOUVELER` ou `PERDU`), aucune nouvelle redirection ; hors attente : `undefined` | RL-LOT-001-S6 |
+| UT-US-022-59 | `compte/presentation/racine.test.ts` | `construireRacine` | sans session → `CONNEXION` ; attente → `SYN-REDIRECTION` et nom accessible ; ouverte → `APPLICATION` | RL-LOT-001-S5, CA-1 |
+| UT-US-022-60 | `tests/integration/compte/gestion-espaces-indexeddb.test.ts` | `GestionEspacesIndexedDb.supprimer`, `DepotLocalDexie` (`surFermetureImposee`) | deux connexions : l'autre se ferme sur `versionchange`, n'est jamais rouverte (`EspaceLocalNonOuvert`), la base n'est pas recréée | RL-LOT-001-A1 |
+| UT-US-022-61 | idem | idem | connexion qui ne se ferme pas : `SuppressionBloquee` après 5 s, base intacte ; nouvel appel → aboutit à la fermeture | RL-LOT-001-A1, `ERR-017` |
 | UT-US-022-55 | `tests/integration/synchronisation/depot-local-dexie-espace.test.ts` | `DepotLocalDexie.ouvrirEspace` | base neuve → `appareilId` généré, relu à la réouverture sans nouvel appel ; base supprimée puis rouverte → nouvel `appareilId` | Q-ST022-STA-3 |
 
 **Précisions de l'E10 (2026-10-27)** — les squelettes font foi :
@@ -828,13 +871,17 @@ Bilan : **60 cas** (UT-US-022-01 à 50, dont des cas multiples pour 12, 20, 24, 
 
 **Compléments de la v0.2 (2026-10-27)** : UT-US-022-43 (cas interactif), 44, 45, 47 (hors ligne) modifiés ; UT-US-022-51 à 55 ajoutés ; squelettes `strategie-geste.ts`, `garde-saisie.ts`, `ReprendreSession` (dépendance `gardeSaisie`), `DemandeJeton.redirectionPermise`, `ErreurAuth` `RedirectionNonPermise`, `ROUTE_REPRISE`, `DepotLocalDexie.ouvrirEspace` et `appareil()` ; `registre-appareil.ts` supprimé. Bilan : **70 cas**, tous en échec « NI ».
 
+**Compléments de la v0.3 (E11, 2026-10-28)** : UT-US-022-35 attend `redirectionPermise: true` ; UT-US-022-54 complété (toast) ; UT-US-022-56 à 61 ajoutés ; squelettes `avis-onglets.ts`, `gestion-espaces-indexeddb.ts`, `racine.ts`, `retour-reprise.ts`, `DELAI_MAX_ATTENTE_REDIRECTION`, `DELAI_SUPPRESSION_BLOQUEE`, `SupprimerDonneesAppareil.reessayer` / `fermerApresBlocage`, `OuvrirApplication.abandonnerAttenteGoogle`, `DepotLocalDexie.fermer` et `surFermetureImposee`. Bilan : **80 cas**, tous en échec « NI ».
+
 Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/presentation tests/unitaires/synchronisation/application/preparation-dossier-drive.test.ts tests/unitaires/infrastructure-google tests/unitaires/commun/infrastructure tests/integration/synchronisation/depot-local-dexie-espace.test.ts`.
 
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
 | Intégration | Base technique Dexie (`fake-indexeddb`) : relecture Zod, durabilité stricte, `memoriser` résolu après `complete`, `consommer` toujours destructif, route hors `ROUTE_REPRISE` refusée, base indisponible → aucune redirection | Un test par adaptateur et par condition |
-| Intégration | `GestionEspacesIndexedDb` : création, `existeUnEspace`, suppression sans toucher un autre espace | 3 cas |
+| Intégration | `GestionEspacesIndexedDb` : création, `existeUnEspace`, suppression sans toucher un autre espace | 3 cas (en plus d'UT-US-022-60 et 61) |
+| Intégration | Base technique : `versionchange` sans réouverture, deux connexions | 1 cas |
+| Intégration | `AvisOngletsBroadcast` : non reçu par l'émetteur, reçu par une autre instance | 1 cas |
 | Contrat | `FournisseurAuth` : `FauxFournisseurAuth` et `FournisseurAuthWeb` (GIS et navigation doublés) | Suite `tests/contrats/fournisseur-auth.contrat.ts` (écrite par Anthony au rang 1, E12 avant la revue) |
 | Unitaires | `FournisseurAuthWeb` : repli par redirection **interactive** pour chaque erreur technique de GIS (URL sans `prompt`), une seule navigation par geste, aucun repli sur `popup_closed` ni `access_denied`, web-ios sans GIS, `redirectionPermise` faux → aucune navigation | Un test par code |
 | Bout en bout | Au premier rendu, `location.hash` est vide (RED-02) | Playwright, rang 12 (service worker) |
@@ -857,6 +904,7 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 - **Q-ST022-STA-3 — Appareil après « Supprimer les données ».** L'`appareilId` est propre à l'installation (DAT §4.1.4) et survit à la suppression : à la reconnexion, l'appareil lit son ancien fichier du Drive comme une source ordinaire, puis le réécrit. Confirmez-vous ? a) oui ★ ; b) un nouvel `appareilId` après la suppression (« comme un nouvel appareil »).
   - **Réponse de Starck (2026-10-27, DAT v0.11.3 §4.1.4) : b)**, intégrée : l'`appareilId` est dans l'espace du compte et naît avec lui ; `RegistreAppareil` supprimé ; la base technique ne le porte plus (§5.1, §5.2, §6.6).
 - **Q-ST022-STA-4 (nouvelle, non bloquante) — Retour d'un repli interactif en erreur alors que l'accès était déjà perdu.** Votre réponse à Q-ST022-STA-2 : « toute autre erreur donne `SYN-SESSION` ». Le §6.3 (DAT §4.1.6 bis) dit qu'une erreur sans preuve ne transforme jamais un accès perdu en accès à renouveler. Après « Se reconnecter » (accès `PERDU`) suivi d'un repli revenu en `interaction_required`, je garde donc `PERDU` (bandeau « Se reconnecter »). a) garder `PERDU` ★ ; b) passer à `A_RENOUVELER` (`SYN-SESSION`).
+  - **Réponse de Starck (E11, DAT v0.11.4 §4.1.7) : a) confirmé.** Le tableau du §6.3 est exact ; aucun changement.
 
 **Questions à Steeve (ergonomie)** — Q-ST022-STE-1 à 3 répondues (guide v0.2.12) et intégrées :
 - **Q-ST022-STE-1 — Écran d'attente de la redirection à l'ouverture** (ADR-013 le confie à Steeve) : code et texte ? Proposition : code `SYN-REDIRECTION`, texte « Connexion à Google… », sans action, logo de l'application.
@@ -868,6 +916,8 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 - **Q-ST022-STE-4 (nouvelle, non bloquante pour l'E10, avant l'E12 des écrans) — Geste de reprise pendant une saisie.** Condition de Starck (DAT v0.11.3 §4.1.7) : une saisie en cours n'est jamais perdue par un rechargement. Si GIS échoue et que le repli (qui recharge la page) est nécessaire pendant qu'un formulaire modifié est ouvert, aucune redirection n'est lancée (`SAISIE_A_TERMINER`). Que voit l'utilisateur ? Proposition : un toast « Terminez votre saisie, puis reprenez la synchronisation. » (code à créer), l'indicateur restant `SYN-SESSION`. a) ce toast ★ ; b) une confirmation « Abandonner la saisie et reprendre » ; c) autre.
   - **Réponse de Steeve (E11, 2026-10-27, guide v0.2.14 §6.6.6)** : a) retenu. Toast `TST-SAISIE-A-TERMINER` « Terminez votre saisie, puis reprenez la synchronisation. » (4 s, `role="status"`, sans action) ; l'indicateur reste `SYN-SESSION` ; aucune confirmation (option b écartée : détruire une saisie pour une opération technique n'est pas un choix à offrir). `SAISIE_A_TERMINER` produit ce toast.
 
+**DEC-038 (commanditaire, Q-RL-P1 a)** : l'écran d'attente `SYN-REDIRECTION` s'affiche à chaque ouverture avec réseau, et aucun jeton n'est conservé sur l'appareil ; la conception (§6.1, §6.2) est confirmée telle quelle.
+
 **Hypothèses** : aucune hors des questions ci-dessus (la conception retient l'option ★ de chacune et sera ajustée sans reprise d'architecture si la réponse diffère).
 **Dette acceptée** : aucune. DT-001 s'applique aux espaces de compte et à la base technique.
 
@@ -878,4 +928,5 @@ Commande : `pnpm test -- tests/unitaires/compte tests/unitaires/synchronisation/
 - [x] Chaque phrase Gherkin d'US-022 a une ligne au §12.
 - [x] Les tests du §13 existent, s'exécutent et échouent pour la raison attendue (E10, 2026-10-27).
 - [x] Q-ST022-STA-1 à 3 et Q-ST022-STE-1 à 3 répondues et intégrées (v0.2).
-- [ ] Q-ST022-STA-4 et Q-ST022-STE-4 répondues (non bloquantes pour E11 ; avant l'E12 du rang 1).
+- [x] Q-ST022-STA-4 et Q-ST022-STE-4 répondues ; Q-RL-P1 tranchée (DEC-038).
+- [ ] RL-LOT-001-A1 levée par Starck.

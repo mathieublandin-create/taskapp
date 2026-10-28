@@ -17,6 +17,13 @@ export type LigneSousTache = {
   readonly etat: LigneTache['etat'];
   readonly enRetard?: LigneTache['enRetard'];
   readonly alertes: LigneTache['alertes'];
+  /**
+   * WCAG 4.1.2 (RL-LOT-001-S4, ST-US-024 §4.5) : « {intitulé}, {état en toutes lettres}, délai {date} »,
+   * suivi de « , en retard » si `enRetard` ; même forme que `LigneTache.nomAccessible`.
+   */
+  readonly nomAccessible: string;
+  /** Case « Terminer » de la ligne : nom accessible « Terminer « {intitulé} » ». */
+  readonly caseTerminer: { readonly nomAccessible: string };
   /** Sous-tâches d'une tâche parente abandonnée (ST-US-025 §6.4). */
   readonly etiquette?: {
     readonly code:

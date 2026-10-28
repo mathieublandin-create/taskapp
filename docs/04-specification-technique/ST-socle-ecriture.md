@@ -9,7 +9,7 @@
 | Exigences couvertes | RG-036 (contexte causal, préparation), RG-046 et RG-047 (pierres tombales et leur contexte), RG-050 (journal métier), RG-057 (index des écritures en attente, préparation), ENF-06, ENF-T-02, ENF-T-07 ; DS-07, DS-08, DS-11, DS-19 |
 | DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.1.5 bis, §4.2, §4.2.1, §6.1, §6.4) ; DAT v0.11 (§3.2, DS-07 : durabilité stricte) ; ADR-003, ADR-010, ADR-011, ADR-013 |
 | Hypothèses du contrôle d'explicitation appliquées | H-1 (§6.4), H-4 (§6.5), H-5 (§12) |
-| Version de la ST | 0.2 |
+| Version de la ST | 0.3 |
 | Statut | **Prête pour E10** ; tests UT-SOC-44 à 46 ajoutés en v0.2 (rouges) |
 | Auteur | Anthony |
 | Branche Git | `us/SOCLE-ecriture` créée depuis `lot/LOT-001-socle-objectifs-taches` |
@@ -19,6 +19,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Alignement sur `conventions.md` v0.4 (DEC-034, ADR-013, DAT v0.11). `DepotLocalDexie` : base ouverte en durabilité stricte, écriture confirmée à l'événement `complete`, transaction avortée traduite en `EcritureLocaleImpossible` (§4.4, §6.8, §8) ; tests UT-SOC-44 à 46 et support `FabriqueIndexedDbEspionne` (§13). Rédaction : `DepotLocalSqlite` et horloge d'Android renvoyés au repli (§1, §3) ; réserve R1 limitée au repli (§5.3, §7, §16, §17). Aucun changement d'interface ni de type. |
+| 0.3 | 2026-10-28 | Anthony | E11 : RL-LOT-001-A2 (fichiers d'appareil à la racine du dossier, §5.3) ; RL-LOT-001-A1 et Q-ST022-STA-3 : ajouts à `DepotLocalDexie` spécifiés par ST-US-022 v0.3 §5.2 (`ouvrirEspace`, `appareil()`, `fermer()`, option `surFermetureImposee`, `versionchange` sans réouverture automatique) ; types du socle inchangés. |
 
 ### Conditions de Starck (texte qui fait foi, note de Jarvis) et leur traitement
 | Condition | Traitement dans ce document |
@@ -434,7 +435,7 @@ export interface GenerateurIdentifiants { genererUuidV7(): string }
 ### 4.4 Adaptateurs
 | Adaptateur | Port | Technologie | Points d'attention |
 |---|---|---|---|
-| `DepotLocalDexie` | `DepotLocal` | Dexie sur IndexedDB ; `fake-indexeddb` en test (une `IDBFactory` par appareil simulé) | Constructeur `new DepotLocalDexie({ nomBase: string, fabrique?: IDBFactory, appareilId: IdAppareil })`. **Durabilité stricte** (`conventions.md` §10.1, ADR-013) : la base Dexie est construite avec l'option `chromeTransactionDurability: 'strict'` (avec `indexedDB: fabrique` et l'`IDBKeyRange` correspondant quand `fabrique` est fournie), de sorte que **toute** transaction d'écriture est ouverte en `durability: 'strict'` (UT-SOC-44). À la première ouverture, écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon `ErreurProgrammation`). Garde en mémoire le dernier `EtatLocal` lu et sa `version` ; au début de chaque transaction, relit `meta.version` et recharge tout l'état si elle diffère (autre onglet). `null` en base ↔ `undefined` en mémoire ; `Instant` et `Hlc.physique` en ISO 8601. Toute ligne relue passe par Zod (§5.1). |
+| `DepotLocalDexie` | `DepotLocal` | Dexie sur IndexedDB ; `fake-indexeddb` en test (une `IDBFactory` par appareil simulé) | Constructeur `new DepotLocalDexie({ nomBase: string, fabrique?: IDBFactory, appareilId: IdAppareil })`. **Durabilité stricte** (`conventions.md` §10.1, ADR-013) : la base Dexie est construite avec l'option `chromeTransactionDurability: 'strict'` (avec `indexedDB: fabrique` et l'`IDBKeyRange` correspondant quand `fabrique` est fournie), de sorte que **toute** transaction d'écriture est ouverte en `durability: 'strict'` (UT-SOC-44). À la première ouverture, écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon `ErreurProgrammation`). Garde en mémoire le dernier `EtatLocal` lu et sa `version` ; au début de chaque transaction, relit `meta.version` et recharge tout l'état si elle diffère (autre onglet). `null` en base ↔ `undefined` en mémoire ; `Instant` et `Hlc.physique` en ISO 8601. Toute ligne relue passe par Zod (§5.1). **Ajouts du rang 1 (ST-US-022 v0.3 §5.2)** : fabrique `ouvrirEspace` (l'`appareilId` naît avec l'espace), `appareil()`, `fermer()` ; `versionchange` → `close({ disableAutoOpen: true })`, rappel `surFermetureImposee`, puis `EspaceLocalNonOuvert` (DAT v0.11.4 §4.1.6). |
 | `HorlogeSysteme` | `Horloge` | `Date.now()`, `performance.now()`, `Intl.DateTimeFormat().resolvedOptions().timeZone` | Seul fichier autorisé à lire l'heure système (`conventions.md` §7.2) |
 | `GenerateurUuidV7` | `GenerateurIdentifiants` | `uuid` (`v7`) | — |
 
@@ -463,7 +464,7 @@ Taille cible (ENF-T-05) : 5 000 tâches, environ 40 000 registres et 50 000 entr
 L'incrément 2 d'US-017 ajoutera la version 2 de la base (tables `valeursEcartees` et `lectures`) : ajout pur, sans transformation de données.
 
 ### 5.3 Contenu logique du fichier d'appareil dans le Drive, schéma 1
-**Hypothèse retenue (DAT §4.2, §4.2.1, §4.2.2, §6.1)** : un dossier visible `Done Juan/` (portée `drive.file`), un fichier `appareils/<appareilId>.etat.json.gz` par appareil, écrit par lui seul, et un `manifeste.json`. Avec un client OAuth Web unique (ADR-013), R1 est sans objet (DAT v0.11 §10.1). **En repli seulement** (`conventions.md` §19), si le test R1 échouait (fichiers d'un client invisibles de l'autre), le repli `drive.appdata` (arbitrage A6 à rouvrir) changerait l'emplacement et la visibilité, **pas** le contenu logique ci-dessous. La sérialisation physique (compression, table d'appareils, schéma Zod `v1.ts`, empreinte) est spécifiée par ST-US-017, incrément 1.
+**Hypothèse retenue (DAT §4.2, §4.2.1, §4.2.2, §6.1)** : un dossier visible `Done Juan/` (portée `drive.file`), un fichier `<appareilId>.etat.json.gz` par appareil, **directement dans le dossier** (sans sous-dossier, reconnu par ses `appProperties` : DAT v0.11.4 §4.2, RL-LOT-001-A2), écrit par lui seul, et un `manifeste.json`. Avec un client OAuth Web unique (ADR-013), R1 est sans objet (DAT v0.11 §10.1). **En repli seulement** (`conventions.md` §19), si le test R1 échouait (fichiers d'un client invisibles de l'autre), le repli `drive.appdata` (arbitrage A6 à rouvrir) changerait l'emplacement et la visibilité, **pas** le contenu logique ci-dessous. La sérialisation physique (compression, table d'appareils, schéma Zod `v1.ts`, empreinte) est spécifiée par ST-US-017, incrément 1.
 
 Contenu logique figé dès le rang 0 (le rang 2 n'écrit que des données de ces formes) :
 | Partie | Contenu | Origine |
