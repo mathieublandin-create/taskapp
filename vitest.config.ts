@@ -51,6 +51,15 @@ export default defineConfig({
       provider: 'v8',
       include: [...fichiersCouverts(fichiers, rangCourant)],
       exclude: ['src/composition/**', 'src/main.tsx', '**/*.d.ts'],
+      // conventions.md §12 : seuils par motif de chemin (motifs sans fichier couvert ajoutés avec leur rang).
+      thresholds: {
+        lines: 85,
+        branches: 75,
+        'src/*/domaine/**': { lines: 95, branches: 90 },
+        'src/synchronisation/{domaine,application}/**': { lines: 95, branches: 90 },
+        'src/*/application/**': { lines: 90, branches: 85 },
+        'src/*/infrastructure/**': { lines: 70, branches: 60 },
+      },
     },
   },
 });

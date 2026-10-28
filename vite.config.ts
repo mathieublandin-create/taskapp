@@ -13,6 +13,8 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
+        // Le service worker n'est pas enregistré avant le rang 12 (US-018) : aucun script d'enregistrement injecté.
+        injectRegister: false,
         manifest: {
           name: env['VITE_ENV'] === 'recette' ? 'Done Juan (recette)' : 'Done Juan',
           short_name: 'Done Juan',

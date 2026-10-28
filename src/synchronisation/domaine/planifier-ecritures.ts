@@ -6,7 +6,7 @@ import type { Instant } from '../../commun/domaine/temps/instant';
 import { contexteDeNouvelleEcriture, type ContexteCausal } from './contexte-causal';
 import { estRegistre, type RegistreQuelconque } from './ecriture';
 import { registreDe, type EtatLocal } from './etat-local';
-import type { ContenuEvenement, EvenementJournal } from './evenement-journal';
+import type { ContenuEvenement, EvenementACreer, EvenementJournal } from './evenement-journal';
 import { hlcSuivant, type Hlc } from './hlc';
 import { idEvenement } from './identifiant-evenement';
 import { enregistrerEnAttente, purgerPourSuppression } from './index-en-attente';
@@ -19,7 +19,7 @@ import {
   type PlacementObjectif,
   type RefElementMetier,
 } from './information';
-import type { EcritureChampObjectif, EcritureChampTache, Modification } from './modification';
+import type { EcritureChampObjectif, Modification } from './modification';
 import { contexteDePierreTombale, descendantsSupprimesParDerivation } from './pierre-tombale';
 
 // ST-socle-ecriture.md §6.3.
@@ -162,10 +162,15 @@ const creerTache = (
   );
 };
 
-const valeurDuChamp = (ecriture: EcritureChampObjectif | EcritureChampTache): unknown => {
-  if (ecriture.champ !== 'parent') return ecriture.valeur;
-  return undefined;
-};
+/** Valeur à écrire : un déplacement porte son origine et le HLC de l'écriture (RG-048). */
+const valeurDeChampObjectif = (ecriture: EcritureChampObjectif, hlcOrigine: Hlc): unknown =>
+  ecriture.champ === 'parent'
+    ? {
+        ...(ecriture.parentId === undefined ? {} : { parentId: ecriture.parentId }),
+        origine: 'DEPLACEMENT',
+        hlcOrigine,
+      }
+    : ecriture.valeur;
 
 const ecrireChampObjectif = (
   travail: Travail,
@@ -175,14 +180,7 @@ const ecrireChampObjectif = (
 ): Travail => {
   const element: RefElementMetier = { type: 'OBJECTIF', id };
   exigerModifiable(travail.etat, element);
-  const valeur =
-    ecriture.champ === 'parent'
-      ? {
-          ...(ecriture.parentId === undefined ? {} : { parentId: ecriture.parentId }),
-          origine: 'DEPLACEMENT',
-          hlcOrigine: pas.hlc,
-        }
-      : valeurDuChamp(ecriture);
+  const valeur = valeurDeChampObjectif(ecriture, pas.hlc);
   return ecrire(travail, pas, cleDeChamp(element, ecriture.champ), valeur);
 };
 
@@ -249,9 +247,11 @@ const contenuChangementParent = (
   return { type: 'CHANGEMENT_PARENT', element, avant: lire(avant), apres: lire(apres) };
 };
 
-const contenuEvenement = (avant: Travail, apres: Travail, m: Modification): ContenuEvenement => {
-  const demande = m.evenement;
-  if (demande === undefined) return incoherence('événement absent');
+const contenuEvenement = (
+  avant: Travail,
+  apres: Travail,
+  demande: EvenementACreer,
+): ContenuEvenement => {
   if (demande.type === 'CHANGEMENT_PARENT') {
     return contenuChangementParent(avant.etat, apres.etat, demande.element);
   }
@@ -266,7 +266,7 @@ const ajouterEvenement = (avant: Travail, apres: Travail, m: Modification, pas: 
   const id = idEvenement(operation, demande.rang);
   if (apres.etat.journal.has(id)) incoherence(`événement ${id} en double`);
   const evenement: EvenementJournal = {
-    ...contenuEvenement(avant, apres, m),
+    ...contenuEvenement(avant, apres, demande),
     id,
     hlc: pas.hlc,
     instant,

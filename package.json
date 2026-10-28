@@ -15,7 +15,19 @@
     "types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
-    "format:verifier": "prettier --check ."
+    "format:verifier": "prettier --check .",
+    "architecture": "depcruise src --config .dependency-cruiser.cjs",
+    "cucumber": "node scripts/lancer-cucumber.mjs default",
+    "cucumber:rapide": "node scripts/lancer-cucumber.mjs rapide",
+    "cucumber:ihm": "node scripts/lancer-cucumber.mjs ihm",
+    "cucumber:steps-inutilises": "node scripts/lancer-cucumber.mjs steps-inutilises && node scripts/verifier-etapes-inutilisees.mjs reports/usage.json",
+    "verifier:catalogue": "tsx scripts/verifier-catalogue.ts",
+    "verifier:tags": "tsx scripts/verifier-tags.ts",
+    "verifier:rangs": "tsx scripts/verifier-rangs.ts",
+    "verifier:depot": "tsx scripts/verifier-depot.ts",
+    "licences": "license-checker --summary --production --excludePackages \"done-juan@0.0.0\" --onlyAllow \"MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;0BSD;CC0-1.0\"",
+    "build": "vite build",
+    "verifier": "pnpm format:verifier && pnpm lint && pnpm types && pnpm architecture && pnpm verifier:catalogue && pnpm verifier:tags && pnpm verifier:rangs && pnpm verifier:depot"
   },
   "dependencies": {
     "@date-fns/tz": "1.5.0",

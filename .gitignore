@@ -1,23 +1,29 @@
-# Clés de signature et secrets (ADR-012)
+# Clés et secrets de signature (ADR-012, DEC-027)
 *.jks
 *.keystore
 *.p12
 *.pem
 keystore.properties
+secrets/
+android/keystore/
+
+# Configuration locale
 local.properties
 .env
 .env.*
 !.env.example
-secrets/
 
-# Dépendances et constructions
+# Artefacts
 node_modules/
 dist/
+dev-dist/
 build/
 coverage/
+reports/
 poc/android/
 android/.gradle/
 android/app/build/
+android/app/release/
 *.apk
 *.aab
 
