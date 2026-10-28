@@ -320,3 +320,34 @@ describe('ControleurInterface — reprise et rappel', () => {
     expect(appels).toBe(1);
   });
 });
+
+describe('ControleurInterface — issue de l’ouverture (ST-US-022 §6.2, §8 n° 12 ; Q-BRU-3)', () => {
+  it('UT-COMP-US-022-107 apresOuverture — ESPACE_INACCESSIBLE : écran de connexion et toast TST-ERREUR-ENREGISTREMENT (ERR-014)', async () => {
+    const { controleur } = preparer();
+    let appels = 0;
+    controleur.observer(() => {
+      appels += 1;
+    });
+
+    await controleur.apresOuverture({ type: 'ESPACE_INACCESSIBLE' });
+
+    const vue = controleur.vue();
+    expect(vue.racine).toEqual({ ecran: 'CONNEXION' });
+    expect(vue.toast).toBe('TST-ERREUR-ENREGISTREMENT');
+    expect(vue.connexion.message).toBeUndefined();
+    expect(appels).toBe(1);
+  });
+
+  it('UT-COMP-US-022-108 apresOuverture — ECRAN_CONNEXION : aucun toast ; le toast d’ESPACE_INACCESSIBLE disparaît au geste suivant', async () => {
+    const sansToast = preparer();
+    await sansToast.controleur.apresOuverture({ type: 'ECRAN_CONNEXION' });
+    expect(sansToast.controleur.vue().toast).toBeUndefined();
+    expect(sansToast.controleur.vue().racine).toEqual({ ecran: 'CONNEXION' });
+
+    const { controleur } = preparer();
+    await controleur.apresOuverture({ type: 'ESPACE_INACCESSIBLE' });
+    await controleur.continuerAvecGoogle();
+    expect(controleur.vue().toast).toBeUndefined();
+    expect(controleur.vue().racine).toEqual({ ecran: 'APPLICATION' });
+  });
+});

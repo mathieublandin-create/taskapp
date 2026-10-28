@@ -1,6 +1,7 @@
 import type { Horloge } from '../commun/application/ports/horloge';
 import type { Annulation } from '../commun/application/ports/planificateur';
 import type { Resultat } from '../commun/domaine/resultat';
+import type { IssueOuverture } from '../compte/application/cas-usage/ouvrir-application';
 import type { IssueSuppression } from '../compte/application/cas-usage/supprimer-donnees-appareil';
 import type { ConfirmationCompte } from '../compte/application/evaluation';
 import { REPRISE_ACCUEIL } from '../compte/application/ports/memoire-redirection';
@@ -117,6 +118,14 @@ export class ControleurInterface {
       rappel();
     });
   }
+
+  /**
+   * Squelette E10 (RC-US022-10, ST-US-022 v0.3.2 §8 n° 12) : à compléter par Bruce. Attendu : sur ESPACE_INACCESSIBLE,
+   * toast TST-ERREUR-ENREGISTREMENT ; dans tous les cas, rafraichir().
+   */
+  readonly apresOuverture = async (_issue: IssueOuverture): Promise<void> => {
+    await this.rafraichir();
+  };
 
   readonly continuerAvecGoogle = async (): Promise<void> => {
     this.#etat.enCours = true;

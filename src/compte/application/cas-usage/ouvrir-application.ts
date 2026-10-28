@@ -20,6 +20,8 @@ import type { SessionCourante } from '../session-courante';
 // ST-US-022 §6.2 (DAT §4.1.7, RED-08).
 export type IssueOuverture =
   | { readonly type: 'ECRAN_CONNEXION' }
+  /** v0.3.2 (Q-BRU-3, RC-US022-10) : espace local inaccessible à l'ouverture (§6.2 étape 5, §8 n° 12). */
+  | { readonly type: 'ESPACE_INACCESSIBLE' }
   | { readonly type: 'REDIRECTION_LANCEE' }
   | { readonly type: 'SESSION_OUVERTE'; readonly acces: EtatAcces; readonly reprise?: EtatReprise };
 
