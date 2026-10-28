@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 
 // DAT §4.1.7, ADR-013, RED-03.
@@ -23,14 +22,33 @@ export type ParametresAutorisation = {
  * response_type=token, include_granted_scopes=true, login_hint, state, redirect_uri, scope ;
  * prompt=none en interaction SILENCIEUSE seulement (aucun paramètre prompt en INTERACTIVE).
  */
-export const construireUrlAutorisation = (_p: ParametresAutorisation): string =>
-  nonImplemente('construireUrlAutorisation');
+export const construireUrlAutorisation = (p: ParametresAutorisation): string => {
+  const parametres = new URLSearchParams({
+    client_id: p.clientId,
+    redirect_uri: p.redirectUri,
+    response_type: 'token',
+    scope: p.portees.join(' '),
+    include_granted_scopes: 'true',
+    login_hint: p.indice,
+    state: p.state,
+  });
+  if (p.interaction === 'SILENCIEUSE') parametres.set('prompt', 'none');
+  return `${URL_AUTORISATION_GOOGLE}?${parametres.toString()}`;
+};
 
 /** Origine suivie du chemin de base, barre oblique finale comprise (conventions.md §9.1). */
-export const uriRedirection = (_config: {
+export const uriRedirection = (config: {
   readonly origine: string;
   readonly cheminDeBase: string;
-}): string => nonImplemente('uriRedirection');
+}): string => {
+  const origine = config.origine.replace(/\/+$/, '');
+  const chemin = `/${config.cheminDeBase.replace(/^\/+/, '').replace(/\/+$/, '')}/`;
+  return `${origine}${chemin === '//' ? '/' : chemin}`;
+};
 
 /** Base64url sans remplissage (RFC 4648 §5). */
-export const encoderBase64Url = (_octets: Uint8Array): string => nonImplemente('encoderBase64Url');
+export const encoderBase64Url = (octets: Uint8Array): string =>
+  btoa(String.fromCharCode(...octets))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/, '');

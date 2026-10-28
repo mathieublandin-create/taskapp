@@ -145,6 +145,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/application/issue-erreur-auth.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/application/ports/avis-onglets.ts": {
       "debut": 1,
       "fin": 1
@@ -182,6 +186,10 @@
       "fin": 1
     },
     "src/compte/application/session-courante.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/session-ouverte.ts": {
       "debut": 1,
       "fin": 1
     },
