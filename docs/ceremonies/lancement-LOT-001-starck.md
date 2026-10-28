@@ -92,3 +92,21 @@ Versions produites : ST-US-022 v0.3, ST-US-017 v0.3, ST-US-031 v0.3, ST-socle-ec
 | Q-ST017-STA-3 | Réponse intégrée (DT-002). | ST-US-017 §16 |
 
 **Reste ouvert** : la levée d'A1 par Starck.
+
+## 7. Vérification des corrections (Starck, 2026-10-28)
+
+**Verdict : la réserve est levée. RL-LOT-001-A1 est close, et l'avis de lancement est favorable sans réserve.**
+
+| # | Vérification | Verdict |
+|---|---|---|
+| **A1** | ST-US-022 v0.3 §5.2, §6.5, §6.6, §8 n° 7 d, §13 ; ST-US-031 v0.3 §6.4 ; ST-socle v0.3 §4.4. Les quatre points de la correction attendue sont couverts. (1) `versionchange` : `close({ disableAutoOpen: true })` (Dexie 4), aucune réouverture, `EspaceLocalNonOuvert` ensuite, puis arrêt et rechargement ; même traitement pour une montée de version et pour la base technique. (2) Ordre imposé : `effacer → diffuser → supprimer → oublier → fermer`, contrôlé par UT-US-022-56 ; `AvisOnglets` avancé au rang 1, ce qui est nécessaire puisque la suppression en dépend dès ce rang. (3) `ERR-017` après 5 s, « Réessayer » sans nouvelle confirmation, « Fermer ». (4) Tests d'intégration à deux connexions : UT-US-022-60 (base jamais recréée) et 61 (connexion qui ne se ferme pas). **Point signalé par Anthony (irréversibilité)** : il est exact et acceptable. La suppression a été confirmée par l'utilisateur, et elle aboutit dès que l'autre fenêtre se ferme. Une reconnexion pendant l'attente est mise en file derrière la suppression par IndexedDB : elle trouve un espace neuf, avec un nouvel `appareilId`, ce qui est cohérent avec le DAT §4.1.4. Précision portée au DAT v0.11.5 §4.1.6. Le texte d'`ERR-017` doit dire que la suppression **se terminera** à la fermeture des autres fenêtres, et non que les données n'ont pas été supprimées : c'est à Steeve, déjà prévenu par Anthony. | **Close** |
+| A2 | ST-socle §5.3, ST-US-022 §6.6, ST-US-017 §6.3 : plus aucune mention de `appareils/`, fichiers reconnus par leurs `appProperties`. | Close |
+| A3 | ST-US-017 §4.3, §6.3 : jeton de départ pris avant l'inventaire ; `JetonChangementsInvalide` déclenche un inventaire complet dans le même cycle, sans tentative comptée ; CT-TRANS-09 et 10 présents dans la suite de contrat ; UT-US-017-32. | Close |
+| A4 | RED-04 de `conventions.md` v0.4.2 (déclaré ; non relu ligne à ligne). | Close sur déclaration |
+| A5 | Condition explicite de l'E13 du rang 0 (ST-US-022 §3.1). | Suivie à l'E13 du rang 0 |
+| A6 | ST-US-031 §8 (journal `erreur`) et hypothèse H-031-1. | Close |
+| A7 | ST-US-017 §6.8 : mesure par `ObservateurEchangesGoogle` de `ClientGoogle`, pour toutes les réponses, sans changement de port. | Close |
+| A8 | — | Close |
+| A9 | Mention de l'archivage retirée des ST ; DT-002 inscrite (Conception, P3, conditions et déclencheur conformes au §2). | Close |
+
+Reste suivi hors de cette revue : le texte d'`ERR-017` (Steeve) et A5 (E13 du rang 0).
