@@ -76,3 +76,10 @@ export const libelle = (
   }
   return interpoler(typographie(accorder(gabarit, variables, code)), variables, code);
 };
+
+/** Vrai si le gabarit du code a cette partie : évite d'afficher un bouton ou un texte absent. */
+export const aUnePartie = (code: CodeCatalogue, partie: PartieLibelle): boolean =>
+  gabaritDe(code)[partie] !== undefined;
+
+export const aUneVariante = (code: CodeCatalogue, variante: string): boolean =>
+  gabaritDe(code).variantes?.[variante] !== undefined;

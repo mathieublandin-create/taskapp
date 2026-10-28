@@ -1,35 +1,41 @@
-import type { ModeleVueBandeau } from '../modeles-de-vue/bandeau';
+import type { NomAppareilAffiche } from '../../../commun/presentation/format/appareil';
+import { libellesBandeau, type ModeleVueBandeau } from '../modeles-de-vue/bandeau';
 
-// Banner (guide §6.6.3) : au plus un bandeau, jamais bloquant ; data-etat, data-variante. Textes : catalogue §6.6.
-const TITRES: Readonly<Record<ModeleVueBandeau['code'], string>> = {
-  'BAN-ACCES-GOOGLE': 'Accès Google perdu',
-  'BAN-CONSULTATION-SEULE': 'Consultation seule',
-  'BAN-RAPPEL-24H': 'Modifications en attente depuis plus de 24 h',
-};
-
-const ACTIONS: Readonly<Record<NonNullable<ModeleVueBandeau['action']>, string>> = {
-  SE_RECONNECTER: 'Se reconnecter',
-  METTRE_A_JOUR: 'Mettre à jour',
-  REPRENDRE_LA_SYNCHRONISATION: 'Reprendre la synchronisation',
-};
-
+// Banner (guide §6.6.3) : au plus un bandeau, jamais bloquant ; data-etat, data-variante. Textes : catalogue §6.6, par
+// le modèle de vue.
 export type ProprietesBandeau = {
   readonly vue: ModeleVueBandeau;
+  /** `{appareil}` des textes : « smartphone » ou « PC ». */
+  readonly appareil: NomAppareilAffiche;
   readonly surAction: (action: NonNullable<ModeleVueBandeau['action']>) => void;
   readonly surMasquer: () => void;
 };
 
-export const Bandeau = ({ vue, surAction, surMasquer }: ProprietesBandeau) => {
+const BoutonFermeture = ({
+  libelle,
+  surMasquer,
+}: {
+  readonly libelle: string | undefined;
+  readonly surMasquer: () => void;
+}) =>
+  libelle === undefined ? null : (
+    <button type="button" onClick={surMasquer}>
+      {libelle}
+    </button>
+  );
+
+export const Bandeau = ({ vue, appareil, surAction, surMasquer }: ProprietesBandeau) => {
   const { action } = vue;
+  const libelles = libellesBandeau(vue, appareil);
   return (
     <aside
-      aria-label={TITRES[vue.code]}
+      aria-label={libelles.titre}
       data-etat={vue.code}
       data-message={vue.message}
       {...(vue.variante === undefined ? {} : { 'data-variante': vue.variante })}
     >
-      <p>{TITRES[vue.code]}</p>
-      {vue.n === undefined ? null : <p data-n={vue.n}>{`${String(vue.n)} en attente`}</p>}
+      <p>{libelles.titre}</p>
+      <p>{libelles.texte}</p>
       {action === undefined ? null : (
         <button
           type="button"
@@ -38,14 +44,10 @@ export const Bandeau = ({ vue, surAction, surMasquer }: ProprietesBandeau) => {
             surAction(action);
           }}
         >
-          {ACTIONS[action]}
+          {libelles.action}
         </button>
       )}
-      {vue.fermable ? (
-        <button type="button" onClick={surMasquer}>
-          Masquer le rappel
-        </button>
-      ) : null}
+      <BoutonFermeture libelle={libelles.fermeture} surMasquer={surMasquer} />
     </aside>
   );
 };

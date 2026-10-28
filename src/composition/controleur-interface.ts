@@ -71,6 +71,8 @@ type Etat = {
   confirmation?: { readonly vue: ConfirmationCompte; readonly suite: () => Promise<void> };
   suppressionBloquee?: { enCours: boolean };
   toast?: ToastInterface;
+  /** Geste à rejouer par le bouton « Réessayer » du toast ERR-014 (DT-007). */
+  reessai?: () => Promise<void>;
 };
 
 export class ControleurInterface {
@@ -123,33 +125,52 @@ export class ControleurInterface {
    * Issue de l'ouverture (ST-US-022 v0.3.2 §8 n° 12, RC-US022-10) : sur ESPACE_INACCESSIBLE, toast
    * TST-ERREUR-ENREGISTREMENT (ERR-014), effacé au geste suivant ; pour toute autre issue, aucun toast ; puis rafraichir().
    */
-  readonly apresOuverture = async (issue: IssueOuverture): Promise<void> => {
-    if (issue.type === 'ESPACE_INACCESSIBLE') this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
+  readonly apresOuverture = async (
+    issue: IssueOuverture,
+    rouvrir?: () => Promise<IssueOuverture>,
+  ): Promise<void> => {
+    if (issue.type === 'ESPACE_INACCESSIBLE') {
+      this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
+      if (rouvrir !== undefined) {
+        this.#etat.reessai = async () => {
+          await this.apresOuverture(await rouvrir(), rouvrir);
+        };
+      }
+    }
     await this.rafraichir();
+  };
+
+  /** Bouton « Réessayer » du toast ERR-014 (DT-007) : rejoue le dernier geste échoué ; sans objet sinon. */
+  readonly reessayer = async (): Promise<void> => {
+    const rejeu = this.#etat.reessai;
+    if (rejeu === undefined) return;
+    this.#effacerToast();
+    await rejeu();
   };
 
   readonly continuerAvecGoogle = async (): Promise<void> => {
     this.#etat.enCours = true;
-    delete this.#etat.toast;
+    this.#effacerToast();
     await this.rafraichir();
     const r = await this.application.seConnecter.executer();
     this.#etat.enCours = false;
     delete this.#etat.dernierEchec;
     if (!r.ok && r.erreur.type === 'ConnexionImpossible') this.#etat.dernierEchec = r.erreur.motif;
     this.#signalerEspaceInaccessible(r);
+    this.#permettreReessai(this.continuerAvecGoogle);
     await this.rafraichir();
   };
 
   readonly reprendre = async (): Promise<void> => {
     const r = await this.application.reprendreSession.executer(REPRISE_ACCUEIL);
     const toast = r.ok ? construireRetourReprise(r.valeur).toast : undefined;
-    if (toast === undefined) delete this.#etat.toast;
+    if (toast === undefined) this.#effacerToast();
     else this.#etat.toast = toast;
     await this.rafraichir();
   };
 
   readonly actionCompte = async (action: ActionCompte): Promise<void> => {
-    delete this.#etat.toast;
+    this.#effacerToast();
     if (action === 'SE_DECONNECTER') await this.#seDeconnecter();
     else await this.#demanderSuppression();
     await this.rafraichir();
@@ -158,8 +179,8 @@ export class ControleurInterface {
   readonly confirmer = async (): Promise<void> => {
     const suite = this.#etat.confirmation?.suite;
     delete this.#etat.confirmation;
-    delete this.#etat.toast;
-    await suite?.();
+    this.#effacerToast();
+    if (suite !== undefined) await this.#jouerSuite(suite);
     await this.rafraichir();
   };
 
@@ -170,9 +191,10 @@ export class ControleurInterface {
 
   readonly reessayerSuppression = async (): Promise<void> => {
     this.#etat.suppressionBloquee = { enCours: true };
-    delete this.#etat.toast;
+    this.#effacerToast();
     await this.rafraichir();
     this.#apresSuppression(await this.application.supprimerDonnees.reessayer());
+    this.#permettreReessai(this.reessayerSuppression);
     await this.rafraichir();
   };
 
@@ -235,6 +257,25 @@ export class ControleurInterface {
   /** ST §8 n° 12 : jamais d'échec silencieux ; le toast s'affiche sur l'écran courant. */
   #signalerEspaceInaccessible(r: Resultat<unknown, { readonly type: string }>): void {
     if (estEspaceInaccessible(r)) this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
+  }
+
+  /** Si le geste vient d'échouer sur l'espace local (ERR-014), « Réessayer » le rejoue. */
+  #permettreReessai(rejeu: () => Promise<void>): void {
+    if (this.#etat.toast === 'TST-ERREUR-ENREGISTREMENT') this.#etat.reessai = rejeu;
+  }
+
+  #effacerToast(): void {
+    delete this.#etat.toast;
+    delete this.#etat.reessai;
+  }
+
+  /** Joue la suite d'une confirmation ; si l'espace est inaccessible, « Réessayer » la rejoue. */
+  async #jouerSuite(suite: () => Promise<void>): Promise<void> {
+    await suite();
+    this.#permettreReessai(async () => {
+      await this.#jouerSuite(suite);
+      await this.rafraichir();
+    });
   }
 
   #apresSuppression(r: Resultat<IssueSuppression, { readonly type: string }>): void {

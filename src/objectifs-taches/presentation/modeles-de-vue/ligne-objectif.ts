@@ -25,6 +25,8 @@ export type LigneObjectif = {
     readonly nonAbandonnees: number;
     readonly libelle: string;
   };
+  /** Pourcentage (0 à 100) de l'anneau de progression (GoalProgress) : tâches terminées sur non abandonnées. */
+  readonly progression: number;
   readonly delai: ModeleVueDelai;
   readonly enRetard?: { readonly code: 'MEN-EN-RETARD'; readonly libelle: string };
   readonly alerteDelai?: {
@@ -73,6 +75,17 @@ const modeleAlerte = (resume: ResumeObjectif, delai: ModeleVueDelai) =>
         },
       };
 
+const POURCENTAGE_MAX = 100;
+
+/** Un objectif atteint est à 100 % ; sans tâche, 0 % (anneau vide). */
+const progressionDe = (resume: ResumeObjectif): number => {
+  if (resume.etat === 'ATTEINT') return POURCENTAGE_MAX;
+  const { tachesTerminees, tachesNonAbandonnees } = resume;
+  return tachesNonAbandonnees === 0
+    ? 0
+    : Math.round((POURCENTAGE_MAX * tachesTerminees) / tachesNonAbandonnees);
+};
+
 const modeleCompteur = (resume: ResumeObjectif): LigneObjectif['compteur'] => {
   const { tachesTerminees: terminees, tachesNonAbandonnees: nonAbandonnees } = resume;
   return {
@@ -117,6 +130,7 @@ export const construireLigneObjectif = (
     ...(resume.parentId === undefined ? {} : { parentId: resume.parentId }),
     etat,
     compteur: modeleCompteur(resume),
+    progression: progressionDe(resume),
     delai,
     ...modeleEnRetard(resume, delai),
     ...modeleAlerte(resume, delai),

@@ -15,6 +15,10 @@ export type TextesLibelle = {
   readonly texte?: string;
   /** Libellé du bouton d'action. */
   readonly action?: string;
+  /** Libellé d'une seconde action (« Aller à la connexion » d'ERR-017). */
+  readonly actionSecondaire?: string;
+  /** Libellé du bouton qui ferme un bandeau fermable (« Masquer le rappel »). */
+  readonly fermeture?: string;
   /** Nom accessible, quand il diffère du libellé visible. */
   readonly nomAccessible?: string;
 };
@@ -150,7 +154,7 @@ export const CATALOGUE = {
     libelle: 'Modifications en attente depuis plus de 24 h',
     texte:
       '{n} modification{n:|s} {n:n’est|ne sont} encore que sur ce {appareil}. Elles seront enregistrées dans votre Google Drive dès que la synchronisation reprendra.',
-    action: 'Masquer le rappel',
+    fermeture: 'Masquer le rappel',
     variantes: {
       session: {
         texte:
@@ -202,6 +206,8 @@ export const CATALOGUE = {
     texte:
       'Les données restent dans votre Google Drive et sur l’autre appareil. Elles seront rechargées à la prochaine connexion, avec le réseau.',
     action: 'Supprimer les données',
+    // Bouton de la section « Compte » (ECR-011), qui ouvre cette confirmation.
+    variantes: { 'section-compte': { action: 'Supprimer les données de cet appareil' } },
   },
   'CNF-SUPPR-DONNEES-PERTE': {
     libelle: '{n} modification{n: serait|s seraient} perdue{n:|s}',
@@ -288,6 +294,8 @@ export const CATALOGUE = {
     texte:
       'Done Juan est encore ouvert dans une autre fenêtre ou un autre onglet de ce PC. La suppression se terminera dès que vous les aurez fermés. Fermez-les, puis appuyez sur « Réessayer ». Vos données restent dans votre Google Drive.',
     action: 'Réessayer',
+    actionSecondaire: 'Aller à la connexion',
+    variantes: { 'en-cours': { action: 'Suppression en cours…' } },
   },
   'ERR-020': { libelle: 'Indiquez un intitulé.' },
   'ERR-021': { libelle: 'Indiquez un délai.' },

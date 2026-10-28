@@ -97,6 +97,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/presentation/format/appareil.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/format/date.ts": {
       "debut": 2,
       "fin": 2
@@ -118,6 +122,26 @@
       "fin": 2
     },
     "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/saisie/registre-saisie.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/boite-confirmation.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/etat-vide.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/mention-heure-paris.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/toast.tsx": {
       "debut": 2,
       "fin": 2
     },

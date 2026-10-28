@@ -45,6 +45,7 @@ describe('Indicateur et bandeau (guide §6.6.2, §6.6.3)', () => {
     const surMasquer = vi.fn();
     const { rerender } = render(
       <Bandeau
+        appareil="smartphone"
         vue={{
           code: 'BAN-ACCES-GOOGLE',
           variante: '24H',
@@ -67,6 +68,7 @@ describe('Indicateur et bandeau (guide §6.6.2, §6.6.3)', () => {
 
     rerender(
       <Bandeau
+        appareil="smartphone"
         vue={{ code: 'BAN-RAPPEL-24H', n: 1, fermable: true, bloquant: false, message: 'ALR-002' }}
         surAction={surAction}
         surMasquer={surMasquer}

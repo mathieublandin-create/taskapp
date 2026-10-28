@@ -1,34 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { BoiteConfirmation } from '../../../commun/presentation/ui/boite-confirmation';
 import type { ModeleVueConfirmationCompte } from '../modeles-de-vue/confirmations-compte';
 
-// conventions.md §8.6 ; guide §6.6.7 : role="alertdialog", « Annuler » focalisé, action destructrice en rouge.
+// conventions.md §8.6 ; guide §6.6.7 : la boîte de confirmation commune (role="alertdialog", « Annuler » focalisé,
+// action destructrice en rouge) alimentée par le modèle de vue du compte.
 export type ProprietesDialogue = {
   readonly vue: ModeleVueConfirmationCompte;
   readonly surConfirmer: () => void;
   readonly surAnnuler: () => void;
 };
 
-export const DialogueConfirmation = ({ vue, surConfirmer, surAnnuler }: ProprietesDialogue) => {
-  const annuler = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    annuler.current?.focus();
-  }, [vue.code]);
-  return (
-    <div
-      role="alertdialog"
-      aria-modal="true"
-      aria-labelledby="dialogue-titre"
-      {...(vue.texte === undefined ? {} : { 'aria-describedby': 'dialogue-texte' })}
-      data-code={vue.code}
-    >
-      <h2 id="dialogue-titre">{vue.titre}</h2>
-      {vue.texte === undefined ? null : <p id="dialogue-texte">{vue.texte}</p>}
-      <button ref={annuler} type="button" onClick={surAnnuler}>
-        Annuler
-      </button>
-      <button type="button" data-rouge={vue.rouge} onClick={surConfirmer}>
-        {vue.boutonAction}
-      </button>
-    </div>
-  );
-};
+export const DialogueConfirmation = ({ vue, surConfirmer, surAnnuler }: ProprietesDialogue) => (
+  <BoiteConfirmation
+    code={vue.code}
+    titre={vue.titre}
+    {...(vue.texte === undefined ? {} : { texte: vue.texte })}
+    actionLibelle={vue.boutonAction}
+    rouge={vue.rouge}
+    surConfirmer={surConfirmer}
+    surAnnuler={surAnnuler}
+  />
+);

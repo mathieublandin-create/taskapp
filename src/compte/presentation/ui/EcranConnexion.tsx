@@ -1,18 +1,17 @@
 import { useEffect, useRef } from 'react';
-import type { ModeleVueConnexion, PorteeAnnoncee } from '../modeles-de-vue/ecran-connexion';
+import {
+  libelleActionConnexion,
+  type ModeleVueConnexion,
+  type PorteeAnnoncee,
+} from '../modeles-de-vue/ecran-connexion';
 
 // ECR-010 (guide v0.2.17 §6.6.8) : invitation, autorisations annoncées, message d'échec en role="alert",
-// focus sur le bouton après un échec. Textes : catalogue §6.6 (repris par `libelle()` au rang 2).
+// focus sur le bouton après un échec. Le texte d'invitation et les autorisations sont la copie propre de l'écran
+// (ECR-010, hors catalogue §6.6) ; les messages et le bouton viennent du catalogue par le modèle de vue.
 const PORTEES: Readonly<Record<PorteeAnnoncee, string>> = {
   IDENTIFICATION_DU_COMPTE: 'Identification de votre compte Google',
   FICHIERS_DE_L_APPLICATION_DANS_LE_DRIVE:
     'Accès aux seuls fichiers de l’application dans votre Google Drive',
-};
-
-const ACTIONS: Readonly<Record<ModeleVueConnexion['action'], string>> = {
-  CONTINUER_AVEC_GOOGLE: 'Continuer avec Google',
-  REESSAYER: 'Réessayer',
-  CHOISIR_UN_AUTRE_COMPTE: 'Choisir un autre compte',
 };
 
 const MessageEchec = ({
@@ -54,7 +53,7 @@ export const EcranConnexion = ({ vue, surAction }: ProprietesEcranConnexion) => 
         disabled={!vue.actionActive}
         onClick={surAction}
       >
-        {ACTIONS[vue.action]}
+        {libelleActionConnexion(vue.action)}
       </button>
     </main>
   );
