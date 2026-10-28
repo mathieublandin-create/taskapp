@@ -107,7 +107,11 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
   });
   const avis = new AvisOngletsBroadcast(configuration.env);
   const application = assembler(configuration, navigateur, avis);
-  const controleur = new ControleurInterface(application, new HorlogeSysteme());
+  const controleur = new ControleurInterface(
+    application,
+    new HorlogeSysteme(),
+    application.objectifs,
+  );
   avis.ecouter(navigateur.recharger);
   new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
   void application.ouvrirApplication.executer(retour).then(async (issue) => {

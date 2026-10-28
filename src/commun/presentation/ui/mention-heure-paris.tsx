@@ -1,3 +1,4 @@
+import { IonButton } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import type { MentionHeureParis as ModeleMention } from '../modeles-de-vue/mention-heure-paris';
 import { libelle } from '../messages/libelle';
@@ -20,8 +21,9 @@ export const NoteHeureParis = ({ mention }: ProprietesNoteHeureParis) => {
   }, [explication]);
   return (
     <span className="mention-heure-paris" data-etat={mention.code}>
-      <button
-        type="button"
+      <IonButton
+        size="small"
+        fill="outline"
         aria-expanded={explication}
         aria-label={libelle(mention.code, {}, 'nomAccessible')}
         onClick={() => {
@@ -29,7 +31,7 @@ export const NoteHeureParis = ({ mention }: ProprietesNoteHeureParis) => {
         }}
       >
         {mention.libelle}
-      </button>
+      </IonButton>
       {explication ? <span role="tooltip">{libelle('MEN-HEURE-PARIS-EXPLICATION')}</span> : null}
     </span>
   );

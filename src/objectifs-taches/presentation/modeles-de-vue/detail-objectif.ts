@@ -43,6 +43,10 @@ export type ModeleVueDetailObjectif = {
       };
   readonly etat: LigneObjectif['etat'];
   readonly compteur: LigneObjectif['compteur'];
+  /** Pourcentage (0 à 100) de la barre de progression, comme `LigneObjectif.progression`. */
+  readonly progression: LigneObjectif['progression'];
+  /** Nom accessible de la barre de progression : celui de la ligne de l'objectif (guide §6.6.4). */
+  readonly nomAccessible: LigneObjectif['nomAccessible'];
   readonly enRetard?: LigneObjectif['enRetard'];
   readonly alerteDelai?: LigneObjectif['alerteDelai'];
   readonly sousObjectifs: {
@@ -117,6 +121,8 @@ export const construireDetailObjectif = (
     niveau: niveauDe(objectif),
     etat: ligne.etat,
     compteur: ligne.compteur,
+    progression: ligne.progression,
+    nomAccessible: ligne.nomAccessible,
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     ...(ligne.alerteDelai === undefined ? {} : { alerteDelai: ligne.alerteDelai }),
     sousObjectifs: sectionSousObjectifs(donnees.sousObjectifs, aujourdhui),

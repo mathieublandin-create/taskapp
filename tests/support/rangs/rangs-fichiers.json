@@ -633,6 +633,42 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/feuille-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/ligne-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/menu-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/progression-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/detail-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espace-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/libelles-ui.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/synchronisation/application/cycle-synchronisation.ts": {
       "debut": 3,
       "fin": 3

@@ -33,6 +33,7 @@ import {
   type ModeleVueIndicateur,
 } from '../synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
 import type { Application } from './application';
+import type { ObjectifsTaches } from './objectifs-taches';
 
 /** Toasts du rang 1 : geste refusé pendant une saisie (guide §6.6.6) ; espace local inaccessible (ST §8 n° 12, ERR-014). */
 export type ToastInterface = 'TST-SAISIE-A-TERMINER' | 'TST-ERREUR-ENREGISTREMENT';
@@ -83,6 +84,8 @@ export class ControleurInterface {
   constructor(
     private readonly application: ApplicationInterface,
     private readonly horloge: Horloge,
+    /** Cas d'usage des objectifs de l'espace ouvert ; undefined sans session (ST-US-001 §3 n° 34). */
+    readonly objectifs: () => ObjectifsTaches | undefined = () => undefined,
   ) {
     this.#vue = { racine: { ecran: 'CONNEXION' }, connexion: this.#connexion() };
     application.session.observer(() => void this.rafraichir());
