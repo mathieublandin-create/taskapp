@@ -11,31 +11,71 @@
   "scripts": {
     "test": "vitest run",
     "test:couverture": "vitest run --coverage",
+    "test:performance": "vitest run --config vitest.performance.config.ts",
     "types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
-    "format:verifier": "prettier --check ."
+    "format:verifier": "prettier --check .",
+    "architecture": "depcruise src --config .dependency-cruiser.cjs",
+    "cucumber": "node scripts/lancer-cucumber.mjs default",
+    "cucumber:rapide": "node scripts/lancer-cucumber.mjs rapide",
+    "cucumber:ihm": "node scripts/lancer-cucumber.mjs ihm",
+    "cucumber:steps-inutilises": "node scripts/lancer-cucumber.mjs steps-inutilises && node scripts/verifier-etapes-inutilisees.mjs reports/usage.json",
+    "verifier:catalogue": "tsx scripts/verifier-catalogue.ts",
+    "verifier:tags": "tsx scripts/verifier-tags.ts",
+    "verifier:rangs": "tsx scripts/verifier-rangs.ts",
+    "verifier:depot": "tsx scripts/verifier-depot.ts",
+    "licences": "license-checker --summary --production --excludePackages \"done-juan@0.0.0\" --onlyAllow \"MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;0BSD;CC0-1.0\"",
+    "build": "vite build",
+    "verifier": "pnpm format:verifier && pnpm lint && pnpm types && pnpm architecture && pnpm verifier:catalogue && pnpm verifier:tags && pnpm verifier:rangs && pnpm verifier:depot"
   },
   "dependencies": {
     "@date-fns/tz": "1.5.0",
+    "@ionic/react": "9.0.9",
     "date-fns": "4.4.0",
     "dexie": "4.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "uuid": "14.0.3",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "zustand": "5.0.16"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@cucumber/cucumber": "13.3.0",
+    "@cucumber/gherkin": "42.0.1",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
     "@vitest/coverage-v8": "5.0.5",
     "@vitest/eslint-plugin": "1.6.27",
+    "dependency-cruiser": "18.7.0",
     "eslint": "10.13.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react-hooks": "7.1.1",
     "fake-indexeddb": "6.2.6",
     "fast-check": "4.10.2",
     "globals": "17.13.0",
+    "license-checker": "25.0.1",
+    "msw": "3.0.3",
     "prettier": "3.9.10",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "typescript-eslint": "8.72.0",
     "vite": "8.3.5",
-    "vitest": "5.0.5"
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.0.5",
+    "workbox-build": "7.4.1",
+    "workbox-window": "7.4.1"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint-plugin-jsx-a11y>eslint": "10"
+      }
+    }
   }
 }

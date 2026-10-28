@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import { EcartTemps } from '../commun/domaine/temps/ecart-temps';
 
 // DAT §4.4.5, conventions.md §8.4.
@@ -12,5 +11,7 @@ export const TENTATIVES_AVANT_ABANDON = 3;
  * Délai avant la tentative n (n ≥ 1, la tentative 1 suit le premier échec) :
  * min(PLAFOND, DELAI_INITIAL × FACTEUR^(n−1)) × (0,5 + gigue / 2), gigue ∈ [0, 1[, arrondi à la milliseconde inférieure.
  */
-export const delaiAvantTentative = (_n: number, _gigue: number): EcartTemps =>
-  nonImplemente('delaiAvantTentative');
+export const delaiAvantTentative = (n: number, gigue: number): EcartTemps => {
+  const base = Math.min(PLAFOND_REPRISE, DELAI_INITIAL_REPRISE * FACTEUR_REPRISE ** (n - 1));
+  return EcartTemps.depuisMillisecondes(Math.floor(base * (0.5 + gigue / 2)));
+};

@@ -73,6 +73,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/infrastructure/etat-reseau-navigateur.ts": {
+      "debut": 0,
+      "fin": 0
+    },
     "src/commun/infrastructure/generateur-uuid-v7.ts": {
       "debut": 0,
       "fin": 0
@@ -82,6 +86,14 @@
       "fin": 0
     },
     "src/commun/infrastructure/journal-technique-local.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/planificateur-navigateur.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/source-aleatoire-crypto.ts": {
       "debut": 0,
       "fin": 0
     },
@@ -100,6 +112,10 @@
     "src/commun/presentation/messages/libelle.ts": {
       "debut": 2,
       "fin": 2
+    },
+    "src/composition/web.ts": {
+      "debut": 0,
+      "fin": 1
     },
     "src/compte/application/cas-usage/ouvrir-application.ts": {
       "debut": 1,
@@ -238,6 +254,10 @@
       "fin": 1
     },
     "src/infrastructure-google/reprise.ts": {
+      "debut": 0,
+      "fin": 1
+    },
+    "src/main.tsx": {
       "debut": 0,
       "fin": 1
     },
@@ -616,6 +636,10 @@
     "src/synchronisation/infrastructure/drive/serialisation-canonique.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
+      "debut": 0,
+      "fin": 0
     },
     "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
       "debut": 1,

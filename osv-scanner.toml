@@ -1,0 +1,7 @@
+# Exceptions osv-scanner. Chaque entrée est justifiée, datée et limitée dans le temps.
+# Elle est revue à chaque E13 et levée dès qu'un correctif est publié.
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2027-01-31T00:00:00Z
+reason = "deepmerge 4.3.1 : dépendance de développement uniquement (vite-plugin-pwa > workbox-build > @rollup/plugin-node-resolve), exécutée au build sur une configuration du dépôt, jamais livrée dans l'application. Aucune version corrigée publiée au 2026-10-28. Exception posée par Jarvis, à valider par Anthony en E13 (rang 0) ; suivie en DT."

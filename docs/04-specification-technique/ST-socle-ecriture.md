@@ -9,7 +9,7 @@
 | Exigences couvertes | RG-036 (contexte causal, préparation), RG-046 et RG-047 (pierres tombales et leur contexte), RG-050 (journal métier), RG-057 (index des écritures en attente, préparation), ENF-06, ENF-T-02, ENF-T-07 ; DS-07, DS-08, DS-11, DS-19 |
 | DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.1.5 bis, §4.2, §4.2.1, §6.1, §6.4) ; DAT v0.11 (§3.2, DS-07 : durabilité stricte) ; ADR-003, ADR-010, ADR-011, ADR-013 |
 | Hypothèses du contrôle d'explicitation appliquées | H-1 (§6.4), H-4 (§6.5), H-5 (§12) |
-| Version de la ST | 0.3 |
+| Version de la ST | 0.3.1 |
 | Statut | **Prête pour E10** ; tests UT-SOC-44 à 46 ajoutés en v0.2 (rouges) |
 | Auteur | Anthony |
 | Branche Git | `us/SOCLE-ecriture` créée depuis `lot/LOT-001-socle-objectifs-taches` |
@@ -19,6 +19,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Alignement sur `conventions.md` v0.4 (DEC-034, ADR-013, DAT v0.11). `DepotLocalDexie` : base ouverte en durabilité stricte, écriture confirmée à l'événement `complete`, transaction avortée traduite en `EcritureLocaleImpossible` (§4.4, §6.8, §8) ; tests UT-SOC-44 à 46 et support `FabriqueIndexedDbEspionne` (§13). Rédaction : `DepotLocalSqlite` et horloge d'Android renvoyés au repli (§1, §3) ; réserve R1 limitée au repli (§5.3, §7, §16, §17). Aucun changement d'interface ni de type. |
+| 0.3.1 | 2026-10-28 | Anthony | E13 du rang 0 : §5.1, type d'événement inconnu dans le journal local (Q-BEN-E12-9) ; §12 n° 1, portée de la règle de l'heure inexistante (Q-BEN-E12-6). Aucun changement d'interface. |
 | 0.3 | 2026-10-28 | Anthony | E11 : RL-LOT-001-A2 (fichiers d'appareil à la racine du dossier, §5.3) ; RL-LOT-001-A1 et Q-ST022-STA-3 : ajouts à `DepotLocalDexie` spécifiés par ST-US-022 v0.3 §5.2 (`ouvrirEspace`, `appareil()`, `fermer()`, option `surFermetureImposee`, `versionchange` sans réouverture automatique) ; types du socle inchangés. |
 
 ### Conditions de Starck (texte qui fait foi, note de Jarvis) et leur traitement
@@ -450,7 +451,7 @@ Nom de la base : fourni par le contexte `compte` (empreinte SHA-256 du `sub`, `c
 | Table | Clé primaire | Index | Contenu d'une ligne | Validation Zod de relecture |
 |---|---|---|---|---|
 | `registres` | `cle` (`CleTexte`) | `[type+id]` | `{ cle, type, id, champ, valeur, hlc: { physique: ISO, compteur, appareil }, contexte: { [appareil]: hlc } }` ; `valeur` sérialisée selon `ValeursParChamp` (`undefined` → `null`) | Union discriminée par `type` puis `champ`, `.passthrough()` interdit en local (pas de champ inconnu localement) |
-| `journal` | `id` | `[elementType+elementId]`, `hlcTri` (texte `ISO|compteur(5 chiffres)|appareil`) | `EvenementJournal` sérialisé | Union discriminée par `type` ; un type inconnu (version plus récente, ANT-19) est conservé sous `{ type: 'INCONNU', brut }` et ignoré par la projection |
+| `journal` | `id` | `[elementType+elementId]`, `hlcTri` (texte `ISO|compteur(5 chiffres)|appareil`) | `EvenementJournal` sérialisé | Union discriminée par `type`. **Rang 0 à incrément 3** : le journal local n'est écrit que par cette version de l'application ; une ligne de type inconnu est une ligne invalide (§8 n° 4, `DonneesLocalesIllisibles`). **Incrément 4 d'US-017** (lecture tolérante des fichiers d'un appareil plus récent, ANT-19) : un type inconnu reçu du Drive est conservé sous `{ type: 'INCONNU', brut }` et ignoré par la projection ; la variante est ajoutée à `EvenementJournal` et à ce schéma par ST-US-017 (Q-BEN-E12-9) |
 | `enAttente` | `cle` | — | `{ cle, type, id, champ, premiereEcriture: ISO, derniereHlc }` | strict |
 | `meta` | `nom` | — | `appareilId`, `version`, `dernierHlc`, `correctionHorloge` (ms) ; l'incrément 1 ajoute `deposeJusquA`, `pageToken`, `dernierContactDrive` | strict par nom |
 
@@ -661,7 +662,7 @@ Paramètres de nouvelle tentative : aucun (écriture locale ; l'utilisateur rée
 
 | # | Phrase Gherkin exacte | Mot-clé | Fichier | Nouveau / réutilisé | Implémentation attendue |
 |---|---|---|---|---|---|
-| 1 | `nous sommes le {date} à {heure} heure de {fuseau}` (avec ou sans « que ») | Étant donné, Quand | `tests/steps/commun/temps.steps.ts` | Nouveau | Convertit l'heure murale du fuseau en `Instant` (`tests/support/temps.ts` : heure ambiguë → première occurrence ; heure inexistante → échec de l'étape) ; `TempsSimule.positionner` |
+| 1 | `nous sommes le {date} à {heure} heure de {fuseau}` (avec ou sans « que ») | Étant donné, Quand | `tests/steps/commun/temps.steps.ts` | Nouveau | Convertit l'heure murale du fuseau en `Instant` (`tests/support/temps.ts` : heure ambiguë → première occurrence ; heure inexistante → échec de l'étape, règle propre au banc, qui ne contredit pas le décalage appliqué par `src/` : `conventions.md` §7.1, Q-BEN-E12-6) ; `TempsSimule.positionner` |
 | 2 | Préfixe `{ecart} plus tard, ` d'une action | Quand | `tests/support/prefixes.ts` | Nouveau | Avance le `TempsSimule` de l'écart, puis joue l'action |
 | 3 | Préfixe `au même instant exact, ` d'une action | Quand | `tests/support/prefixes.ts` | Nouveau | Rejoue l'action à l'instant simulé de l'étape précédente (le temps simulé n'avance pas) |
 | 4 | `le {appareil} est réglé sur le fuseau {string}` (avec ou sans « que ») | Étant donné | `tests/steps/commun/appareils.steps.ts` | Nouveau | `HorlogeSimulee.reglerFuseauAppareil` ; valeurs admises : Europe/Paris, America/New_York, UTC, Pacific/Auckland |

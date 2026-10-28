@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "UT-COMP-\\d+",
+      "rang": 0
+    },
+    {
       "motif": "DepotLocalEnMemoire.*CT-DEPOT-\\d+",
       "rang": 3
     },

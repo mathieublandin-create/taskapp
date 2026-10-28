@@ -1,13 +1,12 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '@src/commun/application/ports/horloge';
-import type { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
+import { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { Fuseau } from '@src/commun/domaine/temps/fuseau';
 import { FUSEAU_REFERENCE } from '@src/commun/domaine/temps/fuseau-reference';
-import type { Instant } from '@src/commun/domaine/temps/instant';
+import { Instant } from '@src/commun/domaine/temps/instant';
 import type { TempsSimule } from '../support/banc/temps-simule';
 
 /**
- * Doublure du port Horloge (conventions.md §7.3, §11.10). Squelette E10 : réalisée par Benjamin (E12).
+ * Doublure du port Horloge (conventions.md §7.3, §11.10).
  * - `maintenant()` = temps du banc + dérèglement propre + sauts de l'horloge murale ;
  * - `monotone()` : avance avec le temps du banc, insensible au dérèglement et aux sauts ; repart d'une
  *   nouvelle origine après `redemarrer()` ;
@@ -19,42 +18,50 @@ import type { TempsSimule } from '../support/banc/temps-simule';
  */
 export class HorlogeSimulee implements Horloge {
   readonly fuseauReference: Fuseau = FUSEAU_REFERENCE;
+  private decalageMural = 0;
+  private origineMonotone: Instant;
+  private fuseau: Fuseau = FUSEAU_REFERENCE;
 
-  constructor(private readonly temps: TempsSimule) {}
+  constructor(private readonly temps: TempsSimule) {
+    this.origineMonotone = temps.maintenant();
+  }
 
   maintenant(): Instant {
-    return nonImplemente('HorlogeSimulee.maintenant');
+    return Instant.decaler(
+      this.temps.maintenant(),
+      EcartTemps.depuisMillisecondes(this.decalageMural),
+    );
   }
 
   monotone(): EcartTemps {
-    return nonImplemente('HorlogeSimulee.monotone');
+    return EcartTemps.depuisMillisecondes(this.temps.maintenant() - this.origineMonotone);
   }
 
   fuseauAppareil(): Fuseau {
-    return nonImplemente('HorlogeSimulee.fuseauAppareil');
+    return this.fuseau;
   }
 
-  positionner(_instant: Instant): void {
-    nonImplemente('HorlogeSimulee.positionner');
+  positionner(instant: Instant): void {
+    this.temps.positionner(instant);
   }
 
-  avancer(_ecart: EcartTemps): void {
-    nonImplemente('HorlogeSimulee.avancer');
+  avancer(ecart: EcartTemps): void {
+    this.temps.avancer(ecart);
   }
 
-  dereglerDe(_ecart: EcartTemps): void {
-    nonImplemente('HorlogeSimulee.dereglerDe');
+  dereglerDe(ecart: EcartTemps): void {
+    this.decalageMural += ecart;
   }
 
-  changerHeureMurale(_ecart: EcartTemps): void {
-    nonImplemente('HorlogeSimulee.changerHeureMurale');
+  changerHeureMurale(ecart: EcartTemps): void {
+    this.decalageMural += ecart;
   }
 
   redemarrer(): void {
-    nonImplemente('HorlogeSimulee.redemarrer');
+    this.origineMonotone = this.temps.maintenant();
   }
 
-  reglerFuseauAppareil(_fuseau: Fuseau): void {
-    nonImplemente('HorlogeSimulee.reglerFuseauAppareil');
+  reglerFuseauAppareil(fuseau: Fuseau): void {
+    this.fuseau = fuseau;
   }
 }
