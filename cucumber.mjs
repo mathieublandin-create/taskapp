@@ -22,16 +22,24 @@ const profil = (steps, tags, paths = selection) => ({
   format: ['progress'],
 });
 
-export default {
-  default: profil('tests/steps/**/*.ts', `not @ihm and ${SANS_RECETTE_NI_REEL}`),
-  rapide: profil('tests/steps/**/*.ts', `not @ihm and not @lent and ${SANS_RECETTE_NI_REEL}`),
-  ihm: profil('tests/steps-ihm/**/*.ts', `@ihm and ${SANS_RECETTE_NI_REEL}`),
-  // Contrôle des étapes inutilisées (§11.13) : tous les scénarios du lot, sans --strict, sans exécution.
-  'steps-inutilises': {
-    ...profil('tests/steps/**/*.ts', 'not @recette', ['tests/features/*.feature']),
-    strict: false,
-    dryRun: true,
-    format: ['usage-json:reports/usage.json'],
-  },
-  'google-reel': profil('tests/steps/**/*.ts', '@google-reel', ['tests/features/*.feature']),
+// Profil par défaut = export par défaut ; les autres profils sont des exports nommés (cucumber-js 13).
+export default profil('tests/steps/**/*.ts', `not @ihm and ${SANS_RECETTE_NI_REEL}`);
+
+export const rapide = profil(
+  'tests/steps/**/*.ts',
+  `not @ihm and not @lent and ${SANS_RECETTE_NI_REEL}`,
+);
+
+export const ihm = profil('tests/steps-ihm/**/*.ts', `@ihm and ${SANS_RECETTE_NI_REEL}`);
+
+// Contrôle des étapes inutilisées (§11.13) : tous les scénarios du lot, sans --strict, sans exécution.
+const stepsInutilises = {
+  ...profil('tests/steps/**/*.ts', 'not @recette', ['tests/features/*.feature']),
+  strict: false,
+  dryRun: true,
+  format: ['usage-json:reports/usage.json'],
 };
+
+const googleReel = profil('tests/steps/**/*.ts', '@google-reel', ['tests/features/*.feature']);
+
+export { googleReel as 'google-reel', stepsInutilises as 'steps-inutilises' };

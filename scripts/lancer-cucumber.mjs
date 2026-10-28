@@ -15,7 +15,7 @@ if (profilsAvecSelection.has(profil) && selectionnerScenarios(lireRangCourant())
 }
 
 const execution = spawnSync('cucumber-js', ['--profile', profil, ...process.argv.slice(3)], {
-  stdio: 'inherit',
+  stdio: profil === 'steps-inutilises' ? ['inherit', 'ignore', 'inherit'] : 'inherit',
   env: { ...process.env, NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --import tsx`.trim() },
   shell: process.platform === 'win32',
 });
