@@ -17,7 +17,18 @@ import { IndicateurSynchronisation } from './synchronisation/presentation/ui/Ind
 
 // RED-02 : première instruction, synchrone, avant tout rendu, toute requête et le chargement de GIS : le fragment
 // de l'URL de retour de Google est copié, effacé, puis analysé. Les modules importés n'ont aucun effet de bord.
-const retour = consommerRetourRedirection(NAVIGATION_RETOUR_NAVIGATEUR);
+// RED-05 : le retour (qui porte le jeton) n'est lié à aucun nom de module ; il n'existe que le temps de l'appel.
+const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVIGATEUR), {
+  variables: import.meta.env,
+  agent: navigator.userAgent,
+  pointsTactiles: navigator.maxTouchPoints,
+  recharger: () => {
+    location.reload();
+  },
+  arreterNavigation: () => {
+    window.stop();
+  },
+});
 
 /** En-tête de l'application (rang 1 : indicateur, bandeau, section « Compte ») ; les écrans métier arrivent au rang 2. */
 const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
@@ -91,17 +102,6 @@ const Application = ({ controleur }: { readonly controleur: ControleurInterface 
   );
 };
 
-const controleur = demarrerWeb(retour, {
-  variables: import.meta.env,
-  agent: navigator.userAgent,
-  pointsTactiles: navigator.maxTouchPoints,
-  recharger: () => {
-    location.reload();
-  },
-  arreterNavigation: () => {
-    window.stop();
-  },
-});
 const racine = document.getElementById('racine');
 if (racine === null) throw new ErreurProgrammation('Élément « racine » absent de index.html');
 createRoot(racine).render(
