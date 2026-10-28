@@ -76,7 +76,11 @@ Les cinq agents les plus coûteux :
 
 **Effet attendu** : moins de reprises sur les rangs critiques ; environ 35 % du code produit par haiku ou sonnet plutôt que par opus ; aucune hausse de coût liée à la coordination, car il n'y a pas de parallélisme sur les mêmes fichiers.
 
-## 4. Décisions proposées au commanditaire
+## 4. Décisions du commanditaire
+
+**Décision du 2026-10-28 (DEC-040)** : « Reco pour tous ». Les profils sont nommés **Bruce** (cœur de données et synchronisation, opus) et **Friday** (outillage et CI, haiku).
+
+Questions telles qu'elles ont été posées :
 - **Q-TOK-1** : adopter les optimisations OPT-1 à OPT-8 ? *Reco : oui.* OPT-2 suppose que vous lanciez désormais la session avec `claude --agent jarvis`.
 - **Q-TOK-2** : créer le profil « développeur cœur de données et synchronisation » (opus) et le profil « outillage et CI » (haiku), en gardant Benjamin (sonnet) sur le fonctionnel et l'interface ? *Reco : oui.* Choisissez les deux noms, ou laissez Jarvis en proposer.
 - **Q-TOK-3** : appliquer ce découpage dès le rang 0 en cours ? *Reco : non.* Benjamin termine le rang 0, qui est déjà bien avancé. Le nouveau profil prend le rang 1, et l'outillage restant est confié au profil outillage.

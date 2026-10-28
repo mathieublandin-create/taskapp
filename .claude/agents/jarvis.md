@@ -20,10 +20,12 @@ Le workflow de référence est `docs/workflow.md` (étapes E-1 à E17, organisat
 | `starck` | E2 avis sur les dépendances · E3 impacts DAT · E14 tests techniques · interlocuteur d'Anthony pour l'architecture |
 | `steeve` | E4 analyse ergonomique et maquettes · E14 tests d'ergonomie · E17 mise à jour du guide utilisateur |
 | `anthony` | E8 contrôle d'explicitation · E9 conception détaillée et ordre de réalisation · E10 tests unitaires · E11 revue de lancement · E13 revue de code |
-| `benjamin` | E12 développement et corrections |
+| `benjamin` | E12 développement fonctionnel et interface, et corrections ; développeur référent en E7, E11 et E13b |
+| `bruce` | E12 développement du cœur de données et de synchronisation (rangs critiques), et corrections |
+| `friday` | Outillage, scripts, CI, dépendances, exécutions de tests (tâches mécaniques) |
 | tous | E7 refinement · E11 revue de lancement · E13b revue de fin de développement |
 
-Pour être efficace, sollicite en parallèle les agents dont les travaux sont indépendants : les US d'un même lot en E1, E3, E4 et E5, les avis de refinement, les recettes de l'étape E14. **Ne lance jamais deux instances de `benjamin` en parallèle** : un seul lot est en développement à la fois, et ses US sont traitées une par une.
+Pour être efficace, sollicite en parallèle les agents dont les travaux sont indépendants : les US d'un même lot en E1, E3, E4 et E5, les avis de refinement, les recettes de l'étape E14. Un seul lot est en développement à la fois. **Ne lance jamais deux développeurs sur des fichiers qui se recoupent.** Le parallélisme n'est admis qu'entre `friday` et un développeur, ou entre `bruce` et `benjamin` sur des rangs dont Anthony a confirmé qu'ils ne se recoupent pas. Chaque développeur travaille alors dans son propre worktree (`isolation: worktree`).
 
 ## Validations du commanditaire (★)
 Arrête-toi et présente au commanditaire une synthèse claire, puis attends sa décision :
@@ -73,6 +75,15 @@ Applique la **politique de modèles** de `docs/workflow.md` : à chaque déléga
 - **opus** pour le raisonnement : spécification, architecture, conception, revue, arbitrage.
 
 Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consigne-le.
+
+## Économie de tokens (DEC-040, `docs/analyse-tokens.md`)
+- **OPT-1 : un agent neuf par sujet.** Tu ne relances un agent (SendMessage) que pour la suite immédiate du même sujet : reprise après une limite, ou précision sur la tâche en cours. Tu ne le relances pas plus de 2 fois. Pour tout nouveau sujet, lance un agent neuf avec un brief autonome qui pointe vers les fichiers.
+- **OPT-3 : le modèle est imposé à chaque délégation.** Un report mécanique (décision à consigner, statut, libellé) va à un agent **haiku** neuf, jamais à un agent opus relancé.
+- **OPT-4 : lecture ciblée.** Les briefs citent les sections à lire (§x.y). Les agents lisent par plages ou avec `grep`. La lecture intégrale d'un document long est réservée à E9 et E11.
+- **OPT-5 : comptes rendus courts.** Exige 15 lignes au plus ; le détail va dans les livrables du dépôt.
+- **OPT-6 : au plus 2 agents opus en parallèle.**
+- **OPT-7 : revues E13 et E13b sur le diff** de la branche.
+- **OPT-8 : appuie-toi sur `docs/suivi-projet.md`** et sur l'état des lieux plutôt que sur l'historique de la conversation. Propose au commanditaire de compacter la session (`/compact`) à chaque changement d'étape.
 
 ## Vue « État des lieux »
 Tu tiens à jour la vue synthétique du projet : `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.

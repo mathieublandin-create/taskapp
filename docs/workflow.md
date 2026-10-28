@@ -11,7 +11,9 @@
 | Steeve | Expert UX/UI |
 | Starck | Architecte logiciel |
 | Anthony | Responsable technique |
-| Benjamin | Développeur |
+| Benjamin | Développeur fonctionnel et interface |
+| Bruce | Développeur cœur de données et synchronisation |
+| Friday | Développeuse outillage et intégration continue |
 
 ## Principe : le travail est organisé en lots
 Les US sont regroupées en **lots**, chacun correspondant à une itération. Un lot réunit des US dont le regroupement est pertinent :
@@ -182,6 +184,7 @@ Une idée peut aussi être **écartée** ou mise **en sommeil**, sur décision d
 - Peut ajouter des tests, mais ne supprime ni n'affaiblit aucun test existant.
 
 ### E13 — Revue de code (Anthony), pour chaque US
+- Porte sur le **diff** de la branche de l'US ou du rang par rapport à la branche de lot (DEC-040, OPT-7). La relecture complète des ST reste réservée à l'E11.
 - Contrôle :
   - la maintenabilité ;
   - le respect des normes de développement et de la spécification technique ;
@@ -313,7 +316,9 @@ Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<age
 | Steeve | sonnet | Production de maquettes et de guides à partir d'un besoin établi |
 | Starck | opus | Choix d'architecture, compromis, risques |
 | Anthony | opus | Conception détaillée, tests, revue de code et sécurité |
-| Benjamin | sonnet | Implémentation guidée par une spécification technique complète |
+| Benjamin | sonnet | Développement fonctionnel et interface, guidé par une spécification technique complète |
+| Bruce | opus | Développement du cœur de données et de synchronisation : fusion, horloge, Drive, sécurité de connexion (DEC-040) |
+| Friday | haiku | Outillage, scripts, CI, dépendances (DEC-040) |
 
 ### Choix du modèle par type de tâche
 | Niveau | Modèle | Tâches typiques |
@@ -326,6 +331,8 @@ Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<age
 - En cas de doute, on choisit le niveau **supérieur** pour ce qui **produit une référence** (spécification, conception, revue) et le niveau **inférieur** pour ce qui **exécute** une référence.
 - **Escalade** : si un agent lancé sur un modèle inférieur échoue ou livre un résultat insuffisant (critère de fin non atteint, remarque de qualité), Jarvis relance la tâche sur le niveau supérieur. Il consigne l'escalade dans le journal des échanges. Les relances comptent dans la règle anti-boucle.
 - Une tâche en cours garde le modèle avec lequel elle a été lancée. Un changement de modèle par défaut ne vaut que pour les lancements suivants.
+- **Économie de tokens (DEC-040)** : un agent neuf par sujet, avec au plus 2 relances d'un même agent ; un modèle imposé à chaque délégation ; une lecture ciblée par sections ; des comptes rendus de 15 lignes au plus ; au plus 2 agents opus en parallèle ; des revues E13 et E13b sur le diff ; une session Jarvis lancée par `claude --agent jarvis` (sonnet). Le détail figure dans `docs/analyse-tokens.md`.
+- **Documents longs** : tout document de plus de 300 lignes commence par un sommaire avec ancres, tenu par son auteur.
 
 ## Vue « État des lieux »
 Jarvis maintient `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187. Il la met à jour et la republie à chaque changement d'étape, à chaque décision du commanditaire et à chaque livrable rendu.
