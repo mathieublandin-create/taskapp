@@ -32,4 +32,13 @@ export class OuvrirApplication {
   executer(_retour: RetourGoogle): Promise<IssueOuverture> {
     return nonImplemente('OuvrirApplication.executer');
   }
+
+  /**
+   * Écran d'attente resté DELAI_MAX_ATTENTE_REDIRECTION sans retour de Google (guide v0.2.15, RL-LOT-001-S6) :
+   * la composition a interrompu la navigation ; le départ est consommé, la session s'ouvre sans jeton
+   * (A_RENOUVELER, ou PERDU si mémorisé), sans nouvelle redirection. Hors attente : undefined.
+   */
+  abandonnerAttenteGoogle(): Promise<IssueOuverture | undefined> {
+    return nonImplemente('OuvrirApplication.abandonnerAttenteGoogle');
+  }
 }

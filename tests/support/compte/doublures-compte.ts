@@ -22,7 +22,12 @@ import type {
   RetourAccepte,
   RetourGoogle,
 } from '@src/compte/application/ports/fournisseur-auth';
-import type { ErreurEspace, GestionEspaces } from '@src/compte/application/ports/gestion-espaces';
+import type { AvisOnglet, AvisOnglets } from '@src/compte/application/ports/avis-onglets';
+import type {
+  ErreurEspace,
+  ErreurSuppressionBloquee,
+  GestionEspaces,
+} from '@src/compte/application/ports/gestion-espaces';
 import type {
   DepartMemorise,
   ErreurMemoireTechnique,
@@ -43,6 +48,21 @@ export const adresse = (texte: string): AdresseGoogle => texte as AdresseGoogle;
 export const IDENTITE_A: Identite = { compte: compte('sub-A'), adresse: adresse('a@exemple.test') };
 export const IDENTITE_B: Identite = { compte: compte('sub-B'), adresse: adresse('b@exemple.test') };
 
+/** Journal partagé de l'ordre des appels entre doublures (RL-LOT-001-A1). */
+export type OrdreAppels = Array<string>;
+
+export class AvisOngletsEnMemoire implements AvisOnglets {
+  readonly diffusions: Array<AvisOnglet> = [];
+  constructor(private readonly ordre?: OrdreAppels | undefined) {}
+  diffuser(avis: AvisOnglet): void {
+    this.diffusions.push(avis);
+    this.ordre?.push(`avis.diffuser:${avis}`);
+  }
+  ecouter(): Annulation {
+    return () => undefined;
+  }
+}
+
 export class ReseauFixe implements EtatReseau {
   constructor(public connecte: boolean) {}
   estConnecte(): boolean {
@@ -61,15 +81,18 @@ export class JournalEnMemoire implements JournalTechnique {
 }
 
 export class MemoireSessionEnMemoire implements MemoireSession {
+  ordre: OrdreAppels | undefined;
   constructor(public session?: SessionMemorisee | undefined) {}
   lire(): Promise<SessionMemorisee | undefined> {
     return Promise.resolve(this.session);
   }
   ecrire(session: SessionMemorisee): Promise<Resultat<undefined, ErreurMemoireTechnique>> {
+    this.ordre?.push('memoireSession.ecrire');
     this.session = session;
     return Promise.resolve(succes(undefined));
   }
   effacer(): Promise<void> {
+    this.ordre?.push('memoireSession.effacer');
     this.session = undefined;
     return Promise.resolve();
   }
@@ -93,6 +116,9 @@ export class MemoireRedirectionEnMemoire implements MemoireRedirection {
 export class EspacesEnMemoire implements GestionEspaces {
   readonly existants = new Set<string>();
   ouvert: IdCompte | undefined;
+  ordre: OrdreAppels | undefined;
+  /** Nombre de prochains appels à `supprimer` qui rendent SuppressionBloquee (autre fenêtre ouverte). */
+  suppressionsBloquees = 0;
   constructor(existants: ReadonlyArray<IdCompte> = []) {
     existants.forEach((c) => this.existants.add(c));
   }
@@ -102,13 +128,20 @@ export class EspacesEnMemoire implements GestionEspaces {
     return Promise.resolve(succes(undefined));
   }
   fermer(): Promise<void> {
+    this.ordre?.push('espaces.fermer');
     this.ouvert = undefined;
     return Promise.resolve();
   }
   existeUnEspace(): Promise<boolean> {
     return Promise.resolve(this.existants.size > 0);
   }
-  supprimer(c: IdCompte): Promise<Resultat<undefined, ErreurEspace>> {
+  supprimer(c: IdCompte): Promise<Resultat<undefined, ErreurEspace | ErreurSuppressionBloquee>> {
+    this.ordre?.push('espaces.supprimer');
+    if (this.ouvert === c) this.ouvert = undefined;
+    if (this.suppressionsBloquees > 0) {
+      this.suppressionsBloquees -= 1;
+      return Promise.resolve(echec({ type: 'SuppressionBloquee' }));
+    }
     this.existants.delete(c);
     if (this.ouvert === c) this.ouvert = undefined;
     return Promise.resolve(succes(undefined));
@@ -145,6 +178,7 @@ export class PreparationSimulee implements PreparationStockage {
 /** Fournisseur scripté : réponses fixées par le test, demandes observées. */
 export class FournisseurScripte implements FournisseurAuth {
   readonly demandes: Array<DemandeJeton> = [];
+  ordre: OrdreAppels | undefined;
   readonly retoursRecus: Array<{ retour: RetourGoogle; depart: DepartMemorise | undefined }> = [];
   oublis = 0;
   reponseDemande: Resultat<IssueDemandeJeton, ErreurAuth> = succes({ type: 'REDIRECTION_LANCEE' });
@@ -164,6 +198,7 @@ export class FournisseurScripte implements FournisseurAuth {
     return Promise.resolve(this.reponseRetour);
   }
   oublier(): void {
+    this.ordre?.push('fournisseur.oublier');
     this.oublis += 1;
   }
 }

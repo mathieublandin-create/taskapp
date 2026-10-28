@@ -227,7 +227,7 @@ export type SectionTaches<C extends 'SEC-TACHES-A-FAIRE' | 'SEC-TACHES-TERMINEES
 | Liste « Tâches » (accueil) | ECR-002 L1, L3, L4, L5 | `ETA-TACHE-*`, `MEN-EN-RETARD`, `ALR-005`, `ALR-006`, `MEN-TRI-DELAI`, `MEN-HEURE-PARIS`, `EVD-*` | case « Terminer » (rang 7) ; ligne → détail ; filtre d'état ; puces d'objectif ; « + » / `N` → saisie rapide | vide ; hors ligne ; `MEN-ATTENTE` (rang 3) |
 | Saisie rapide | ECR-002 L2, ECR-006 | `MEN-OBLIGATOIRE`, `ERR-020` à `ERR-023` (cumulés, focus sur la première erreur, saisie conservée), `TST-AJOUTEE` | « Ajouter » → `CreerTache` ; la feuille reste ouverte | erreurs |
 | Détail d'une tâche | ECR-007 B, C, E | `ALR-005`, `MEN-ESTIMATION-CALCULEE`, `MEN-OBJECTIFS-HERITES`, `ERR-033`, `ERR-034`, `CNF-SUPPR-TACHE` | `FieldRow` délai → `ModifierDelaiTache` ; estimation → `ModifierEstimationTache` ; objectifs → `RattacherTache` / `DetacherTache` ; menu : intitulé → `RenommerTache`, supprimer → `SupprimerTache.evaluer` puis `CNF-SUPPR-TACHE` puis `executer` | — |
-| Détail d'un objectif (tâches) | ECR-003 D | idem lignes | « Ajouter une tâche » : saisie rapide avec l'objectif pré-rempli | `EVD-OBJECTIF-SANS-TACHE` |
+| Détail d'un objectif (tâches) | ECR-003 D | idem lignes | « Ajouter une tâche » : saisie rapide avec l'objectif pré-rempli | `EVD-OBJECTIF-SANS-TACHE` seul sans aucune tâche ; sections à n = 0 non affichées, sauf « Tâches à faire · 0 » si l'objectif a au moins une tâche (guide v0.2.14 §5.8 g, RL-LOT-001-S2) |
 
 ## 5. Modèle de données et migrations
 Registres de la tâche du socle (`creation`, `intitule`, `delai`, `estimationInitiale`, `cycleDeVie`, `suppression`) et `LIEN_TACHE_OBJECTIF.actif` (H-1). Aucune migration. Drive : schéma 1 logique (**sous réserve R1**).
@@ -294,6 +294,9 @@ tâches directes de l'objectif réparties par état :
   SEC-TACHES-TERMINEES (« Terminées ({n}) », repliée)       : dateFin décroissante, puis instantFin décroissant, puis creeLe, intitulé, id (§6.4)
   SEC-TACHES-ABANDONNEES (« Abandonnées ({n}) », repliée)   : dateAbandon décroissante, puis instantAbandon décroissant, puis creeLe, intitulé, id
   chaque section est présente même vide (n = 0) ; n ne compte que les tâches directes
+  rendu (guide v0.2.14 §5.8 g, RL-LOT-001-S2 ; règle d'écran, aucun changement de modèle de vue) : « Terminées (0) » et
+  « Abandonnées (0) » ne sont pas affichées ; « Tâches à faire · 0 » n'est affichée que si l'objectif a au moins une tâche ;
+  sans aucune tâche, seul EVD-OBJECTIF-SANS-TACHE est affiché
 sous-tâches (rang 6) : sous une tâche parente de la section « à faire », ses sous-tâches non supprimées suivent immédiatement
   la ligne de la tâche parente (niveau SOUS_TACHE), tous états, dans l'ordre de référence (§5.8 e) ;
   sous une tâche parente terminée ou abandonnée : aucune ligne de sous-tâche, seul le compteur « t/n » de la ligne

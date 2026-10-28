@@ -73,6 +73,19 @@ export class FauxDrive {
     nonImplemente('FauxDrive.modifierFichierALaMain');
   }
 
+  /**
+   * RL-LOT-001-A3 : `rappel` est exécuté une fois, au prochain `listerFichiersAppareils`, après la prise du jeton
+   * de départ et avant l'inventaire (simule une écriture d'un autre appareil pendant l'inventaire).
+   */
+  pendantLeProchainInventaire(_rappel: () => Promise<void>): void {
+    nonImplemente('FauxDrive.pendantLeProchainInventaire');
+  }
+
+  /** RL-LOT-001-A3 : tous les jetons de changements émis jusqu'ici deviennent invalides (JetonChangementsInvalide). */
+  invaliderJetons(): void {
+    nonImplemente('FauxDrive.invaliderJetons');
+  }
+
   desactiverPourLeCompte(): void {
     nonImplemente('FauxDrive.desactiverPourLeCompte');
   }

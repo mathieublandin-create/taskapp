@@ -16,7 +16,8 @@ export type ModeleVueListeObjectifs = {
     readonly lignes: ReadonlyArray<LigneObjectif>;
   };
   readonly mentionHeureParis?: { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
-  readonly etatVide?: { readonly code: 'EVD-OBJECTIFS' };
+  /** EVD-OBJECTIFS : aucun objectif ; EVD-OBJECTIFS-TOUS-ATTEINTS : `lignes` vide et section des atteints présente (guide v0.2.14, RL-LOT-001-S1). */
+  readonly etatVide?: { readonly code: 'EVD-OBJECTIFS' | 'EVD-OBJECTIFS-TOUS-ATTEINTS' };
 };
 
 export const construireListeObjectifs = (

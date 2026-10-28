@@ -3,6 +3,7 @@ import { succes } from '@src/commun/domaine/resultat';
 import { SupprimerDonneesAppareil } from '@src/compte/application/cas-usage/supprimer-donnees-appareil';
 import { SessionCourante } from '@src/compte/application/session-courante';
 import {
+  AvisOngletsEnMemoire,
   DepotAvantSortieSimule,
   EspacesEnMemoire,
   FournisseurScripte,
@@ -19,14 +20,20 @@ const preparer = (enAttente: number, restants: number | undefined) => {
   espaces.ouvert = IDENTITE_B.compte;
   const session = new SessionCourante();
   session.ouvrir(IDENTITE_B, 'VALIDE');
+  const ordre: Array<string> = [];
+  const avis = new AvisOngletsEnMemoire(ordre);
+  fournisseur.ordre = ordre;
+  memoireSession.ordre = ordre;
+  espaces.ordre = ordre;
   const cas = new SupprimerDonneesAppareil({
     depot,
     fournisseur,
     memoireSession,
     espaces,
+    avis,
     session,
   });
-  return { cas, depot, fournisseur, memoireSession, espaces, session };
+  return { cas, depot, fournisseur, memoireSession, espaces, avis, session, ordre };
 };
 
 describe('SupprimerDonneesAppareil (RG-055, ST-US-022 §6.6)', () => {
@@ -61,5 +68,47 @@ describe('SupprimerDonneesAppareil (RG-055, ST-US-022 §6.6)', () => {
       expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
     });
     expect(deposable.depot.tentatives).toBe(1);
+  });
+
+  it('UT-US-022-56 confirmer — efface la session mémorisée, prévient les autres onglets, puis supprime l’espace et oublie le jeton (RL-LOT-001-A1)', async () => {
+    const env = preparer(0, 0);
+
+    expect(await env.cas.confirmer()).toEqual(succes({ type: 'SUPPRIMEES' }));
+
+    expect(env.ordre).toEqual([
+      'memoireSession.effacer',
+      'avis.diffuser:SESSION_FERMEE',
+      'espaces.supprimer',
+      'fournisseur.oublier',
+    ]);
+    expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
+  });
+
+  it('UT-US-022-57 confirmer — suppression bloquée par une autre fenêtre : ERR-017, ni jeton oublié ni session fermée ; « Réessayer » aboutit (guide v0.2.15)', async () => {
+    const env = preparer(0, 0);
+    env.espaces.suppressionsBloquees = 1;
+
+    expect(await env.cas.confirmer()).toEqual(succes({ type: 'SUPPRESSION_BLOQUEE' }));
+    expect(env.fournisseur.oublis).toBe(0);
+    expect(env.memoireSession.session).toBeUndefined();
+    expect(env.session.etat()).toEqual({ type: 'OUVERTE', identite: IDENTITE_B, acces: 'VALIDE' });
+
+    expect(await env.cas.reessayer()).toEqual(succes({ type: 'SUPPRIMEES' }));
+    expect([...env.espaces.existants]).toEqual([IDENTITE_A.compte]);
+    expect(env.fournisseur.oublis).toBe(1);
+    expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
+    expect(env.avis.diffusions).toEqual(['SESSION_FERMEE']);
+  });
+
+  it('UT-US-022-57 fermerApresBlocage — « Fermer » d’ERR-017 : jeton oublié, session fermée, aucune nouvelle demande de suppression', async () => {
+    const env = preparer(0, 0);
+    env.espaces.suppressionsBloquees = 1;
+    await env.cas.confirmer();
+
+    expect(await env.cas.fermerApresBlocage()).toEqual(succes(undefined));
+
+    expect(env.fournisseur.oublis).toBe(1);
+    expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
+    expect(env.ordre.filter((appel) => appel === 'espaces.supprimer')).toHaveLength(1);
   });
 });

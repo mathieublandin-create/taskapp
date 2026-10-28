@@ -243,7 +243,7 @@ export type ModeleVueListeObjectifs = {
     readonly lignes: ReadonlyArray<LigneObjectif>;  // objectifs principaux atteints, chacun suivi de ses sous-objectifs
   };
   readonly mentionHeureParis?: { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
-  readonly etatVide?: { readonly code: 'EVD-OBJECTIFS' };   // aucun objectif
+  readonly etatVide?: { readonly code: 'EVD-OBJECTIFS' | 'EVD-OBJECTIFS-TOUS-ATTEINTS' };   // aucun objectif ; ou lignes vides et section des atteints présente (RL-LOT-001-S1)
 };
 export const construireListeObjectifs = (donnees: { readonly objectifs: ReadonlyArray<ResumeObjectif> }, dependances: { readonly horloge: Horloge }) => ModeleVueListeObjectifs;
 export type ModeleVueDetailObjectif = {
@@ -265,7 +265,7 @@ export const VUES_EXPOSEES: ReadonlyArray<NomVue>;    // l'historique n'y figure
 
 | Écran / composant | Maquette | Modèle de vue | Codes produits | Actions → cas d'usage | États à gérer |
 |---|---|---|---|---|---|
-| Liste des objectifs | ECR-008 A, E | `construireListeObjectifs` | `ETA-OBJ-*`, `ETA-OBJ-COMPTEUR`, `MEN-SANS-DELAI`, `MEN-EN-RETARD`, `MEN-HEURE-PARIS`, `EVD-OBJECTIFS` | « + » ou `Maj`+`N` → feuille de création ; ligne → détail | vide ; données aussitôt affichées ; hors ligne (rien n'est désactivé) |
+| Liste des objectifs | ECR-008 A, E | `construireListeObjectifs` | `ETA-OBJ-*`, `ETA-OBJ-COMPTEUR`, `MEN-SANS-DELAI`, `MEN-EN-RETARD`, `MEN-HEURE-PARIS`, `EVD-OBJECTIFS`, `EVD-OBJECTIFS-TOUS-ATTEINTS` | « + » ou `Maj`+`N` → feuille de création ; ligne → détail | vide ; données aussitôt affichées ; hors ligne (rien n'est désactivé) |
 | Feuille de création | ECR-008 B | — (champs locaux de l'écran) | `ERR-020` (sous le champ, focus, saisie conservée) | « Créer l'objectif » → `CreerObjectif` ; succès → détail du nouvel objectif | erreur de saisie |
 | Détail | ECR-003 C, D | `construireDetailObjectif` | idem liste ; `CNF-SUPPR-OBJECTIF` | menu « … » : renommer → `RenommerObjectif` ; description → `ModifierDescriptionObjectif` ; changer le délai → `ModifierDelaiObjectif` ; retirer le délai → `RetirerDelaiObjectif` ; supprimer → `SupprimerObjectif.evaluer` puis boîte `CNF-SUPPR-OBJECTIF` puis `executer` ; après suppression, retour à la liste | erreur `ERR-014` (toast) |
 
@@ -330,7 +330,7 @@ compteurObjectif(vue, o) = { terminees : |{t ∈ D | TERMINEE}|, nonAbandonnees 
 ### 6.5 Modèles de vue
 - `construireLigneObjectif` : `etat` → `ETA-OBJ-EN-COURS` / `ETA-OBJ-ATTEINT` / `ETA-OBJ-A-DECLINER` ; `delai` → `DATE` ou `SANS_DELAI` (`MEN-SANS-DELAI`) ; `enRetard` présent si et seulement si le résumé est en retard ; `compteur` toujours présent.
 - `mentionHeureParis` présente si et seulement si `horloge.fuseauAppareil() ≠ FUSEAU_REFERENCE` (RG-054, guide §4.21) ; jamais sur un délai.
-- `etatVide = EVD-OBJECTIFS` si aucun objectif.
+- `etatVide = EVD-OBJECTIFS` si aucun objectif ; `etatVide = EVD-OBJECTIFS-TOUS-ATTEINTS` (« Tous vos objectifs sont atteints. », action « Créer un objectif », affiché au-dessus de la section repliée) si `lignes` est vide et `sectionAtteints` présente (guide v0.2.14 §6.6.5, RL-LOT-001-S1).
 - `actions` du détail : `RENOMMER`, `MODIFIER_DESCRIPTION`, `MODIFIER_DELAI`, `RETIRER_DELAI` (seulement si un délai existe), `SUPPRIMER` ; ST-US-023 ajoute `PLACER` et `CREER_SOUS_OBJECTIF`.
 - `construireConfirmation(SUPPRESSION_OBJECTIF)` : code `CNF-SUPPR-OBJECTIF`, variables `{ element: intitulé, taches: tachesDetachees, sousObjectifs: sousObjectifsPromus }`.
 - `messagesDeRefus` : `SaisieInvalide` → un message par défaut, dans l'ordre (`INTITULE_VIDE` → `ERR-020`, `DELAI_ABSENT` → `ERR-021`, `ESTIMATION_ABSENTE` → `ERR-022`, `ESTIMATION_INVALIDE` → `ERR-023`) ; `ElementIntrouvable`, `ActionNonDisponible` → liste vide.
@@ -474,7 +474,7 @@ Intitulés et descriptions : affichés comme texte (React échappe), jamais en H
 | UT-US-001-27 | `…/application/consulter-historique.test.ts` | `ConsulterHistorique` | création, délai modifié le lendemain, suppression le surlendemain : trois entrées dans l'ordre, journées de Paris | CA-11 | NI |
 | UT-US-001-28 | `tests/unitaires/objectifs-taches/presentation/liste-objectifs.test.ts` | `construireListeObjectifs` | codes `ETA-OBJ-*`, compteur, `MEN-SANS-DELAI`, `MEN-EN-RETARD` | CA-2, CA-3, CA-7 | NI |
 | UT-US-001-29 | idem | `construireListeObjectifs` | `MEN-HEURE-PARIS` présente avec `America/New_York`, absente avec `Europe/Paris` | RG-054 | NI |
-| UT-US-001-30 | idem | `construireListeObjectifs` | aucun objectif → `EVD-OBJECTIFS` | Guide §6.6.5 | NI |
+| UT-US-001-30 | idem | `construireListeObjectifs` | aucun objectif → `EVD-OBJECTIFS` ; tous les principaux atteints → `EVD-OBJECTIFS-TOUS-ATTEINTS` et section repliée (E11, RL-LOT-001-S1) | Guide v0.2.14 §6.6.5 | NI |
 | UT-US-001-31 | `…/presentation/detail-objectif.test.ts` | `construireDetailObjectif` | actions sans `RETIRER_DELAI` pour un objectif sans délai ; aucune action d'état | CA-5, CA-8 | NI |
 | UT-US-001-32 | `…/presentation/confirmation.test.ts` | `construireConfirmation` | `SUPPRESSION_OBJECTIF` → `CNF-SUPPR-OBJECTIF`, variables | CA-9 | NI |
 | UT-US-001-33 | `…/presentation/messages-de-refus.test.ts` | `messagesDeRefus` | `[INTITULE_VIDE]` → `ERR-020` ; `ElementIntrouvable` → liste vide | CA-1 | NI |

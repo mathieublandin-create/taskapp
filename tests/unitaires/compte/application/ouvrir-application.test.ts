@@ -107,6 +107,7 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
         portees: ['openid', 'email', 'https://www.googleapis.com/auth/drive.file'],
         indice: IDENTITE_A.adresse,
         reprise: { ecran: 'accueil', feuilleSynchronisationOuverte: false },
+        redirectionPermise: true,
       },
     ]);
     expect(env.session.etat()).toEqual({ type: 'ATTENTE_GOOGLE', identite: IDENTITE_A });
@@ -165,5 +166,43 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
 
     expect(issue).toEqual({ type: 'SESSION_OUVERTE', acces: 'A_RENOUVELER' });
     expect(env.fournisseur.demandes).toEqual([]);
+  });
+
+  it('UT-US-022-58 abandonnerAttenteGoogle — sans retour de Google après 10 s : départ consommé, session ouverte sans jeton, aucune nouvelle redirection (guide v0.2.15, RL-LOT-001-S6)', async () => {
+    const env = preparer({ session: { accesPerdu: false } });
+    expect(await env.cas.executer({ type: 'AUCUN' })).toEqual({ type: 'REDIRECTION_LANCEE' });
+    const consommationsAvant = env.memoireRedirection.consommations;
+
+    expect(await env.cas.abandonnerAttenteGoogle()).toEqual({
+      type: 'SESSION_OUVERTE',
+      acces: 'A_RENOUVELER',
+    });
+
+    expect(env.memoireRedirection.consommations).toBe(consommationsAvant + 1);
+    expect(env.memoireRedirection.depart).toBeUndefined();
+    expect(env.fournisseur.demandes).toHaveLength(1);
+    expect(env.session.etat()).toEqual({
+      type: 'OUVERTE',
+      identite: IDENTITE_A,
+      acces: 'A_RENOUVELER',
+    });
+  });
+
+  it('UT-US-022-58 abandonnerAttenteGoogle — accès perdu mémorisé : PERDU ; hors attente : undefined, rien ne change', async () => {
+    const perdu = preparer({ session: { accesPerdu: true } });
+    await perdu.cas.executer({ type: 'AUCUN' });
+    expect(await perdu.cas.abandonnerAttenteGoogle()).toEqual({
+      type: 'SESSION_OUVERTE',
+      acces: 'PERDU',
+    });
+
+    const horsAttente = preparer({ session: { accesPerdu: false }, connecte: false });
+    await horsAttente.cas.executer({ type: 'AUCUN' });
+    expect(await horsAttente.cas.abandonnerAttenteGoogle()).toBeUndefined();
+    expect(horsAttente.session.etat()).toEqual({
+      type: 'OUVERTE',
+      identite: IDENTITE_A,
+      acces: 'A_RENOUVELER',
+    });
   });
 });

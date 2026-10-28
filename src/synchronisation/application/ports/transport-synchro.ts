@@ -16,7 +16,9 @@ export type ErreurTransport =
   | { readonly type: 'ServeurIndisponible' }
   | { readonly type: 'RessourceIntrouvable' }
   | { readonly type: 'FichierIllisible'; readonly cause: CauseIllisible }
-  | { readonly type: 'FormatPlusRecent'; readonly schemaVersion: number };
+  | { readonly type: 'FormatPlusRecent'; readonly schemaVersion: number }
+  /** `changements` : jeton inconnu ou périmé (Drive 400 ou 404) ; jamais une erreur transitoire (DAT v0.11.4 §4.3). */
+  | { readonly type: 'JetonChangementsInvalide' };
 
 export type FichierAppareilDistant = { readonly id: IdFichierDrive; readonly appareil: IdAppareil };
 export type Changements = {
@@ -28,9 +30,12 @@ export type ManifesteDistant = { readonly id: IdFichierDrive; readonly contenu: 
 export interface TransportSynchro {
   /** Recherche le dossier « Done Juan » (appProperties), le crée s'il est absent. Idempotent. */
   preparerDossier(): Promise<Resultat<IdFichierDrive, ErreurTransport>>;
-  /** Premier passage : tous les fichiers d'appareil du dossier et un jeton de départ. */
+  /**
+   * Premier passage (ou après JetonChangementsInvalide) : jeton de départ (changes.getStartPageToken) obtenu
+   * **avant** l'inventaire (files.list), puis tous les fichiers d'appareil du dossier (DAT v0.11.4 §4.3).
+   */
   listerFichiersAppareils(dossier: IdFichierDrive): Promise<Resultat<Changements, ErreurTransport>>;
-  /** changes.list depuis `jeton` : fichiers d'appareil créés ou modifiés, non supprimés. */
+  /** changes.list depuis `jeton` : fichiers d'appareil créés ou modifiés, non supprimés ; jeton refusé → JetonChangementsInvalide. */
   changements(
     dossier: IdFichierDrive,
     jeton: string,

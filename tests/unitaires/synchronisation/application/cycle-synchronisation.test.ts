@@ -1,6 +1,6 @@
 /**
  * CycleSynchronisation (ST-US-017 §6.2 à §6.4, DAT §4.3), sur DepotLocalDexie (fake-indexeddb), FauxDrive et
- * PlanificateurSimule. UT-US-017-17 à 31.
+ * PlanificateurSimule. UT-US-017-17 à 32 (32 : RL-LOT-001-A3, E11).
  */
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
@@ -90,6 +90,25 @@ describe('CycleSynchronisation (ST-US-017 §6)', () => {
 
     expect(await intitules(pc)).toEqual(['Publier le guide']);
     expect(await enAttente(pc)).toBe(0);
+  });
+
+  it('UT-US-017-32 synchroniserMaintenant — jeton de changements refusé : oublié, inventaire complet dans le même cycle, sans tentative comptée (DAT v0.11.4 §4.3, RL-LOT-001-A3)', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    const pc = env.appareil(PC, '02');
+    await pc.cycle.synchroniserMaintenant();
+    const jetonAvant = valeurDe(await pc.depot.lireMeta()).pageToken;
+    await creerObjectif(smartphone, idObjectif(1), 'Publier le guide');
+    await smartphone.cycle.synchroniserMaintenant();
+    env.drive.invaliderJetons();
+
+    expect(await pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(await intitules(pc)).toEqual(['Publier le guide']);
+    expect(pc.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    const jetonApres = valeurDe(await pc.depot.lireMeta()).pageToken;
+    expect(jetonApres).toBeDefined();
+    expect(jetonApres).not.toEqual(jetonAvant);
   });
 
   it('UT-US-017-19 deposerMaintenant — réponse du dépôt perdue : deposeJusquA inchangé, entrée gardée, puis un seul fichier après la reprise (ENF-T-07)', async () => {

@@ -3,6 +3,7 @@ import { succes } from '@src/commun/domaine/resultat';
 import { SeDeconnecter } from '@src/compte/application/cas-usage/se-deconnecter';
 import { SessionCourante } from '@src/compte/application/session-courante';
 import {
+  AvisOngletsEnMemoire,
   DepotAvantSortieSimule,
   EspacesEnMemoire,
   FournisseurScripte,
@@ -18,8 +19,13 @@ const preparer = (enAttente: number, restants: number | undefined) => {
   espaces.ouvert = IDENTITE_A.compte;
   const session = new SessionCourante();
   session.ouvrir(IDENTITE_A, 'VALIDE');
-  const cas = new SeDeconnecter({ depot, fournisseur, memoireSession, espaces, session });
-  return { cas, depot, fournisseur, memoireSession, espaces, session };
+  const ordre: Array<string> = [];
+  const avis = new AvisOngletsEnMemoire(ordre);
+  fournisseur.ordre = ordre;
+  memoireSession.ordre = ordre;
+  espaces.ordre = ordre;
+  const cas = new SeDeconnecter({ depot, fournisseur, memoireSession, espaces, avis, session });
+  return { cas, depot, fournisseur, memoireSession, espaces, avis, session, ordre };
 };
 
 describe('SeDeconnecter (RG-043, ST-US-022 §6.5)', () => {
@@ -51,5 +57,18 @@ describe('SeDeconnecter (RG-043, ST-US-022 §6.5)', () => {
     expect(env.espaces.ouvert).toBeUndefined();
     expect(await env.espaces.existeUnEspace()).toBe(true);
     expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
+  });
+
+  it('UT-US-022-56 executer — prévient les autres onglets après avoir effacé la session mémorisée, avant de fermer l’espace (DAT v0.11.4 §4.1.6, RL-LOT-001-A1)', async () => {
+    const env = preparer(0, 0);
+
+    await env.cas.executer();
+
+    expect(env.ordre).toEqual([
+      'fournisseur.oublier',
+      'memoireSession.effacer',
+      'avis.diffuser:SESSION_FERMEE',
+      'espaces.fermer',
+    ]);
   });
 });

@@ -1,5 +1,6 @@
 /**
- * Suite de contrat du port TransportSynchro (ST-US-017 §4.3 ; conventions.md §11.10). Identifiants CT-TRANS-nn.
+ * Suite de contrat du port TransportSynchro (ST-US-017 §4.3 ; conventions.md §11.10). Identifiants CT-TRANS-nn
+ * (CT-TRANS-09 et 10 : RL-LOT-001-A3, E11).
  * Exécutée sur FauxDrive (E10) ; Benjamin l'exécute aussi sur TransportSynchroDrive avec MSW (§14).
  */
 import { describe, expect, it } from 'vitest';
@@ -22,6 +23,10 @@ export type FixtureTransport = {
   /** Modifie à la main un octet du contenu du fichier, qui reste du gzip valide (V-02). */
   readonly modifierALaMain: (id: IdFichierDrive) => Promise<void>;
   readonly retirerAcces: () => void;
+  /** Exécute `rappel` au prochain inventaire, entre la prise du jeton de départ et la liste des fichiers. */
+  readonly pendantLeProchainInventaire: (rappel: () => Promise<void>) => void;
+  /** Rend invalides tous les jetons de changements déjà émis. */
+  readonly invaliderJetons: () => void;
 };
 
 const contenu = (appareil: IdAppareil, intitule: string): ContenuFichierAppareil => ({
@@ -93,6 +98,39 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
       const changements = valeurDe(await pc.changements(dossier, jeton));
       expect(changements.fichiers).toEqual([{ id: idSmartphone, appareil: SMARTPHONE }]);
       expect(changements.fichiers.some((x) => x.id === idPc)).toBe(false);
+    });
+
+    it('CT-TRANS-09 listerFichiersAppareils — un fichier modifié pendant l’inventaire est retrouvé par changements depuis le jeton rendu (DAT v0.11.4 §4.3, RL-LOT-001-A3)', async () => {
+      const f = creer();
+      const pc = f.transport(PC);
+      const dossier = valeurDe(await pc.preparerDossier());
+      let idSmartphone: IdFichierDrive | undefined;
+      f.pendantLeProchainInventaire(async () => {
+        idSmartphone = valeurDe(
+          await f
+            .transport(SMARTPHONE)
+            .deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'B') }),
+        );
+      });
+
+      const { jeton } = valeurDe(await pc.listerFichiersAppareils(dossier));
+      const changements = valeurDe(await pc.changements(dossier, jeton));
+
+      expect(idSmartphone).toBeDefined();
+      expect(changements.fichiers).toContainEqual({ id: idSmartphone, appareil: SMARTPHONE });
+    });
+
+    it('CT-TRANS-10 changements — un jeton refusé par Drive rend JetonChangementsInvalide (RL-LOT-001-A3)', async () => {
+      const f = creer();
+      const pc = f.transport(PC);
+      const dossier = valeurDe(await pc.preparerDossier());
+      const { jeton } = valeurDe(await pc.listerFichiersAppareils(dossier));
+      f.invaliderJetons();
+
+      expect(await pc.changements(dossier, jeton)).toEqual({
+        ok: false,
+        erreur: { type: 'JetonChangementsInvalide' },
+      });
     });
 
     it('CT-TRANS-05 lireFichierAppareil — un fichier modifié à la main rend FichierIllisible (EMPREINTE)', async () => {
@@ -167,6 +205,12 @@ suiteContratTransport('FauxDrive', () => {
     },
     retirerAcces: () => {
       acces.accorde = false;
+    },
+    pendantLeProchainInventaire: (rappel) => {
+      drive.pendantLeProchainInventaire(rappel);
+    },
+    invaliderJetons: () => {
+      drive.invaliderJetons();
     },
   };
 });

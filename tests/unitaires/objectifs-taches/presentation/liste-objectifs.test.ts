@@ -69,6 +69,22 @@ describe('construireListeObjectifs (ECR-008)', () => {
     expect(modele.sectionAtteints).toBeUndefined();
   });
 
+  it('UT-US-001-30 construireListeObjectifs — produit EVD-OBJECTIFS-TOUS-ATTEINTS au-dessus de la section repliée quand tous les principaux sont atteints (guide v0.2.14 §6.6.5, RL-LOT-001-S1)', () => {
+    const modele = construireListeObjectifs(
+      {
+        objectifs: [
+          resumeObjectif({ id: o(1), intitule: 'Atteint', etat: 'ATTEINT' }),
+          resumeObjectif({ id: o(2), intitule: 'Sous atteint', etat: 'ATTEINT', parentId: o(1) }),
+        ],
+      },
+      { horloge: horlogeSur(AUJOURDHUI) },
+    );
+
+    expect(modele.etatVide).toEqual({ code: 'EVD-OBJECTIFS-TOUS-ATTEINTS' });
+    expect(modele.lignes).toEqual([]);
+    expect(modele.sectionAtteints).toMatchObject({ code: 'SEC-OBJ-ATTEINTS', n: 1 });
+  });
+
   it('UT-US-001-35 construireListeObjectifs — ordonne les principaux par délai croissant, sans délai à la fin, puis création, puis intitulé sans casse ni accents (guide v0.2.9 §5.8 a)', () => {
     const objectifs = [
       resumeObjectif({

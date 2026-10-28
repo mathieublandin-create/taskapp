@@ -21,6 +21,13 @@ export type OptionsDepotLocalDexie = {
   readonly nomBase: string;
   readonly fabrique?: IDBFactory;
   readonly appareilId: IdAppareil;
+  /**
+   * DAT v0.11.4 §4.1.6 (RL-LOT-001-A1) : appelé une fois quand une autre connexion demande la suppression
+   * ou la montée de version de la base (`versionchange`). La connexion est alors fermée **sans réouverture
+   * automatique** (`close({ disableAutoOpen: true })`) ; toute méthode rend ensuite EspaceLocalNonOuvert.
+   * La composition y arrête la coordination et le cycle, puis recharge la page.
+   */
+  readonly surFermetureImposee?: () => void;
 };
 
 /** ST-US-022 §5.2 (DAT v0.11.3 §4.1.4, Q-ST022-STA-3) : ouverture d'un espace de compte par la composition. */
@@ -28,6 +35,7 @@ export type OptionsOuvertureEspace = {
   readonly nomBase: string;
   readonly fabrique?: IDBFactory;
   readonly generateur: GenerateurIdentifiants;
+  readonly surFermetureImposee?: () => void;
 };
 
 export class DepotLocalDexie implements DepotLocal {
@@ -42,6 +50,11 @@ export class DepotLocalDexie implements DepotLocal {
     _options: OptionsOuvertureEspace,
   ): Promise<Resultat<DepotLocalDexie, ErreurDepotLocal>> {
     return nonImplemente('DepotLocalDexie.ouvrirEspace');
+  }
+
+  /** Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Idempotent. */
+  fermer(): void {
+    nonImplemente('DepotLocalDexie.fermer');
   }
 
   /** Identifiant de l'appareil pour cet espace (celui du constructeur ou de `ouvrirEspace`). */
