@@ -1,5 +1,43 @@
 # ST-US-001 — Créer et gérer un objectif
 
+## Sommaire
+
+- [0. En-tête](#0-en-tête) (l. 41)
+  - [Historique](#historique) (l. 59)
+- [1. Résumé technique](#1-résumé-technique) (l. 65)
+- [2. Traçabilité](#2-traçabilité) (l. 71)
+  - [2.1 Critères d'acceptation → scénarios → tests](#21-critères-dacceptation--scénarios--tests) (l. 73)
+  - [2.2 Règles de gestion → implémentation](#22-règles-de-gestion--implémentation) (l. 88)
+- [3. Composants et fichiers](#3-composants-et-fichiers) (l. 99)
+- [4. Interfaces et signatures](#4-interfaces-et-signatures) (l. 145)
+  - [4.1 Domaine](#41-domaine) (l. 147)
+  - [4.2 Application — cas d'usage](#42-application--cas-dusage) (l. 223)
+  - [4.3 Ports](#43-ports) (l. 256)
+  - [4.4 Adaptateurs](#44-adaptateurs) (l. 259)
+  - [4.5 Présentation](#45-présentation) (l. 262)
+- [5. Modèle de données et migrations](#5-modèle-de-données-et-migrations) (l. 312)
+  - [5.1 Modèle](#51-modèle) (l. 313)
+  - [5.2 Migrations](#52-migrations) (l. 324)
+- [6. Règles et algorithmes](#6-règles-et-algorithmes) (l. 327)
+  - [6.1 Vue métier (RG-046, RG-047 : dérivations de lecture)](#61-vue-métier-rg-046-rg-047--dérivations-de-lecture) (l. 329)
+  - [6.2 État d'un objectif (RG-025 ; US-001 CA-8, US-003 CA-4 à CA-7, US-023 CA-7)](#62-état-dun-objectif-rg-025--us-001-ca-8-us-003-ca-4-à-ca-7-us-023-ca-7) (l. 340)
+  - [6.3 Retard (RG-045, RG-053)](#63-retard-rg-045-rg-053) (l. 352)
+  - [6.4 Décisions](#64-décisions) (l. 355)
+  - [6.5 Modèles de vue](#65-modèles-de-vue) (l. 368)
+  - [6.6 Ordre et sections de la liste des objectifs (guide v0.2.9 §5.8, réponse à Q-US-001-6)](#66-ordre-et-sections-de-la-liste-des-objectifs-guide-v029-58-réponse-à-q-us-001-6) (l. 376)
+  - [6.7 Rendu de l'historique dans les tests (tests/support/rendu-historique.ts, glossaire v1.4 §11)](#67-rendu-de-lhistorique-dans-les-tests-testssupportrendu-historiquets-glossaire-v14-11) (l. 394)
+- [7. Intégration Google](#7-intégration-google) (l. 406)
+- [8. Gestion des erreurs](#8-gestion-des-erreurs) (l. 409)
+- [9. Patterns imposés](#9-patterns-imposés) (l. 416)
+- [10. Sécurité et données personnelles](#10-sécurité-et-données-personnelles) (l. 425)
+- [11. Exigences non fonctionnelles](#11-exigences-non-fonctionnelles) (l. 428)
+- [12. Step definitions Cucumber](#12-step-definitions-cucumber) (l. 434)
+- [13. Tests unitaires fournis (E10)](#13-tests-unitaires-fournis-e10) (l. 481)
+- [14. Tests attendus de Benjamin](#14-tests-attendus-de-benjamin) (l. 533)
+- [15. Plan de réalisation](#15-plan-de-réalisation) (l. 541)
+- [16. Dette, hypothèses et points ouverts](#16-dette-hypothèses-et-points-ouverts) (l. 549)
+- [17. Checklist de complétude (avant E11)](#17-checklist-de-complétude-avant-e11) (l. 561)
+
 ## 0. En-tête
 
 | Élément | Valeur |

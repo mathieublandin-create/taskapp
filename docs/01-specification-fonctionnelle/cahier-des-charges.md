@@ -37,6 +37,28 @@
 >
 > **Validations attendues du commanditaire** : aucune pour LOT-001 (V-DEC034-1 à 7 validées, DEC-036 ; questions antérieures répondues : Q-US-001-1, Q-US-025-2, Q-US-017-3 et Q-US-017-4, DEC-030 ; Q-US-025-3, DEC-032). Restent en attente les questions des lots ultérieurs (Q-DEM001-30 à 36, 38 et 40) et DEM-002.
 
+## Sommaire
+
+- [1. Historique des versions](#1-historique-des-versions) (l. 62)
+- [2. Contexte](#2-contexte) (l. 84)
+  - [Reformulation du besoin, version 0.7 (validée par le commanditaire le 2026-10-21, DEC-018)](#reformulation-du-besoin-version-07-validée-par-le-commanditaire-le-2026-10-21-dec-018) (l. 100)
+  - [Analyse d'écart de la demande DEM-002 (v0.3)](#analyse-décart-de-la-demande-dem-002-v03) (l. 105)
+  - [Analyse d'écart des réponses P1 et de l'avis de l'architecte (v0.4)](#analyse-décart-des-réponses-p1-et-de-lavis-de-larchitecte-v04) (l. 116)
+  - [Existant](#existant) (l. 131)
+- [3. Objectifs du produit](#3-objectifs-du-produit) (l. 141)
+- [4. Périmètre](#4-périmètre) (l. 157)
+  - [4.1 Inclus](#41-inclus) (l. 159)
+  - [4.2 Reporté à un lot ultérieur (dans le périmètre à terme)](#42-reporté-à-un-lot-ultérieur-dans-le-périmètre-à-terme) (l. 181)
+  - [4.3 Exclu](#43-exclu) (l. 186)
+- [5. Acteurs et personas](#5-acteurs-et-personas) (l. 211)
+- [6. Concepts métier et glossaire](#6-concepts-métier-et-glossaire) (l. 221)
+- [7. Règles de gestion](#7-règles-de-gestion) (l. 279)
+  - [7.1 Propositions de modification de règles établies](#71-propositions-de-modification-de-règles-établies) (l. 342)
+- [8. Exigences non fonctionnelles (côté métier)](#8-exigences-non-fonctionnelles-côté-métier) (l. 355)
+- [9. Réponses sans objet ou non reprises](#9-réponses-sans-objet-ou-non-reprises) (l. 368)
+- [10. Traçabilité](#10-traçabilité) (l. 376)
+- [11. Validations attendues du commanditaire](#11-validations-attendues-du-commanditaire) (l. 384)
+
 ## 1. Historique des versions
 
 | Version | Date | Auteur | Demande | Nature de la modification |

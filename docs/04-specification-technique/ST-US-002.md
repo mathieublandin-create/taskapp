@@ -1,5 +1,40 @@
 # ST-US-002 — Créer et gérer mes tâches
 
+## Sommaire
+
+- [0. En-tête](#0-en-tête) (l. 38)
+  - [Historique](#historique) (l. 55)
+- [1. Résumé technique](#1-résumé-technique) (l. 62)
+- [2. Traçabilité](#2-traçabilité) (l. 67)
+  - [2.1 Critères d'acceptation → scénarios → tests](#21-critères-dacceptation--scénarios--tests) (l. 68)
+  - [2.2 Règles de gestion → implémentation](#22-règles-de-gestion--implémentation) (l. 87)
+- [3. Composants et fichiers](#3-composants-et-fichiers) (l. 98)
+- [4. Interfaces et signatures](#4-interfaces-et-signatures) (l. 124)
+  - [4.1 Domaine](#41-domaine) (l. 125)
+  - [4.2 Application](#42-application) (l. 170)
+  - [4.3 Ports, 4.4 Adaptateurs](#43-ports-44-adaptateurs) (l. 200)
+  - [4.5 Présentation](#45-présentation) (l. 203)
+- [5. Modèle de données et migrations](#5-modèle-de-données-et-migrations) (l. 267)
+- [6. Règles et algorithmes](#6-règles-et-algorithmes) (l. 270)
+  - [6.1 Validation de la saisie (cumul, guide §6.6.8)](#61-validation-de-la-saisie-cumul-guide-668) (l. 271)
+  - [6.2 Décisions](#62-décisions) (l. 281)
+  - [6.3 Alertes de délai (RG-024 ; RG-023 pour une sous-tâche)](#63-alertes-de-délai-rg-024--rg-023-pour-une-sous-tâche) (l. 295)
+  - [6.4 Liste « Tâches » (guide §5.7 ; Q-US-002-1)](#64-liste--tâches--guide-57--q-us-002-1) (l. 305)
+  - [6.5 Actions d'une tâche (rang 5)](#65-actions-dune-tâche-rang-5) (l. 322)
+  - [6.6 Tâches dans le détail d'un objectif (guide v0.2.9 §5.8 d, réponse à Q-US-001-6)](#66-tâches-dans-le-détail-dun-objectif-guide-v029-58-d-réponse-à-q-us-001-6) (l. 325)
+- [7. Intégration Google](#7-intégration-google) (l. 343)
+- [8. Gestion des erreurs](#8-gestion-des-erreurs) (l. 346)
+- [9. Patterns imposés](#9-patterns-imposés) (l. 354)
+- [10. Sécurité](#10-sécurité) (l. 357)
+- [11. Exigences non fonctionnelles](#11-exigences-non-fonctionnelles) (l. 360)
+- [12. Step definitions Cucumber](#12-step-definitions-cucumber) (l. 366)
+  - [12.1 Construction des contextes (tests/support/construction-taches.ts, H-7, glossaire §1)](#121-construction-des-contextes-testssupportconstruction-tachests-h-7-glossaire-1) (l. 405)
+- [13. Tests unitaires fournis (E10)](#13-tests-unitaires-fournis-e10) (l. 426)
+- [14. Tests attendus de Benjamin](#14-tests-attendus-de-benjamin) (l. 469)
+- [15. Plan de réalisation](#15-plan-de-réalisation) (l. 472)
+- [16. Dette, hypothèses et points ouverts](#16-dette-hypothèses-et-points-ouverts) (l. 479)
+- [17. Checklist de complétude (avant E11)](#17-checklist-de-complétude-avant-e11) (l. 490)
+
 ## 0. En-tête
 
 | Élément | Valeur |

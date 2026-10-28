@@ -2,6 +2,44 @@
 
 > Version 3 — 2026-10-22 (ajout d'E-1, backlog d'idées, DEC-033). Version 2 — 2026-10-20. Jarvis lit ce fichier avant toute coordination et l'applique strictement.
 
+## Sommaire
+
+- [Acteurs](#acteurs) (l. 43)
+- [Principe : le travail est organisé en lots](#principe--le-travail-est-organisé-en-lots) (l. 56)
+- [Vue d'ensemble](#vue-densemble) (l. 70)
+- [Étapes](#étapes) (l. 105)
+  - [E-1 — Backlog d'idées (Jarvis qualifie, ★ le commanditaire priorise)](#e-1--backlog-didées-jarvis-qualifie--le-commanditaire-priorise) (l. 107)
+  - [E0 — Réception des demandes (Jarvis)](#e0--réception-des-demandes-jarvis) (l. 134)
+  - [E1 — Analyse d'écart et rédaction des US (Pepper)](#e1--analyse-décart-et-rédaction-des-us-pepper) (l. 138)
+  - [E2 — Constitution du lot (Pepper propose, ★ le commanditaire valide)](#e2--constitution-du-lot-pepper-propose--le-commanditaire-valide) (l. 144)
+  - [E3 — Analyse d'impact architecture (Starck)](#e3--analyse-dimpact-architecture-starck) (l. 154)
+  - [E4 — Analyse ergonomique (Steeve)](#e4--analyse-ergonomique-steeve) (l. 159)
+  - [E5 — Rédaction des tests métiers (Pepper)](#e5--rédaction-des-tests-métiers-pepper) (l. 164)
+  - [E6 — ★ Validation des US par le commanditaire](#e6---validation-des-us-par-le-commanditaire) (l. 169)
+  - [E7 — Refinement du lot (Jarvis, tous les agents)](#e7--refinement-du-lot-jarvis-tous-les-agents) (l. 182)
+  - [E8 — Contrôle d'explicitation (Anthony)](#e8--contrôle-dexplicitation-anthony) (l. 188)
+  - [E9 — Conception détaillée (Anthony)](#e9--conception-détaillée-anthony) (l. 193)
+  - [E10 — Écriture des tests unitaires (Anthony)](#e10--écriture-des-tests-unitaires-anthony) (l. 205)
+  - [E11 — Revue de lancement du lot (Anthony → Benjamin, Pepper, Steeve, Starck ; animée par Jarvis)](#e11--revue-de-lancement-du-lot-anthony--benjamin-pepper-steeve-starck--animée-par-jarvis) (l. 209)
+  - [E12 — Développement (Benjamin)](#e12--développement-benjamin) (l. 219)
+  - [E13 — Revue de code (Anthony), pour chaque US](#e13--revue-de-code-anthony-pour-chaque-us) (l. 224)
+  - [E13b — Revue de fin de développement (Benjamin, Anthony, Starck, Pepper, Steeve ; animée par Jarvis)](#e13b--revue-de-fin-de-développement-benjamin-anthony-starck-pepper-steeve--animée-par-jarvis) (l. 236)
+  - [E14 — Recette des agents (en parallèle, une fois toutes les US du lot approuvées)](#e14--recette-des-agents-en-parallèle-une-fois-toutes-les-us-du-lot-approuvées) (l. 255)
+  - [E15 — Traitement des anomalies](#e15--traitement-des-anomalies) (l. 264)
+  - [E16 — ★ Recette du commanditaire (itérations majeures uniquement)](#e16---recette-du-commanditaire-itérations-majeures-uniquement) (l. 269)
+  - [E17 — Clôture du lot (Jarvis)](#e17--clôture-du-lot-jarvis) (l. 282)
+- [Gravité des anomalies](#gravité-des-anomalies) (l. 293)
+- [Règle anti-boucle et arbitrage](#règle-anti-boucle-et-arbitrage) (l. 303)
+- [Definition of Ready (E7)](#definition-of-ready-e7) (l. 315)
+- [Definition of Done (E17)](#definition-of-done-e17) (l. 324)
+- [Statuts](#statuts) (l. 331)
+- [Points de validation du commanditaire](#points-de-validation-du-commanditaire) (l. 335)
+- [Politique de modèles (optimisation des tokens)](#politique-de-modèles-optimisation-des-tokens) (l. 346)
+  - [Modèles par défaut](#modèles-par-défaut) (l. 349)
+  - [Choix du modèle par type de tâche](#choix-du-modèle-par-type-de-tâche) (l. 361)
+  - [Règles](#règles) (l. 368)
+- [Vue « État des lieux »](#vue--état-des-lieux-) (l. 375)
+
 ## Acteurs
 | Acteur | Rôle |
 |---|---|
