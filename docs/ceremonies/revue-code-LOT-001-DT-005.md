@@ -8,7 +8,7 @@
 | Branche | `outillage/DT-005-couverture` (PR #5, base `lot/LOT-001`) |
 | Périmètre | Différentiel `origin/lot/LOT-001...HEAD` : 6 fichiers, + 242, − 1 (OPT-7) |
 | Référentiel | `conventions.md` v0.4.5 §12 (règle de non-régression), §11.14 (rangs des tests) ; `dette-technique.md`, ligne DT-005 |
-| Passage | 1 |
+| Passage | 1, puis 2 (§9) |
 
 ## 1. Verdict : **À reprendre**
 
@@ -81,3 +81,20 @@ Le seuil du motif (85 %) est respecté, mais la règle de non-régression du §1
 ## 8. Suite
 
 Friday corrige RC-DT5-1, et RC-DT5-2 si possible dans le même passage. Au passage 2, je contrôle seulement ces deux remarques et les nouveaux changements.
+
+## 9. Passage 2 (itération 2/2)
+
+**Périmètre.** Différentiel `5708034..HEAD` (commits `50fe3b1` et `9d2c5f6`) : 3 fichiers, + 125, − 33. Je contrôle seulement RC-DT5-1, RC-DT5-2 et les nouveaux changements, sans nouvelle exigence sur le code déjà revu.
+
+### Verdict : **Approuvé**
+
+| Remarque | Contrôle | Statut |
+|---|---|---|
+| RC-DT5-1 | Le type `Metrique` vaut `{ readonly total: number; readonly pct: number }`, sans `string`. La condition est conforme à la règle fixée : `avant.total > 0 && apres.total > 0 && apres.pct < avant.pct`. L'en-tête ne mentionne plus « Unknown » et énonce la règle. UT-OUT-10 utilise des métriques réelles pour `src/vide.ts` (`{0, 100}` puis `{0, 0}`). UT-OUT-11 couvre les deux cas demandés et vérifie `compares`. Le helper `metrique(total, pct)` est en place. Les deux gardes sont protégées par des tests : un mutant qui retire `avant.total > 0` et un mutant qui retire `apres.total > 0` font chacun échouer UT-OUT-11. | **Levée** |
+| RC-DT5-2 | `estRapportValide` est une garde de type sans `as`, qui refuse les tableaux, `null` et les métriques non numériques. `lireRapportOuArreter` s'applique aux deux rapports avant tout calcul. Le message correspond exactement à `Rapport de couverture illisible : <chemin>`, avec le code 2. J'ai vérifié en ligne de commande : rapport malformé (`pct` « Unknown ») → exit 2 ; rapport absent → exit 2. UT-OUT-12, non exigé, est accepté : il couvre la garde pure (le cas « absent » y est représenté par `undefined`, la lecture du fichier étant de la CLI). | **Levée** |
+
+**Contrôles exécutés (Node 24).** `pnpm verifier` : exit 0 (lint, types, dépendances, catalogue, tags, rangs, hygiène du dépôt). `vitest run tests/unitaires/outillage/non-regression-couverture.test.ts` : 6/6 verts (UT-OUT-07 à 12). Aucun test n'a été affaibli : les assertions d'UT-OUT-07 à 10 sont inchangées et seules les fixtures portent désormais `total`. UT-OUT-11 et UT-OUT-12 sont rangés au rang -1 par le motif `UT-OUT-\d+`, et `verifier:rangs` reste vert.
+
+**Nouveaux changements.** Aucun défaut. Aucune dette nouvelle.
+
+**Suite.** La PR #5 peut être fusionnée dans `lot/LOT-001`. À la fusion, DT-005 passe au statut « Remboursée » (§7).
