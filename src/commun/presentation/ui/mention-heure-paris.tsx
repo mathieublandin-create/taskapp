@@ -24,7 +24,7 @@ export const NoteHeureParis = ({ mention }: ProprietesNoteHeureParis) => {
       <IonButton
         size="small"
         fill="outline"
-        aria-expanded={explication}
+        aria-expanded={explication ? 'true' : 'false'}
         aria-label={libelle(mention.code, {}, 'nomAccessible')}
         onClick={() => {
           setExplication(!explication);

@@ -26,12 +26,15 @@ export type ValeursFeuille = {
 const VIDE: ValeursFeuille = { intitule: '', description: '', delai: '' };
 
 export type ProprietesFeuilleObjectif = {
+  /** La feuille est présentée tant que `ouverte` est vraie ; elle reste montée pour que Ionic la ferme proprement. */
+  readonly ouverte: boolean;
   readonly mode: ModeFeuille;
   readonly initiales?: Partial<ValeursFeuille>;
   /** Identifiant du formulaire au registre de saisie : un seul état par formulaire. */
   readonly identifiantSaisie: string;
   readonly surValider: (valeurs: ValeursFeuille) => Promise<IssueSaisie>;
-  readonly surAnnuler: () => void;
+  /** Appelée quand la feuille est refermée : saisie validée, « Annuler », Échap ou fond. */
+  readonly surFermee: () => void;
   readonly registre?: Pick<RegistreSaisie, 'declarer'>;
 };
 
@@ -41,14 +44,6 @@ const CHAMPS_PAR_MODE: Readonly<Record<ModeFeuille, ReadonlyArray<keyof ValeursF
   DESCRIPTION: ['description'],
   DELAI: ['delai'],
 };
-
-const texteMessage = (message: MessageRefus): string =>
-  libelle(
-    message.code,
-    message.variante === undefined
-      ? message.variables
-      : { ...message.variables, variante: message.variante },
-  );
 
 const sontEgales = (a: ValeursFeuille, b: ValeursFeuille): boolean =>
   a.intitule === b.intitule && a.description === b.description && a.delai === b.delai;
@@ -97,11 +92,11 @@ const ChampIntitule = ({
         modifier('intitule', e.detail.value ?? '');
       }}
       onKeyDown={surEntree}
-      {...(messages.length === 0 ? {} : { 'aria-invalid': true })}
+      {...(messages.length === 0 ? {} : { 'aria-invalid': 'true' })}
     />
     {messages.map((message) => (
       <IonNote key={message.code} color="danger" role="alert" data-message={message.code}>
-        {texteMessage(message)}
+        {libelle(message.code, message.variables)}
       </IonNote>
     ))}
   </>
@@ -162,11 +157,16 @@ const useSaisieFeuille = (
   return { valeurs, messages, enCours, champIntitule, modifier, valider };
 };
 
-type ProprietesContenu = Pick<ProprietesFeuilleObjectif, 'mode' | 'surAnnuler'> & {
+type ProprietesCorps = Omit<ProprietesFeuilleObjectif, 'ouverte' | 'surFermee'> & {
+  /** Demande la fermeture de la feuille (saisie validée ou « Annuler »). */
+  readonly surFermer: () => void;
+};
+
+type ProprietesFormulaire = Pick<ProprietesCorps, 'mode' | 'surFermer'> & {
   readonly saisie: ReturnType<typeof useSaisieFeuille>;
 };
 
-const ContenuFeuille = ({ mode, surAnnuler, saisie }: ProprietesContenu) => {
+const FormulaireFeuille = ({ mode, surFermer, saisie }: ProprietesFormulaire) => {
   const textes = LIBELLES_OBJECTIFS.feuille[mode];
   return (
     <form
@@ -187,33 +187,49 @@ const ContenuFeuille = ({ mode, surAnnuler, saisie }: ProprietesContenu) => {
       <IonButton expand="block" disabled={saisie.enCours} onClick={() => void saisie.valider()}>
         {textes.validation}
       </IonButton>
-      <IonButton expand="block" fill="clear" onClick={surAnnuler}>
+      <IonButton expand="block" fill="clear" onClick={surFermer}>
         {LIBELLE_ANNULER}
       </IonButton>
     </form>
   );
 };
 
-export const FeuilleObjectif = ({
+/** Corps de la feuille : monté à la présentation, démonté à la fermeture (la saisie repart donc de zéro). */
+const CorpsFeuille = ({
   mode,
   initiales = {},
   identifiantSaisie,
   surValider,
-  surAnnuler,
+  surFermer,
   registre = registreSaisie,
-}: ProprietesFeuilleObjectif) => {
+}: ProprietesCorps) => {
   const depart = { ...VIDE, ...initiales };
   const saisie = useSaisieFeuille(depart, surValider);
   useDeclarationSaisie(registre, identifiantSaisie, !sontEgales(saisie.valeurs, depart));
-  return (
-    <IonModal
-      isOpen
-      className="feuille-objectif"
-      initialBreakpoint={1}
-      breakpoints={[0, 1]}
-      onDidDismiss={surAnnuler}
-    >
-      <ContenuFeuille mode={mode} surAnnuler={surAnnuler} saisie={saisie} />
-    </IonModal>
-  );
+  return <FormulaireFeuille mode={mode} surFermer={surFermer} saisie={saisie} />;
 };
+
+export const FeuilleObjectif = ({
+  ouverte,
+  surFermee,
+  surValider,
+  ...corps
+}: ProprietesFeuilleObjectif) => (
+  <IonModal
+    isOpen={ouverte}
+    className="feuille-objectif"
+    initialBreakpoint={1}
+    breakpoints={[0, 1]}
+    onDidDismiss={surFermee}
+  >
+    <CorpsFeuille
+      {...corps}
+      surValider={async (valeurs) => {
+        const issue = await surValider(valeurs);
+        if (issue.type === 'FAITE') surFermee();
+        return issue;
+      }}
+      surFermer={surFermee}
+    />
+  </IonModal>
+);

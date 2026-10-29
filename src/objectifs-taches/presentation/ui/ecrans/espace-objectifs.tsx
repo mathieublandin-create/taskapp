@@ -69,7 +69,7 @@ const valeursInitiales = (
 };
 
 type Geste = {
-  readonly feuille: ModeFeuille | undefined;
+  readonly feuille: { readonly mode: ModeFeuille; readonly ouverte: boolean };
   readonly menuOuvert: boolean;
   readonly ouvrirFeuille: (mode: ModeFeuille) => void;
   readonly fermerFeuille: () => void;
@@ -78,14 +78,16 @@ type Geste = {
 };
 
 const useGeste = (): Geste => {
-  const [feuille, setFeuille] = useState<ModeFeuille>();
+  const [feuille, setFeuille] = useState<Geste['feuille']>({ mode: 'CREATION', ouverte: false });
   const [menuOuvert, setMenuOuvert] = useState(false);
   return {
     feuille,
     menuOuvert,
-    ouvrirFeuille: setFeuille,
+    ouvrirFeuille: (mode) => {
+      setFeuille({ mode, ouverte: true });
+    },
     fermerFeuille: () => {
-      setFeuille(undefined);
+      setFeuille((courante) => ({ ...courante, ouverte: false }));
     },
     ouvrirMenu: () => {
       setMenuOuvert(true);
@@ -132,41 +134,36 @@ const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
 /** Gestes du menu « … » et validation des feuilles, sur l'objectif ouvert. */
 const useGestesSaisie = ({ ecran, actions, geste }: Omit<ProprietesPage, 'liste' | 'detail'>) => ({
   surActionMenu: (action: ActionMenuObjectif): void => {
-    geste.fermerMenu();
     if (ecran.type !== 'DETAIL') return;
     if (action === 'SUPPRIMER') void actions.demanderSuppression(ecran.id);
     else if (action === 'RETIRER_DELAI') void actions.modifierDelai(ecran.id, undefined);
     else geste.ouvrirFeuille(FEUILLE_PAR_ACTION[action]);
   },
-  valider: async (mode: ModeFeuille, valeurs: ValeursFeuille): Promise<IssueSaisie> => {
-    const issue = await enregistrer(actions, ecran, mode, valeurs);
-    if (issue.type === 'FAITE') geste.fermerFeuille();
-    return issue;
-  },
+  valider: (mode: ModeFeuille, valeurs: ValeursFeuille): Promise<IssueSaisie> =>
+    enregistrer(actions, ecran, mode, valeurs),
 });
 
 const Saisies = ({ ecran, detail, actions, geste }: Omit<ProprietesPage, 'liste'>) => {
-  const { feuille, menuOuvert } = geste;
+  const { feuille } = geste;
   const { surActionMenu, valider } = useGestesSaisie({ ecran, actions, geste });
   return (
     <>
-      {menuOuvert && detail !== undefined ? (
+      {detail === undefined ? null : (
         <MenuObjectif
+          ouvert={geste.menuOuvert}
           actions={detail.actions}
           surAction={surActionMenu}
           surFermer={geste.fermerMenu}
         />
-      ) : null}
-      {feuille === undefined ? null : (
-        <FeuilleObjectif
-          key={feuille}
-          mode={feuille}
-          initiales={valeursInitiales(detail, feuille)}
-          identifiantSaisie={`feuille-objectif-${feuille}`}
-          surValider={(valeurs) => valider(feuille, valeurs)}
-          surAnnuler={geste.fermerFeuille}
-        />
       )}
+      <FeuilleObjectif
+        ouverte={feuille.ouverte}
+        mode={feuille.mode}
+        initiales={valeursInitiales(detail, feuille.mode)}
+        identifiantSaisie={`feuille-objectif-${feuille.mode}`}
+        surValider={(valeurs) => valider(feuille.mode, valeurs)}
+        surFermee={geste.fermerFeuille}
+      />
     </>
   );
 };

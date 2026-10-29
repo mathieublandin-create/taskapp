@@ -21,14 +21,15 @@ export const actionsDuMenu = (
 ): ReadonlyArray<ActionMenuObjectif> => ORDRE_MENU.filter((action) => actions.includes(action));
 
 export type ProprietesMenuObjectif = {
+  readonly ouvert: boolean;
   readonly actions: ReadonlyArray<ActionObjectif>;
   readonly surAction: (action: ActionMenuObjectif) => void;
   readonly surFermer: () => void;
 };
 
-export const MenuObjectif = ({ actions, surAction, surFermer }: ProprietesMenuObjectif) => (
+export const MenuObjectif = ({ ouvert, actions, surAction, surFermer }: ProprietesMenuObjectif) => (
   <IonActionSheet
-    isOpen
+    isOpen={ouvert}
     header={LIBELLES_OBJECTIFS.menuActions}
     onDidDismiss={surFermer}
     buttons={[

@@ -5,7 +5,7 @@ export const LIBELLES_OBJECTIFS = {
   retourListe: 'Objectifs',
   creerObjectif: 'Créer un objectif',
   objectifPrincipal: 'Objectif principal',
-  sousObjectifDe: 'Sous-objectif de « {parent} »',
+  sousObjectifDe: 'Sous-objectif de «\u00a0{parent}\u00a0»',
   champIntitule: 'Intitulé',
   champDescription: 'Description',
   champDelai: 'Délai',
