@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
   estFichierMesurable,
+  estRapportValide,
   normaliserRapport,
   verifierNonRegression,
   type CouvertureParFichier,
 } from '../../../scripts/verifier-non-regression-couverture';
 
 // conventions.md §12 (non-régression de la couverture d'un fichier modifié) ; DT-005. Tests d'outillage : rang -1.
-const entree = (lines: number | string, branches: number | string) => ({
-  lines: { pct: lines },
-  branches: { pct: branches },
+const metrique = (total: number, pct: number) => ({ total, pct });
+const entree = (lines: ReturnType<typeof metrique>, branches: ReturnType<typeof metrique>) => ({
+  lines,
+  branches,
 });
 
 describe('Non-régression de la couverture par fichier (conventions.md §12, DT-005)', () => {
@@ -27,31 +29,31 @@ describe('Non-régression de la couverture par fichier (conventions.md §12, DT-
 
   it('UT-OUT-08 normaliserRapport — ramène les chemins absolus à la racine et retire la ligne total', () => {
     const brut = {
-      total: entree(90, 80),
-      '/runner/base/src/a.ts': entree(90, 80),
-      '/runner/base/src/b/c.tsx': entree(70, 60),
+      total: entree(metrique(100, 90), metrique(10, 80)),
+      '/runner/base/src/a.ts': entree(metrique(100, 90), metrique(10, 80)),
+      '/runner/base/src/b/c.tsx': entree(metrique(40, 70), metrique(10, 60)),
     };
 
     expect(normaliserRapport(brut, '/runner/base')).toEqual({
-      'src/a.ts': entree(90, 80),
-      'src/b/c.tsx': entree(70, 60),
+      'src/a.ts': entree(metrique(100, 90), metrique(10, 80)),
+      'src/b/c.tsx': entree(metrique(40, 70), metrique(10, 60)),
     });
     expect(normaliserRapport(brut, '/runner/base/')).toEqual({
-      'src/a.ts': entree(90, 80),
-      'src/b/c.tsx': entree(70, 60),
+      'src/a.ts': entree(metrique(100, 90), metrique(10, 80)),
+      'src/b/c.tsx': entree(metrique(40, 70), metrique(10, 60)),
     });
   });
 
   it('UT-OUT-09 verifierNonRegression — échoue sur une baisse de lignes ou de branches, réussit sur une hausse ou un maintien', () => {
     const base: CouvertureParFichier = {
-      'src/a.ts': entree(90, 80),
-      'src/b.ts': entree(90, 80),
-      'src/c.ts': entree(90, 80),
+      'src/a.ts': entree(metrique(10, 90), metrique(5, 80)),
+      'src/b.ts': entree(metrique(10, 90), metrique(5, 80)),
+      'src/c.ts': entree(metrique(10, 90), metrique(5, 80)),
     };
     const pr: CouvertureParFichier = {
-      'src/a.ts': entree(89.99, 80),
-      'src/b.ts': entree(95, 79),
-      'src/c.ts': entree(90, 85),
+      'src/a.ts': entree(metrique(10, 89.99), metrique(5, 80)),
+      'src/b.ts': entree(metrique(10, 95), metrique(5, 79)),
+      'src/c.ts': entree(metrique(10, 90), metrique(5, 85)),
     };
 
     const resultat = verifierNonRegression({
@@ -67,7 +69,7 @@ describe('Non-régression de la couverture par fichier (conventions.md §12, DT-
     expect(resultat.compares).toEqual(['src/a.ts', 'src/b.ts', 'src/c.ts']);
   });
 
-  it('UT-OUT-10 verifierNonRegression — ne compare que les fichiers modifiés de src/, ignore les nouveaux et les « Unknown »', () => {
+  it('UT-OUT-10 verifierNonRegression — ne compare que les fichiers modifiés de src/, ignore les nouveaux et les métriques sans élément', () => {
     const resultat = verifierNonRegression({
       fichiersModifies: [
         'src/ancien.ts',
@@ -78,15 +80,15 @@ describe('Non-régression de la couverture par fichier (conventions.md §12, DT-
         'src/types.d.ts',
       ],
       base: {
-        'src/ancien.ts': entree(90, 80),
-        'src/vide.ts': entree(100, 'Unknown'),
-        'src/absent-de-la-pr.ts': entree(90, 80),
-        'src/non-modifie.ts': entree(100, 100),
+        'src/ancien.ts': entree(metrique(10, 90), metrique(4, 80)),
+        'src/vide.ts': entree(metrique(10, 100), metrique(0, 100)),
+        'src/absent-de-la-pr.ts': entree(metrique(10, 90), metrique(4, 80)),
+        'src/non-modifie.ts': entree(metrique(10, 100), metrique(4, 100)),
       },
       pr: {
-        'src/ancien.ts': entree(90, 80),
-        'src/vide.ts': entree(100, 'Unknown'),
-        'src/nouveau.ts': entree(10, 10),
+        'src/ancien.ts': entree(metrique(10, 90), metrique(4, 80)),
+        'src/vide.ts': entree(metrique(10, 100), metrique(0, 0)),
+        'src/nouveau.ts': entree(metrique(10, 10), metrique(4, 10)),
       },
     });
 
@@ -97,5 +99,49 @@ describe('Non-régression de la couverture par fichier (conventions.md §12, DT-
       'src/nouveau.ts : absent du rapport de la base (nouveau fichier ou non mesuré)',
     ]);
     expect(resultat.compares).toEqual(['src/ancien.ts', 'src/vide.ts']);
+  });
+
+  it('UT-OUT-11 verifierNonRegression — une métrique vide d’un côté n’est pas comparée', () => {
+    const resultat = verifierNonRegression({
+      fichiersModifies: ['src/lignes-vides.ts', 'src/branches-vides.ts'],
+      base: {
+        // Cas 1 : lignes à 100 % à la base, puis aucun élément de ligne dans la PR (total 0, pct 0).
+        'src/lignes-vides.ts': entree(metrique(10, 100), metrique(4, 50)),
+        // Cas 2 : aucune branche à la base (pct 100), puis 4 branches couvertes à 50 % dans la PR.
+        'src/branches-vides.ts': entree(metrique(10, 100), metrique(0, 100)),
+      },
+      pr: {
+        'src/lignes-vides.ts': entree(metrique(0, 0), metrique(4, 50)),
+        'src/branches-vides.ts': entree(metrique(10, 100), metrique(4, 50)),
+      },
+    });
+
+    expect(resultat.erreurs).toEqual([]);
+    expect(resultat.compares).toEqual(['src/branches-vides.ts', 'src/lignes-vides.ts']);
+  });
+
+  it('UT-OUT-12 estRapportValide — accepte un rapport complet, refuse un rapport absent ou malformé', () => {
+    const valide = {
+      total: entree(metrique(10, 90), metrique(4, 50)),
+      '/runner/base/src/a.ts': entree(metrique(10, 90), metrique(4, 50)),
+    };
+
+    expect(estRapportValide(valide)).toBe(true);
+    expect(
+      [
+        undefined,
+        null,
+        'texte',
+        [],
+        { '/runner/base/src/a.ts': { lines: metrique(10, 90) } },
+        {
+          '/runner/base/src/a.ts': {
+            lines: { total: 10, pct: 'Unknown' },
+            branches: metrique(4, 50),
+          },
+        },
+        { '/runner/base/src/a.ts': { lines: metrique(10, 90), branches: { total: '4', pct: 50 } } },
+      ].map(estRapportValide),
+    ).toEqual([false, false, false, false, false, false, false]);
   });
 });
