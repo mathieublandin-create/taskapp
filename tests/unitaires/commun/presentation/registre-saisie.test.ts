@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { RegistreSaisie } from '@src/commun/presentation/saisie/registre-saisie';
 
 describe('RegistreSaisie', () => {
-  it('UT-US-001-901 aucune saisie en cours au départ', () => {
+  it('UT-COMP-US-001-01 aucune saisie en cours au départ', () => {
     expect(new RegistreSaisie().saisieEnCours()).toBe(false);
   });
 
-  it('UT-US-001-902 une saisie est en cours tant qu’un formulaire modifié est déclaré', () => {
+  it('UT-COMP-US-001-02 une saisie est en cours tant qu’un formulaire modifié est déclaré', () => {
     const registre = new RegistreSaisie();
     registre.declarer('feuille-objectif', true);
     registre.declarer('renommer', true);

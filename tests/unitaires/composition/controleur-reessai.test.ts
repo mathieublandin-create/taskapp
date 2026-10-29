@@ -8,7 +8,10 @@ import { SeConnecter } from '@src/compte/application/cas-usage/se-connecter';
 import { SeDeconnecter } from '@src/compte/application/cas-usage/se-deconnecter';
 import { SupprimerDonneesAppareil } from '@src/compte/application/cas-usage/supprimer-donnees-appareil';
 import { ReprendreSession } from '@src/compte/application/cas-usage/reprendre-session';
-import type { ErreurEspace } from '@src/compte/application/ports/gestion-espaces';
+import type {
+  ErreurEspace,
+  ErreurSuppressionBloquee,
+} from '@src/compte/application/ports/gestion-espaces';
 import { SessionCourante } from '@src/compte/application/session-courante';
 import type { IdCompte } from '@src/compte/domaine/identite';
 import { PORTEES_LOT_1 } from '@src/compte/domaine/portees';
@@ -31,6 +34,16 @@ import { instant } from '../../support/valeurs';
 
 class EspacesInstables extends EspacesEnMemoire {
   ouvertureImpossible = true;
+  suppressionImpossible = false;
+  suppressions = 0;
+
+  override supprimer(
+    c: IdCompte,
+  ): Promise<Resultat<undefined, ErreurEspace | ErreurSuppressionBloquee>> {
+    this.suppressions += 1;
+    if (this.suppressionImpossible) return Promise.resolve(echec({ type: 'EspaceInaccessible' }));
+    return super.supprimer(c);
+  }
 
   override ouvrir(c: IdCompte): Promise<Resultat<undefined, ErreurEspace>> {
     if (this.ouvertureImpossible) return Promise.resolve(echec({ type: 'EspaceInaccessible' }));
@@ -123,5 +136,45 @@ describe('ControleurInterface.reessayer — toast TST-ERREUR-ENREGISTREMENT (DT-
     await controleur.reessayer();
 
     expect(appels).toBe(0);
+  });
+
+  it('UT-COMP-US-022-205 rejoue la suite d’une confirmation : la suppression confirmée échoue (EspaceInaccessible), « Réessayer » la rejoue et elle aboutit', async () => {
+    const { controleur, espaces } = preparer();
+    espaces.ouvertureImpossible = false;
+    await controleur.continuerAvecGoogle();
+    await controleur.actionCompte('SUPPRIMER_DONNEES');
+    expect(controleur.vue().confirmation?.code).toBe('CNF-SUPPR-DONNEES');
+
+    espaces.suppressionImpossible = true;
+    await controleur.confirmer();
+    expect(controleur.vue().toast).toBe('TST-ERREUR-ENREGISTREMENT');
+    expect(controleur.vue().racine).toEqual({ ecran: 'APPLICATION' });
+    expect(espaces.suppressions).toBe(1);
+
+    espaces.suppressionImpossible = false;
+    await controleur.reessayer();
+
+    expect(espaces.suppressions).toBe(2);
+    expect(controleur.vue().toast).toBeUndefined();
+    expect(controleur.vue().racine).toEqual({ ecran: 'CONNEXION' });
+  });
+
+  it('UT-COMP-US-022-206 rejoue « Réessayer » d’ERR-017 : la nouvelle attente de suppression échoue, « Réessayer » du toast rappelle supprimerDonnees.reessayer()', async () => {
+    const { controleur, espaces } = preparer();
+    espaces.ouvertureImpossible = false;
+    await controleur.continuerAvecGoogle();
+
+    espaces.suppressionImpossible = true;
+    await controleur.reessayerSuppression();
+    expect(controleur.vue().toast).toBe('TST-ERREUR-ENREGISTREMENT');
+    expect(controleur.vue().suppressionBloquee).toBeUndefined();
+    expect(espaces.suppressions).toBe(1);
+
+    espaces.suppressionImpossible = false;
+    await controleur.reessayer();
+
+    expect(espaces.suppressions).toBe(2);
+    expect(controleur.vue().toast).toBeUndefined();
+    expect(controleur.vue().racine).toEqual({ ecran: 'CONNEXION' });
   });
 });

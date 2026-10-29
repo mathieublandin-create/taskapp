@@ -373,9 +373,10 @@ Given(
     appareil.reseau.couper();
     await creerObjectifsEnAttente(appareil, Number(n));
     const evaluation = await deconnecter(appareil);
-    if (evaluation.ok && evaluation.valeur.type === 'CONFIRMATION_REQUISE') {
-      await appareil.application.seDeconnecter.executer();
-    }
+    assert.ok(evaluation.ok, 'La déconnexion doit pouvoir être évaluée');
+    // Avec des modifications en attente, la confirmation CNF-DECONNEXION est obligatoire (RG-043).
+    if (Number(n) > 0) assert.equal(evaluation.valeur.type, 'CONFIRMATION_REQUISE');
+    await appareil.application.seDeconnecter.executer();
     appareil.reseau.retablir();
   },
 );
