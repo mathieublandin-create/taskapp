@@ -14,7 +14,7 @@
 | Hypothèses du contrôle d'explicitation appliquées | H-1, H-2 (incrément 2), H-4 (socle), H-5 (§12), H-6 (incréments 2 et 3) |
 | Q-US traitées | Q-US-017-1 à 12 (E8) ; DEC-030 (Q-US-017-3, A8) ; Q-DEC034-1 |
 | Questions de cette ST | Toutes répondues et intégrées (Q-ST017-PEP-1, Q-ST017-STA-1 à 3) |
-| Version | 0.3 |
+| Version | 0.3.1 |
 | Statut | **E11 : remarques traitées (v0.3)**. Incrément 1 : tests du §13.1 livrés en rouge. Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
 | Auteur | Anthony |
 | Branches | `us/US-017-1-synchronisation-de-base`, `us/US-017-2-conflits`, `us/US-017-3-restauration`, `us/US-017-4-horloge-versions` |
@@ -24,6 +24,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED ; R1 sans objet avec un client OAuth Web unique). Rangs d'exécution des scénarios revérifiés (§12.2). E10 de l'incrément 1 livrée. |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Pepper (S06 et S06b corrigés : S06b exécuté au rang 3 sans condition) et de Starck (DAT v0.11.3). **Q-ST017-STA-1** : doublure `DepotLocalEnMemoire` et suite de contrat étendue (CT-DEPOT-08 à 11), une seule transaction stricte (§3.1, §4.2, §13.1). **Q-ST017-STA-2** : médiane de 5 mesures d'aller-retour < 3 s, seul un recul corrigé, contrôle chaque minute et au retour au premier plan (§6.8, constantes livrées). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace ; l'ancien fichier d'un appareil après suppression des données est celui d'un appareil inactif (§6.3). |
+| 0.3.1 | 2026-10-29 | Anthony | E13 du rang 3 (`docs/ceremonies/revue-code-LOT-001-rang3.md`) : **Q-BRU-R3-1** : feuille ECR-011 de l'incrément 1 ajoutée au §3.1 (n° 17 b), tests à fournir (§13.1), dette DT-011 ; **Q-BRU-R3-2** : entrée de journal de type inconnu ignorée à l'incrément 1 (§5.3) ; §6.3 aligné sur la réalisation revue : jeton mémorisé dès la fin des fusions, `RessourceIntrouvable` ignorée comme un fichier illisible, `definirPremierPlan(visible)` (§6.4) ; `attente` (`MEN-ATTENTE`) sur la ligne d'objectif (§4.5). |
 | 0.3 | 2026-10-28 | Anthony | E11. **RL-LOT-001-A3** : jeton de départ obtenu avant l'inventaire ; jeton refusé (`JetonChangementsInvalide`) → nouvel inventaire complet dans le même cycle, sans tentative comptée (§4.3, §6.3) ; CT-TRANS-09, 10 et UT-US-017-32. **RL-A7** : mesure d'horloge par un observateur de `ClientGoogle` (§6.8). **RL-A9 / Q-ST017-STA-3** : archivage hors du lot 1, dette DT-002 (§6.3, §16). **RL-S3** : ordre des listes de la feuille (`comparerLignesFeuille`, UT-US-017-33). **RL-P2** : étape n° 10 en échec tant que la racine est `ATTENTE_GOOGLE` (glossaire v1.10 §12). **RL-P3** : étape de S27 définie (n° 23), S27 exécuté au rang 2. |
 
 ## 1. Résumé technique
@@ -95,6 +96,7 @@
 | 15 | `src/synchronisation/infrastructure/depot-local-dexie.ts` | Infrastructure | Modifier | Base Dexie version 2 : aucune nouvelle table ; méta étendue (§5.1) ; `lireMeta`, `appliquerSynchronisation` |
 | 16 | `src/synchronisation/application/requetes/consulter-etat-synchronisation.ts` | Application | Modifier | Lit `CycleSynchronisation` au lieu de `SUIVI_CYCLE_AU_REPOS` |
 | 17 | `src/synchronisation/presentation/modeles-de-vue/mention-attente.ts` | Modèle de vue | Créer | `mentionAttente(element, elementsEnAttente)` → `MEN-ATTENTE` ou rien (lu par les modèles de vue des lignes, ST-US-001 et ST-US-002) |
+| 17 b | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts`, `src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx` | Modèle de vue, UI | Créer | `construireFeuilleSynchronisation(e)` du §4.5 et son composant (ECR-011, partie synchronisation). **Ajout v0.3.1 (Q-BRU-R3-1)** : réalisé par Benjamin dans la PR séparée du reliquat du rang 3, après la livraison en rouge des tests UT-US-017-34 et suivants (dette DT-011) |
 | 18 | `src/composition/web.ts` | Composition | Modifier | Cycle, déclencheurs (`visibilitychange`, `online`, observateur du dépôt, accès), `DepotAvantSortie` réel |
 | 19 | `tests/doublures/faux-drive.ts` | Test | Compléter | §12.3 |
 | 20 | `tests/contrats/transport-synchro.contrat.ts` | Test | Créer | Suite de contrat (CT-TRANS-01 à 10 ; 09 et 10 : RL-LOT-001-A3), exécutée sur `FauxDrive` et, avec MSW, sur `TransportSynchroDrive` |
@@ -243,7 +245,7 @@ Ordre et jeton (DAT v0.11.4 §4.3, RL-LOT-001-A3) : `listerFichiersAppareils` ob
 ### 4.5 Présentation
 | Élément | Modèle de vue | Codes |
 |---|---|---|
-| Point « en attente » d'une ligne | `mentionAttente(element: RefElementMetier, enAttente: ReadonlySet<string>): { code: 'MEN-ATTENTE' } \| undefined` | `MEN-ATTENTE` |
+| Point « en attente » d'une ligne | `mentionAttente(element: RefElementMetier, enAttente: ReadonlySet<string>): { code: 'MEN-ATTENTE' } \| undefined` ; ligne d'objectif : champ `attente?: { code: 'MEN-ATTENTE'; libelle }` de `LigneObjectif` (v0.3.1) | `MEN-ATTENTE` |
 | Indicateur, bandeaux | ST-US-022 §4.5 (données réelles à partir du rang 3) | `SYN-…`, `BAN-…` |
 | Feuille (ECR-011) : dernier échange, modifications en attente, erreurs | `construireFeuilleSynchronisation(e)` (ECR-011 ; incrément 1 : `SYN-FEUILLE-DERNIER-ECHANGE`, `SYN-FEUILLE-RIEN-EN-ATTENTE`, `SYN-FEUILLE-EN-ATTENTE` (une ligne par élément), `SYN-FEUILLE-HORS-LIGNE`, `SYN-FEUILLE-BOUTON`, `SYN-FEUILLE-DOSSIER` ; cartes `ERR-011`, `ERR-016`) | idem ; **ordre des lignes** (guide v0.2.14 §5.8 f, RL-LOT-001-S3) : `comparerLignesFeuille` (`ordre-feuille.ts`) : la plus récente d'abord (physique du `derniereHlc` de l'élément), à égalité intitulé, puis id ; même ordre pour les informations à lire (incrément 2), `ALR-014` groupé sous `ALR-008` |
 
@@ -282,7 +284,7 @@ JSON avant compression (clés dans l'ordre de la sérialisation canonique, tri l
 Manifeste : `{ "empreinte": "…", "generation": { "type": "INITIALE" }, "schemaVersion": 1 }` (+ `restauration` : incrément 3). `LISEZ-MOI.txt` : « Ce dossier contient les données de l'application Done Juan. Ne modifiez pas ces fichiers : l'application les gère seule. »
 
 ### 5.3 Compatibilité (RG-058, conventions §10.3)
-Schéma 1 publié par l'incrément 1. Lecture tolérante : objets lâches ; à l'incrément 1, un registre de type ou de champ inconnu est **ignoré** (non fusionné), sans erreur ; l'incrément 4 le **conserve** (table `registresInconnus`) et le réécrit (ANT-19). Tests obligatoires (a) à (c) du §10.3 des conventions : incrément 4.
+Schéma 1 publié par l'incrément 1. Lecture tolérante : objets lâches ; à l'incrément 1, un registre de type ou de champ inconnu, comme une entrée de journal de type inconnu (Q-BRU-R3-2), est **ignoré** (non fusionné), sans erreur ; l'incrément 4 le **conserve** (table `registresInconnus`) et le réécrit (ANT-19). Tests obligatoires (a) à (c) du §10.3 des conventions : incrément 4.
 
 ## 6. Règles et algorithmes
 
@@ -323,13 +325,13 @@ synchroniserMaintenant() :
       JetonChangementsInvalide → meta.pageToken oublié ; (fichiers, jeton) ← transport.listerFichiersAppareils(dossier), dans le même cycle,
                                  sans tentative comptée ni attente (DAT v0.11.4 §4.3 ; UT-US-017-32)
   pour chaque fichier f d'un autre appareil (f.appareil ≠ appareil local) :
-      c ← transport.lireFichierAppareil(f.id) ; en FichierIllisible ou FormatPlusRecent : journal « avertissement », f ignoré (incr. 3 et 4 : traitement)
+      c ← transport.lireFichierAppareil(f.id) ; en FichierIllisible, FormatPlusRecent ou RessourceIntrouvable (fichier supprimé entre l'inventaire et la lecture) : journal « avertissement », f ignoré (incr. 3 et 4 : traitement)
       sinon depot.appliquerSynchronisation(e ⇒ { plan: planifierFusion(e, c), meta: { fusionNonDeposee: plan non vide ? true : inchangé } })
   un fichier dont l'appareil n'est pas l'appareil local est fusionné, y compris l'ancien fichier de cette installation après « Supprimer les données » :
   l'appareilId naît avec l'espace (DAT v0.11.3 §4.1.4), ce fichier est donc celui d'un appareil inactif ; il est fusionné sans traitement
   particulier, l'archivage étant hors du lot 1 (DAT v0.11.4 §4.2, dette DT-002) ; les fichiers d'appareil sont à la racine du dossier (RL-A2)
   si aucun manifeste (meta.manifeste absent et lireManifeste = undefined) : ecrireManifeste({ schemaVersion: 1, generation: INITIALE }) et LISEZ-MOI
-  deposer() ; meta.pageToken ← jeton ; état moteur ← REPOS ; tentatives ← 0
+  meta.pageToken ← jeton (v0.3.1 : dès que toutes les fusions sont validées, écrit seulement s'il a changé) ; deposer() ; état moteur ← REPOS ; tentatives ← 0
   si « à refaire » : relancer une fois
 erreurs (à toute étape) :
   NonAutorise → acces.signalerRefus() ; REPOS ; ACCES_REFUSE (aucune reprise automatique ; le retour du jeton relance)
@@ -344,7 +346,7 @@ erreurs (à toute étape) :
 | Déclencheur | Mise en œuvre |
 |---|---|
 | Ouverture (session ouverte avec accès valide) | `demarrer()` puis `synchroniserMaintenant()` |
-| Retour au premier plan | `visibilitychange` (composition) → `synchroniserMaintenant()` |
+| Retour au premier plan | `visibilitychange` (composition) → `cycle.definirPremierPlan(visible)` : visible → période réinstallée et `synchroniserMaintenant()` ; masquée → période suspendue |
 | Modification locale | `depot.observer` : si aucun minuteur n'est armé, `planificateur.apres(TEMPORISATION_DEPOT)` → `synchroniserMaintenant()` (le premier changement fixe l'échéance ; pas de report) |
 | Toutes les 2 min au premier plan | `planificateur.periodiquement(PERIODE_SYNCHRONISATION_PREMIER_PLAN)` ; suspendu quand la page est masquée |
 | Retour du réseau | `reseau.surChangement(true)` |
