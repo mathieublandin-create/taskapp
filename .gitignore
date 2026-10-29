@@ -20,6 +20,8 @@ dev-dist/
 build/
 coverage/
 reports/
+test-results/
+playwright-report/
 poc/android/
 android/.gradle/
 android/app/build/

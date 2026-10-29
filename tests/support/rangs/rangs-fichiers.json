@@ -321,6 +321,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/infrastructure/zod-sans-compilation.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/compte/presentation/modeles-de-vue/confirmations-compte.ts": {
       "debut": 1,
       "fin": 1
