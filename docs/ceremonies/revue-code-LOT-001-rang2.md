@@ -142,6 +142,26 @@ Benjamin reprend RC-R2-1, 2, 3 et 5 (bloquantes) et RC-R2-4, ainsi que RC-R2-6 s
 1. **`BoiteConfirmation` en HTML sémantique : accepté, UT-COMP-US-022-83 n'est pas modifié.** Le test fixe le contrat d'accessibilité du guide (§4.12, §6.6.7) : `alertdialog` qui porte `data-code`, action rouge, focus **synchrone** sur « Annuler ». `IonAlert` ne permet pas de poser `data-code` sur le rôle ; `IonModal` présente son contenu de façon asynchrone, ce qui laisse une fenêtre où le focus n'est pas sur « Annuler ». Le contrat d'accessibilité prime sur l'uniformité des composants. La boîte utilise `IonBackdrop` et les styles du gabarit ; Steeve contrôle le rendu en E14. Ce n'est pas une dette : la décision est consignée dans DT-006.
 2. **`vitest.config.ts`, projet `ihm` : accepté.** `resolve.conditions: ['browser']` et `server.deps.inline` pour `@lit/react` et `@stencil/react-output-target` ne concernent que la résolution des modules du projet de tests jsdom. Ils n'affectent ni la construction ni les seuils, et le motif est commenté. Sans eux, les propriétés Ionic ne seraient pas appliquées et les tests de composants ne prouveraient rien. Je reporterai la règle dans `conventions.md` (stratégie de tests de l'IHM) à la prochaine mise à jour.
 3. **CSP `style-src 'self'` et Ionic : question pour Starck, avec une inscription en dette.** La CSP relève du DAT : je ne tranche pas en revue de code. **Q-ANT-E13-R2-1 (à Starck, via Jarvis)** : si la vérification en navigateur réel montre des violations CSP dues aux styles injectés par Ionic, quelle option retient-on : (a) nonce posé au build, (b) hachages des styles connus, (c) `'unsafe-inline'` limité à `style-src` ? Le risque est inscrit en **DT-008** (P2) ; la vérification est faite au plus tard en E14 du rang 2. Ce point ne bloque pas la PR.
+
+   > **Réponse de Starck (2026-10-29) : option (c), `style-src 'self' 'unsafe-inline'`. Voir ADR-014 (Proposé) et DAT v0.11.6 §7.1.**
+   >
+   > - **Mesure** (`origin/lot/LOT-001`, `pnpm build` servi en statique, Chromium par Playwright, écouteur `securitypolicyviolation`) :
+   >   - avec la CSP actuelle, **14 violations `style-src-elem`**, dont 2 dès l'écran de connexion. Toutes viennent du chargeur de styles de Stencil, qui insère un `<style>` dans `<head>` pour les composants « scoped » (`ion-buttons`, `ion-header`, `ion-input`, `ion-textarea`, `ion-action-sheet`, feuille globale d'`ion-app`) ;
+   >   - **le rendu est dégradé**, par exemple `ion-buttons` en `display: block` au lieu de `flex` ;
+   >   - les composants à Shadow DOM (`ion-button`, `ion-toast`, `ion-modal`) passent par `adoptedStyleSheets` et ne sont pas concernés ; les styles posés par le CSSOM (z-index des superpositions, `style` de React) non plus ;
+   >   - avec un nonce (`<meta name="csp-nonce">`, lu nativement par Stencil) ou avec `'unsafe-inline'`, il ne reste aucune violation de style ;
+   >   - constat annexe : une violation `script-src` `eval`, émise par la sonde de Zod 4 (`Function('')` dans un `try/catch`). Elle est sans effet fonctionnel, mais elle pollue la console.
+   > - **Pourquoi pas (a)** : sur GitHub Pages, le nonce est fixe et publié dans `index.html`. Un attaquant qui sait injecter du HTML le recopie, donc la garantie est illusoire et la conformité trompeuse.
+   > - **Pourquoi pas (b)** : il faudrait un hachage par composant et par mode, à régénérer à chaque version d'Ionic. Un oubli dégrade l'écran en silence et seulement sur l'appareil, car jsdom n'applique pas la CSP.
+   > - **Pourquoi pas (d)** : aucune option d'Ionic ni de Stencil ne fournit ces styles en fichier externe.
+   > - **Pourquoi (c) est acceptable** : `script-src` reste strict. L'injection CSS suppose une injection de HTML, déjà fermée (React, interdiction de `dangerouslySetInnerHTML`). Aucun secret n'est présent dans le DOM, puisque le jeton reste en mémoire.
+   > - **Travail à faire** :
+   >   - M1, `index.html` : `style-src 'self' 'unsafe-inline'`, avec un commentaire qui renvoie à ADR-014 ;
+   >   - M2 : `z.config({ jitless: true })` au démarrage ;
+   >   - ces deux corrections soldent DT-008, au rang 3 au plus tard, et de préférence en correctif avant E14 du rang 2, parce que les écrans d'US-001 sont aujourd'hui dégradés ;
+   >   - M3 : test de fumée Playwright sans violation CSP sur le build servi en statique (Friday, rang 3) ;
+   >   - Anthony : mise à jour de `conventions.md` §9.3 et de DT-008.
+   > - **E14** : console sans violation sur Android et sur PC, flux GIS réel compris (PO-13 du DAT).
 4. **UT-COMP-US-022-205 sur « Supprimer les données » : accepté.** Le plan de DT-007 visait « la suite d'une confirmation ». `SeDeconnecter.executer()` renvoie `Resultat<undefined, ErreurSansSession>` et ne peut pas lever ERR-014 : ma demande de rejouer la déconnexion était donc infondée. La suite de `CNF-SUPPR-DONNEES` exerce `#jouerSuite` de la même façon (2 appels, toast effacé, retour à la connexion). **DT-007 est remboursée.**
 5. **Limites.**
    - (a) Le magasin ne s'abonne pas à `DepotLocal.observer` : accepté pour le rang 2, où l'écran est le seul écrivain. Le point est inscrit en **DT-009** (P2) et planifié au rang 3 (US-017, incrément 1).
