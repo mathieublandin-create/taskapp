@@ -801,6 +801,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/infrastructure/drive/schemas/v1.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/infrastructure/drive/serialisation-canonique.ts": {
       "debut": 3,
       "fin": 3
