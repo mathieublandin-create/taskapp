@@ -65,6 +65,9 @@ jobs:
       CI: 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Historique complet : la non-régression de couverture compare la PR à sa branche de base (DT-005).
+          fetch-depth: 0
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -74,6 +77,17 @@ jobs:
       - name: Tests unitaires, de contrat et d'intégration (couverture dans le job UTC)
         run: |
           if [ "${{ matrix.fuseau }}" = "UTC" ]; then pnpm test:couverture; else pnpm test; fi
+      - name: Non-régression de la couverture par fichier (conventions.md §12, DT-005)
+        if: github.event_name == 'pull_request' && matrix.fuseau == 'UTC'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: |
+          # Couverture de la branche de base dans un arbre séparé, puis comparaison fichier par fichier. Le
+          # rapport json-summary est demandé en ligne de commande : la configuration de la base peut ne pas le produire.
+          racine_base="${RUNNER_TEMP}/base"
+          git worktree add --detach "${racine_base}" "${BASE_REF}"
+          (cd "${racine_base}" && pnpm install --frozen-lockfile && pnpm exec vitest run --coverage --coverage.reporter=json-summary)
+          pnpm verifier:couverture-fichiers "${racine_base}/coverage/coverage-summary.json" "${racine_base}" "${BASE_REF}"
       - name: Cucumber (scénarios exécutables au rang courant)
         run: pnpm cucumber
       - name: Performance indicative (UTC seulement, non bloquante)
