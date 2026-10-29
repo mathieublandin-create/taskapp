@@ -21,7 +21,8 @@ const ITERATIONS_MAX = 100;
  * - `attendre(delai)` renvoie une promesse résolue quand le temps atteint l'échéance ;
  * - `executerJusquAuReglement(promesse)` : tant que la promesse n'est pas réglée, avance le TempsSimule jusqu'à la
  *   prochaine échéance et exécute les actions échues (100 itérations au plus, sinon erreur) ; renvoie sa valeur ;
- * - `attentesDemandees()` : délais (ms) passés à `attendre`, dans l'ordre (API d'observation).
+ * - `attentesDemandees()` : délais (ms) passés à `attendre`, dans l'ordre (API d'observation) ;
+ * - `prochaineEcheance()` : échéance de la prochaine action active (avance du temps pas à pas par le banc).
  */
 export class PlanificateurSimule implements Planificateur {
   private readonly taches: Array<Tache> = [];
@@ -74,6 +75,11 @@ export class PlanificateurSimule implements Planificateur {
     }
     if ('erreur' in issue) throw issue.erreur;
     return issue.valeur;
+  }
+
+  /** Échéance de la prochaine action programmée, ou undefined s'il n'y en a aucune (banc, ST-US-017 §12.3). */
+  prochaineEcheance(): Instant | undefined {
+    return this.actives()[0]?.echeance;
   }
 
   attentesDemandees(): ReadonlyArray<number> {

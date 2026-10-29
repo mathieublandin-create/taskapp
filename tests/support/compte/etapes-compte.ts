@@ -24,7 +24,7 @@ import type { MondeDoneJuan } from '../monde';
 
 export type Refus = 'annule la connexion' | 'refuse les autorisations demandées';
 
-/** Configure Google pour le compte puis lance SeConnecter, en laissant passer le temps des reprises (§6.8). */
+/** Configure Google pour le compte puis lance SeConnecter, en laissant passer le temps des reprises (§6.8) ; attend le cycle qui suit. */
 export const seConnecter = async (
   monde: MondeDoneJuan,
   appareil: AppareilSimule,
@@ -39,7 +39,12 @@ export const seConnecter = async (
     appareil.fournisseur.accorder(identite);
   }
   if (refus === 'annule la connexion') appareil.fournisseur.fermerLaProchaineFenetre();
-  return monde.banc.executerEnLaissantPasserLeTemps(application.seConnecter.executer());
+  const resultat = await monde.banc.executerEnLaissantPasserLeTemps(
+    application.seConnecter.executer(),
+  );
+  // ST-US-017 §12.3 : le cycle lancé par la connexion est attendu.
+  await appareil.attendreCycle();
+  return resultat;
 };
 
 /** Session Google active et connexion réussie du compte sur l'appareil (§12.1 n° 1, 2). */

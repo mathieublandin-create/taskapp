@@ -673,6 +673,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/application/depot-avant-sortie-synchro.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/application/masquage-rappel.ts": {
       "debut": 1,
       "fin": 1
@@ -798,6 +802,10 @@
       "fin": 3
     },
     "src/synchronisation/infrastructure/drive/format-v1.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/schemas/v1.ts": {
       "debut": 3,
       "fin": 3
     },

@@ -12,6 +12,11 @@ import { creerHlc, type Hlc } from '../../domaine/hlc';
 import { lireIdEvenement } from '../../domaine/identifiant-evenement';
 import type { EntreeEnAttente } from '../../domaine/index-en-attente';
 import {
+  META_INITIALE,
+  type IdFichierDrive,
+  type MetaSynchronisation,
+} from '../../domaine/meta-synchronisation';
+import {
   cleEnTexte,
   idLien,
   type ChampDe,
@@ -416,6 +421,9 @@ export const decoderEnAttente = (
 
 export type LigneMeta = { readonly nom: string; readonly valeur: unknown };
 
+/** Ligne de la table `meta` (schéma construit une fois : sa construction coûte plus que la lecture). */
+const LIGNE_META = z.object({ nom: z.string(), valeur: z.unknown() });
+
 const schemasMeta = {
   appareilId: idAppareil,
   version: z.number().int().nonnegative(),
@@ -442,7 +450,7 @@ export const encoderMeta = (etat: EtatLocal): ReadonlyArray<LigneMeta> => [
 export const decoderMeta = (lignes: ReadonlyArray<unknown>): ValeursMeta | undefined => {
   const parNom = new Map(
     lignes.flatMap((ligne) => {
-      const lue = z.object({ nom: z.string(), valeur: z.unknown() }).safeParse(ligne);
+      const lue = LIGNE_META.safeParse(ligne);
       return lue.success ? [[lue.data.nom, lue.data.valeur] as const] : [];
     }),
   );
@@ -459,4 +467,65 @@ export const decoderMeta = (lignes: ReadonlyArray<unknown>): ValeursMeta | undef
     dernierHlc: dernierHlc.data ?? undefined,
     correctionHorloge: EcartTemps.depuisMillisecondes(correction.data),
   };
+};
+
+// --- Méta de synchronisation (ST-US-017 §5.1, base version 2) ------------------------------------
+
+const idFichierDrive = z
+  .string()
+  .min(1)
+  .transform((id) => id as IdFichierDrive);
+
+/** Une ligne par clé ; une clé absente garde sa valeur initiale (META_INITIALE). */
+const SCHEMAS_META_SYNCHRONISATION: ReadonlyArray<readonly [keyof MetaSynchronisation, z.ZodType]> =
+  [
+    ['dossier', idFichierDrive],
+    ['fichierPropre', idFichierDrive],
+    ['manifeste', idFichierDrive],
+    ['deposeJusquA', hlcStocke],
+    ['pageToken', z.string()],
+    ['dernierContactDrive', instantIso],
+    ['fusionNonDeposee', z.boolean()],
+  ];
+
+/** Lignes `meta` des clés présentes dans `meta` (les autres restent telles quelles). */
+export const encoderMetaSynchronisation = (
+  meta: Partial<MetaSynchronisation>,
+): ReadonlyArray<LigneMeta> => [
+  ...(meta.dossier === undefined ? [] : [{ nom: 'dossier', valeur: meta.dossier }]),
+  ...(meta.fichierPropre === undefined
+    ? []
+    : [{ nom: 'fichierPropre', valeur: meta.fichierPropre }]),
+  ...(meta.manifeste === undefined ? [] : [{ nom: 'manifeste', valeur: meta.manifeste }]),
+  ...(meta.deposeJusquA === undefined
+    ? []
+    : [{ nom: 'deposeJusquA', valeur: encoderHlc(meta.deposeJusquA) }]),
+  ...(meta.pageToken === undefined ? [] : [{ nom: 'pageToken', valeur: meta.pageToken }]),
+  ...(meta.dernierContactDrive === undefined
+    ? []
+    : [{ nom: 'dernierContactDrive', valeur: Instant.enIso(meta.dernierContactDrive) }]),
+  ...(meta.fusionNonDeposee === undefined
+    ? []
+    : [{ nom: 'fusionNonDeposee', valeur: meta.fusionNonDeposee }]),
+];
+
+/** Relit les clés de synchronisation de la table `meta` ; undefined si l'une d'elles est invalide. */
+export const decoderMetaSynchronisation = (
+  lignes: ReadonlyArray<unknown>,
+): MetaSynchronisation | undefined => {
+  const parNom = new Map(
+    lignes.flatMap((ligne) => {
+      const lue = LIGNE_META.safeParse(ligne);
+      return lue.success ? [[lue.data.nom, lue.data.valeur] as const] : [];
+    }),
+  );
+  const valeurs: Record<string, unknown> = {};
+  for (const [nom, schema] of SCHEMAS_META_SYNCHRONISATION) {
+    if (!parNom.has(nom)) continue;
+    const decodee = schema.safeParse(parNom.get(nom));
+    if (!decodee.success) return undefined;
+    valeurs[nom] = decodee.data;
+  }
+  // Chaque valeur a été validée par le schéma de sa clé.
+  return { ...META_INITIALE, ...valeurs };
 };

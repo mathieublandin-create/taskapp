@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import Dexie from 'dexie';
 import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
 import { ErreurProgrammation } from '../../commun/domaine/erreur-programmation';
@@ -17,10 +16,12 @@ import {
   decoderEnAttente,
   decoderEvenement,
   decoderMeta,
+  decoderMetaSynchronisation,
   decoderRegistre,
   encoderEnAttente,
   encoderEvenement,
   encoderMeta,
+  encoderMetaSynchronisation,
   encoderRegistre,
 } from './stockage-local/schemas';
 
@@ -65,12 +66,15 @@ const creerBase = (nomBase: string, fabrique: IDBFactory | undefined): Dexie => 
     chromeTransactionDurability: 'strict',
     ...(fabrique === undefined ? {} : { indexedDB: fabrique }),
   });
-  base.version(1).stores({
+  const tables = {
     registres: 'cle, [type+id]',
     journal: 'id, [elementType+elementId], hlcTri',
     enAttente: 'cle',
     meta: 'nom',
-  });
+  };
+  base.version(1).stores(tables);
+  // ST-US-017 §5.1 : version 2, aucune nouvelle table ; la méta reçoit les clés de synchronisation.
+  base.version(2).stores(tables);
   return base;
 };
 
@@ -227,15 +231,40 @@ export class DepotLocalDexie implements DepotLocal {
     };
   }
 
-  lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
-    if (this.ferme) return Promise.resolve(ESPACE_NON_OUVERT);
-    return nonImplemente('DepotLocalDexie.lireMeta');
+  async lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', ['meta'], () => this.metaSynchronisation());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
   }
 
-  appliquerSynchronisation(
-    _calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+  /**
+   * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état et méta lus, calcul, puis plan et méta écrits
+   * ensemble. La méta est fusionnée clé à clé ; `version` et les observateurs ne changent que si le plan est
+   * non vide. Une exception du calcul est propagée et rien n'est écrit.
+   */
+  async appliquerSynchronisation(
+    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.appliquerSynchronisation');
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    const surveillance: Surveillance = { exception: undefined };
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      const issue = await this.base.transaction('rw', TABLES, () =>
+        this.executerSynchronisation(calcul, surveillance),
+      );
+      if (!issue.ok) return issue;
+      if (issue.valeur.etatApres !== undefined) this.confirmer(issue.valeur.etatApres);
+      return succes(undefined);
+    } catch (erreur) {
+      if (surveillance.exception !== undefined) throw surveillance.exception;
+      return this.traduire(erreur);
+    }
   }
 
   /**
@@ -308,6 +337,35 @@ export class DepotLocalDexie implements DepotLocal {
     const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
     await this.ecrire(plan, etatApres);
     return succes({ valeur, etatApres });
+  }
+
+  private async metaSynchronisation(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    const meta = decoderMetaSynchronisation(await this.base.table('meta').toArray());
+    return meta === undefined ? ESPACE_ILLISIBLE : succes(meta);
+  }
+
+  /** Dans la transaction : lit l'état et la méta, appelle le calcul, écrit la méta puis le plan s'il est non vide. */
+  private async executerSynchronisation(
+    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    surveillance: Surveillance,
+  ): Promise<IssueExecution<undefined, never>> {
+    const etat = await this.etatAJour();
+    if (!etat.ok) return etat;
+    const meta = await this.metaSynchronisation();
+    if (!meta.ok) return meta;
+    let synchronisation: PlanSynchronisation;
+    try {
+      synchronisation = calcul(etat.valeur, meta.valeur);
+    } catch (exception) {
+      if (exception instanceof Error) surveillance.exception = exception;
+      throw exception;
+    }
+    const { plan, meta: metaEcrite } = synchronisation;
+    await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
+    if (planEstVide(plan)) return succes({ valeur: undefined });
+    const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
+    await this.ecrire(plan, etatApres);
+    return succes({ valeur: undefined, etatApres });
   }
 
   private calculer<T, E extends { readonly type: string }>(
