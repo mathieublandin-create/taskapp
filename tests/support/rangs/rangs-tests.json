@@ -38,6 +38,10 @@
       "rang": 2
     },
     {
+      "motif": "UT-COMP-US-017-\\d+",
+      "rang": 3
+    },
+    {
       "motif": "UT-US-022-(?:48|49)\\b",
       "rang": 0
     },

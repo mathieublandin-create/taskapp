@@ -11,6 +11,9 @@ import type {
   TransportSynchro,
 } from '@src/synchronisation/application/ports/transport-synchro';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
+import { ClientGoogle } from '@src/infrastructure-google';
+import { TransportSynchroDrive } from '@src/synchronisation/infrastructure/drive/transport-synchro-drive';
+import { DriveHttpSimule } from '@tests/doublures/drive-http-simule';
 import { FauxDrive } from '@tests/doublures/faux-drive';
 import { TempsSimule } from '@tests/support/banc/temps-simule';
 import { valeurDe } from '@tests/support/environnement';
@@ -205,6 +208,30 @@ suiteContratTransport('FauxDrive', () => {
     },
     retirerAcces: () => {
       acces.accorde = false;
+    },
+    pendantLeProchainInventaire: (rappel) => {
+      drive.pendantLeProchainInventaire(rappel);
+    },
+    invaliderJetons: () => {
+      drive.invaliderJetons();
+    },
+  };
+});
+
+// ST-US-017 §3.1 n° 20 : la même suite sur l'adaptateur réel, derrière un Drive v3 REST simulé (pages de 1 élément).
+suiteContratTransport('TransportSynchroDrive sur Drive HTTP simulé', () => {
+  const drive = new DriveHttpSimule();
+  drive.taillePage = 1;
+  const client = new ClientGoogle({ lireJeton: () => 'jeton-contrat', fetch: drive.fetch });
+  const transport = new TransportSynchroDrive(client);
+  return {
+    transport: () => transport,
+    modifierALaMain: (id) => {
+      drive.modifierALaMain(id);
+      return Promise.resolve();
+    },
+    retirerAcces: () => {
+      drive.retirerAcces();
     },
     pendantLeProchainInventaire: (rappel) => {
       drive.pendantLeProchainInventaire(rappel);
