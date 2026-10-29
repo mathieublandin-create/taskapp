@@ -13,6 +13,7 @@ import {
   type ModeleVueIndicateur,
 } from '@src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
+import { listeObjectifsDe } from '../../support/objectifs';
 import { etapeAssertion } from '../../support/prefixes';
 
 /** Libellés des actions (guide §6.6.2, §6.6.3) ↦ codes des modèles de vue. */
@@ -84,3 +85,15 @@ etapeAssertion(/^aucun bandeau n'est affiché$/, async ({ appareil }) => {
 etapeAssertion(/^un seul bandeau est affiché$/, async ({ appareil }) => {
   assert.notEqual(await bandeauDe(appareil), undefined, 'Aucun bandeau affiché');
 });
+
+// ---------------------------------------------------------------- Mention « heure de Paris » (ST-US-017 §12 n° 23)
+
+// RL-LOT-001-P3 : la liste des objectifs porte la puce ; la liste « Tâches » et la ligne « Fuseau » ne sont pas vérifiées ici.
+etapeAssertion(
+  /^la mention "([^"]*)" (apparaît|n'apparaît pas)$/,
+  async ({ appareil }, code, presence) => {
+    assert.equal(code, 'MEN-HEURE-PARIS', `Mention non prise en charge : ${String(code)}`);
+    const liste = await listeObjectifsDe(appareil);
+    assert.equal(liste.mentionHeureParis?.code === 'MEN-HEURE-PARIS', presence === 'apparaît');
+  },
+);

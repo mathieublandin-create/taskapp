@@ -53,7 +53,10 @@ const nombreDeGroupes = (motif: RegExp): number =>
 const avecArite = <F extends (...arguments_: Array<never>) => unknown>(
   motif: RegExp,
   fonction: F,
-): F => Object.defineProperty(fonction, 'length', { value: nombreDeGroupes(motif) });
+  tableau = false,
+): F =>
+  // Un tableau de données (DataTable) est le dernier argument de l'étape, après les groupes capturés.
+  Object.defineProperty(fonction, 'length', { value: nombreDeGroupes(motif) + (tableau ? 1 : 0) });
 
 export type OptionsAction = {
   /** Appareil visé quand l'étape n'a pas de préfixe et que le banc en compte deux (H-5, conventions.md §11.6). */
@@ -120,7 +123,11 @@ export const etapeAction = (
  * Assertion (« Alors »). Sans préfixe, ou avec « sur les deux appareils, » : l'assertion est jouée sur chaque
  * appareil du banc (Q-US-017-7).
  */
-export const etapeAssertion = (motif: RegExp, corps: CorpsEtape): void => {
+export const etapeAssertion = (
+  motif: RegExp,
+  corps: CorpsEtape,
+  options: { readonly tableau?: boolean } = {},
+): void => {
   const complet = motifAssertion(motif);
   Then(
     complet,
@@ -138,6 +145,7 @@ export const etapeAssertion = (motif: RegExp, corps: CorpsEtape): void => {
         const appareils = cibles.length === 0 ? [this.banc.appareil('smartphone')] : cibles;
         for (const appareil of appareils) await corps({ monde: this, appareil }, ...reste);
       },
+      options.tableau ?? false,
     ),
   );
 };

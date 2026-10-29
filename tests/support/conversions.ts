@@ -15,6 +15,8 @@ export const FRAGMENT_DUREE = String.raw`\d+ h(?: \d{2})?|\d+ min`;
 export const FRAGMENT_DATE = String.raw`\d{4}-\d{2}-\d{2}`;
 export const FRAGMENT_HEURE = String.raw`\d{2}:\d{2}`;
 export const FRAGMENT_FUSEAU = String.raw`UTC|[A-Z][A-Za-z_]+(?:\/[A-Za-z_]+)+`;
+/** `"A"`, `"A" et "B"`, `"A", "B" et "C"` (ST-US-001 §12). */
+export const FRAGMENT_INTITULES = String.raw`"[^"]+"(?:, "[^"]+")*(?: et "[^"]+")?`;
 
 const MS_PAR_MINUTE = 60_000;
 
@@ -49,3 +51,7 @@ export const convertirFuseau = (texte: string): Fuseau => {
   Intl.DateTimeFormat('fr', { timeZone: texte });
   return texte as Fuseau;
 };
+
+/** Intitulés entre guillemets, dans l'ordre d'écriture. */
+export const convertirIntitules = (texte: string): ReadonlyArray<string> =>
+  [...texte.matchAll(/"([^"]+)"/g)].map((correspondance) => correspondance[1] ?? '');

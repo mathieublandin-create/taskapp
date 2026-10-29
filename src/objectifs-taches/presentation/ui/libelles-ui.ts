@@ -1,0 +1,30 @@
+// Libellés des écrans d'objectifs qui n'ont pas de code au catalogue (titres d'écran, champs, boutons génériques),
+// réunis ici pour qu'aucun texte ne soit codé dans les composants (DT-006). Source : maquettes ECR-008 et ECR-003.
+export const LIBELLES_OBJECTIFS = {
+  titreListe: 'Objectifs',
+  retourListe: 'Objectifs',
+  creerObjectif: 'Créer un objectif',
+  objectifPrincipal: 'Objectif principal',
+  sousObjectifDe: 'Sous-objectif de «\u00a0{parent}\u00a0»',
+  champIntitule: 'Intitulé',
+  champDescription: 'Description',
+  champDelai: 'Délai',
+  facultatif: '(facultatif)',
+  facultative: '(facultative)',
+  exempleIntitule: 'Ex. Publier le guide pratique',
+  menuActions: 'Actions sur l’objectif',
+  ouvrirMenu: 'Actions sur l’objectif',
+  feuille: {
+    CREATION: { titre: 'Nouvel objectif', validation: 'Créer l’objectif' },
+    RENOMMAGE: { titre: 'Renommer l’objectif', validation: 'Enregistrer' },
+    DESCRIPTION: { titre: 'Description de l’objectif', validation: 'Enregistrer' },
+    DELAI: { titre: 'Délai de l’objectif', validation: 'Enregistrer' },
+  },
+  menu: {
+    RENOMMER: 'Renommer l’objectif',
+    MODIFIER_DESCRIPTION: 'Modifier la description',
+    MODIFIER_DELAI: 'Changer le délai',
+    RETIRER_DELAI: 'Retirer le délai',
+    SUPPRIMER: 'Supprimer l’objectif…',
+  },
+} as const;

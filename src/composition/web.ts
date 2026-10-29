@@ -5,6 +5,7 @@ import { HorlogeSysteme } from '../commun/infrastructure/horloge-systeme';
 import { JournalTechniqueLocal } from '../commun/infrastructure/journal-technique-local';
 import { PlanificateurNavigateur } from '../commun/infrastructure/planificateur-navigateur';
 import { SourceAleatoireCrypto } from '../commun/infrastructure/source-aleatoire-crypto';
+import { registreSaisie } from '../commun/presentation/saisie/registre-saisie';
 import type { RetourGoogle } from '../compte/application/ports/fournisseur-auth';
 import { DELAI_MAX_ATTENTE_REDIRECTION } from '../compte/domaine/ouverture';
 import {
@@ -86,7 +87,7 @@ const assembler = (
     planificateur: new PlanificateurNavigateur(),
     generateur: new GenerateurUuidV7(),
     avis,
-    gardeSaisie: { saisieEnCours: () => false },
+    gardeSaisie: registreSaisie,
     fournisseur: fournisseurWeb(configuration, socle),
     transport: (coffre) =>
       new TransportSynchroDrive(
@@ -106,7 +107,11 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
   });
   const avis = new AvisOngletsBroadcast(configuration.env);
   const application = assembler(configuration, navigateur, avis);
-  const controleur = new ControleurInterface(application, new HorlogeSysteme());
+  const controleur = new ControleurInterface(
+    application,
+    new HorlogeSysteme(),
+    application.objectifs,
+  );
   avis.ecouter(navigateur.recharger);
   new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
   void application.ouvrirApplication.executer(retour).then(async (issue) => {
@@ -116,7 +121,9 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
         void application.ouvrirApplication.abandonnerAttenteGoogle();
       });
     }
-    await controleur.apresOuverture(issue);
+    await controleur.apresOuverture(issue, () =>
+      application.ouvrirApplication.executer({ type: 'AUCUN' }),
+    );
   });
   return controleur;
 };

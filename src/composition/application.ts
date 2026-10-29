@@ -47,6 +47,7 @@ import {
   plusAncienneModificationEnAttente,
 } from '../synchronisation/domaine/index-en-attente';
 import { DepotLocalDexie } from '../synchronisation/infrastructure/depot-local-dexie';
+import { assemblerObjectifsTaches, type ObjectifsTaches } from './objectifs-taches';
 
 // Assemblage de l'application (ST-US-022 §3.2 n° 51) partagé par la PWA (web.ts) et le banc de test, qui n'en
 // changent que les adaptateurs du bord : Google (fournisseur, transport), réseau, temps, onglets.
@@ -92,6 +93,8 @@ export type Application = {
   /** Espace du compte ouvert (dépôt et service d'écriture) ; undefined sans session. */
   readonly espace: () =>
     { readonly depot: DepotLocalDexie; readonly service: ServiceEtatLocal } | undefined;
+  /** Cas d'usage et requêtes des objectifs sur l'espace ouvert ; undefined sans session (ST-US-001 §3 n° 34). */
+  readonly objectifs: () => ObjectifsTaches | undefined;
   readonly consulterEtat: () => Promise<EtatSynchronisationLu | undefined>;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
@@ -282,6 +285,27 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
   };
 };
 
+/** Un assemblage par espace ouvert : le service d'écriture change avec le compte. */
+const objectifsDe = (
+  a: AdaptateursApplication,
+  espace: () => EspaceOuvert | undefined,
+): (() => ObjectifsTaches | undefined) => {
+  let memorise:
+    { readonly service: ServiceEtatLocal; readonly objectifs: ObjectifsTaches } | undefined;
+  return () => {
+    const ouvert = espace();
+    if (ouvert === undefined) return undefined;
+    if (memorise?.service !== ouvert.service) {
+      const { generateur, horloge } = a;
+      memorise = {
+        service: ouvert.service,
+        objectifs: assemblerObjectifsTaches({ service: ouvert.service, generateur, horloge }),
+      };
+    }
+    return memorise.objectifs;
+  };
+};
+
 export const assemblerApplication = (a: AdaptateursApplication): Application => {
   const stockage = assemblerStockage(a);
   const session = new SessionCourante();
@@ -303,6 +327,7 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerConnexion(a, noyau),
     ...assemblerSortie(a, noyau),
     ...assemblerSynchronisation(a, noyau),
+    objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       stockage.espace()?.depot.fermer();
       stockage.base.fermer();

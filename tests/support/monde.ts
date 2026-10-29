@@ -5,6 +5,7 @@
 import { setWorldConstructor, World } from '@cucumber/cucumber';
 import type { Resultat } from '@src/commun/domaine/resultat';
 import type { Instant } from '@src/commun/domaine/temps/instant';
+import type { ModeleVueDetailObjectif, ModeleVueListeObjectifs } from '@src/objectifs-taches';
 import type { NomAppareil } from './banc/appareil-simule';
 import { BancSynchro } from './banc/banc-synchro';
 import type { CommandeEnAttente } from './commandes-en-attente';
@@ -15,6 +16,9 @@ export class MondeDoneJuan extends World {
   readonly resultats = new Map<NomAppareil, Resultat<unknown, unknown>>();
   readonly commandesEnAttente = new Map<NomAppareil, CommandeEnAttente>();
   readonly references = new References();
+  /** Modèles de vue consultés, par appareil (ST-US-001 §12). */
+  readonly derniereListeObjectifs = new Map<NomAppareil, ModeleVueListeObjectifs>();
+  readonly dernierDetailObjectif = new Map<NomAppareil, ModeleVueDetailObjectif>();
   /** Instant simulé de la dernière action : « au même instant exact, » y revient (conventions.md §11.7). */
   instantDerniereAction: Instant | undefined;
   /** URL des requêtes `fetch` tentées : aucune n'est admise (ST-US-022 §12.3). */

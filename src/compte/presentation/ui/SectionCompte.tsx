@@ -1,11 +1,10 @@
-import type { ActionCompte, ModeleVueSectionCompte } from '../modeles-de-vue/section-compte';
+import {
+  libelleActionCompte,
+  type ActionCompte,
+  type ModeleVueSectionCompte,
+} from '../modeles-de-vue/section-compte';
 
 // ECR-011, section « Compte » (US-022 CA-6, CA-10 ; DEC-015 : aucune action combinée).
-const LIBELLES: Readonly<Record<ActionCompte, string>> = {
-  SE_DECONNECTER: 'Se déconnecter',
-  SUPPRIMER_DONNEES: 'Supprimer les données de cet appareil',
-};
-
 export type ProprietesSectionCompte = {
   readonly vue: ModeleVueSectionCompte;
   readonly surAction: (action: ActionCompte) => void;
@@ -25,7 +24,7 @@ export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
           surAction(action);
         }}
       >
-        {LIBELLES[action]}
+        {libelleActionCompte(action)}
       </button>
     ))}
   </section>

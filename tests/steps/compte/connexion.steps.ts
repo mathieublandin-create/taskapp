@@ -24,6 +24,7 @@ import {
   type Refus,
 } from '../../support/compte/etapes-compte';
 import { convertirAppareil, FRAGMENT_APPAREIL } from '../../support/conversions';
+import { creerObjectifsEnAttente } from '../../support/objectifs';
 import type { MondeDoneJuan } from '../../support/monde';
 import { etapeAction, etapeAssertion, etapeContexte } from '../../support/prefixes';
 
@@ -356,5 +357,26 @@ etapeAssertion(
   /^aucune connexion n'est demandée(?: avant d'afficher les données)?$/,
   async ({ appareil }) => {
     await verifierAucuneConnexionDemandee(appareil);
+  },
+);
+
+// ---------------------------------------------------------------- Données conservées avec des modifications en attente (n° 29, rang 2)
+
+// Connexion du compte, hors ligne, n objectifs créés, puis déconnexion confirmée ; le réseau est rétabli ensuite.
+Given(
+  new RegExp(
+    `^(?:que )?les données du compte "([^"]*)" sont conservées sur le (${FRAGMENT_APPAREIL}), avec (\\d+) modifications?(?:\\(s\\))? en attente$`,
+  ),
+  async function (this: MondeDoneJuan, nomCompte: string, nomAppareil: string, n: string) {
+    const appareil = this.banc.appareil(convertirAppareil(nomAppareil));
+    await connecter(this, appareil, nomCompte);
+    appareil.reseau.couper();
+    await creerObjectifsEnAttente(appareil, Number(n));
+    const evaluation = await deconnecter(appareil);
+    assert.ok(evaluation.ok, 'La déconnexion doit pouvoir être évaluée');
+    // Avec des modifications en attente, la confirmation CNF-DECONNEXION est obligatoire (RG-043).
+    if (Number(n) > 0) assert.equal(evaluation.valeur.type, 'CONFIRMATION_REQUISE');
+    await appareil.application.seDeconnecter.executer();
+    appareil.reseau.retablir();
   },
 );

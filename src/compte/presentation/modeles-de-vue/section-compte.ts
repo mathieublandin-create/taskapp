@@ -1,3 +1,4 @@
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { AdresseGoogle } from '../../domaine/identite';
 
 // ECR-011, section « Compte » ; US-022 CA-6, CA-10 ; DEC-015 (aucune action combinée).
@@ -11,13 +12,16 @@ export type ModeleVueSectionCompte = {
 
 const ACTIONS: ReadonlyArray<ActionCompte> = ['SE_DECONNECTER', 'SUPPRIMER_DONNEES'];
 
-/** Guide v0.2.16 §6.6 ; repris par le catalogue commun (`libelle`) au rang 2. */
-const LIBELLE_DOSSIER = 'Dossier « Done Juan » dans votre Google Drive';
+/** Libellé du bouton de chaque action de la section « Compte » (ECR-011). */
+export const libelleActionCompte = (action: ActionCompte): string =>
+  action === 'SE_DECONNECTER'
+    ? libelle('CNF-DECONNEXION', {}, 'action')
+    : libelle('CNF-SUPPR-DONNEES', { variante: 'section-compte' }, 'action');
 
 export const construireSectionCompte = (c: {
   readonly adresse: AdresseGoogle;
 }): ModeleVueSectionCompte => ({
   adresse: c.adresse,
   actions: ACTIONS,
-  dossier: { code: 'SYN-FEUILLE-DOSSIER', libelle: LIBELLE_DOSSIER },
+  dossier: { code: 'SYN-FEUILLE-DOSSIER', libelle: libelle('SYN-FEUILLE-DOSSIER') },
 });

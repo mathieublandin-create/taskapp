@@ -97,6 +97,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/presentation/format/appareil.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/format/date.ts": {
       "debut": 2,
       "fin": 2
@@ -105,11 +109,39 @@
       "debut": 5,
       "fin": 5
     },
+    "src/commun/presentation/messages/catalogue.fr.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/messages/codes.ts": {
       "debut": 2,
       "fin": 2
     },
     "src/commun/presentation/messages/libelle.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/saisie/registre-saisie.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/boite-confirmation.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/etat-vide.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/mention-heure-paris.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/toast.tsx": {
       "debut": 2,
       "fin": 2
     },
@@ -120,6 +152,10 @@
     "src/composition/controleur-interface.ts": {
       "debut": 1,
       "fin": 1
+    },
+    "src/composition/objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
     },
     "src/composition/web.ts": {
       "debut": 0,
@@ -533,7 +569,15 @@
       "debut": 5,
       "fin": 5
     },
+    "src/objectifs-taches/domaine/types-actions.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/objectifs-taches/domaine/vue-metier.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/index.ts": {
       "debut": 2,
       "fin": 2
     },
@@ -586,6 +630,42 @@
       "fin": 4
     },
     "src/objectifs-taches/presentation/modeles-de-vue/vues-exposees.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/feuille-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/ligne-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/menu-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/progression-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/detail-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espace-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/libelles-ui.ts": {
       "debut": 2,
       "fin": 2
     },

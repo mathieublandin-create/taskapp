@@ -1,3 +1,4 @@
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 
 // Guide §6.6.2, conventions.md §8.5 : une seule fonction de sélection (ordre de gravité).
@@ -78,4 +79,17 @@ const complementCode = (
 export const construireIndicateur = (e: EtatSynchronisationAffichable): ModeleVueIndicateur => {
   const code = selectionnerEtatIndicateur(e);
   return { code, ...complementCode(code, e), ...(e.aLire > 0 ? { aLire: e.aLire } : {}) };
+};
+
+/** Libellé visible de l'indicateur (guide §6.6.2) ; SYN-HORS-LIGNE sans attente se réduit à « Hors ligne ». */
+const libelleHorsLigne = (n: number): string =>
+  n === 0
+    ? libelle('SYN-HORS-LIGNE', { n, variante: 'sans-attente' })
+    : libelle('SYN-HORS-LIGNE', { n });
+
+export const libelleIndicateur = (vue: ModeleVueIndicateur): string => {
+  if (vue.code === 'SYN-INFO') return libelle(vue.code, { n: vue.aLire ?? 0 });
+  if (vue.code === 'SYN-ATTENTE') return libelle(vue.code, { n: vue.n ?? 0 });
+  if (vue.code === 'SYN-HORS-LIGNE') return libelleHorsLigne(vue.n ?? 0);
+  return libelle(vue.code);
 };

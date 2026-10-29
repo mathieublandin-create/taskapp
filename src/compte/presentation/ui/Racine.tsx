@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { ModeleVueRacine } from '../modeles-de-vue/racine';
 
 // ST-US-022 §4.5 : écran racine (RG-019) ; cadre « Attente » d'ECR-010 (SYN-REDIRECTION, Q-ST022-STE-1).
@@ -16,7 +17,7 @@ export const Racine = ({ vue, connexion, application }: ProprietesRacine) => {
       return (
         <div role="status" aria-label={vue.nomAccessible} data-etat={vue.etat}>
           <p>Done Juan</p>
-          <p>Connexion à Google…</p>
+          <p>{libelle(vue.etat)}</p>
         </div>
       );
     case 'APPLICATION':

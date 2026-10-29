@@ -1,4 +1,6 @@
 import type { Instant } from '../../../commun/domaine/temps/instant';
+import type { NomAppareilAffiche } from '../../../commun/presentation/format/appareil';
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import { SEUIL_RAPPEL_HORS_LIGNE } from '../../domaine/parametres-synchronisation';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 import { selectionnerEtatIndicateur } from './indicateur-synchronisation';
@@ -61,4 +63,42 @@ export const construireBandeau = (
     };
   }
   return depasse && !e.rappelMasque ? rappel(e) : undefined;
+};
+
+/** Textes d'un bandeau (guide §6.6.3) : titre, explication, action unique éventuelle, bouton de fermeture. */
+export type LibellesBandeau = {
+  readonly titre: string;
+  readonly texte: string;
+  readonly action?: string;
+  readonly fermeture?: string;
+};
+
+/** Variante du gabarit : celle du modèle, ou « avec-attente » pour la consultation seule qui conserve des modifications. */
+const varianteDe = (b: ModeleVueBandeau): string | undefined =>
+  b.variante ??
+  (b.code === 'BAN-CONSULTATION-SEULE' && b.n !== undefined ? 'avec-attente' : undefined);
+
+const variablesBandeau = (
+  b: ModeleVueBandeau,
+  appareil: NomAppareilAffiche,
+): Readonly<Record<string, string | number>> => {
+  const variante = varianteDe(b);
+  return {
+    appareil,
+    ...(b.n === undefined ? {} : { n: b.n }),
+    ...(variante === undefined ? {} : { variante }),
+  };
+};
+
+export const libellesBandeau = (
+  b: ModeleVueBandeau,
+  appareil: NomAppareilAffiche,
+): LibellesBandeau => {
+  const variables = variablesBandeau(b, appareil);
+  return {
+    titre: libelle(b.code, variables),
+    texte: libelle(b.code, variables, 'texte'),
+    ...(b.action === undefined ? {} : { action: libelle(b.code, variables, 'action') }),
+    ...(b.fermable ? { fermeture: libelle(b.code, variables, 'fermeture') } : {}),
+  };
 };

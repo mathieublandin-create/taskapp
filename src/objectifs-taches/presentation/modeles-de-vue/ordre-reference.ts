@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import type { Instant } from '../../../commun/domaine/temps/instant';
 
@@ -11,5 +10,22 @@ export type ElementOrdonnable = {
   readonly creeLe: Instant;
 };
 
-export const comparerOrdreReference = (_a: ElementOrdonnable, _b: ElementOrdonnable): number =>
-  nonImplemente('comparerOrdreReference');
+const COLLATEUR = new Intl.Collator('fr', { sensitivity: 'base' });
+
+const comparerDelais = (a: DateCalendaire | undefined, b: DateCalendaire | undefined): number => {
+  if (a === b) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return a < b ? -1 : 1;
+};
+
+const comparerOrdinal = (a: string, b: string): number => {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+};
+
+export const comparerOrdreReference = (a: ElementOrdonnable, b: ElementOrdonnable): number =>
+  comparerDelais(a.delai, b.delai) ||
+  a.creeLe - b.creeLe ||
+  COLLATEUR.compare(a.intitule, b.intitule) ||
+  comparerOrdinal(a.id, b.id);

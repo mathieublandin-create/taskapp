@@ -1,4 +1,9 @@
-import { StrictMode, useSyncExternalStore } from 'react';
+import { IonApp, setupIonicReact } from '@ionic/react';
+import '@ionic/react/css/core.css';
+import '@ionic/react/css/normalize.css';
+import '@ionic/react/css/structure.css';
+import '@ionic/react/css/typography.css';
+import { StrictMode, useMemo, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -10,10 +15,16 @@ import { EcranConnexion } from './compte/presentation/ui/EcranConnexion';
 import { Racine } from './compte/presentation/ui/Racine';
 import { SectionCompte } from './compte/presentation/ui/SectionCompte';
 import { SuppressionBloquee } from './compte/presentation/ui/SuppressionBloquee';
-import type { ControleurInterface, ToastInterface } from './composition/controleur-interface';
+import type { ControleurInterface } from './composition/controleur-interface';
 import { demarrerWeb } from './composition/web';
+import { appareilDepuisAgent } from './commun/presentation/format/appareil';
+import { Toast } from './commun/presentation/ui/toast';
 import { Bandeau } from './synchronisation/presentation/ui/Bandeau';
 import { IndicateurSynchronisation } from './synchronisation/presentation/ui/IndicateurSynchronisation';
+import './commun/presentation/ui/styles.css';
+import type { ObjectifsTaches } from './composition/objectifs-taches';
+import { EspaceObjectifs } from './objectifs-taches/presentation/ui/ecrans/espace-objectifs';
+import { creerMagasinObjectifsTaches } from './objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
 
 // RED-02 : première instruction, synchrone, avant tout rendu, toute requête et le chargement de GIS : le fragment
 // de l'URL de retour de Google est copié, effacé, puis analysé. Les modules importés n'ont aucun effet de bord.
@@ -30,21 +41,21 @@ const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVI
   },
 });
 
-/** Textes des toasts (guide §6.6.6 ; ERR-014) ; remplacés par libelle() au rang 2 (DT-006). */
-const TEXTES_TOAST: Readonly<Record<ToastInterface, string>> = {
-  'TST-SAISIE-A-TERMINER': 'Terminez votre saisie, puis reprenez la synchronisation.',
-  'TST-ERREUR-ENREGISTREMENT': "Impossible d'enregistrer. Réessayer",
+setupIonicReact();
+
+/** Appareil affiché dans les textes (« ce smartphone », « ce PC »), calculé une fois (RC-R2-7). */
+const APPAREIL = appareilDepuisAgent(navigator.userAgent, navigator.maxTouchPoints);
+
+/** Écrans des objectifs (US-001, rang 2), sur le magasin de l'espace ouvert. */
+const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches }) => {
+  const magasin = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
+  return <EspaceObjectifs magasin={magasin} />;
 };
 
-const Toast = ({ code }: { readonly code: ToastInterface }) => (
-  <p role={code === 'TST-ERREUR-ENREGISTREMENT' ? 'alert' : 'status'} data-code={code}>
-    {TEXTES_TOAST[code]}
-  </p>
-);
-
-/** En-tête de l'application (rang 1 : indicateur, bandeau, section « Compte ») ; les écrans métier arrivent au rang 2. */
+/** Espace de l'application : indicateur, bandeau, section « Compte », puis les objectifs. */
 const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  const objectifs = controleur.objectifs();
   return (
     <main aria-label="Done Juan">
       {vue.indicateur === undefined ? null : (
@@ -56,14 +67,18 @@ const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInte
       {vue.bandeau === undefined ? null : (
         <Bandeau
           vue={vue.bandeau}
+          appareil={APPAREIL}
           surAction={() => void controleur.reprendre()}
           surMasquer={() => void controleur.masquerRappel()}
         />
       )}
-      {vue.toast === undefined ? null : <Toast code={vue.toast} />}
+      {vue.toast === undefined ? null : (
+        <Toast code={vue.toast} surAction={() => void controleur.reessayer()} />
+      )}
       {vue.compte === undefined ? null : (
         <SectionCompte vue={vue.compte} surAction={(a) => void controleur.actionCompte(a)} />
       )}
+      {objectifs === undefined ? null : <EcransObjectifs objectifs={objectifs} />}
     </main>
   );
 };
@@ -114,6 +129,8 @@ const racine = document.getElementById('racine');
 if (racine === null) throw new ErreurProgrammation('Élément « racine » absent de index.html');
 createRoot(racine).render(
   <StrictMode>
-    <Application controleur={controleur} />
+    <IonApp>
+      <Application controleur={controleur} />
+    </IonApp>
   </StrictMode>,
 );

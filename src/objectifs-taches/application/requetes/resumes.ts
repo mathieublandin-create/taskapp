@@ -5,8 +5,9 @@ import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendai
 import type { Instant } from '../../../commun/domaine/temps/instant';
 import type { CycleDeVie } from '../../../synchronisation';
 import type { AlerteDelaiObjectif, AlerteDelaiTache } from '../../domaine/alertes-delai';
-import type { EtatObjectif } from '../../domaine/etat-objectif';
+import { compteurObjectif, etatObjectif, type EtatObjectif } from '../../domaine/etat-objectif';
 import type { Incoherence } from '../../domaine/incoherence';
+import { estObjectifEnRetard } from '../../domaine/retard';
 import type { Objectif, Tache, VueMetier } from '../../domaine/vue-metier';
 
 // ST-US-001 §4.2 ; ajouts ST-US-023 §4.2, ST-US-002 §4.2, ST-US-024 §4.2.
@@ -48,10 +49,29 @@ export type ResumeTache = {
 };
 
 export const resumerObjectif = (
-  _vue: VueMetier,
-  _objectif: Objectif,
-  _jour: DateCalendaire,
-): ResumeObjectif => nonImplemente('resumerObjectif');
+  vue: VueMetier,
+  objectif: Objectif,
+  jour: DateCalendaire,
+): ResumeObjectif => {
+  const etat = etatObjectif(vue, objectif.id);
+  const { terminees, nonAbandonnees } = compteurObjectif(vue, objectif.id);
+  const parentIntitule =
+    objectif.parentId === undefined ? undefined : vue.objectifs.get(objectif.parentId)?.intitule;
+  return {
+    id: objectif.id,
+    intitule: objectif.intitule,
+    ...(objectif.description === undefined ? {} : { description: objectif.description }),
+    ...(objectif.delai === undefined ? {} : { delai: objectif.delai }),
+    ...(objectif.parentId === undefined ? {} : { parentId: objectif.parentId }),
+    ...(parentIntitule === undefined ? {} : { parentIntitule }),
+    etat,
+    enRetard: estObjectifEnRetard(objectif, etat, jour),
+    tachesTerminees: terminees,
+    tachesNonAbandonnees: nonAbandonnees,
+    creeLe: objectif.creeLe,
+    enAttente: objectif.enAttente,
+  };
+};
 
 export const resumerTache = (_vue: VueMetier, _tache: Tache, _jour: DateCalendaire): ResumeTache =>
   nonImplemente('resumerTache');

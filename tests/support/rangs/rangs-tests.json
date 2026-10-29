@@ -26,8 +26,16 @@
       "rang": 0
     },
     {
+      "motif": "UT-COMP-US-022-2\\d\\d\\b",
+      "rang": 2
+    },
+    {
       "motif": "UT-COMP-US-022-\\d+",
       "rang": 1
+    },
+    {
+      "motif": "UT-COMP-US-001-\\d+",
+      "rang": 2
     },
     {
       "motif": "UT-US-022-(?:48|49)\\b",

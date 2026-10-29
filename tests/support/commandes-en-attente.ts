@@ -8,7 +8,13 @@ import type { Resultat } from '@src/commun/domaine/resultat';
 export type CommandeEnAttente = {
   readonly description: string;
   /** Confirmation affichée (code `CNF-…` et nombre annoncé), vérifiée par les étapes « une confirmation … ». */
-  readonly confirmation?: { readonly code: string; readonly n?: number };
+  readonly confirmation?: {
+    readonly code: string;
+    readonly n?: number;
+    /** CNF-SUPPR-OBJECTIF : tâches détachées et sous-objectifs promus. */
+    readonly taches?: number;
+    readonly sousObjectifs?: number;
+  };
   executer(): Promise<Resultat<unknown, unknown>>;
 };
 
