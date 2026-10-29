@@ -1,3 +1,5 @@
+// ADR-014 (M2) : premier import, pour que Zod soit en mode interprété avant la construction de tout schéma.
+import './compte/infrastructure/zod-sans-compilation';
 import { IonApp, setupIonicReact } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
