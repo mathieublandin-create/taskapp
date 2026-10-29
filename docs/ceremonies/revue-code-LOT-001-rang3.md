@@ -8,7 +8,7 @@
 | Auteur | Bruce (rang critique) |
 | Périmètre | Différentiel `origin/lot/LOT-001...HEAD` : 46 fichiers, + 4 042, − 282 (OPT-7) |
 | Référentiel | ST-US-017 v0.3 (§3.1, §4.5, §5, §6.1 à §6.5, §7, §8), `conventions.md` v0.4.5 (§9, §10.3, §11.14, §12), DAT §4.1.5 bis, §4.2, §4.3, ADR-014, DEC-041, `dette-technique.md` |
-| Passage | 1 |
+| Passage | 1 ; 2 (§8, `70eacaa`, différentiel `f579bd3..70eacaa`) |
 
 ## 1. Verdict : **À reprendre**
 
@@ -96,3 +96,47 @@ Aucun test existant n'a été modifié ni affaibli : le différentiel ne touche 
 1. Bruce traite RC-R3-1 et RC-R3-2 (itération 1/2), et répond aux remarques non bloquantes : correction ou justification.
 2. Nouvelle revue limitée aux remarques ouvertes et aux nouveaux changements.
 3. Hors de cette PR : la PR séparée de Benjamin (reliquat DT-006, DT-009, DT-011) après la livraison de mes tests de la feuille ; `fix/DT-008-csp` (M1, M2) ; M3 (Friday).
+
+## 8. Passage 2 (itération 2/2) : `us/US-017-synchro-1` @ `70eacaa`
+
+Périmètre : remarques ouvertes et différentiel `f579bd3..70eacaa` (8 fichiers, + 776, − 33), avec les réponses de Bruce du §4.1. Aucune nouvelle exigence n'est posée sur le code approuvé au passage 1.
+
+### 8.1 Verdict : **Approuvé**
+
+Les deux remarques bloquantes sont levées. Les remarques non bloquantes sont corrigées, acceptées en dette ou rattachées à la PR de Benjamin.
+
+### 8.2 Contrôles exécutés (Node 24, `70eacaa`)
+
+| Commande | Résultat |
+|---|---|
+| `pnpm verifier` | Vert |
+| `pnpm test` | 116 fichiers, 598 tests passés, 161 ignorés (rangs > 3) ; + 17 tests depuis le passage 1 |
+| `TZ=UTC pnpm test:couverture` | Vert. Global 98,15 % lignes, 92,78 % branches (passage 1 : 91,54 %). `cycle-synchronisation.ts` et `transport-synchro-drive.ts` à 100 % (instructions, branches, fonctions, lignes). `format-v1.ts` (96,55 %) et `schemas/v1.ts` (68,62 %) sans régression de branches par rapport à `f579bd3` |
+| `pnpm cucumber` | 60 scénarios, 543 étapes, tous passés |
+
+Tests existants : seul UT-COMP-US-017-05 (test de Bruce) est modifié. L'ordre de création imposé par RC-R3-5 rend caduque la réponse simulée de l'ancien scénario d'échec. Le test est **renforcé** : il vérifie l'ordre LISEZ-MOI puis manifeste, l'absence de manifeste après l'échec de LISEZ-MOI, et la reprise sans doublon après l'échec du manifeste. Aucun UT-US-017, ni `vitest.config.ts`, ni aucun délai n'est touché. Aucun test n'est affaibli.
+
+Le différentiel ne touche ni `index.html`, ni `src/main.tsx`, ni les dépendances : le test de fumée CSP manuel (DT-012) n'est pas requis pour cette revue.
+
+### 8.3 Suivi des remarques
+
+| Id | Statut | Constat du passage 2 |
+|---|---|---|
+| RC-R3-1 | **Levée** | `TYPES_ELEMENT_V1` et `TYPES_EVENEMENT_V1` (`schemas/v1.ts:29-47`) utilisent `satisfies Record<…, true>`. Une clé manquante ou en trop ne compile pas. Les `Set` de `format-v1.ts:46-47` en sont dérivés. `ControleTypesEvenementV1` (`schemas/v1.ts:299-302`) garde deux assertions **séparées**, ce qui évite le piège `false & true = never`, documenté à `:49-51`. Le schéma Zod ne peut donc pas diverger de `TypeEvenementJournal`, et le transtypage final de `lireEvenementV1` (`:434`) est couvert par cette garde. UT-COMP-US-017-34 fait un aller-retour d'une entrée par type, avec un `Record` exhaustif à la compilation, et vérifie aussi les types d'élément. |
+| RC-R3-2 | **Levée** | `cycle-synchronisation-erreurs.test.ts` (UT-COMP-US-017-35 à 39, 43 à 49, 51) couvre les chemins attendus : jeton inchangé et aucun dépôt après un 5xx ou une coupure réseau à la lecture, relecture au cycle suivant ; `RessourceIntrouvable` ignorée et journalisée ; transaction refusée ; écriture locale du jeton impossible. Les assertions portent sur l'état observable (jeton, fichiers du `FauxDrive`, entrées en attente), pas sur des appels internes. Branches du fichier : 85,9 % → 100 %. Aucun défaut n'a été révélé dans `src/`. |
+| RC-R3-3 | **Acceptée en dette : DT-013 (P3)** | La justification est recevable : l'effet se limite à des cycles superflus sur un onglet masqué jusqu'au premier `visibilitychange`, sans risque pour les données. Le cycle lui-même est sûr (UT-COMP-US-017-51). Ma réserve : l'argument « testable seulement par le banc complet » ne vaut pas pour un adaptateur `Navigateur` injecté, qui se teste en UT. Je fournirai ce test à l'E10 de l'incrément 2, où la correction est **exigée**. |
+| RC-R3-4 | Rattachée à DT-011 | Hors de cette PR : PR séparée de Benjamin. |
+| RC-R3-5 | **Levée** | `#assurerLisezMoi` (`transport-synchro-drive.ts:266-278`) est idempotent (recherche par `appProperties`) et appelé avant la création du manifeste. Un échec intermédiaire laisse le manifeste absent, et la reprise est vérifiée sans doublon. |
+| RC-R3-6 | **Levée** | `litteralRequeteDrive` (`transport-synchro-drive.ts:89-90`) échappe `\` et `'`. Il est appliqué au dossier et à l'appareil. Les autres fragments de la requête sont des constantes. Testé par UT-COMP-US-017-07, y compris dans la requête émise. |
+| RC-R3-7 | **Levée** | `deposerMaintenant` (`cycle-synchronisation.ts:157`) attend `#enCours.catch(() => undefined)`. UT-COMP-US-017-45 échoue sans la correction. |
+
+### 8.4 Registre de la dette (`dette-technique.md` v0.12)
+
+- **Correction de numérotation** : DT-011 reste attribuée à la feuille ECR-011 et à `MEN-ATTENTE` (passage 1). La dette de RC-DT8-2 (`revue-code-LOT-001-DT-008.md`, PR #7), que cette revue nommait DT-011, est inscrite en **DT-012** : test de fumée CSP `pnpm e2e` hors CI, P2. Friday l'ajoute à la CI au rang 3. D'ici là, le test est lancé à la main à chaque E13 qui touche `index.html`, `src/main.tsx` ou les dépendances. Les mentions « DT-011 » de `revue-code-LOT-001-DT-008.md` (§ RC-DT8-2 et suite) se lisent DT-012 ; la correction est à reporter sur `fix/DT-008-csp` avant sa fusion.
+- **DT-013** : état de visibilité initial du cycle (RC-R3-3), P3, remboursement à l'incrément 2 de US-017.
+
+### 8.5 Suite
+
+1. La PR #6 peut être fusionnée dans `lot/LOT-001`, ce qui rend DT-010 effectivement remboursée.
+2. La PR séparée de Benjamin (DT-006, DT-009, DT-011, RC-R3-4) suit la livraison de mes tests de la feuille ECR-011.
+3. Report de la renumérotation DT-012 dans `revue-code-LOT-001-DT-008.md` (branche `fix/DT-008-csp`) ; étape `pnpm e2e` en CI (Friday, rang 3).
