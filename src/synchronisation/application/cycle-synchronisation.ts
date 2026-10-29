@@ -149,9 +149,12 @@ export class CycleSynchronisation implements SuiviCycle {
     return this.#lancer(() => this.#cycleComplet());
   }
 
-  /** Dépôt seul, sans lecture des autres fichiers ; attend la fin d'un cycle en cours. */
+  /**
+   * Dépôt seul, sans lecture des autres fichiers ; attend la fin d'un cycle en cours. L'exception éventuelle de ce
+   * cycle n'est pas propagée (son déclencheur la consigne) : la sortie tente son propre dépôt (RC-R3-7).
+   */
   async deposerMaintenant(): Promise<IssueCycle> {
-    while (this.#enCours !== undefined) await this.#enCours;
+    while (this.#enCours !== undefined) await this.#enCours.catch(() => undefined);
     return this.#lancer(() => this.#depotSeul());
   }
 
