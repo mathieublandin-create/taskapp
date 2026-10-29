@@ -4,6 +4,7 @@ import type { Horloge } from '../commun/application/ports/horloge';
 import type { JournalTechnique } from '../commun/application/ports/journal-technique';
 import type { Planificateur } from '../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../commun/application/ports/source-aleatoire';
+import { ErreurProgrammation } from '../commun/domaine/erreur-programmation';
 import { echec, succes } from '../commun/domaine/resultat';
 import { OuvrirApplication } from '../compte/application/cas-usage/ouvrir-application';
 import { ReprendreSession } from '../compte/application/cas-usage/reprendre-session';
@@ -27,6 +28,8 @@ import {
 import { CoffreJetonsMemoire } from '../compte/infrastructure/coffre-jetons-memoire';
 import { GestionEspacesIndexedDb } from '../compte/infrastructure/espaces/gestion-espaces-indexeddb';
 import type { NomEnvironnement } from '../compte/infrastructure/espaces/nom-espace';
+import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
+import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
 import { MasquageRappel } from '../synchronisation/application/masquage-rappel';
 import type {
   AccesGoogle,
@@ -69,7 +72,9 @@ export type AdaptateursApplication = {
     readonly coffre: CoffreJetons;
     readonly session: SessionCourante;
   }) => FournisseurAuth;
-  readonly transport: (coffre: CoffreJetons) => Pick<TransportSynchro, 'preparerDossier'>;
+  readonly transport: (coffre: CoffreJetons) => TransportSynchro;
+  /** Version de l'application écrite dans le fichier d'appareil (ST-US-017 §5.2). */
+  readonly versionApplication: string;
   /** `versionchange` sur l'espace ou la base technique (RL-LOT-001-A1) : la PWA recharge la page. */
   readonly surFermetureImposee: () => void;
 };
@@ -90,9 +95,8 @@ export type Application = {
   readonly accesGoogle: AccesGoogle;
   readonly masquage: MasquageRappel;
   readonly base: BaseTechnique;
-  /** Espace du compte ouvert (dépôt et service d'écriture) ; undefined sans session. */
-  readonly espace: () =>
-    { readonly depot: DepotLocalDexie; readonly service: ServiceEtatLocal } | undefined;
+  /** Espace du compte ouvert (dépôt, service d'écriture, cycle de synchronisation) ; undefined sans session. */
+  readonly espace: () => EspaceOuvert | undefined;
   /** Cas d'usage et requêtes des objectifs sur l'espace ouvert ; undefined sans session (ST-US-001 §3 n° 34). */
   readonly objectifs: () => ObjectifsTaches | undefined;
   readonly consulterEtat: () => Promise<EtatSynchronisationLu | undefined>;
@@ -100,7 +104,15 @@ export type Application = {
   readonly arreter: () => void;
 };
 
-type EspaceOuvert = { readonly depot: DepotLocalDexie; readonly service: ServiceEtatLocal };
+export type EspaceOuvert = {
+  readonly depot: DepotLocalDexie;
+  readonly service: ServiceEtatLocal;
+  /** ST-US-017 §6.4 : un cycle par espace, démarré à l'ouverture de l'espace, arrêté à sa fermeture. */
+  readonly cycle: CycleSynchronisation;
+};
+
+/** Ce qu'il faut au cycle d'un espace, connu une fois la session et l'accès Google assemblés. */
+type FabriqueCycle = { creer?: (depot: DepotLocalDexie) => CycleSynchronisation };
 
 const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocale> => {
   if (espace === undefined) return { enAttente: 0 };
@@ -113,11 +125,30 @@ const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocal
   };
 };
 
-/** Rang 1 : sans cycle de synchronisation, aucun dépôt n'est tenté (ST-US-017, rang 3). */
-const depotAvantSortie = (espace: () => EspaceOuvert | undefined): DepotAvantSortie => ({
-  compterEnAttente: async () => (await attenteDe(espace())).enAttente,
-  deposerSiPossible: () => Promise.resolve('NON_TENTE'),
-});
+/** ST-US-017 §6.5 : dépôt réel par le cycle de l'espace ouvert ; sans espace, rien n'est tenté. */
+const depotAvantSortie = (
+  a: AdaptateursApplication,
+  espace: () => EspaceOuvert | undefined,
+  acces: () => AccesGoogle,
+): DepotAvantSortie => {
+  const synchro = (ouvert: EspaceOuvert) =>
+    new DepotAvantSortieSynchro({
+      depot: ouvert.depot,
+      cycle: ouvert.cycle,
+      reseau: a.reseau,
+      acces: acces(),
+    });
+  return {
+    compterEnAttente: async () => {
+      const ouvert = espace();
+      return ouvert === undefined ? 0 : synchro(ouvert).compterEnAttente();
+    },
+    deposerSiPossible: async () => {
+      const ouvert = espace();
+      return ouvert === undefined ? 'NON_TENTE' : synchro(ouvert).deposerSiPossible();
+    },
+  };
+};
 
 const accesGoogleDe = (session: SessionCourante, signaler: SignalerRefusJeton): AccesGoogle => {
   const etat = (): EtatAccesGoogle => {
@@ -162,8 +193,26 @@ const baseTechnique = (a: AdaptateursApplication): BaseTechnique =>
     },
   });
 
+/** Arrête le cycle de l'espace, puis ferme sa connexion. */
+const fermerEspace = (espace: EspaceOuvert | undefined): void => {
+  espace?.cycle.arreter();
+  espace?.depot.fermer();
+};
+
+/** Ouverture (ST-US-017 §6.4) : déclencheurs installés, puis un cycle si l'accès est déjà valide. */
+const demarrerCycle = (a: AdaptateursApplication, cycle: CycleSynchronisation): void => {
+  cycle.demarrer();
+  cycle.synchroniserMaintenant().catch((erreur: unknown) => {
+    a.journal.consigner({
+      niveau: 'erreur',
+      evenement: 'SynchronisationInterrompue',
+      champs: { erreur: erreur instanceof Error ? erreur.name : 'inconnue' },
+    });
+  });
+};
+
 /** Base technique (session, redirection) et espaces de compte, ouverts par DepotLocalDexie. */
-const assemblerStockage = (a: AdaptateursApplication): Stockage => {
+const assemblerStockage = (a: AdaptateursApplication, fabriqueCycle: FabriqueCycle): Stockage => {
   const base = baseTechnique(a);
   let ouvert: EspaceOuvert | undefined;
   const espaces = new GestionEspacesIndexedDb({
@@ -171,12 +220,15 @@ const assemblerStockage = (a: AdaptateursApplication): Stockage => {
     ...avecFabrique(a),
     planificateur: a.planificateur,
     surOuverture: async (nomBase) => {
-      const espace = await ouvrirEspace(a, nomBase);
-      ouvert = espace ?? ouvert;
-      return espace === undefined ? echec({ type: 'EspaceInaccessible' }) : succes(undefined);
+      const espace = await ouvrirEspace(a, nomBase, fabriqueCycle);
+      if (espace === undefined) return echec({ type: 'EspaceInaccessible' });
+      if (ouvert !== espace) fermerEspace(ouvert);
+      ouvert = espace;
+      demarrerCycle(a, espace.cycle);
+      return succes(undefined);
     },
     surFermeture: () => {
-      ouvert?.depot.fermer();
+      fermerEspace(ouvert);
       ouvert = undefined;
       return Promise.resolve();
     },
@@ -193,7 +245,10 @@ const assemblerStockage = (a: AdaptateursApplication): Stockage => {
 const ouvrirEspace = async (
   a: AdaptateursApplication,
   nomBase: string,
+  fabriqueCycle: FabriqueCycle,
 ): Promise<EspaceOuvert | undefined> => {
+  const creerCycle = fabriqueCycle.creer;
+  if (creerCycle === undefined) throw new ErreurProgrammation('Cycle non assemblé');
   const ouvert = await DepotLocalDexie.ouvrirEspace({
     nomBase,
     ...avecFabrique(a),
@@ -209,6 +264,7 @@ const ouvrirEspace = async (
       horloge: a.horloge,
       generateur: a.generateur,
     }),
+    cycle: creerCycle(depot),
   };
 };
 
@@ -216,13 +272,16 @@ type Noyau = Stockage & {
   readonly session: SessionCourante;
   readonly coffre: CoffreJetons;
   readonly fournisseur: FournisseurAuth;
+  readonly transport: TransportSynchro;
+  readonly signalerRefus: SignalerRefusJeton;
+  readonly accesGoogle: AccesGoogle;
   readonly depot: DepotAvantSortie;
 };
 
 const assemblerConnexion = (a: AdaptateursApplication, n: Noyau) => {
   const { memoireSession, memoireRedirection, fournisseur, espaces, session } = n;
   const preparation = new PreparationDossierDrive({
-    transport: a.transport(n.coffre),
+    transport: n.transport,
     planificateur: a.planificateur,
     aleatoire: a.aleatoire,
   });
@@ -261,27 +320,49 @@ const assemblerSortie = (a: AdaptateursApplication, n: Noyau) => {
   };
 };
 
+/** ST-US-017 §3.1 n° 16 : l'indicateur lit le cycle de l'espace ouvert. */
 const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
-  const signalerRefus = new SignalerRefusJeton({
-    coffre: n.coffre,
-    horloge: a.horloge,
-    memoireSession: n.memoireSession,
-    session: n.session,
-  });
-  const accesGoogle = accesGoogleDe(n.session, signalerRefus);
   const masquage = new MasquageRappel();
   return {
-    signalerRefus,
-    accesGoogle,
     masquage,
     consulterEtat: () =>
       consulterEtatSynchronisation({
         reseau: a.reseau,
-        acces: accesGoogle,
-        suivi: SUIVI_CYCLE_AU_REPOS,
+        acces: n.accesGoogle,
+        suivi: n.espace()?.cycle ?? SUIVI_CYCLE_AU_REPOS,
         masquage,
         attente: () => attenteDe(n.espace()),
       }),
+  };
+};
+
+/** Session, coffre, fournisseur, transport et accès Google ; la fabrique de cycle est renseignée ici. */
+const assemblerNoyau = (
+  a: AdaptateursApplication,
+  stockage: Stockage,
+  fabriqueCycle: FabriqueCycle,
+): Noyau => {
+  const session = new SessionCourante();
+  const coffre = new CoffreJetonsMemoire();
+  const fournisseur = a.fournisseur({
+    memoireRedirection: stockage.memoireRedirection,
+    coffre,
+    session,
+  });
+  const signalerRefus = new SignalerRefusJeton({
+    coffre,
+    horloge: a.horloge,
+    memoireSession: stockage.memoireSession,
+    session,
+  });
+  const accesGoogle = accesGoogleDe(session, signalerRefus);
+  const transport = a.transport(coffre);
+  fabriqueCycle.creer = (depot) =>
+    new CycleSynchronisation({ ...a, depot, transport, acces: accesGoogle });
+  return {
+    ...stockage,
+    ...{ session, coffre, fournisseur, transport, signalerRefus, accesGoogle },
+    depot: depotAvantSortie(a, stockage.espace, () => accesGoogle),
   };
 };
 
@@ -307,21 +388,9 @@ const objectifsDe = (
 };
 
 export const assemblerApplication = (a: AdaptateursApplication): Application => {
-  const stockage = assemblerStockage(a);
-  const session = new SessionCourante();
-  const coffre = new CoffreJetonsMemoire();
-  const fournisseur = a.fournisseur({
-    memoireRedirection: stockage.memoireRedirection,
-    coffre,
-    session,
-  });
-  const noyau: Noyau = {
-    ...stockage,
-    session,
-    coffre,
-    fournisseur,
-    depot: depotAvantSortie(stockage.espace),
-  };
+  const fabriqueCycle: FabriqueCycle = {};
+  const stockage = assemblerStockage(a, fabriqueCycle);
+  const noyau = assemblerNoyau(a, stockage, fabriqueCycle);
   return {
     ...noyau,
     ...assemblerConnexion(a, noyau),
@@ -329,7 +398,7 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerSynchronisation(a, noyau),
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
-      stockage.espace()?.depot.fermer();
+      fermerEspace(stockage.espace());
       stockage.base.fermer();
     },
   };

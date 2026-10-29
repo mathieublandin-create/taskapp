@@ -26,6 +26,12 @@ etapeAssertion(
   },
 );
 
+// ST-US-024 §12 n° 13 (livrée au rang 3 pour US-022 S11) : dernier résultat de l'appareil = Succes.
+etapeAssertion(/^l'opération est acceptée$/, ({ monde, appareil }) => {
+  const resultat = monde.resultats.get(appareil.nom);
+  assert.ok(resultat?.ok, `Opération refusée sur le ${appareil.nom} : ${JSON.stringify(resultat)}`);
+});
+
 /** L'appareil qui a exactement une confirmation en attente (H-5, sans la consommer). */
 const confirmationAffichee = (monde: MondeDoneJuan) => {
   const noms = [...monde.commandesEnAttente.keys()];

@@ -13,6 +13,8 @@ import {
   type ModeleVueIndicateur,
 } from '@src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
+import { racineDe } from '../../support/compte/etapes-compte';
+import { convertirAppareil } from '../../support/conversions';
 import { listeObjectifsDe } from '../../support/objectifs';
 import { etapeAssertion } from '../../support/prefixes';
 
@@ -95,5 +97,31 @@ etapeAssertion(
     assert.equal(code, 'MEN-HEURE-PARIS', `Mention non prise en charge : ${String(code)}`);
     const liste = await listeObjectifsDe(appareil);
     assert.equal(liste.mentionHeureParis?.code === 'MEN-HEURE-PARIS', presence === 'apparaît');
+  },
+);
+
+// ---------------------------------------------------------------- Ouverture et feuille (ST-US-017 §12.1 n° 10, 21)
+
+// Glossaire v1.10 §12 : l'instantané d'ouverture est produit avant toute réponse du Drive à l'appareil ; l'étape
+// échoue tant que la racine est ATTENTE_GOOGLE (écran SYN-REDIRECTION).
+etapeAssertion(
+  /^les données présentes sur le (smartphone|PC) s'affichent aussitôt$/,
+  async ({ monde }, nomAppareil) => {
+    const appareil = monde.banc.appareil(convertirAppareil(String(nomAppareil)));
+    const instantane = appareil.instantaneOuverture;
+    assert.ok(instantane, `Aucune ouverture du ${appareil.nom}`);
+    assert.equal(instantane.racine.ecran, 'APPLICATION', `Racine : ${instantane.racine.ecran}`);
+    assert.ok(instantane.intitules !== undefined, `Aucune donnée affichée sur le ${appareil.nom}`);
+    assert.equal((await racineDe(appareil)).ecran, 'APPLICATION');
+  },
+);
+
+// n° 21 : message de la feuille porté par l'indicateur (ERR-011 au rang 3).
+etapeAssertion(
+  /^le message d'erreur "([^"]*)" (est|n'est pas) affiché$/,
+  async ({ appareil }, code, forme) => {
+    const message = (await indicateurDe(appareil))?.messageFeuille;
+    if (forme === 'est') assert.equal(message, code);
+    else assert.notEqual(message, code);
   },
 );

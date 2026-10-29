@@ -2,6 +2,7 @@ import type { IdObjectif } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { libelle } from '../../../commun/presentation/messages/libelle';
+import { mentionAttente } from '../../../synchronisation';
 import type { ResumeObjectif } from '../../application/requetes/resumes';
 import type { EtatObjectif } from '../../domaine/etat-objectif';
 
@@ -29,6 +30,8 @@ export type LigneObjectif = {
   readonly progression: number;
   readonly delai: ModeleVueDelai;
   readonly enRetard?: { readonly code: 'MEN-EN-RETARD'; readonly libelle: string };
+  /** ST-US-017 §4.5 : modification de l'objectif non encore enregistrée dans le Drive. */
+  readonly attente?: { readonly code: 'MEN-ATTENTE'; readonly libelle: string };
   readonly alerteDelai?: {
     readonly code: 'ALR-007';
     readonly parent: string;
@@ -74,6 +77,12 @@ const modeleAlerte = (resume: ResumeObjectif, delai: ModeleVueDelai) =>
           }),
         },
       };
+
+const modeleAttente = (resume: ResumeObjectif) => {
+  const enAttente = new Set<string>(resume.enAttente ? [resume.id] : []);
+  const mention = mentionAttente({ type: 'OBJECTIF', id: resume.id }, enAttente);
+  return mention === undefined ? {} : { attente: { ...mention, libelle: libelle(mention.code) } };
+};
 
 const POURCENTAGE_MAX = 100;
 
@@ -134,6 +143,7 @@ export const construireLigneObjectif = (
     delai,
     ...modeleEnRetard(resume, delai),
     ...modeleAlerte(resume, delai),
+    ...modeleAttente(resume),
     nomAccessible: nomAccessible(resume, etat, delai),
   };
 };

@@ -49,7 +49,11 @@ export type RequeteGoogle = {
   readonly methode: 'GET' | 'POST' | 'PATCH';
   readonly url: string;
   readonly corps?: string;
+  /** Corps binaire (fichier d'appareil, envoi multipart) ; ignoré si `corps` est fourni (ST-US-017 §7). */
+  readonly octets?: Uint8Array;
   readonly typeContenu?: string;
+  /** `OCTETS` : le corps d'une réponse réussie est rendu en Uint8Array (`alt=media`) ; JSON par défaut. */
+  readonly reponse?: 'JSON' | 'OCTETS';
 };
 
 export type ReponseGoogle = {
@@ -65,12 +69,22 @@ export type DependancesClientGoogle = {
   readonly fetch: typeof fetch;
 };
 
-const lireCorps = async (reponse: Response): Promise<unknown> => {
+const lireCorps = async (
+  reponse: Response,
+  lecture: RequeteGoogle['reponse'],
+): Promise<unknown> => {
   try {
+    if (lecture === 'OCTETS' && reponse.ok) return new Uint8Array(await reponse.arrayBuffer());
     return await reponse.json();
   } catch {
     return undefined;
   }
+};
+
+const corpsDe = (requete: RequeteGoogle): { readonly body?: BodyInit } => {
+  if (requete.corps !== undefined) return { body: requete.corps };
+  if (requete.octets !== undefined) return { body: new Uint8Array(requete.octets) };
+  return {};
 };
 
 /** ClientGoogle (ST-US-022 §3.2 n° 37) : `Authorization: Bearer`, jamais le jeton dans l'URL (§9.2). */
@@ -88,13 +102,13 @@ export class ClientGoogle {
           Authorization: `Bearer ${jeton}`,
           ...(requete.typeContenu === undefined ? {} : { 'Content-Type': requete.typeContenu }),
         },
-        ...(requete.corps === undefined ? {} : { body: requete.corps }),
+        ...corpsDe(requete),
         signal: AbortSignal.timeout(DELAI_REQUETE_GOOGLE_MS),
       });
     } catch {
       return echec({ type: 'ReseauIndisponible' });
     }
-    const corps = await lireCorps(reponse);
+    const corps = await lireCorps(reponse, requete.reponse);
     if (!reponse.ok) return echec(traduireReponse(reponse.status, corps));
     return succes({
       statut: reponse.status,

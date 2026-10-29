@@ -27,6 +27,7 @@ import { convertirAppareil, FRAGMENT_APPAREIL } from '../../support/conversions'
 import { creerObjectifsEnAttente } from '../../support/objectifs';
 import type { MondeDoneJuan } from '../../support/monde';
 import { etapeAction, etapeAssertion, etapeContexte } from '../../support/prefixes';
+import { identifiantsDuCompte } from '../../support/synchronisation/drive-banc';
 
 /** Libellés des autorisations annoncées (CA-8) : `openid` et `email` ↦ identification du compte. */
 const AUTORISATION: Readonly<Record<string, string>> = {
@@ -50,12 +51,13 @@ Given(
   },
 );
 
-// Rang 1 : connexion des deux appareils ; l'échange jusqu'au repos s'ajoute au rang 3 (ST-US-017).
+// ST-US-017 §12.1 n° 1 : connexion des deux appareils, puis échange jusqu'au repos.
 Given(
   "(que )l'utilisateur utilise le compte {string} sur le smartphone et sur le PC, tous deux à jour",
   async function (this: MondeDoneJuan, nomCompte: string) {
     await connecter(this, this.banc.appareil('smartphone'), nomCompte);
     await connecter(this, this.banc.appareil('pc'), nomCompte);
+    await this.banc.synchroniserJusquAuRepos();
   },
 );
 
@@ -288,6 +290,10 @@ When(
       .filter((a) => a.fournisseur.compteAccorde() === compte)
       .forEach((a) => {
         a.fournisseur.retirerAcces();
+        // Le jeton en mémoire n'est pas échu : le prochain 401 prouve le retrait (DAT §4.1.6 bis, rang 3).
+        if (a.estOuverte() && a.application.session.etat().type === 'OUVERTE') {
+          a.placerJetonNonEchu();
+        }
       });
   },
 );
@@ -333,9 +339,11 @@ etapeAction(/^l'accès à Google est renouvelé sans saisie$/, async ({ appareil
 
 etapeAction(/^l'utilisateur fait le geste de reconnexion$/, async ({ monde, appareil }) => {
   const application = await appareil.assurerOuverte();
-  return monde.banc.executerEnLaissantPasserLeTemps(
+  const resultat = await monde.banc.executerEnLaissantPasserLeTemps(
     application.reprendreSession.executer(REPRISE_ACCUEIL),
   );
+  await appareil.attendreCycle();
+  return resultat;
 });
 
 // Q-BRU-2 (ST v0.3.1 §12.3) : l'utilisateur consent de nouveau (réaccord par Google simulé), puis le geste.
@@ -346,9 +354,12 @@ etapeAction(
     monde.banc.google.accorderAcces(nom);
     appareil.fournisseur.accorder(monde.banc.google.identite(nom));
     const application = await appareil.assurerOuverte();
-    return monde.banc.executerEnLaissantPasserLeTemps(
+    const resultat = await monde.banc.executerEnLaissantPasserLeTemps(
       application.reprendreSession.executer(REPRISE_ACCUEIL),
     );
+    // ST-US-017 §6.4 : le retour du jeton déclenche un cycle, attendu par le banc.
+    await appareil.attendreCycle();
+    return resultat;
   },
 );
 
@@ -357,6 +368,25 @@ etapeAssertion(
   /^aucune connexion n'est demandée(?: avant d'afficher les données)?$/,
   async ({ appareil }) => {
     await verifierAucuneConnexionDemandee(appareil);
+  },
+);
+
+// n° 43 (rang 3) : aucun objectif ni aucune tâche du compte n'est lisible dans l'espace ouvert sur l'appareil.
+etapeAssertion(
+  /^aucune donnée du compte "([^"]*)" n'est accessible$/,
+  async ({ monde, appareil }, compte) => {
+    const autres = await identifiantsDuCompte(monde, String(compte));
+    const application = await appareil.assurerOuverte();
+    const espace = application.espace();
+    if (espace === undefined) return;
+    const etat = await espace.service.lire();
+    assert.ok(etat.ok, "Données de l'espace ouvert illisibles");
+    const visibles = [...etat.valeur.objectifs.keys(), ...etat.valeur.taches.keys()];
+    assert.deepEqual(
+      visibles.filter((id) => autres.has(id)),
+      [],
+      `Données du compte ${String(compte)} accessibles`,
+    );
   },
 );
 

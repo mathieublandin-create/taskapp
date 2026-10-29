@@ -63,3 +63,16 @@ Given(
       .horloge.reglerFuseauAppareil(convertirFuseau(fuseau));
   },
 );
+
+// ST-US-017 §12.1 n° 9 : les deux appareils ouverts, réseau rétabli, cycles démarrés (et attendus).
+Given(
+  "(que )l'application est ouverte sur le {appareil} et sur le {appareil}, connectés au réseau",
+  async function (this: MondeDoneJuan, premier: NomAppareil, second: NomAppareil) {
+    for (const nom of [premier, second]) {
+      const appareil = this.banc.appareil(nom);
+      appareil.reseau.retablir();
+      await appareil.assurerOuverte();
+    }
+    await this.banc.attendreCycles();
+  },
+);

@@ -673,6 +673,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/application/depot-avant-sortie-synchro.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/application/masquage-rappel.ts": {
       "debut": 1,
       "fin": 1

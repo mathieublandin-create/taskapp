@@ -20,6 +20,7 @@ import type { BaseTechnique } from '../compte/infrastructure/base-technique';
 import { lireConfiguration, type Configuration } from '../compte/infrastructure/configuration';
 import { ClientGoogle } from '../infrastructure-google';
 import { TransportSynchroDrive } from '../synchronisation/infrastructure/drive/transport-synchro-drive';
+import { version as VERSION_APPLICATION } from '../../package.json';
 import { assemblerApplication, type AdaptateursApplication, type Application } from './application';
 import { ControleurInterface } from './controleur-interface';
 
@@ -64,6 +65,12 @@ const fournisseurWeb =
       },
     });
 
+/** Transport Drive v3 (ST-US-017 §4.4) : jeton lu dans le coffre à chaque requête. */
+const transportDrive: AdaptateursApplication['transport'] = (coffre) =>
+  new TransportSynchroDrive(
+    new ClientGoogle({ lireJeton: () => coffre.lire()?.jeton, fetch: fetch.bind(globalThis) }),
+  );
+
 /**
  * Un seul canal d'avis par onglet : un BroadcastChannel ne reçoit pas ses propres messages, mais une autre
  * instance ouverte dans la même page les reçoit (l'onglet qui se déconnecte se rechargerait lui-même).
@@ -89,10 +96,8 @@ const assembler = (
     avis,
     gardeSaisie: registreSaisie,
     fournisseur: fournisseurWeb(configuration, socle),
-    transport: (coffre) =>
-      new TransportSynchroDrive(
-        new ClientGoogle({ lireJeton: () => coffre.lire()?.jeton, fetch: fetch.bind(globalThis) }),
-      ),
+    transport: transportDrive,
+    versionApplication: VERSION_APPLICATION,
     surFermetureImposee: navigateur.recharger,
   });
   reference.base = application.base;
@@ -114,6 +119,10 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
   );
   avis.ecouter(navigateur.recharger);
   new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
+  // ST-US-017 §6.4 : retour au premier plan (cycle) ; page masquée : pas de cycle toutes les 2 min.
+  document.addEventListener('visibilitychange', () => {
+    application.espace()?.cycle.definirPremierPlan(document.visibilityState === 'visible');
+  });
   void application.ouvrirApplication.executer(retour).then(async (issue) => {
     if (issue.type === 'REDIRECTION_LANCEE') {
       new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {

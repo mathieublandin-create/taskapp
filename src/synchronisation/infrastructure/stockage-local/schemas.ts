@@ -421,6 +421,9 @@ export const decoderEnAttente = (
 
 export type LigneMeta = { readonly nom: string; readonly valeur: unknown };
 
+/** Ligne de la table `meta` (schéma construit une fois : sa construction coûte plus que la lecture). */
+const LIGNE_META = z.object({ nom: z.string(), valeur: z.unknown() });
+
 const schemasMeta = {
   appareilId: idAppareil,
   version: z.number().int().nonnegative(),
@@ -447,7 +450,7 @@ export const encoderMeta = (etat: EtatLocal): ReadonlyArray<LigneMeta> => [
 export const decoderMeta = (lignes: ReadonlyArray<unknown>): ValeursMeta | undefined => {
   const parNom = new Map(
     lignes.flatMap((ligne) => {
-      const lue = z.object({ nom: z.string(), valeur: z.unknown() }).safeParse(ligne);
+      const lue = LIGNE_META.safeParse(ligne);
       return lue.success ? [[lue.data.nom, lue.data.valeur] as const] : [];
     }),
   );
@@ -512,7 +515,7 @@ export const decoderMetaSynchronisation = (
 ): MetaSynchronisation | undefined => {
   const parNom = new Map(
     lignes.flatMap((ligne) => {
-      const lue = z.object({ nom: z.string(), valeur: z.unknown() }).safeParse(ligne);
+      const lue = LIGNE_META.safeParse(ligne);
       return lue.success ? [[lue.data.nom, lue.data.valeur] as const] : [];
     }),
   );

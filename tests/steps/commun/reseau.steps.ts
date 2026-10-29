@@ -17,10 +17,11 @@ Given(
   },
 );
 
-// Rang 1 : le réseau est rétabli ; au rang 3, son retour déclenche le cycle de synchronisation (ST-US-017).
+// ST-US-017 §12.1 n° 5 : le réseau est rétabli, puis le cycle qu'il déclenche est attendu.
 When(
   'le réseau revient sur le {appareil}',
-  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     this.banc.appareil(nomAppareil).reseau.retablir();
+    await this.banc.attendreCycles();
   },
 );

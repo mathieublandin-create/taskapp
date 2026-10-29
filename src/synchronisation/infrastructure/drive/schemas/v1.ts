@@ -334,9 +334,20 @@ const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
 
 export type SchemasFichierV1 = ReturnType<typeof construireSchemas>;
 
+/** Construire les schémas coûte plus que lire un fichier : ils sont gardés pour les dernières tables vues. */
+const SCHEMAS_EN_CACHE = 8;
+const cache = new Map<string, SchemasFichierV1>();
+
 /** Schémas d'un fichier d'appareil dont la table des appareils est `appareils`. */
-export const schemasFichierV1 = (appareils: ReadonlyArray<IdAppareil>): SchemasFichierV1 =>
-  construireSchemas(appareils);
+export const schemasFichierV1 = (appareils: ReadonlyArray<IdAppareil>): SchemasFichierV1 => {
+  const cle = appareils.join(',');
+  const connus = cache.get(cle);
+  if (connus !== undefined) return connus;
+  const construits = construireSchemas(appareils);
+  if (cache.size >= SCHEMAS_EN_CACHE) cache.delete(cache.keys().next().value ?? '');
+  cache.set(cle, construits);
+  return construits;
+};
 
 /** Schéma de la valeur d'un champ connu du schéma 1 ; undefined pour un type ou un champ inconnu (§5.3). */
 export const schemaDeValeurV1 = (

@@ -14,7 +14,20 @@ import type { JetonAcces } from '@src/compte/application/ports/coffre-jetons';
 import type { RetourGoogle } from '@src/compte/application/ports/fournisseur-auth';
 import { BaseTechnique, MemoireRedirectionDexie } from '@src/compte/infrastructure/base-technique';
 import { assemblerApplication, type Application } from '@src/composition/application';
+import { echec, type Resultat } from '@src/commun/domaine/resultat';
+import {
+  construireRacine,
+  type ModeleVueRacine,
+} from '@src/compte/presentation/modeles-de-vue/racine';
 import type { ServiceEtatLocal } from '@src/synchronisation/application/service-etat-local';
+import type {
+  ErreurTransport,
+  TransportSynchro,
+} from '@src/synchronisation/application/ports/transport-synchro';
+import type {
+  CycleSynchronisation,
+  IssueCycle,
+} from '@src/synchronisation/application/cycle-synchronisation';
 import type { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-local-dexie';
 import { FauxFournisseurAuth } from '../../doublures/faux-fournisseur-auth';
 import type { FauxGoogle } from '../../doublures/faux-google';
@@ -41,6 +54,9 @@ export const IDENTIFIANTS_APPAREILS: Readonly<Record<NomAppareil, IdAppareil>> =
   pc: '00000000-0000-7000-8000-000000000002' as IdAppareil,
 };
 
+/** Version de l'application écrite dans les fichiers d'appareil du banc. */
+const VERSION_APPLICATION_BANC = '0.1.0';
+
 const PREFIXES_GENERATEUR: Readonly<Record<NomAppareil, string>> = { smartphone: '01', pc: '02' };
 
 /** Durée de vie d'un jeton simulé placé dans le coffre (Google : 1 h). */
@@ -51,6 +67,13 @@ const VALIDITE_JETON = EcartTemps.depuisMillisecondes(3_600_000);
  * l'ouverture, et écran de connexion affiché depuis.
  */
 export type DepuisOuverture = { readonly demandesAvant: number; ecranConnexion: boolean };
+
+/** Ce que l'appareil affiche à la fin de l'ouverture, avant toute réponse du Drive (ST-US-017 §12.1 n° 10). */
+export type InstantaneOuverture = {
+  readonly racine: ModeleVueRacine;
+  /** Intitulés des objectifs lus sur les données locales ; absent sans espace ouvert. */
+  readonly intitules?: ReadonlyArray<string>;
+};
 
 export type DependancesAppareil = {
   readonly planificateur: Planificateur;
@@ -70,7 +93,11 @@ export class AppareilSimule {
   /** Fermetures imposées par une autre connexion (versionchange), observées par les scénarios. */
   fermeturesImposees = 0;
   depuisOuverture: DepuisOuverture = { demandesAvant: 0, ecranConnexion: false };
+  /** ST-US-017 §12.1 n° 10 : racine et objectifs affichés à la fin de la dernière ouverture. */
+  instantaneOuverture: InstantaneOuverture | undefined;
   private instance: Application | undefined;
+  /** Réponses du Drive retenues pendant l'ouverture, jusqu'à l'instantané. */
+  private porteDrive: Promise<void> = Promise.resolve();
 
   constructor(
     readonly nom: NomAppareil,
@@ -178,6 +205,39 @@ export class AppareilSimule {
     return this.depot.appareil();
   }
 
+  /** Cycle de synchronisation en cours sur l'espace ouvert, s'il y en a un (banc, ST-US-017 §12.3). */
+  cycleEnCours(): Promise<IssueCycle> | undefined {
+    return this.instance?.espace()?.cycle.cycleEnCours();
+  }
+
+  /** Attend la fin du cycle en cours de cet appareil, relances comprises. */
+  async attendreCycle(): Promise<void> {
+    for (let enCours = this.cycleEnCours(); enCours !== undefined; enCours = this.cycleEnCours()) {
+      await enCours.catch(() => undefined);
+    }
+  }
+
+  /** Cycle de l'espace ouvert ; erreur sans session. */
+  get cycle(): CycleSynchronisation {
+    return this.espaceOuvert().cycle;
+  }
+
+  /** « Le {appareil} échange ses modifications avec le Drive » : un cycle complet, après celui en cours. */
+  async echangerAvecLeDrive(): Promise<IssueCycle | undefined> {
+    const espace = this.instance?.espace();
+    if (espace === undefined) return undefined;
+    while (espace.cycle.cycleEnCours() !== undefined) await espace.cycle.cycleEnCours();
+    return espace.cycle.synchroniserMaintenant();
+  }
+
+  /** Version locale et méta de synchronisation de l'espace ouvert (repos du banc, ST-US-017 §12.1 n° 2). */
+  async signatureSynchronisation(): Promise<string> {
+    const espace = this.instance?.espace();
+    if (espace === undefined) return 'fermé';
+    const [etat, meta] = await Promise.all([espace.depot.lire(), espace.depot.lireMeta()]);
+    return JSON.stringify([etat.ok ? etat.valeur.version : 'illisible', meta]);
+  }
+
   /** Perte de la mémoire, conservation des bases. */
   arreterBrutalement(): void {
     this.fermerApplication();
@@ -195,18 +255,78 @@ export class AppareilSimule {
     return espace;
   }
 
-  private demarrer(retour: RetourGoogle): Promise<IssueOuverture> {
+  /**
+   * Nouvelle instance ouverte avec ce retour de Google. Les réponses du Drive à cet appareil sont retenues jusqu'à
+   * l'instantané d'ouverture (ST-US-017 §12.1 n° 10) ; les cycles lancés par l'ouverture sont ensuite attendus.
+   */
+  private async demarrer(retour: RetourGoogle): Promise<IssueOuverture> {
     this.fermerApplication();
-    const instance = this.assembler();
-    this.instance = instance;
-    instance.session.observer((etat) => {
-      if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
+    let ouvrirPorte = (): void => undefined;
+    this.porteDrive = new Promise<void>((resoudre) => {
+      ouvrirPorte = resoudre;
     });
-    return instance.ouvrirApplication.executer(retour);
+    try {
+      const instance = this.assembler();
+      this.instance = instance;
+      instance.session.observer((etat) => {
+        if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
+      });
+      const issue = await instance.ouvrirApplication.executer(retour);
+      this.instantaneOuverture = await this.capturerInstantane(instance);
+      return issue;
+    } finally {
+      ouvrirPorte();
+      this.porteDrive = Promise.resolve();
+      await this.attendreCycle();
+    }
+  }
+
+  /** Racine et objectifs affichés, lus sur les seules données locales (aucune réponse du Drive n'est passée). */
+  private async capturerInstantane(instance: Application): Promise<InstantaneOuverture> {
+    const objectifs = instance.objectifs();
+    const lus = objectifs === undefined ? undefined : await objectifs.consulterObjectifs.executer();
+    return {
+      racine: construireRacine(instance.session.etat()),
+      ...(lus?.ok === true ? { intitules: lus.valeur.objectifs.map((o) => o.intitule) } : {}),
+    };
+  }
+
+  /**
+   * Transport vu de cet appareil (ST-US-017 §12.3) : chaque appel s'adresse au FauxDrive du compte du jeton en
+   * mémoire, à travers le réseau de l'appareil et l'accès de ce compte ; sans jeton connu : NonAutorise.
+   */
+  private transportBanc(): TransportSynchro {
+    const { google } = this.dependances;
+    const vue = (): TransportSynchro | undefined => {
+      const identite = this.fournisseur.identiteDuJetonEnMemoire();
+      const nom = identite === undefined ? undefined : google.nomDe(identite);
+      if (nom === undefined) return undefined;
+      return google.drive(nom).transportPour(IDENTIFIANTS_APPAREILS[this.nom], {
+        reseau: this.reseau,
+        accesAccorde: () => google.accesAccorde(nom),
+      });
+    };
+    /** Appel retenu jusqu'à l'instantané d'ouverture, puis adressé au Drive du compte du jeton. */
+    const appeler = async <T>(
+      operation: (transport: TransportSynchro) => Promise<Resultat<T, ErreurTransport>>,
+    ): Promise<Resultat<T, ErreurTransport>> => {
+      await this.porteDrive;
+      const transport = vue();
+      return transport === undefined ? echec({ type: 'NonAutorise' }) : operation(transport);
+    };
+    return {
+      preparerDossier: () => appeler((t) => t.preparerDossier()),
+      listerFichiersAppareils: (d) => appeler((t) => t.listerFichiersAppareils(d)),
+      changements: (d, jeton) => appeler((t) => t.changements(d, jeton)),
+      lireFichierAppareil: (id) => appeler((t) => t.lireFichierAppareil(id)),
+      deposerFichierAppareil: (p) => appeler((t) => t.deposerFichierAppareil(p)),
+      lireManifeste: (d) => appeler((t) => t.lireManifeste(d)),
+      ecrireManifeste: (p) => appeler((t) => t.ecrireManifeste(p)),
+    };
   }
 
   private assembler(): Application {
-    const { google, planificateur } = this.dependances;
+    const { planificateur } = this.dependances;
     return assemblerApplication({
       env: ENV_BANC,
       fabrique: this.fabrique,
@@ -219,21 +339,8 @@ export class AppareilSimule {
       avis: this.avis,
       gardeSaisie: { saisieEnCours: () => false },
       fournisseur: () => this.fournisseur,
-      transport: () => ({
-        preparerDossier: () => {
-          const identite = this.fournisseur.identiteDuJetonEnMemoire();
-          const nom = identite === undefined ? undefined : google.nomDe(identite);
-          if (nom === undefined)
-            return Promise.resolve({ ok: false, erreur: { type: 'NonAutorise' } });
-          return google
-            .drive(nom)
-            .transportPour(IDENTIFIANTS_APPAREILS[this.nom], {
-              reseau: this.reseau,
-              accesAccorde: () => google.accesAccorde(nom),
-            })
-            .preparerDossier();
-        },
-      }),
+      transport: () => this.transportBanc(),
+      versionApplication: VERSION_APPLICATION_BANC,
       surFermetureImposee: () => {
         this.fermeturesImposees += 1;
       },

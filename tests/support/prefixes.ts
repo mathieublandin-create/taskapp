@@ -63,15 +63,26 @@ export type OptionsAction = {
   readonly appareilImplicite?: (monde: MondeDoneJuan) => NomAppareil | undefined;
 };
 
-/** Précondition (« Étant donné »). Sans préfixe : valide si le banc ne comporte qu'un appareil. */
-export const etapeContexte = (motif: RegExp, corps: CorpsEtape): void => {
+/**
+ * Précondition (« Étant donné »). Sans préfixe : valide si le banc ne comporte qu'un appareil, ou si l'étape désigne
+ * un appareil implicite.
+ */
+export const etapeContexte = (
+  motif: RegExp,
+  corps: CorpsEtape,
+  options: OptionsAction = {},
+): void => {
   const complet = motifContexte(motif);
   Given(
     complet,
     avecArite(
       complet,
       async function (this: MondeDoneJuan, prefixe: unknown, ...reste: Array<unknown>) {
-        const appareil = appareilDuPrefixe(this, texteOuUndefined(prefixe));
+        const appareil = appareilDuPrefixe(
+          this,
+          texteOuUndefined(prefixe),
+          options.appareilImplicite,
+        );
         await corps({ monde: this, appareil }, ...reste);
       },
     ),
@@ -105,7 +116,7 @@ export const etapeAction = (
           options.appareilImplicite,
         );
         const ecartTexte = texteOuUndefined(ecart);
-        if (ecartTexte !== undefined) this.banc.avancerTemps(convertirEcart(ecartTexte));
+        if (ecartTexte !== undefined) await this.banc.avancerTemps(convertirEcart(ecartTexte));
         if (texteOuUndefined(exact) !== undefined) {
           if (this.instantDerniereAction === undefined)
             throw new Error('Aucune action précédente à rejouer');

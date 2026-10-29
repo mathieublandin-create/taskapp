@@ -5,7 +5,7 @@ import type { Annulation, Planificateur } from '../../commun/application/ports/p
 import type { SourceAleatoire } from '../../commun/application/ports/source-aleatoire';
 import { succes, type Resultat } from '../../commun/domaine/resultat';
 import { delaiAvantTentative, TENTATIVES_AVANT_ABANDON } from '../../infrastructure-google';
-import type { Generation } from '../domaine/contenu-fichier';
+import type { ContenuFichierAppareil, Generation } from '../domaine/contenu-fichier';
 import { contenuAEnvoyer, doitDeposer, retirerDeposees } from '../domaine/depot';
 import type { EtatLocal } from '../domaine/etat-local';
 import { planifierFusion } from '../domaine/fusion';
@@ -295,11 +295,20 @@ export class CycleSynchronisation implements SuiviCycle {
     if (!inventaire.ok) return inventaire;
     const fusion = await this.#fusionner(inventaire.valeur.fichiers, lu.valeur.etat);
     if (!fusion.ok) return fusion;
-    const jeton = await this.#memoriser({ pageToken: inventaire.valeur.jeton });
+    const jeton = await this.#memoriserJeton(lu.valeur.meta, inventaire.valeur.jeton);
     if (!jeton.ok) return jeton;
     const manifeste = await this.#assurerManifeste(dossier.valeur, lu.valeur.meta);
     if (!manifeste.ok) return manifeste;
-    return this.#deposer(dossier.valeur);
+    // Sans fusion écrite, la lecture du début suffit au dépôt : une écriture locale faite depuis a un HLC plus
+    // grand que `deposeJusquA` et reste en attente (DAT §4.1.5 bis).
+    return this.#deposer(dossier.valeur, fusion.valeur ? undefined : lu.valeur);
+  }
+
+  /** Le jeton n'est réécrit que s'il a changé. */
+  #memoriserJeton(meta: MetaSynchronisation, jeton: string): Etape {
+    return meta.pageToken === jeton
+      ? Promise.resolve(succes(undefined))
+      : this.#memoriser({ pageToken: jeton });
   }
 
   async #depotSeul(): Etape {
@@ -349,8 +358,12 @@ export class CycleSynchronisation implements SuiviCycle {
     return transport.listerFichiersAppareils(dossier);
   }
 
-  /** Fusionne chaque fichier d'un autre appareil, chacun dans sa propre transaction. */
-  async #fusionner(fichiers: ReadonlyArray<FichierAppareilDistant>, etat: EtatLocal): Etape {
+  /** Fusionne chaque fichier d'un autre appareil ; rend vrai si une fusion a écrit dans l'état local. */
+  async #fusionner(
+    fichiers: ReadonlyArray<FichierAppareilDistant>,
+    etat: EtatLocal,
+  ): Etape<boolean> {
+    let ecrit = false;
     for (const fichier of fichiers.filter((f) => f.appareil !== etat.appareilId)) {
       const contenu = await this.dependances.transport.lireFichierAppareil(fichier.id);
       if (!contenu.ok) {
@@ -358,14 +371,26 @@ export class CycleSynchronisation implements SuiviCycle {
         this.#consigner('FichierAppareilIgnore', contenu.erreur.type);
         continue;
       }
-      const recu = contenu.valeur;
-      const applique = await this.dependances.depot.appliquerSynchronisation((e) => {
-        const plan = planifierFusion(e, recu);
-        return { plan, meta: planNonVide(plan) ? { fusionNonDeposee: true } : {} };
-      });
-      if (!applique.ok) return applique;
+      const integre = await this.#integrer(contenu.valeur, etat);
+      if (!integre.ok) return integre;
+      ecrit ||= integre.valeur;
     }
-    return succes(undefined);
+    return succes(ecrit);
+  }
+
+  /**
+   * Fusion d'un fichier reçu dans une transaction ; aucune transaction s'il n'apporte rien à l'état lu au début du
+   * cycle (l'état local ne fait que croître : un plan vide alors l'est encore ensuite).
+   */
+  async #integrer(recu: ContenuFichierAppareil, etatInitial: EtatLocal): Etape<boolean> {
+    if (!planNonVide(planifierFusion(etatInitial, recu))) return succes(false);
+    let ecrit = false;
+    const applique = await this.dependances.depot.appliquerSynchronisation((e) => {
+      const plan = planifierFusion(e, recu);
+      ecrit = planNonVide(plan);
+      return { plan, meta: ecrit ? { fusionNonDeposee: true } : {} };
+    });
+    return applique.ok ? succes(ecrit) : applique;
   }
 
   /** Manifeste mémorisé, relu, ou écrit (avec LISEZ-MOI) s'il est absent (§6.3). */
@@ -387,8 +412,8 @@ export class CycleSynchronisation implements SuiviCycle {
   }
 
   /** Dépôt (§6.2) : `deposeJusquA` n'avance qu'après la confirmation de Drive (ENF-T-07). */
-  async #deposer(dossier: IdFichierDrive): Etape {
-    const lu = await this.#lire();
+  async #deposer(dossier: IdFichierDrive, lecture?: Lecture): Etape {
+    const lu = lecture === undefined ? await this.#lire() : succes(lecture);
     if (!lu.ok) return lu;
     const { etat, meta } = lu.valeur;
     if (!doitDeposer(etat, meta)) return succes(undefined);

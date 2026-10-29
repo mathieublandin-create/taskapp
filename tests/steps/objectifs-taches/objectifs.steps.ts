@@ -25,6 +25,7 @@ import {
   etapeContexte,
   type ContexteEtape,
 } from '../../support/prefixes';
+import { etablirDansLeDrive } from '../../support/synchronisation/echanges';
 import { date } from '../../support/valeurs';
 
 const TEXTE = '"([^"]*)"';
@@ -53,13 +54,22 @@ const creer = async (
   return resultat;
 };
 
+/**
+ * Précondition (H-5 : un état, pas une chronologie) : l'objectif est créé, puis établi comme le serait un état
+ * stable, c'est-à-dire enregistré dans le Drive si l'appareil le peut et, avec deux appareils, connu des deux
+ * (ST-US-017, rang 3). Hors ligne ou sans accès, il reste en attente.
+ */
 const creerOuEchouer = async (contexte: ContexteEtape, saisie: SaisieObjectif): Promise<void> => {
   const resultat = await creer(contexte, saisie);
   assert.ok(
     resultat.ok,
     `Création de « ${saisie.intitule} » refusée : ${JSON.stringify(resultat)}`,
   );
+  await etablirDansLeDrive(contexte);
 };
+
+/** Sans préfixe, avec deux appareils : l'objectif de contexte est créé sur le smartphone puis échangé. */
+const SMARTPHONE_PAR_DEFAUT = { appareilImplicite: () => 'smartphone' as const };
 
 etapeAction(
   new RegExp(`^l'utilisateur crée un objectif ${TEXTE} de délai ${DATE}$`),
@@ -101,12 +111,17 @@ etapeAction(
     creer(contexte, { intitule: INTITULES_INVALIDES[String(description)] ?? '' }),
 );
 
-etapeContexte(new RegExp(`^un objectif ${TEXTE} de délai ${DATE}$`), (contexte, intitule, delai) =>
-  creerOuEchouer(contexte, { intitule: String(intitule), delai: String(delai) }),
+etapeContexte(
+  new RegExp(`^un objectif ${TEXTE} de délai ${DATE}$`),
+  (contexte, intitule, delai) =>
+    creerOuEchouer(contexte, { intitule: String(intitule), delai: String(delai) }),
+  SMARTPHONE_PAR_DEFAUT,
 );
 
-etapeContexte(new RegExp(`^un objectif ${TEXTE} sans délai$`), (contexte, intitule) =>
-  creerOuEchouer(contexte, { intitule: String(intitule) }),
+etapeContexte(
+  new RegExp(`^un objectif ${TEXTE} sans délai$`),
+  (contexte, intitule) => creerOuEchouer(contexte, { intitule: String(intitule) }),
+  SMARTPHONE_PAR_DEFAUT,
 );
 
 etapeContexte(
@@ -117,6 +132,7 @@ etapeContexte(
       delai: String(delai),
       description: String(description),
     }),
+  SMARTPHONE_PAR_DEFAUT,
 );
 
 // ---------------------------------------------------------------- Modification (n° 7 à 10)
@@ -300,6 +316,7 @@ etapeAssertion(
     const codes = [
       ...(ligne.delai.type === 'SANS_DELAI' ? [ligne.delai.code] : []),
       ...(ligne.enRetard === undefined ? [] : [ligne.enRetard.code]),
+      ...(ligne.attente === undefined ? [] : [ligne.attente.code]),
     ];
     assert.ok(codes.includes(mention as never), `Mentions de la ligne : ${codes.join(', ')}`);
   },

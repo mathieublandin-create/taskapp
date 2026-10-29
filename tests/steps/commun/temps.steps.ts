@@ -2,7 +2,8 @@
  * Étapes du temps (glossaire d'étapes §4 ; ST-socle-ecriture.md §12 n° 1). Les préfixes « {ecart} plus tard, » et
  * « au même instant exact, » sont portés par `etapeAction` (tests/support/prefixes.ts).
  */
-import { Given } from '@cucumber/cucumber';
+import { Given, When } from '@cucumber/cucumber';
+import type { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { Fuseau } from '@src/commun/domaine/temps/fuseau';
 import type { MondeDoneJuan } from '../../support/monde';
 import { instantDepuisHeureMurale, type HeureLocale } from '../../support/temps';
@@ -13,3 +14,11 @@ Given(
     this.banc.temps.positionner(instantDepuisHeureMurale(date, heure, fuseau));
   },
 );
+
+// ST-US-017 §12.1 n° 8 : le temps avance d'échéance en échéance, les cycles déclenchés sont attendus.
+const avancer = async function (this: MondeDoneJuan, ecart: EcartTemps): Promise<void> {
+  await this.banc.avancerTemps(ecart);
+};
+When("l'horloge avance de {ecart}, sans aucune action de l'utilisateur", avancer);
+When("l'horloge avance de {ecart} depuis l'ouverture", avancer);
+When("l'horloge avance de {ecart} depuis la reconnexion", avancer);
