@@ -60,7 +60,12 @@ export default defineConfig({
           name: 'ihm',
           include: ['tests/unitaires/**/presentation/ui/**/*.test.tsx'],
           environment: 'jsdom',
+          // Les composants Ionic passent par @lit/react, dont l'export « node » est la version sans effets de
+          // bord (rendu serveur) : les propriétés des composants ne seraient pas appliquées dans jsdom. Vite doit
+          // résoudre ces paquets avec la condition « browser ».
+          server: { deps: { inline: [/@lit\/react/, /@stencil\/react-output-target/] } },
         },
+        resolve: { conditions: ['browser'] },
       },
     ],
     setupFiles: ['tests/support/fast-check.ts', 'tests/support/indexeddb-fake.ts'],
