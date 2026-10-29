@@ -5,7 +5,7 @@ import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire
 import { Instant } from '../../../../commun/domaine/temps/instant';
 import type { ContexteCausal } from '../../../domaine/contexte-causal';
 import type { Generation } from '../../../domaine/contenu-fichier';
-import type { EvenementJournal } from '../../../domaine/evenement-journal';
+import type { EvenementJournal, TypeEvenementJournal } from '../../../domaine/evenement-journal';
 import { creerHlc, type Hlc } from '../../../domaine/hlc';
 import { lireIdEvenement } from '../../../domaine/identifiant-evenement';
 import {
@@ -21,6 +21,36 @@ import {
 // version plus récente de même schemaVersion est toléré (RG-058, ANT-19) ; `.strict()` est interdit.
 // Dans un fichier d'appareil, l'appareil d'un HLC est un indice dans la table `appareils` du fichier :
 // les schémas qui en dépendent sont construits pour une table donnée (`schemasFichierV1`).
+
+// --- Types connus du schéma 1 (RC-R3-1) ----------------------------------------------------------
+// Dérivés d'objets exhaustifs : un type ajouté au domaine sans être ajouté ici ne compile pas, ce qui évite qu'un
+// appareil de même version ignore en silence une entrée qu'un autre a écrite (§5.3 ne vaut que pour l'inconnu).
+
+export const TYPES_ELEMENT_V1 = {
+  OBJECTIF: true,
+  TACHE: true,
+  LIEN_TACHE_OBJECTIF: true,
+} as const satisfies Record<TypeElement, true>;
+
+export const TYPES_EVENEMENT_V1 = {
+  CREATION: true,
+  MODIFICATION_DELAI: true,
+  MODIFICATION_ESTIMATION: true,
+  RATTACHEMENT: true,
+  DETACHEMENT: true,
+  CHANGEMENT_PARENT: true,
+  FIN: true,
+  REOUVERTURE: true,
+  ABANDON: true,
+  REPRISE: true,
+  SUPPRESSION: true,
+} as const satisfies Record<TypeEvenementJournal, true>;
+
+/** Vrai seulement si A et B sont le même ensemble de types (comparaison dans les deux sens). Ne jamais combiner
+ * deux résultats par `&` : `false & true` vaut `never`, qui satisfait `true`. */
+type Egaux<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+/** Ne compile que pour `true` : sert d'assertion de type à la compilation. */
+type Verifie<T extends true> = T;
 
 // --- Valeurs élémentaires --------------------------------------------------------------------------
 
@@ -263,6 +293,13 @@ const schemaContenuEvenement = (placement: z.ZodType<PlacementObjectif>) =>
       apres: placement,
     }),
   ]);
+
+/** Assertion de compilation : le schéma lit exactement les types d'événement du domaine, ni plus ni moins. */
+type TypeContenuEvenementV1 = z.output<ReturnType<typeof schemaContenuEvenement>>['type'];
+export type ControleTypesEvenementV1 = [
+  Verifie<Egaux<TypeContenuEvenementV1, TypeEvenementJournal>>,
+  Verifie<Egaux<keyof typeof TYPES_EVENEMENT_V1, TypeEvenementJournal>>,
+];
 
 const schemaCommunEvenement = (hlc: z.ZodType<Hlc>) =>
   z.looseObject({

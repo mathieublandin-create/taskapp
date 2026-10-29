@@ -10,7 +10,7 @@ import type {
   Generation,
 } from '../../domaine/contenu-fichier';
 import type { RegistreQuelconque } from '../../domaine/ecriture';
-import type { EvenementJournal, TypeEvenementJournal } from '../../domaine/evenement-journal';
+import type { EvenementJournal } from '../../domaine/evenement-journal';
 import type { Hlc } from '../../domaine/hlc';
 import type {
   CleInformation,
@@ -28,6 +28,8 @@ import {
   SchemaManifesteV1,
   SchemaTableAppareilsV1,
   SchemaVersionLue,
+  TYPES_ELEMENT_V1,
+  TYPES_EVENEMENT_V1,
   type SchemasFichierV1,
 } from './schemas/v1';
 import { empreinteSha256, serialiserCanonique } from './serialisation-canonique';
@@ -41,24 +43,8 @@ export type ErreurLecture = Extract<
 const PLATEFORME = 'web';
 const CLE_EMPREINTE = 'empreinte';
 
-const TYPES_ELEMENT: ReadonlySet<string> = new Set<TypeElement>([
-  'OBJECTIF',
-  'TACHE',
-  'LIEN_TACHE_OBJECTIF',
-]);
-const TYPES_EVENEMENT: ReadonlySet<string> = new Set<TypeEvenementJournal>([
-  'CREATION',
-  'MODIFICATION_DELAI',
-  'MODIFICATION_ESTIMATION',
-  'RATTACHEMENT',
-  'DETACHEMENT',
-  'CHANGEMENT_PARENT',
-  'FIN',
-  'REOUVERTURE',
-  'ABANDON',
-  'REPRISE',
-  'SUPPRESSION',
-]);
+const TYPES_ELEMENT: ReadonlySet<string> = new Set(Object.keys(TYPES_ELEMENT_V1));
+const TYPES_EVENEMENT: ReadonlySet<string> = new Set(Object.keys(TYPES_EVENEMENT_V1));
 
 const illisible = (cause: CauseIllisible): Resultat<never, ErreurLecture> =>
   echec({ type: 'FichierIllisible', cause });

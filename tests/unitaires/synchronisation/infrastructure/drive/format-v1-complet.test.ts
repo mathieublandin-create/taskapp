@@ -6,7 +6,10 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { echec, succes } from '@src/commun/domaine/resultat';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
-import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
+import type {
+  EvenementJournal,
+  TypeEvenementJournal,
+} from '@src/synchronisation/domaine/evenement-journal';
 import { idLien } from '@src/synchronisation/domaine/information';
 import {
   decoderFichierAppareil,
@@ -14,6 +17,10 @@ import {
   encoderFichierAppareil,
   encoderManifeste,
 } from '@src/synchronisation/infrastructure/drive/format-v1';
+import {
+  TYPES_ELEMENT_V1,
+  TYPES_EVENEMENT_V1,
+} from '@src/synchronisation/infrastructure/drive/schemas/v1';
 import {
   empreinteSha256,
   serialiserCanonique,
@@ -153,6 +160,88 @@ const CONTENU: ContenuFichierAppareil = {
   journal: JOURNAL,
 };
 
+/** Une entrée par type d'événement : le `Record` impose l'exhaustivité à la compilation (RC-R3-1). */
+const UN_PAR_TYPE: Readonly<Record<TypeEvenementJournal, EvenementJournal>> = {
+  CREATION: {
+    ...commun(20),
+    type: 'CREATION',
+    element: { type: 'OBJECTIF', id: P },
+    avant: {},
+    apres: {},
+  },
+  MODIFICATION_DELAI: {
+    ...commun(21),
+    type: 'MODIFICATION_DELAI',
+    element: { type: 'TACHE', id: T },
+    avant: { delai: date('2026-12-01') },
+    apres: { delai: date('2026-12-02') },
+  },
+  MODIFICATION_ESTIMATION: {
+    ...commun(22),
+    type: 'MODIFICATION_ESTIMATION',
+    element: { type: 'TACHE', id: T },
+    avant: { estimation: duree(30) },
+    apres: { estimation: duree(60) },
+  },
+  RATTACHEMENT: {
+    ...commun(23),
+    type: 'RATTACHEMENT',
+    element: { type: 'TACHE', id: T },
+    avant: {},
+    apres: { objectifId: P },
+  },
+  DETACHEMENT: {
+    ...commun(24),
+    type: 'DETACHEMENT',
+    element: { type: 'TACHE', id: T },
+    avant: { objectifId: P },
+    apres: {},
+  },
+  CHANGEMENT_PARENT: {
+    ...commun(25),
+    type: 'CHANGEMENT_PARENT',
+    element: { type: 'OBJECTIF', id: P },
+    avant: { parentId: O, origine: 'DEPLACEMENT', hlcOrigine: h1 },
+    apres: { origine: 'DEPLACEMENT', hlcOrigine: h2 },
+  },
+  FIN: {
+    ...commun(26),
+    type: 'FIN',
+    element: { type: 'TACHE', id: T },
+    avant: { etat: 'A_FAIRE' },
+    apres: { etat: 'TERMINEE', dateFin: date('2026-10-21') },
+  },
+  REOUVERTURE: {
+    ...commun(27),
+    type: 'REOUVERTURE',
+    element: { type: 'TACHE', id: T },
+    avant: { etat: 'TERMINEE', dateFin: date('2026-10-21') },
+    apres: { etat: 'A_FAIRE' },
+  },
+  ABANDON: {
+    ...commun(28),
+    type: 'ABANDON',
+    element: { type: 'TACHE', id: S },
+    avant: { etat: 'A_FAIRE' },
+    apres: { etat: 'ABANDONNEE', dateAbandon: date('2026-10-21') },
+  },
+  REPRISE: {
+    ...commun(29),
+    type: 'REPRISE',
+    element: { type: 'TACHE', id: S },
+    avant: { etat: 'ABANDONNEE', dateAbandon: date('2026-10-21') },
+    apres: { etat: 'A_FAIRE' },
+    cause: ev(28),
+  },
+  SUPPRESSION: {
+    ...commun(30),
+    type: 'SUPPRESSION',
+    element: { type: 'OBJECTIF', id: P },
+    avant: {},
+    apres: {},
+  },
+};
+
 const ouvrir = (octets: Uint8Array) =>
   JSON.parse(gunzipSync(octets).toString('utf8')) as Record<string, unknown>;
 const sceller = async (objet: Record<string, unknown>): Promise<Uint8Array> => {
@@ -167,6 +256,20 @@ describe('Format Drive, schéma 1 : compléments (ST-US-017 §5.2)', () => {
 
     expect(await decoderFichierAppareil(octets)).toEqual(succes(CONTENU));
     expect(ouvrir(octets)['appareils']).toEqual([SMARTPHONE, PC, TROISIEME].sort());
+  });
+
+  it('UT-COMP-US-017-34 aller-retour d’une entrée de journal de chaque type connu du schéma 1, et d’un registre de chaque type d’élément : aucune n’est ignorée', async () => {
+    const journal = Object.values(UN_PAR_TYPE);
+    const contenu: ContenuFichierAppareil = { ...CONTENU, journal };
+
+    const lu = await decoderFichierAppareil(await encoderFichierAppareil(contenu));
+
+    expect(Object.keys(UN_PAR_TYPE).sort()).toEqual(Object.keys(TYPES_EVENEMENT_V1).sort());
+    expect(lu).toEqual(succes(contenu));
+    expect(lu.ok && lu.valeur.journal.map((e) => e.type)).toEqual(Object.keys(UN_PAR_TYPE));
+    expect(lu.ok && [...new Set(lu.valeur.registres.map((r) => r.cle.type))].sort()).toEqual(
+      Object.keys(TYPES_ELEMENT_V1).sort(),
+    );
   });
 
   it('UT-COMP-US-017-31 entrée de journal de type inconnu ignorée ; entrée connue invalide, indice d’appareil hors table, contexte incohérent, racine non objet : SCHEMA', async () => {
