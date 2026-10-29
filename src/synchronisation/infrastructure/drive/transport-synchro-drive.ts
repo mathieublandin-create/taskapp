@@ -85,8 +85,12 @@ const fichierAppareil = (fichier: unknown): FichierAppareilDistant | undefined =
   return { id, appareil: appareil as IdAppareil };
 };
 
+/** Littéral de chaîne de la requête `q` de Drive v3 : `\` et `'` échappés par `\` (RC-R3-6). */
+export const litteralRequeteDrive = (valeur: string): string =>
+  `'${valeur.replace(/[\\']/g, (c) => `\\${c}`)}'`;
+
 const requeteDansDossier = (dossier: IdFichierDrive, condition: string): string =>
-  `${condition} and '${dossier}' in parents and trashed = false`;
+  `${condition} and ${litteralRequeteDrive(dossier)} in parents and trashed = false`;
 
 const requeteAppareils = (dossier: IdFichierDrive, appareil?: IdAppareil): string =>
   requeteDansDossier(
@@ -94,11 +98,14 @@ const requeteAppareils = (dossier: IdFichierDrive, appareil?: IdAppareil): strin
     "appProperties has { key='donejuan' and value='appareil' }" +
       (appareil === undefined
         ? ''
-        : ` and appProperties has { key='appareil' and value='${appareil}' }`),
+        : ` and appProperties has { key='appareil' and value=${litteralRequeteDrive(appareil)} }`),
   );
 
 const requeteManifeste = (dossier: IdFichierDrive): string =>
   requeteDansDossier(dossier, "appProperties has { key='donejuan' and value='manifeste' }");
+
+const requeteLisezMoi = (dossier: IdFichierDrive): string =>
+  requeteDansDossier(dossier, "appProperties has { key='donejuan' and value='lisezmoi' }");
 
 /** Corps `multipart/related` : métadonnées JSON puis contenu (`uploadType=multipart`). */
 const corpsMultipart = (
@@ -231,7 +238,10 @@ export class TransportSynchroDrive implements TransportSynchro {
     return contenu.ok ? succes({ id, contenu: contenu.valeur }) : contenu;
   }
 
-  /** Crée le manifeste (et LISEZ-MOI.txt, une fois) ou remplace son contenu. */
+  /**
+   * Crée le manifeste ou remplace son contenu. Avant sa création, LISEZ-MOI.txt est créé s'il est absent : un
+   * échec entre les deux laisse le manifeste absent, et le cycle suivant reprend sans doublon (RC-R3-5).
+   */
   async ecrireManifeste(p: {
     readonly dossier: IdFichierDrive;
     readonly contenu: ContenuManifeste;
@@ -241,22 +251,30 @@ export class TransportSynchroDrive implements TransportSynchro {
     const existant = await this.#existant(p.fichierExistant, requeteManifeste(p.dossier));
     if (!existant.ok) return existant;
     if (existant.valeur !== undefined) return this.#remplacer(existant.valeur, TYPE_JSON, octets);
-    const manifeste = await this.#creer({
+    const lisezMoi = await this.#assurerLisezMoi(p.dossier);
+    if (!lisezMoi.ok) return lisezMoi;
+    return this.#creer({
       nom: NOM_MANIFESTE,
       typeContenu: TYPE_JSON,
       appProperties: { donejuan: 'manifeste' },
       dossier: p.dossier,
       octets,
     });
-    if (!manifeste.ok) return manifeste;
-    const lisezMoi = await this.#creer({
+  }
+
+  /** LISEZ-MOI.txt du dossier, créé s'il n'y est pas déjà (idempotent). */
+  async #assurerLisezMoi(dossier: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>> {
+    const trouves = await this.#rechercher(requeteLisezMoi(dossier));
+    if (!trouves.ok) return trouves;
+    if (trouves.valeur.length > 0) return succes(undefined);
+    const cree = await this.#creer({
       nom: NOM_LISEZ_MOI,
       typeContenu: 'text/plain',
       appProperties: { donejuan: 'lisezmoi' },
-      dossier: p.dossier,
+      dossier,
       octets: new TextEncoder().encode(TEXTE_LISEZ_MOI),
     });
-    return lisezMoi.ok ? manifeste : lisezMoi;
+    return cree.ok ? succes(undefined) : cree;
   }
 
   // ------------------------------------------------------------------ Requêtes

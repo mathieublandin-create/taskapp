@@ -8,6 +8,7 @@ import { ClientGoogle } from '@src/infrastructure-google';
 import type { IdFichierDrive } from '@src/synchronisation/application/ports/transport-synchro';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
 import {
+  litteralRequeteDrive,
   NOM_LISEZ_MOI,
   TransportSynchroDrive,
 } from '@src/synchronisation/infrastructure/drive/transport-synchro-drive';
@@ -134,22 +135,57 @@ describe('TransportSynchroDrive, compléments (ST-US-017 §4.4)', () => {
     );
   });
 
-  it('UT-COMP-US-017-05 manifeste — LISEZ-MOI créé une seule fois ; réécriture en place ; échec de LISEZ-MOI rendu', async () => {
+  it('UT-COMP-US-017-05 manifeste — LISEZ-MOI créé une seule fois, avant le manifeste ; réécriture en place ; échec de LISEZ-MOI rendu sans manifeste ; échec du manifeste repris sans doublon (RC-R3-5)', async () => {
     const { drive, transport } = preparer();
     const dossier = valeurDe(await transport.preparerDossier());
     const id = valeurDe(await transport.ecrireManifeste({ dossier, contenu: MANIFESTE }));
 
     expect(await transport.ecrireManifeste({ dossier, contenu: MANIFESTE })).toEqual(succes(id));
     expect(drive.fichiers().filter((f) => f.name === NOM_LISEZ_MOI)).toHaveLength(1);
+    expect(drive.fichiers().map((f) => f.name)).toEqual([
+      'Done Juan',
+      NOM_LISEZ_MOI,
+      'manifeste.json',
+    ]);
 
     const autre = preparer();
     const dossier2 = valeurDe(await autre.transport.preparerDossier());
     autre.drive.repondre(200, { files: [] });
-    autre.drive.repondre(200, { id: 'm' });
+    autre.drive.repondre(200, { files: [] });
     autre.drive.repondre(503);
     expect(
       await autre.transport.ecrireManifeste({ dossier: dossier2, contenu: MANIFESTE }),
     ).toEqual(echec({ type: 'ServeurIndisponible' }));
+    expect(autre.drive.fichiers().map((f) => f.name)).toEqual(['Done Juan']);
+
+    const troisieme = new DriveHttpSimule();
+    let refuserManifeste = true;
+    const fetchEnPanne: typeof fetch = (entree, init) => {
+      const corps =
+        init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('latin1') : '';
+      if (refuserManifeste && corps.includes('"name":"manifeste.json"')) {
+        refuserManifeste = false;
+        return Promise.resolve(
+          new Response(JSON.stringify({ error: { code: 503 } }), { status: 503 }),
+        );
+      }
+      return troisieme.fetch(entree, init);
+    };
+    const t3 = new TransportSynchroDrive(
+      new ClientGoogle({ lireJeton: () => 'jeton', fetch: fetchEnPanne }),
+    );
+    const dossier3 = valeurDe(await t3.preparerDossier());
+    expect(await t3.ecrireManifeste({ dossier: dossier3, contenu: MANIFESTE })).toEqual(
+      echec({ type: 'ServeurIndisponible' }),
+    );
+    expect(refuserManifeste).toBe(false);
+    expect(await t3.lireManifeste(dossier3)).toEqual(succes(undefined));
+    expect((await t3.ecrireManifeste({ dossier: dossier3, contenu: MANIFESTE })).ok).toBe(true);
+    expect(troisieme.fichiers().map((f) => f.name)).toEqual([
+      'Done Juan',
+      NOM_LISEZ_MOI,
+      'manifeste.json',
+    ]);
   });
 
   it('UT-COMP-US-017-06 lecture — corps non binaire : DECOMPRESSION ; manifeste illisible : FichierIllisible ; échec de lecture rendu', async () => {
@@ -167,5 +203,39 @@ describe('TransportSynchroDrive, compléments (ST-US-017 §4.4)', () => {
     drive.repondre(200, { files: [{ id }] });
     drive.repondre(500);
     expect(await transport.lireManifeste(dossier)).toEqual(echec({ type: 'ServeurIndisponible' }));
+  });
+
+  it("UT-COMP-US-017-07 requête Drive — toute valeur interpolée est un littéral échappé (\\ et ')", async () => {
+    expect(litteralRequeteDrive('abc-123')).toBe("'abc-123'");
+    expect(litteralRequeteDrive("a'b\\c")).toBe("'a\\'b\\\\c'");
+
+    const { drive, transport } = preparer();
+    await transport.listerFichiersAppareils("d'x" as IdFichierDrive);
+    const q = drive.requetes
+      .map((r) => new URL(r.url).searchParams.get('q'))
+      .find((v) => v !== null);
+    expect(q).toContain("'d\\'x' in parents");
+    expect(q).not.toContain("'d'x'");
+  });
+
+  it('UT-COMP-US-017-08 inventaire en échec après le jeton de départ, recherche du manifeste en échec : erreur rendue ; changements sans liste, sur une ou deux pages : aucun fichier, nouveau jeton', async () => {
+    const { drive, transport } = preparer();
+    const dossier = valeurDe(await transport.preparerDossier());
+
+    drive.repondre(200, { startPageToken: '1' });
+    drive.repondre(503);
+    expect(await transport.listerFichiersAppareils(dossier)).toEqual(
+      echec({ type: 'ServeurIndisponible' }),
+    );
+    drive.repondre(503);
+    expect(await transport.ecrireManifeste({ dossier, contenu: MANIFESTE })).toEqual(
+      echec({ type: 'ServeurIndisponible' }),
+    );
+    expect(drive.fichiers().map((f) => f.name)).toEqual(['Done Juan']);
+    drive.repondre(200, { newStartPageToken: '5' });
+    expect(await transport.changements(dossier, '1')).toEqual(succes({ fichiers: [], jeton: '5' }));
+    drive.repondre(200, { nextPageToken: '2' });
+    drive.repondre(200, { newStartPageToken: '6' });
+    expect(await transport.changements(dossier, '1')).toEqual(succes({ fichiers: [], jeton: '6' }));
   });
 });
