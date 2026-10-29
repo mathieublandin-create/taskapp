@@ -72,6 +72,8 @@ export default defineConfig({
     sequence: { shuffle: process.env['CI'] === 'true' },
     coverage: {
       provider: 'v8',
+      // json-summary : rapport par fichier lu par la non-régression de couverture (conventions.md §12, DT-005).
+      reporter: ['text', 'html', 'clover', 'json', 'json-summary'],
       include: [...fichiersCouverts(fichiers, rangCourant)],
       exclude: ['src/composition/**', 'src/main.tsx', '**/*.d.ts'],
       // conventions.md §12 : tous les seuils par motif de chemin, dès le rang 0 (Q-BEN-E12-2). Un motif qui ne
