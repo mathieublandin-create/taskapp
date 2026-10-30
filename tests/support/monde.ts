@@ -5,7 +5,13 @@
 import { setWorldConstructor, World } from '@cucumber/cucumber';
 import type { Resultat } from '@src/commun/domaine/resultat';
 import type { Instant } from '@src/commun/domaine/temps/instant';
-import type { ModeleVueDetailObjectif, ModeleVueListeObjectifs } from '@src/objectifs-taches';
+import type {
+  FiltreEtat,
+  ModeleVueDetailObjectif,
+  ModeleVueFormulaireTache,
+  ModeleVueListeObjectifs,
+  ModeleVueListeTaches,
+} from '@src/objectifs-taches';
 import type { NomAppareil } from './banc/appareil-simule';
 import { BancSynchro } from './banc/banc-synchro';
 import type { CommandeEnAttente } from './commandes-en-attente';
@@ -19,6 +25,10 @@ export class MondeDoneJuan extends World {
   /** Modèles de vue consultés, par appareil (ST-US-001 §12). */
   readonly derniereListeObjectifs = new Map<NomAppareil, ModeleVueListeObjectifs>();
   readonly dernierDetailObjectif = new Map<NomAppareil, ModeleVueDetailObjectif>();
+  /** ST-US-002 §12 n° 5, 22 à 27 : dernier formulaire de saisie, dernière liste des tâches et son filtre d'état. */
+  readonly dernierFormulaireTache = new Map<NomAppareil, ModeleVueFormulaireTache>();
+  readonly derniereListeTaches = new Map<NomAppareil, ModeleVueListeTaches>();
+  readonly filtreEtatTaches = new Map<NomAppareil, FiltreEtat>();
   /** Instant simulé de la dernière action : « au même instant exact, » y revient (conventions.md §11.7). */
   instantDerniereAction: Instant | undefined;
   /** URL des requêtes `fetch` tentées : aucune n'est admise (ST-US-022 §12.3). */
