@@ -1,3 +1,4 @@
+import type { Instant } from '../commun/domaine/temps/instant';
 import type { EtatReseau } from '../commun/application/ports/etat-reseau';
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
@@ -46,6 +47,10 @@ import {
 import type { ServiceEtatLocal } from '../synchronisation/application/service-etat-local';
 import { ServiceEtatLocalTransactionnel } from '../synchronisation/application/service-etat-local-transactionnel';
 import {
+  elementsEnAttenteDetailles,
+  type ElementEnAttente,
+} from '../synchronisation/domaine/elements-en-attente';
+import {
   decompterModificationsEnAttente,
   plusAncienneModificationEnAttente,
 } from '../synchronisation/domaine/index-en-attente';
@@ -77,6 +82,8 @@ export type AdaptateursApplication = {
   readonly versionApplication: string;
   /** `versionchange` sur l'espace ou la base technique (RL-LOT-001-A1) : la PWA recharge la page. */
   readonly surFermetureImposee: () => void;
+  /** Ouvre `url` dans un nouvel onglet (`noopener,noreferrer`) ; seul `main.tsx` touche à `window.open`. */
+  readonly ouvrirOnglet: (url: string) => void;
 };
 
 export type Application = {
@@ -100,6 +107,14 @@ export type Application = {
   /** Cas d'usage et requêtes des objectifs sur l'espace ouvert ; undefined sans session (ST-US-001 §3 n° 34). */
   readonly objectifs: () => ObjectifsTaches | undefined;
   readonly consulterEtat: () => Promise<EtatSynchronisationLu | undefined>;
+  /** Éléments en attente d'envoi de l'espace ouvert (feuille ECR-011) ; vide sans espace ou si la lecture échoue. */
+  readonly lireElementsEnAttente: () => Promise<ReadonlyArray<ElementEnAttente>>;
+  /** `dernierContactDrive` de l'espace ouvert ; undefined sans espace, sans échange ou si la lecture échoue. */
+  readonly lireDernierContact: () => Promise<Instant | undefined>;
+  /** Cycle immédiat de l'espace ouvert ; sans effet sans espace. */
+  readonly synchroniserMaintenant: () => Promise<void>;
+  /** Ouvre Google Drive dans un nouvel onglet (action de la carte ERR-011). */
+  readonly ouvrirGoogleDrive: () => void;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
 };
@@ -124,6 +139,22 @@ const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocal
     ...(plusAncienne === undefined ? {} : { plusAncienneEnAttente: plusAncienne }),
   };
 };
+
+const elementsEnAttenteDe = async (
+  espace: EspaceOuvert | undefined,
+): Promise<ReadonlyArray<ElementEnAttente>> => {
+  if (espace === undefined) return [];
+  const etat = await espace.depot.lire();
+  return etat.ok ? elementsEnAttenteDetailles(etat.valeur) : [];
+};
+
+const dernierContactDe = async (espace: EspaceOuvert | undefined): Promise<Instant | undefined> => {
+  if (espace === undefined) return undefined;
+  const meta = await espace.depot.lireMeta();
+  return meta.ok ? meta.valeur.dernierContactDrive : undefined;
+};
+
+const URL_GOOGLE_DRIVE = 'https://drive.google.com/';
 
 /** ST-US-017 §6.5 : dépôt réel par le cycle de l'espace ouvert ; sans espace, rien n'est tenté. */
 const depotAvantSortie = (
@@ -333,6 +364,14 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
         masquage,
         attente: () => attenteDe(n.espace()),
       }),
+    lireElementsEnAttente: () => elementsEnAttenteDe(n.espace()),
+    lireDernierContact: () => dernierContactDe(n.espace()),
+    synchroniserMaintenant: async () => {
+      await n.espace()?.cycle.synchroniserMaintenant();
+    },
+    ouvrirGoogleDrive: () => {
+      a.ouvrirOnglet(URL_GOOGLE_DRIVE);
+    },
   };
 };
 

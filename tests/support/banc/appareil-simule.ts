@@ -344,6 +344,7 @@ export class AppareilSimule {
       surFermetureImposee: () => {
         this.fermeturesImposees += 1;
       },
+      ouvrirOnglet: () => undefined,
     });
   }
 }

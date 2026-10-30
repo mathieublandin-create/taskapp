@@ -77,6 +77,10 @@ const preparer = ({ enAttente = 0, connecte = true }: Options = {}) => {
   const application = {
     session,
     consulterEtat: () => Promise.resolve(undefined),
+    lireElementsEnAttente: () => Promise.resolve([]),
+    lireDernierContact: () => Promise.resolve(undefined),
+    synchroniserMaintenant: () => Promise.resolve(),
+    ouvrirGoogleDrive: () => undefined,
     seConnecter: new SeConnecter({
       ...{ reseau, fournisseur, espaces, memoireSession, session },
       preparation: new PreparationSimulee(),
