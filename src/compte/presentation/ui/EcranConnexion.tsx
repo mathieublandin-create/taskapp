@@ -1,3 +1,4 @@
+import { IonText } from '@ionic/react';
 import { useEffect, useRef } from 'react';
 import {
   libelleActionConnexion,
@@ -21,7 +22,9 @@ const MessageEchec = ({
 }) => (
   <div role="alert" data-message={message.code}>
     <h2>{message.titre}</h2>
-    <p>{message.texte}</p>
+    <IonText>
+      <p>{message.texte}</p>
+    </IonText>
   </div>
 );
 
@@ -39,7 +42,9 @@ export const EcranConnexion = ({ vue, surAction }: ProprietesEcranConnexion) => 
   return (
     <main aria-labelledby="connexion-titre">
       <h1 id="connexion-titre">Done Juan</h1>
-      <p>Connectez-vous avec votre compte Google pour retrouver vos objectifs et vos tâches.</p>
+      <IonText>
+        <p>Connectez-vous avec votre compte Google pour retrouver vos objectifs et vos tâches.</p>
+      </IonText>
       <ul aria-label="Autorisations demandées">
         {vue.porteesAnnoncees.map((portee) => (
           <li key={portee}>{PORTEES[portee]}</li>

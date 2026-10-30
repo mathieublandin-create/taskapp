@@ -14,6 +14,7 @@ const COMPOSANTS_IONIC = [
   'ion-textarea',
   'ion-chip',
   'ion-note',
+  'ion-text',
   'ion-fab',
   'ion-toast',
   'ion-modal',

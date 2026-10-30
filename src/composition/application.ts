@@ -380,7 +380,12 @@ const objectifsDe = (
       const { generateur, horloge } = a;
       memorise = {
         service: ouvert.service,
-        objectifs: assemblerObjectifsTaches({ service: ouvert.service, generateur, horloge }),
+        objectifs: assemblerObjectifsTaches({
+          service: ouvert.service,
+          generateur,
+          horloge,
+          observer: (rappel) => ouvert.depot.observer(rappel),
+        }),
       };
     }
     return memorise.objectifs;

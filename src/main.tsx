@@ -5,7 +5,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-import { StrictMode, useMemo, useSyncExternalStore } from 'react';
+import { StrictMode, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -51,6 +51,7 @@ const APPAREIL = appareilDepuisAgent(navigator.userAgent, navigator.maxTouchPoin
 /** Écrans des objectifs (US-001, rang 2), sur le magasin de l'espace ouvert. */
 const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches }) => {
   const magasin = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
+  useEffect(() => magasin.getState().actions.observerDepot(), [magasin]);
   return <EspaceObjectifs magasin={magasin} />;
 };
 

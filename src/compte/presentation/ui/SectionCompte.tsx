@@ -1,3 +1,4 @@
+import { IonText } from '@ionic/react';
 import {
   libelleActionCompte,
   type ActionCompte,
@@ -13,8 +14,12 @@ export type ProprietesSectionCompte = {
 export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
   <section aria-labelledby="compte-titre">
     <h2 id="compte-titre">Compte</h2>
-    <p>{vue.adresse}</p>
-    <p data-code={vue.dossier.code}>{vue.dossier.libelle}</p>
+    <IonText>
+      <p>{vue.adresse}</p>
+    </IonText>
+    <IonText>
+      <p data-code={vue.dossier.code}>{vue.dossier.libelle}</p>
+    </IonText>
     {vue.actions.map((action) => (
       <button
         key={action}

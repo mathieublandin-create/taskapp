@@ -37,6 +37,16 @@ const PointAttente = ({
   </>
 );
 
+const TexteLigne = ({ ligne }: { readonly ligne: LigneObjectif }) => (
+  <span className="ligne-objectif-texte" aria-hidden="true">
+    <span className="ligne-objectif-intitule">{ligne.intitule}</span>
+    <MetaLigne ligne={ligne} />
+    {ligne.alerteDelai === undefined ? null : (
+      <span data-code={ligne.alerteDelai.code}>{ligne.alerteDelai.libelle}</span>
+    )}
+  </span>
+);
+
 export const LigneObjectifUi = ({ ligne, surOuvrir }: ProprietesLigneObjectif) => {
   const idAttente = `attente-${ligne.id}`;
   return (
@@ -55,13 +65,7 @@ export const LigneObjectifUi = ({ ligne, surOuvrir }: ProprietesLigneObjectif) =
           atteint={ligne.etat.code === 'ETA-OBJ-ATTEINT'}
           petit={ligne.niveau === 'SOUS_OBJECTIF'}
         />
-        <span className="ligne-objectif-texte" aria-hidden="true">
-          <span className="ligne-objectif-intitule">{ligne.intitule}</span>
-          <MetaLigne ligne={ligne} />
-          {ligne.alerteDelai === undefined ? null : (
-            <span data-code={ligne.alerteDelai.code}>{ligne.alerteDelai.libelle}</span>
-          )}
-        </span>
+        <TexteLigne ligne={ligne} />
         {ligne.attente === undefined ? null : (
           <PointAttente attente={ligne.attente} id={idAttente} />
         )}
