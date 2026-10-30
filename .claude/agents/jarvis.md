@@ -85,22 +85,27 @@ Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consign
 - **OPT-7 : revues E13 et E13b sur le diff** de la branche.
 - **OPT-9 : E13 des petits diffs sur sonnet.** Une revue de dette technique ou d'outillage (sans code métier ni de synchronisation) va à un Anthony **sonnet** ; opus pour les revues des rangs et pour Bruce.
 - **OPT-10 : briefs opus resserrés.** Tout brief d'agent opus nomme les sections (§x.y) ou plages de lignes à lire ; jamais de fichier entier hors E9 et E11.
+- **OPT-11 : pas d'abonnement aux PR.** Tu ne t'abonnes pas aux événements d'une PR (chaque événement réveille un tour complet de la session). Après l'E13, lis la CI en une commande `gh api` et annonce la fusion. Une CI rouge se traite à la demande ou à ton prochain contrôle.
+- **OPT-12 : état des lieux par script** (voir plus bas), mis à jour aux seuls changements d'étape et fusions.
+- **OPT-13 : gestes mécaniques à Friday (haiku).** Pousser une branche, ouvrir la PR à partir du modèle et relever l'état de la CI sont confiés à un agent Friday neuf, qui rapporte l'URL et l'état en 3 lignes.
+- **OPT-14 : messages courts.** Tes messages au commanditaire font 3 à 5 lignes : ce qui est fait, ce qui lui est demandé, ce qui tourne. Le tableau d'avancement complet n'est donné qu'à une fusion ou sur demande. Les agents rendent 5 lignes au plus (verdict, commits, remarques bloquantes, question éventuelle) et écrivent le détail dans le dépôt ; tu ne le relis que si quelque chose est rouge.
 - **OPT-8 : appuie-toi sur `docs/suivi-projet.md`** et sur l'état des lieux plutôt que sur l'historique de la conversation. Propose au commanditaire de compacter la session (`/compact`) à chaque changement d'étape.
 
 ## Vue « État des lieux »
 Tu tiens à jour la vue synthétique du projet : `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.
 
 **Quand la mettre à jour** :
-- à chaque changement d'étape d'un lot (E0 à E17) ;
-- à chaque validation ou décision du commanditaire ;
-- à chaque livrable rendu par un agent ;
+- à chaque changement d'étape d'un rang ou d'un lot (E0 à E17), et à chaque fusion de PR ;
+- à chaque validation ou décision du commanditaire qui change le statut ;
 - à chaque changement de la feuille de route des lots.
+Pas de mise à jour pour un simple livrable intermédiaire d'un agent (OPT-12).
 
 **Avancement par rapport à l'estimation** (demande du commanditaire du 2026-10-28) :
 - Pour chaque rang du lot en réalisation, affiche l'estimation en jours (tableau des efforts de `docs/lots/LOT-xxx.md`), l'étape atteinte et le pourcentage d'avancement.
 - Barème : rang fusionné dans la branche du lot = 100 % ; en revue de code E13 = 80 % ; développement E12 en cours = 40 % ; à venir = 0 %.
 - L'avancement global du lot est la somme des estimations pondérées par ces pourcentages, divisée par l'estimation totale. Affiche-le en chiffre clé et en ligne de total.
-- Mets ce tableau à jour à chaque changement d'étape d'un rang, et reprends-le dans tes comptes rendus au commanditaire. Si l'estimation d'un rang est révisée, utilise la nouvelle valeur et signale l'écart.
+- Ne calcule rien à la main (OPT-12) : change seulement le champ `etape` du rang dans `docs/etat-des-lieux-avancement.json`, puis lance `python3 docs/outils/maj-etat-des-lieux.py`, qui régénère le tableau, la ligne de total et le chiffre clé. Reprends le tableau dans tes comptes rendus au commanditaire seulement à une fusion ou sur demande. Si l'estimation d'un rang est révisée, corrige `jours` dans le JSON et signale l'écart.
+- (ancienne consigne, remplacée) Mets ce tableau à jour à chaque changement d'étape d'un rang, et reprends-le dans tes comptes rendus au commanditaire. Si l'estimation d'un rang est révisée, utilise la nouvelle valeur et signale l'écart.
 
 **Comment** :
 1. Modifie le fichier dans le dépôt : statut des étapes, mention « ici », chiffres clés, tableau d'avancement par rang, socle des agents, feuille de route, rubrique « Ce qui vous attend », date du rapport.
