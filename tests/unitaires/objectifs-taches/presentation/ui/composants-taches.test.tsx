@@ -2,7 +2,7 @@
  * Composants d'US-002 (ST-US-002 §14) : TaskRow, DurationStepper, FieldRow / LockedField, QuickAdd (erreurs cumulées,
  * focus sur le premier défaut, saisie conservée), filtres et puces.
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -21,12 +21,7 @@ import type { IssueTache } from '@src/objectifs-taches/presentation/ui/etat/maga
 import { construireFormulaireTache } from '@src/objectifs-taches/presentation/modeles-de-vue/formulaire-tache';
 import { construireLigneTache } from '@src/objectifs-taches/presentation/modeles-de-vue/ligne-tache';
 import { resumeTache } from '@tests/support/fabriques/resumes';
-import {
-  apresFermeture,
-  cliquerBoutonIon,
-  nettoyerDocument,
-  saisir,
-} from '@tests/support/ui-objectifs';
+import { apresFermeture, cliquerBoutonIon, nettoyerDocument } from '@tests/support/ui-objectifs';
 import { date, idObjectif, idTache } from '@tests/support/valeurs';
 
 afterEach(nettoyerDocument);
@@ -175,7 +170,7 @@ describe('Ligne, champs, filtres et puces', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sans objectif' }));
     expect(surObjectif).toHaveBeenCalledWith({ type: 'SANS_OBJECTIF' });
     const puces = screen.getByRole('group', { name: 'Objectifs' });
-    await userEvent.click(puces.querySelectorAll('button')[0] as HTMLElement);
+    await userEvent.click(within(puces).getByRole('button', { name: 'Publier le guide' }));
     expect(surBasculer).toHaveBeenCalledWith(O1);
   });
 });
@@ -249,7 +244,7 @@ describe('SaisieRapide (QuickAdd)', () => {
       ),
     ).toEqual(['ERR-020', 'ERR-021', 'ERR-022']);
     expect(surValider).toHaveBeenCalledWith({ intitule: 'Relire', objectifIds: [O1] });
-    expect((document.querySelector('ion-input') as HTMLIonInputElement).value).toBe('Relire');
+    expect(document.querySelector<HTMLIonInputElement>('ion-input')?.value).toBe('Relire');
     await fermer();
   });
 

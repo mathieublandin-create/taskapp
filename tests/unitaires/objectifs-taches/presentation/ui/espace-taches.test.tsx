@@ -9,9 +9,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { construireDetailObjectif } from '@src/objectifs-taches';
 import { valeurDe } from '@tests/support/environnement';
 import { DetailObjectif } from '@src/objectifs-taches/presentation/ui/ecrans/detail-objectif';
+import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { EspaceTaches } from '@src/objectifs-taches/presentation/ui/ecrans/espace-taches';
 import { creerMagasinTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-taches';
-import { date } from '@tests/support/valeurs';
+import { resumeObjectif, resumeTache } from '@tests/support/fabriques/resumes';
+import { date, idTache } from '@tests/support/valeurs';
 import {
   choixDuMenu,
   cliquerBoutonIon,
@@ -146,6 +148,16 @@ describe('Sections de tâches du détail d’un objectif (ECR-003 D)', () => {
         },
         { horloge: banc.env.horloge },
       );
+    const detailAvecTache = construireDetailObjectif(
+      {
+        objectif: resumeObjectif({ id: objectifId, intitule: 'Publier le guide' }),
+        sousObjectifs: [],
+        taches: [resumeTache({ id: idTache(1), intitule: 'Chapitre 1' })],
+        sousTachesPar: new Map(),
+        actions: [],
+      },
+      { horloge: banc.env.horloge },
+    );
     const surAjouterTache = vi.fn();
     const rendu = render(
       <DetailObjectif
@@ -162,5 +174,59 @@ describe('Sections de tâches du détail d’un objectif (ECR-003 D)', () => {
     await cliquerBoutonIon('Ajouter une tâche');
     expect(surAjouterTache).toHaveBeenCalled();
     rendu.unmount();
+
+    render(
+      <DetailObjectif
+        modele={detailAvecTache}
+        surRetour={vi.fn()}
+        surOuvrirMenu={vi.fn()}
+        surOuvrirSousObjectif={vi.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /^Chapitre 1, à faire/u }));
+    expect(document.querySelector('[data-code="SEC-TACHES-TERMINEES"]')).toBeNull();
+  });
+});
+
+describe('Tâches depuis le détail d’un objectif (ECR-003 D, guide §4.3)', () => {
+  it('UT-COMP-US-002-84 le détail d’un objectif présente ses tâches ; une tâche s’ouvre ; « Ajouter une tâche » ouvre la saisie rapide avec l’objectif pré-rempli, et la tâche créée apparaît', async () => {
+    const banc = creerBancObjectifs();
+    const objectifId = await banc.creer('Publier le guide');
+    const tache = valeurDe(
+      await banc.services.creerTache.executer({
+        intitule: 'Chapitre 1',
+        delai: date('2026-11-30'),
+        estimationMinutes: 60,
+        objectifIds: [objectifId],
+      }),
+    );
+    const surOuvrirTache = vi.fn();
+    const magasinTaches = creerMagasinTaches(banc.services);
+    render(
+      <EspaceObjectifs
+        magasin={banc.magasin}
+        taches={{ magasin: magasinTaches, surOuvrirTache }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: /^Publier le guide/u }));
+    await screen.findByRole('heading', { level: 1, name: 'Publier le guide' });
+    const section = await waitFor(() => {
+      const trouvee = document.querySelector('[data-code="SEC-TACHES-A-FAIRE"]');
+      if (trouvee === null) throw new Error('Section absente');
+      return trouvee as HTMLElement;
+    });
+    expect(section.textContent).toContain('Tâches à faire · 1');
+    await userEvent.click(within(section).getByRole('button', { name: /^Chapitre 1, à faire/u }));
+    expect(surOuvrirTache).toHaveBeenCalledWith(tache);
+
+    await ouvrir('Modal', () => cliquerBoutonIon('Ajouter une tâche'));
+    await screen.findByRole('form', { name: 'Nouvelle tâche' });
+    const pressee = screen.getByRole('button', { name: 'Publier le guide', pressed: true });
+    expect(pressee).toBeTruthy();
+    await cliquerBoutonIon('Annuler');
+    await waitFor(() => {
+      expect(screen.queryByRole('form')).toBeNull();
+    });
   });
 });
