@@ -27,6 +27,8 @@ describe('Conversions des types de paramètres (conventions.md §11.7)', () => {
         (texte) => convertirEcart(texte) / 60_000,
       ),
     ).toEqual([1440, 1441, 1439, 5, 1, 10, 60]);
+    // ANO-001 (US-017 S06c, S06f) : « 5 secondes », unité ajoutée à {ecart}.
+    expect(['5 secondes', '1 seconde'].map(convertirEcart)).toEqual([5000, 1000]);
   });
 
   it('UT-COMP-91 convertirHeure, convertirAppareil et convertirFuseau — formats du glossaire ; fuseau inconnu refusé', () => {
