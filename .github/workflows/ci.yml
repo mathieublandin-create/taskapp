@@ -1,5 +1,6 @@
 # Intégration continue de l'application (conventions.md §14.1, §14.3 ; Q-BEN-LOT001-4).
 # Rang 0 : tous les contrôles du §14.1 sauf le job `ihm` / bout en bout (rang 12) et la mutation (fin de lot).
+# Rang 3 : job `e2e`, test de fumée de la CSP en navigateur réel (DT-012), repris par le job `ihm` au rang 12.
 # Aucun secret : l'application n'en a pas (DS-04). Actions épinglées par empreinte de commit (§9.5).
 name: CI
 
