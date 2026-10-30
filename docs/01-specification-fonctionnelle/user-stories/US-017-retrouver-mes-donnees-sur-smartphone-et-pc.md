@@ -178,11 +178,11 @@ Statut : Prête — révision DEC-034 validée le 2026-10-22 (DEC-036, V-DEC034-
 |---|---|
 | CA-1 | S01 |
 | CA-2 | S02, S03, S04 |
-| CA-3 | S04, S05, S06 |
+| CA-3 | S04, S05, S06, S06c, S06d, S06e, S06f (ANO-001) |
 | CA-4 | S07 |
 | CA-5 | S08 |
 | CA-6 | S09, S10, S12b |
-| CA-7 | S17a, S17b ; détail : US-018, US-031 |
+| CA-7 | S06c, S17a, S17b ; détail : US-018, US-031 |
 | CA-8 | S10, S11 |
 | CA-9 (RG-044) | S18, S19, S20, S20b, S21, S22, S22b, S22c, S22d, S23, S32, S32b, S33 |
 | CA-10 (RG-047 à RG-049) | S24, S25, S26 ; détail : US-001 S19-S20, US-002 S23, US-023 S16-S19, US-024 S20-S22, US-003 S18-S19, US-025 S15-S16 |

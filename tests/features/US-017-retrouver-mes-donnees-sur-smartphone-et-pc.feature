@@ -131,6 +131,63 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
+  # ---------------------------------------------------------------- Cycle de synchronisation sans geste (CA-3, CA-7, ANO-001)
+  # ANO-001 (Pepper, 2026-10-30) : scénarios de non-régression. Après un cycle mené sans geste de l'utilisateur (RG-017 : 5 secondes après une modification,
+  # toutes les 2 minutes, retour au premier plan), l'indicateur et le décompte « Modifications en attente » de la feuille « Compte et synchronisation »
+  # (ECR-011) reflètent l'issue du cycle, sans attendre un geste ni un changement de session ou de réseau. Aucun geste entre le déclencheur et l'assertion.
+  # Le temps passe par l'horloge contrôlée du banc (glossaire §4) ; objectifs seulement, exécutables dès le rang 3.
+
+  @US-017 @RG-017 @RG-021 @LOT-001 @ANO-001
+  Scénario: S06c — Cycle déclenché 5 secondes après une modification : la mention « non synchronisé » et le décompte retombent sans geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Alors sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 1 modification en attente
+    Quand l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le smartphone, l'objectif "Publier le guide" ne porte plus la mention "MEN-ATTENTE"
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @LOT-001 @ANO-001
+  Scénario: S06d — Cycle périodique de 2 minutes : l'indicateur affiche le nouveau dernier échange sans geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
+    Quand l'horloge avance de 2 minutes, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @LOT-001 @ANO-001
+  Scénario: S06e — Retour au premier plan : le cycle mené sans geste est reflété par l'indicateur et le décompte
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que l'application est passée au second plan sur le smartphone
+    Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
+    Quand l'utilisateur ramène l'application au premier plan sur le smartphone
+    Et l'horloge avance de 1 minute, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @RG-035 @LOT-001 @ANO-001
+  Scénario: S06f — Accès Google expiré pendant l'utilisation : « Reprendre la synchronisation » est proposé sans geste préalable, et le décompte retombe après le geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que l'accès Google du compte "A" va expirer sur le smartphone pendant l'utilisation
+    Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Et l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 1 modification en attente
+    Et sur le smartphone, les données présentes sur le smartphone s'affichent aussitôt
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
+    Et l'horloge avance de 1 minute depuis la reconnexion
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
 
   @US-017 @RG-020 @RG-018 @LOT-001
