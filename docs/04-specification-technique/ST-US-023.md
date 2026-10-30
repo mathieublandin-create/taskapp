@@ -12,7 +12,7 @@
 | Maquettes | ECR-008 (A, C, D), ECR-003 (E) ; guide v0.2.8 §4.28, §6.6.8, §6.6.9 |
 | Q-US traitées | Q-US-023-1, Q-US-023-2 (E8) ; Q-US-001-1 (DEC-030) ; Q-US-001-6 (c) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-001 (rang 2), ST-US-017 incrément 1 (rang 3) |
-| Version | 0.1 |
+| Version | 0.3 |
 | Statut | **Prête pour E10** (Q-US-001-6 (c) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-023-sous-objectifs` |
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.3 | 2026-10-30 | Anthony | E13 du rang 4 (`docs/ceremonies/revue-code-LOT-001-rang4.md`) : §6.4, emplacement des actions dans l'écran ; §4.5, libellés du sélecteur sans code au catalogue (DT-015) ; §3 n° 14, `selecteur-parent.tsx` inscrit à `rangs-fichiers.json` (4 / 4) ; §14, UT-COMP-US-023-01 à 10 |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (guide v0.2.9 §5.8) : ordre de référence, sections `SEC-SOUS-OBJECTIFS` et `SEC-OBJ-ATTEINTS` ; §6.5, §6.6, §12, UT-US-023-21 ; statut levé |
 
 ## 1. Résumé technique
@@ -117,7 +118,7 @@ readonly alerteDelai?: { readonly code: 'ALR-007'; readonly parent: string; read
 // selecteur-parent.ts — ECR-008 C, D ; guide §4.28
 export type OptionParent = {
   readonly cible: { readonly type: 'AUCUN' } | { readonly type: 'OBJECTIF'; readonly id: IdObjectif };
-  readonly intitule: string;                           // « Aucun, objectif principal » pour AUCUN (libellé du catalogue)
+  readonly intitule: string;                           // « Aucun, objectif principal » pour AUCUN (constante nommée tant que le guide §6.6 n'a pas de code : DT-015)
   readonly disponible: boolean; readonly raison?: MessageRefus;
 };
 export type ModeleVueSelecteurParent = {
@@ -168,6 +169,8 @@ verifierPlacement(vue, X, C):
 
 ### 6.4 Actions d'un objectif
 `actionsObjectif(vue, o)` = `RENOMMER`, `MODIFIER_DESCRIPTION`, `MODIFIER_DELAI`, `RETIRER_DELAI` (si délai), `PLACER`, `CREER_SOUS_OBJECTIF` (seulement si o est principal), `SUPPRIMER`.
+
+**Emplacement dans l'écran (v0.3, ECR-003 C et D, annotation d'ECR-008)** : `PLACER` est une entrée du menu « … » du détail, placée entre `RETIRER_DELAI` et `SUPPRIMER` (`actionsDuMenu`, UT-COMP-US-001-75) ; elle ouvre le sélecteur de parent. `CREER_SOUS_OBJECTIF` n'est pas dans le menu : c'est « Ajouter » dans l'en-tête de la section « Sous-objectifs », absent sur un sous-objectif.
 
 ### 6.5 Sélecteur de parent
 Candidats : objectifs principaux actifs, plus l'objectif lui-même s'il est principal (indisponible, raison `ERR-031`). Si l'objectif a des sous-objectifs, `messageBloquant` = `ERR-030 objectif-a-des-sous-objectifs` et seules l'option `AUCUN` et la fermeture restent possibles (guide §4.28 : « le message l'explique avant tout choix »). Ordre des candidats : `comparerOrdreReference` (ST-US-001 §6.6, guide v0.2.9 §5.8 a).
@@ -250,7 +253,7 @@ Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- 
 **Précisions de l'E10 (2026-10-22)** : `ConsulterSelecteurParent.executer({ objectifId })` ; ses `candidats` comprennent l'objectif lui-même s'il est principal, que le modèle de vue rend indisponible (`ERR-031`) ; `construireSelecteurParent` ordonne les candidats (UT-US-023-15). Constructeurs : ST-US-001 §13.
 
 ## 14. Tests attendus de Benjamin
-Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa raison) ; écran de détail d'un sous-objectif (absence de l'action, carte d'alerte).
+Composant `ParentPicker` (radios au clavier, option indisponible lue avec sa raison) ; écran de détail d'un sous-objectif (absence de l'action, carte d'alerte). Livrés au rang 4 (v0.3) : UT-COMP-US-023-01 à 09, et 10 (`verifierPlacement`, `ElementIntrouvable`, RC-US-023-2) ; règle `UT-COMP-US-023-\d+` → 4 dans `rangs-tests.json`. `selecteur-parent.tsx` : `{ debut: 4, fin: 4 }` dans `rangs-fichiers.json`.
 
 ## 15. Plan de réalisation
 1. Refus, `verifierPlacement`, alerte, actions (UT 01 à 05, 11 à 13).
