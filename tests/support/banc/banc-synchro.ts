@@ -41,6 +41,13 @@ export class BancSynchro {
     return nouveau;
   }
 
+  /** Remplace l'appareil de ce nom par un appareil neuf (nouvelle `IDBFactory`, rien en mémoire technique). */
+  remplacerAppareil(nom: NomAppareil): AppareilSimule {
+    this.parNom.get(nom)?.fermerApplication();
+    this.parNom.delete(nom);
+    return this.appareil(nom);
+  }
+
   appareils(): ReadonlyArray<AppareilSimule> {
     return [...this.parNom.values()];
   }

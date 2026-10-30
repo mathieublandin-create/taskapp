@@ -229,9 +229,10 @@ const porteLaMention = async (
   return ligne.attente?.code === MENTION_ATTENTE;
 };
 
-// « l'objectif … porte la mention » est défini avec les objectifs (objectifs.steps.ts, mentions de la ligne).
+// « l'objectif … porte la mention » et « … ne porte plus la mention » sont définis avec les objectifs
+// (objectifs.steps.ts, ANO-001) ; seule la forme « ne porte pas » est portée ici.
 etapeAssertion(
-  /^l'objectif "([^"]*)" (?:ne porte pas|ne porte plus) la mention "([^"]*)"$/,
+  /^l'objectif "([^"]*)" ne porte pas la mention "([^"]*)"$/,
   async (contexte, intitule, mention) => {
     assert.equal(
       await porteLaMention(contexte, 'objectif', String(intitule), String(mention)),

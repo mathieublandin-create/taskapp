@@ -2,7 +2,6 @@
  * Étapes des appareils du banc (glossaire d'étapes §1 et §2 ; ST-socle-ecriture.md §12 n° 4 ; ST-US-022 §12.1
  * n° 3 à 6).
  */
-import assert from 'node:assert/strict';
 import { Given, When } from '@cucumber/cucumber';
 import type { NomAppareil } from '../../support/banc/appareil-simule';
 import { convertirAppareil, convertirFuseau } from '../../support/conversions';
@@ -11,8 +10,8 @@ import type { MondeDoneJuan } from '../../support/monde';
 Given(
   "(que )l'application n'a jamais été utilisée sur le {appareil}",
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    const appareil = this.banc.appareil(nomAppareil);
-    assert.equal(appareil.estOuverte(), false, `Le ${appareil.nom} a déjà été utilisé`);
+    // ST-US-022 §12.1 n° 3 : appareil neuf, qui remplace celui du Contexte.
+    this.banc.remplacerAppareil(nomAppareil);
   },
 );
 
@@ -20,16 +19,6 @@ Given(
   "(que )l'application est ouverte sur le {appareil}",
   async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     await this.banc.appareil(nomAppareil).assurerOuverte();
-  },
-);
-
-// ST-US-017 §12.1 n° 9 (une seule instance) : réseau rétabli, application ouverte.
-Given(
-  "(que )l'application est ouverte sur le {appareil}, connecté au réseau",
-  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    const appareil = this.banc.appareil(nomAppareil);
-    appareil.reseau.retablir();
-    await appareil.assurerOuverte();
   },
 );
 
