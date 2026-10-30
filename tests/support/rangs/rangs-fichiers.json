@@ -657,6 +657,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/selecteur-parent.tsx": {
+      "debut": 4,
+      "fin": 4
+    },
     "src/objectifs-taches/presentation/ui/ecrans/detail-objectif.tsx": {
       "debut": 2,
       "fin": 2
