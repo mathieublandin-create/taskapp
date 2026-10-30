@@ -8,7 +8,7 @@
 | Auteur | Benjamin |
 | Périmètre | Différentiel `origin/lot/LOT-001...HEAD`, 4 commits (`eab202a`, `0f36ed2`, `30020a5`, `b554ec7`) : 25 fichiers, + 1 170, − 117 |
 | Référentiel | ST-US-023 v0.2 (§3, §4, §6, §8, §12 à §15), `checklist-revue-code.md` v0.3, `conventions.md` v0.4.7 (§8.5, §11.14, §12, §13.2), guide d'ergonomie §4.28, maquettes ECR-003 (C, D, E) et ECR-008 (A, C, D) |
-| Passage | 1 |
+| Passage | 1 ; 2 (`a6f91d8`, §8) |
 
 ## 1. Verdict : **Changements requis**
 
@@ -76,3 +76,58 @@ Contrôles locaux en Node 22, lancés par `node_modules/.bin` (pnpm refuse Node 
 ## 7. Suite
 
 Retour en E12. La nouvelle revue portera uniquement sur RC-US-023-1 à 3 (et sur les suggestions, si Benjamin les retient), ainsi que sur le différentiel depuis `b554ec7`.
+
+## 8. Deuxième passage — `b554ec7..a6f91d8` (dernière itération)
+
+Périmètre : `git diff b554ec7..HEAD -- src tests`, commits `a31f42a`, `1c2edef`, `a6f91d8` de Benjamin (11 fichiers, + 102, − 55). `4f13740` (revue) et `5f42d5d` (guide d'ergonomie v0.2.18, Steeve) sont hors code. Seuls les remarques ouvertes et les nouveaux changements sont contrôlés.
+
+### 8.1 Verdict : **Approuvé**
+
+Aucune remarque bloquante. RC-US-023-1, 2, 4, 5 et 6 sont levées. RC-US-023-3 reçoit une proposition de dérogation (§8.3), non bloquante pour la fusion.
+
+### 8.2 Contrôles exécutés
+
+| Contrôle | Résultat |
+|---|---|
+| `TZ=UTC vitest run tests/unitaires/objectifs-taches` | 33 fichiers passés, 25 ignorés ; 141 tests passés, 134 ignorés (rangs > 4) |
+| Couverture de `hierarchie-objectifs.ts` | Lignes 100 % (16/16), **branches 100 % (14/14)**, contre 85,7 % au passage 1 |
+| `verifier:catalogue` | 0 erreur (les 6 codes `SEL-PARENT-*` sont au guide §6.6.4 v0.2.18, avec les mêmes textes) |
+| `tsc --noEmit` | 0 erreur |
+| CI de la PR #10 sur `a6f91d8` | Qualité, sécurité, build et e2e (CSP) verts. Les jobs de tests dans les 3 fuseaux sont en cours au moment de la revue : **la fusion attend qu'ils soient verts** (DoD technique). |
+| Messages des nouveaux commits | Les 3 commits suivent `<type>(<portée>): <résumé>` et portent les lignes d'attribution (CR-72). |
+
+### 8.3 Remarques
+
+| Id | Constat au passage 2 | Statut |
+|---|---|---|
+| RC-US-023-1 | `PLACER` est dans `ORDRE_MENU`, entre `RETIRER_DELAI` et `SUPPRIMER` (`menu-objectif.tsx:16`). Son libellé, « Placer sous un autre objectif », est celui de `SEL-PARENT-MENU` (guide v0.2.18). `surActionMenu` route `PLACER` vers `ouvrirSelecteurParent` (`espace-objectifs.tsx:149`), et `FEUILLE_PAR_ACTION` l'exclut de son type. La propriété `surPlacer` et le bouton du corps du détail sont retirés. Le commentaire d'en-tête du menu est à jour. `CREER_SOUS_OBJECTIF` reste hors du menu. | **Levée** |
+| RC-US-023-2 | UT-COMP-US-023-10 est ajouté dans un nouveau fichier, `hierarchie-objectifs-comp.test.ts`, sans toucher au fichier de l'E10. Il couvre les cas suivants : X inconnu ou supprimé, avec ou sans cible ; X actif avec C inconnu ou supprimé ; la priorité d'`ElementIntrouvable` sur `PlacementSousLuiMeme` (`SUPPRIME → SUPPRIME`, `INCONNU → INCONNU`). Les branches sont à 100 %. | **Levée** |
+| RC-US-023-3 | Les 4 commits du passage 1 ne sont pas reformulés : il faudrait un push forcé, non autorisé pour cette PR, et la décision du commanditaire est en attente. Le défaut porte sur la forme de l'historique, pas sur le code. Il est sans effet sur le produit et ne se rembourse pas par du code ; il ne relève donc pas du registre de dette. **Proposition : lever par dérogation**, consignée ici, sans précédent : les commits suivants respectent CR-72, comme les 3 de ce passage. Si le commanditaire exige la reformulation, elle se fera par un `git push --force-with-lease` sur `us/US-023-rang4` avant la fusion, et seulement à ce moment. Cette remarque ne bloque pas le verdict. | **Dérogation proposée** (décision du commanditaire, via Jarvis) |
+| RC-US-023-4 | `objectifActif(vue, c.objectifId)` remplace le contrôle recodé (`consulter-selecteur-parent.ts:31-32`), et l'import d'`echec` devenu inutile est retiré. Effet de bord accepté : un objectif **supprimé** donne aussi `ElementIntrouvable`, ce qui est conforme à §6.1 (« X actif »). | **Levée** |
+| RC-US-023-5 | (a) UT-COMP-US-023-05 vise maintenant `getByText('Objectif principal')` et vérifie l'absence de « Sous-objectif de… ». (b) UT-COMP-US-023-09 est déplacé dans `messages-de-refus-comp.test.ts`, avec le même identifiant et le même contenu. | **Levée** |
+| RC-US-023-6 | La propriété reste facultative. Si elle devenait obligatoire, la compilation des tests du rang 2, qui ne la fournissent pas, serait cassée : il faudrait modifier des tests approuvés pour un gain nul. Le commentaire est corrigé (`detail-objectif.tsx:25`). C'est la branche « sinon » de l'action attendue. | **Levée** |
+
+### 8.4 Décisions sur les tests modifiés par Benjamin (CR-60)
+
+| Test | Modification | Décision |
+|---|---|---|
+| UT-COMP-US-001-75 | Titre et attendu : `['RENOMMER', 'MODIFIER_DELAI', 'RETIRER_DELAI', 'PLACER', 'SUPPRIMER']` | **Accepté** : c'est exactement l'accord écrit du §3, point 1. |
+| UT-COMP-US-001-76 | Attendu des boutons du menu : « Placer sous un autre objectif » est inséré entre « Renommer l'objectif » et « Supprimer l'objectif… » | **Accepté.** Le test passe déjà `PLACER` dans `actions`. Une fois `PLACER` reconnu par `ORDRE_MENU` (RC-US-023-1 a), l'entrée doit apparaître. La modification découle donc directement de RC-US-023-1 ; mon accord du passage 1 aurait dû la viser. Le sens du test est intact : actions offertes, ordre, suppression en rouge et en dernier, appel de l'action choisie. Rien n'est affaibli. |
+| UT-COMP-US-023-05 | Le parcours passe par le menu « … » (`choixDuMenu`), avec une assertion plus précise | **Accepté** : demandé par RC-US-023-1 (d) et RC-US-023-5 (a). L'assertion est renforcée. |
+| UT-COMP-US-023-09 | Déplacé, sans changement | **Accepté** (RC-US-023-5 b). |
+
+### 8.5 Changement hors périmètre : codes `SEL-PARENT-*` (`1c2edef`)
+
+**Accepté.** Le guide v0.2.18 (`5f42d5d`) introduit les 6 codes au §6.6.4. Faute d'entrée correspondante dans `codes.ts` et `catalogue.fr.ts`, `verifier:catalogue` échouait sur la branche. L'ajout est donc nécessaire pour que la CI reste verte, et il ne fait qu'aligner le catalogue sur le guide : les textes sont identiques au guide et aucun code n'est branché. Le commit est séparé et bien nommé.
+
+Les constantes `INTITULE_AUCUN_PARENT`, `titreDuSelecteur` et `LIBELLES_OBJECTIFS.menu.PLACER` reprennent les textes de `SEL-PARENT-AUCUN`, `SEL-PARENT-TITRE` et `SEL-PARENT-MENU`. Le texte existe donc maintenant **en deux exemplaires**, et le risque de divergence n'est plus théorique. **DT-015 passe en P1** (`dette-technique.md` v0.19), avec la même échéance : avant l'E14 de LOT-001. Q-ANT-E13-R4-1 a reçu sa réponse dans le guide v0.2.18. Il me reste à mettre à jour ST-US-023 §4.5 et à fournir les tests du branchement ; la carte `ALR-007` en variante détail (« Changer le délai ») est à intégrer à cet incrément.
+
+### 8.6 Points ouverts (sans action de Benjamin dans cette PR)
+
+- RC-US-023-3 : décision du commanditaire sur la dérogation (§8.3).
+- Q-ANT-E13-R4-2 : Pepper confirme que le champ « Placer sous un objectif » d'ECR-008 B et G est hors du périmètre validé. La décision du commanditaire est attendue ; je n'ai aucune action à mener avant elle.
+- DT-015 (P1) : incrément de branchement à concevoir (ST-US-023 v0.4 et tests), avant l'E14.
+
+### 8.7 Suite
+
+La PR #10 peut être fusionnée dans `lot/LOT-001` dès que les jobs de tests de la CI sur `a6f91d8` sont verts, sous réserve de la décision sur RC-US-023-3.
