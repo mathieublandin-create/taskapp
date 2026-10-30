@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.19, 2026-10-30 (Steeve).** Décision du commanditaire (Q-US-023-n, option b) : le champ « Placer sous un objectif » de la feuille de création d'un objectif est reporté à un lot ultérieur et retiré d'ECR-008 B et G (v0.1.2). Le placement passe uniquement par « Ajouter » dans le détail du parent (ECR-003 D) et « Placer sous un autre objectif » du menu « … » (ECR-003 C). Aucune règle de gestion modifiée.
+>
 > **Version 0.2.18, 2026-10-30 (Steeve).** E13 du rang 4 de LOT-001, réponse à Q-ANT-E13-R4-1 (DT-015) : codes du sélecteur de parent (famille `SEL-`, §6.6.4) ; entrée du menu « … » « Placer sous un autre objectif » (et non « Déplacer… ») ; carte d'alerte du détail d'un sous-objectif rattachée à `ALR-007` (variante détail, action « Changer le délai », §6.6.9). ECR-003 C et E, ECR-008 C alignés. Aucune règle de gestion ni périmètre modifié.
 >
 > **Version 0.2.17, 2026-10-28 (Steeve).** `ERR-017` corrigé : IndexedDB ne permet pas d'annuler une suppression en attente ; le message annonce qu'elle se terminera à la fermeture des autres fenêtres, et l'action « Fermer » devient « Aller à la connexion ». Réponses d'Anthony à S1-S7 vérifiées.
@@ -1285,3 +1287,4 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | 0.2.8 | 2026-10-21 | Steeve | Correction de fin d'E8 de LOT-001 (É-3, explicitation-LOT-001.md, contrôle final). `ALR-010` (§6.6.9) : libellés complétés pour les deux cas de DEC-030 (Q-US-001-1 a) : variante `rattachement` (« Rattachement non retenu, objectif supprimé », élément = la tâche) et variante `placement` (« Placement non retenu, objectif supprimé », élément = le sous-objectif), choisies par la colonne `information` (`objectifs` ou `parent`). Libellés repris de US-001 CA-10 et US-023 CA-10 ; scénarios S20 (US-001) et S19 (US-023) inchangés. |
 | 0.2.11 | 2026-10-22 | Steeve | DEC-032 (Q-US-025-3 a) : `CNF-REPRENDRE-SOUS-TACHE` (§6.6.7), cadre D3 d'ECR-007. |
 | 0.2.18 | 2026-10-30 | Steeve | Q-ANT-E13-R4-1 (DT-015) : famille `SEL-` et codes `SEL-PARENT-*` (§6.6.4) ; entrée de menu « Placer sous un autre objectif » ; `ALR-007` variante détail avec « Changer le délai » (§6.6.9). ECR-003 v0.2.1, ECR-008 v0.1.1. |
+| 0.2.19 | 2026-10-30 | Steeve | Q-US-023-n (option b), décision du commanditaire du 2026-10-30 : champ « Placer sous un objectif » de la feuille de création reporté à un lot ultérieur, retiré d'ECR-008 B et G (v0.1.2). Points d'entrée du placement : ECR-003 D (« Ajouter ») et ECR-003 C (menu). |
