@@ -118,6 +118,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et que la session Google du navigateur du PC a expiré
     Quand sur le PC, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
     Alors sur le PC, l'opération est acceptée
+    Et l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
@@ -134,6 +135,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors sur le PC, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
     Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le PC
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
     Exemples:
