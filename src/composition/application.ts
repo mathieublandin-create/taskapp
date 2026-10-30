@@ -312,6 +312,8 @@ type Noyau = Stockage & {
   readonly signalerRefus: SignalerRefusJeton;
   readonly accesGoogle: AccesGoogle;
   readonly depot: DepotAvantSortie;
+  /** Abonnés de `observerSynchronisation`, alimentés par le cycle et le dépôt de chaque espace (ANO-001). */
+  readonly relais: Set<() => void>;
 };
 
 const assemblerConnexion = (a: AdaptateursApplication, n: Noyau) => {
@@ -374,16 +376,37 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
     synchroniserMaintenant: async () => {
       await n.espace()?.cycle.synchroniserMaintenant();
     },
-    // Squelette de la phase rouge (E10, ANO-001) : le relais n'est pas encore branché sur le cycle.
-    observerSynchronisation:
-      (_rappel: () => void): Annulation =>
-      () =>
-        undefined,
+    observerSynchronisation: (rappel: () => void): Annulation => {
+      n.relais.add(rappel);
+      return () => {
+        n.relais.delete(rappel);
+      };
+    },
     ouvrirGoogleDrive: () => {
       a.ouvrirOnglet(URL_GOOGLE_DRIVE);
     },
   };
 };
+
+/** ANO-001 (ST-US-017 §6.9) : le cycle et le dépôt de chaque espace alimentent le relais de `observerSynchronisation`. */
+const fabriquerCycles =
+  (
+    a: AdaptateursApplication,
+    transport: TransportSynchro,
+    acces: AccesGoogle,
+    relais: ReadonlySet<() => void>,
+  ): ((depot: DepotLocalDexie) => CycleSynchronisation) =>
+  (depot) => {
+    const cycle = new CycleSynchronisation({ ...a, depot, transport, acces });
+    const notifier = (): void => {
+      relais.forEach((rappel) => {
+        rappel();
+      });
+    };
+    cycle.observer(notifier);
+    depot.observer(notifier);
+    return cycle;
+  };
 
 /** Session, coffre, fournisseur, transport et accès Google ; la fabrique de cycle est renseignée ici. */
 const assemblerNoyau = (
@@ -406,12 +429,13 @@ const assemblerNoyau = (
   });
   const accesGoogle = accesGoogleDe(session, signalerRefus);
   const transport = a.transport(coffre);
-  fabriqueCycle.creer = (depot) =>
-    new CycleSynchronisation({ ...a, depot, transport, acces: accesGoogle });
+  const relais = new Set<() => void>();
+  fabriqueCycle.creer = fabriquerCycles(a, transport, accesGoogle, relais);
   return {
     ...stockage,
     ...{ session, coffre, fournisseur, transport, signalerRefus, accesGoogle },
     depot: depotAvantSortie(a, stockage.espace, () => accesGoogle),
+    relais,
   };
 };
 

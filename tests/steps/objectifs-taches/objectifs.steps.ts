@@ -313,16 +313,25 @@ etapeAssertion(
   },
 );
 
+const mentionsDe = (ligne: Awaited<ReturnType<typeof ligneObjectifDe>>): ReadonlyArray<string> => [
+  ...(ligne.delai.type === 'SANS_DELAI' ? [ligne.delai.code] : []),
+  ...(ligne.enRetard === undefined ? [] : [ligne.enRetard.code]),
+  ...(ligne.attente === undefined ? [] : [ligne.attente.code]),
+];
+
 etapeAssertion(
   new RegExp(`^l'objectif ${TEXTE} porte la mention ${TEXTE}$`),
   async ({ monde, appareil }, intitule, mention) => {
-    const ligne = await ligneObjectifDe(monde, appareil, String(intitule));
-    const codes = [
-      ...(ligne.delai.type === 'SANS_DELAI' ? [ligne.delai.code] : []),
-      ...(ligne.enRetard === undefined ? [] : [ligne.enRetard.code]),
-      ...(ligne.attente === undefined ? [] : [ligne.attente.code]),
-    ];
-    assert.ok(codes.includes(mention as never), `Mentions de la ligne : ${codes.join(', ')}`);
+    const codes = mentionsDe(await ligneObjectifDe(monde, appareil, String(intitule)));
+    assert.ok(codes.includes(String(mention)), `Mentions de la ligne : ${codes.join(', ')}`);
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^l'objectif ${TEXTE} ne porte plus la mention ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, mention) => {
+    const codes = mentionsDe(await ligneObjectifDe(monde, appareil, String(intitule)));
+    assert.ok(!codes.includes(String(mention)), `Mentions de la ligne : ${codes.join(', ')}`);
   },
 );
 

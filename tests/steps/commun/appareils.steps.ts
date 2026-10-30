@@ -76,3 +76,32 @@ Given(
     await this.banc.attendreCycles();
   },
 );
+
+// ST-US-017 §12.4 n° 1 : un seul appareil, réseau rétabli, cycles démarrés (et attendus). L'application est
+// ouverte à nouveau (comme au lancement de l'application) : l'instantané d'ouverture est alors celui d'une
+// session déjà connue, non celui de la connexion du contexte.
+Given(
+  "(que )l'application est ouverte sur le {appareil}, connecté au réseau",
+  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    const appareil = this.banc.appareil(nomAppareil);
+    appareil.reseau.retablir();
+    appareil.fermerApplication();
+    await appareil.ouvrirApplication();
+    await this.banc.attendreCycles();
+  },
+);
+
+// ST-US-017 §12.4 n° 2 et 3 : comme le `visibilitychange` de web.ts.
+Given(
+  "(que )l'application est passée au second plan sur le {appareil}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).passerAuSecondPlan();
+  },
+);
+
+When(
+  "l'utilisateur ramène l'application au premier plan sur le {appareil}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).revenirAuPremierPlan();
+  },
+);

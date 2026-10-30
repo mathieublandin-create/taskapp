@@ -92,6 +92,7 @@ export class ControleurInterface {
   #vue: VueInterface;
   readonly #etat: Etat = { enCours: false };
   readonly #observateurs = new Set<() => void>();
+  readonly #rafraichissements = new Set<Promise<void>>();
 
   constructor(
     private readonly application: ApplicationInterface,
@@ -101,6 +102,7 @@ export class ControleurInterface {
   ) {
     this.#vue = { racine: { ecran: 'CONNEXION' }, connexion: this.#connexion() };
     application.session.observer(() => void this.rafraichir());
+    application.observerSynchronisation(() => void this.rafraichir());
   }
 
   readonly vue = (): VueInterface => this.#vue;
@@ -115,11 +117,22 @@ export class ControleurInterface {
   /**
    * Pour le banc (ANO-001, ST-US-017 v0.4.3 §6.9, §12.4), comme `CycleSynchronisation.cycleEnCours` : se résout quand
    * aucun rafraîchissement n'est en cours, y compris ceux lancés pendant l'attente.
-   * Squelette de la phase rouge (E10) : se résout aussitôt.
    */
-  readonly rafraichissementsTermines = (): Promise<void> => Promise.resolve();
+  readonly rafraichissementsTermines = async (): Promise<void> => {
+    while (this.#rafraichissements.size > 0) await Promise.allSettled([...this.#rafraichissements]);
+  };
 
   async rafraichir(): Promise<void> {
+    const calcul = this.#calculerVue();
+    this.#rafraichissements.add(calcul);
+    try {
+      await calcul;
+    } finally {
+      this.#rafraichissements.delete(calcul);
+    }
+  }
+
+  async #calculerVue(): Promise<void> {
     const session = this.application.session.etat();
     const etatSynchro = await this.application.consulterEtat();
     const { confirmation, suppressionBloquee, toast } = this.#etat;
