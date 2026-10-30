@@ -5,7 +5,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-import { StrictMode, useMemo, useSyncExternalStore } from 'react';
+import { StrictMode, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -21,6 +21,7 @@ import type { ControleurInterface } from './composition/controleur-interface';
 import { demarrerWeb } from './composition/web';
 import { appareilDepuisAgent } from './commun/presentation/format/appareil';
 import { Toast } from './commun/presentation/ui/toast';
+import { FeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
 import { Bandeau } from './synchronisation/presentation/ui/Bandeau';
 import { IndicateurSynchronisation } from './synchronisation/presentation/ui/IndicateurSynchronisation';
 import './commun/presentation/ui/styles.css';
@@ -41,6 +42,9 @@ const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVI
   arreterNavigation: () => {
     window.stop();
   },
+  ouvrirOnglet: (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  },
 });
 
 setupIonicReact();
@@ -51,15 +55,15 @@ const APPAREIL = appareilDepuisAgent(navigator.userAgent, navigator.maxTouchPoin
 /** Écrans des objectifs (US-001, rang 2), sur le magasin de l'espace ouvert. */
 const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches }) => {
   const magasin = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
+  useEffect(() => magasin.getState().actions.observerDepot(), [magasin]);
   return <EspaceObjectifs magasin={magasin} />;
 };
 
-/** Espace de l'application : indicateur, bandeau, section « Compte », puis les objectifs. */
-const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
+/** Indicateur, bandeau et feuille de synchronisation (ECR-011), présents avec l'état de synchronisation. */
+const EtatSynchronisation = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
-  const objectifs = controleur.objectifs();
   return (
-    <main aria-label="Done Juan">
+    <>
       {vue.indicateur === undefined ? null : (
         <IndicateurSynchronisation
           vue={vue.indicateur}
@@ -74,6 +78,24 @@ const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInte
           surMasquer={() => void controleur.masquerRappel()}
         />
       )}
+      {vue.feuille === undefined ? null : (
+        <FeuilleSynchronisation
+          vue={vue.feuille}
+          surSynchroniser={() => void controleur.synchroniser()}
+          surActionCarte={(a) => void controleur.actionCarte(a)}
+        />
+      )}
+    </>
+  );
+};
+
+/** Espace de l'application : indicateur, bandeau, section « Compte », puis les objectifs. */
+const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
+  const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  const objectifs = controleur.objectifs();
+  return (
+    <main aria-label="Done Juan">
+      <EtatSynchronisation controleur={controleur} />
       {vue.toast === undefined ? null : (
         <Toast code={vue.toast} surAction={() => void controleur.reessayer()} />
       )}

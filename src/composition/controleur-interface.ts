@@ -32,6 +32,11 @@ import {
   construireIndicateur,
   type ModeleVueIndicateur,
 } from '../synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
+import {
+  construireFeuilleSynchronisation,
+  type ActionCarteFeuille,
+  type ModeleVueFeuilleSynchronisation,
+} from '../synchronisation/presentation/modeles-de-vue/feuille-synchronisation';
 import type { Application } from './application';
 import type { ObjectifsTaches } from './objectifs-taches';
 
@@ -48,6 +53,10 @@ export type ApplicationInterface = Pick<
   | 'seDeconnecter'
   | 'supprimerDonnees'
   | 'masquage'
+  | 'lireElementsEnAttente'
+  | 'lireDernierContact'
+  | 'synchroniserMaintenant'
+  | 'ouvrirGoogleDrive'
 >;
 
 const estEspaceInaccessible = (r: Resultat<unknown, { readonly type: string }>): boolean =>
@@ -60,6 +69,8 @@ export type VueInterface = {
   readonly connexion: ModeleVueConnexion;
   readonly compte?: ModeleVueSectionCompte;
   readonly indicateur?: ModeleVueIndicateur;
+  /** Section « Synchronisation » d'ECR-011 ; présente avec l'indicateur (espace ouvert). */
+  readonly feuille?: ModeleVueFeuilleSynchronisation;
   readonly bandeau?: ModeleVueBandeau;
   readonly confirmation?: ModeleVueConfirmationCompte;
   readonly suppressionBloquee?: { readonly enCours: boolean };
@@ -110,7 +121,7 @@ export class ControleurInterface {
       ...(session.type === 'OUVERTE'
         ? { compte: construireSectionCompte({ adresse: session.identite.adresse }) }
         : {}),
-      ...(etatSynchro === undefined ? {} : this.#synchronisation(etatSynchro)),
+      ...(etatSynchro === undefined ? {} : await this.#synchronisation(etatSynchro)),
       ...(confirmation === undefined
         ? {}
         : { confirmation: construireConfirmationCompte(confirmation.vue) }),
@@ -212,6 +223,17 @@ export class ControleurInterface {
     await this.rafraichir();
   };
 
+  /** Bouton « Synchroniser maintenant » de la feuille ; la vue suit les notifications du cycle. */
+  readonly synchroniser = async (): Promise<void> => {
+    await this.application.synchroniserMaintenant();
+    await this.rafraichir();
+  };
+
+  readonly actionCarte = async (action: ActionCarteFeuille): Promise<void> => {
+    if (action === 'OUVRIR_GOOGLE_DRIVE') this.application.ouvrirGoogleDrive();
+    else await this.synchroniser();
+  };
+
   #connexion(): ModeleVueConnexion {
     const { dernierEchec, enCours } = this.#etat;
     return construireEcranConnexion(
@@ -219,12 +241,21 @@ export class ControleurInterface {
     );
   }
 
-  #synchronisation(
+  async #synchronisation(
     etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
-  ): Pick<VueInterface, 'indicateur' | 'bandeau'> {
-    const bandeau = construireBandeau(etat, this.horloge.maintenant());
+  ): Promise<Pick<VueInterface, 'indicateur' | 'bandeau' | 'feuille'>> {
+    const maintenant = this.horloge.maintenant();
+    const bandeau = construireBandeau(etat, maintenant);
+    const dernierEchange = await this.application.lireDernierContact();
+    const feuille = construireFeuilleSynchronisation({
+      etat,
+      maintenant,
+      ...(dernierEchange === undefined ? {} : { dernierEchange }),
+      elementsEnAttente: await this.application.lireElementsEnAttente(),
+    });
     return {
       indicateur: construireIndicateur(etat),
+      feuille,
       ...(bandeau === undefined ? {} : { bandeau }),
     };
   }

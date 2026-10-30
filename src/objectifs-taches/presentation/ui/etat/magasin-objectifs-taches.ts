@@ -43,6 +43,8 @@ export type ServicesObjectifs = {
   readonly supprimerObjectif: SupprimerObjectif;
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterDetailObjectif: ConsulterDetailObjectif;
+  /** Changements du dépôt local (DT-009) : le magasin recalcule ses modèles de vue quel que soit l'écrivain. */
+  readonly observer?: (rappel: () => void) => () => void;
 };
 
 /** Issue d'une saisie : faite, refusée avec des messages sous les champs, ou enregistrement impossible (ERR-014). */
@@ -85,6 +87,8 @@ export type ActionsMagasinObjectifs = {
   readonly demanderSuppression: (id: IdObjectif) => Promise<void>;
   readonly confirmerSuppression: () => Promise<void>;
   readonly annulerSuppression: () => void;
+  /** Commence à observer le dépôt local (DT-009) et rend la fonction qui cesse de l'observer (démontage). */
+  readonly observerDepot: () => () => void;
 };
 
 export type MagasinObjectifs = StoreApi<EtatMagasinObjectifs>;
@@ -229,6 +233,12 @@ class ActionsObjectifs implements ActionsMagasinObjectifs {
   readonly annulerSuppression = (): void => {
     this.ecrire({ confirmation: undefined });
   };
+
+  /** DT-009 : une écriture d'un autre écrivain (fusion distante, autre onglet) rafraîchit l'écran courant. */
+  readonly observerDepot = (): (() => void) =>
+    this.services.observer?.(() => {
+      void this.#rafraichir();
+    }) ?? (() => undefined);
 }
 
 export const creerMagasinObjectifsTaches = (services: ServicesObjectifs): MagasinObjectifs =>

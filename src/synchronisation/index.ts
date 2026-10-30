@@ -43,4 +43,4 @@ export {
 } from './presentation/modeles-de-vue/indicateur-synchronisation';
 export { construireBandeau, type ModeleVueBandeau } from './presentation/modeles-de-vue/bandeau';
 // ST-US-017 §4.5 (rang 3) : mention « en attente » lue par les modèles de vue des lignes.
-export { mentionAttente } from './presentation/modeles-de-vue/mention-attente';
+export { mentionAttente, mentionAttenteSi } from './presentation/modeles-de-vue/mention-attente';

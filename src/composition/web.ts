@@ -35,6 +35,8 @@ export type Navigateur = {
   readonly recharger: () => void;
   /** Interrompt une navigation en cours (`window.stop()`), à l'échéance de l'écran d'attente. */
   readonly arreterNavigation: () => void;
+  /** Ouvre `url` dans un nouvel onglet, sans lien avec la page (`noopener,noreferrer`). */
+  readonly ouvrirOnglet: (url: string) => void;
 };
 
 /** Journal technique local : tampon de 7 jours dans la base technique ; `debug` désactivé en production. */
@@ -99,6 +101,7 @@ const assembler = (
     transport: transportDrive,
     versionApplication: VERSION_APPLICATION,
     surFermetureImposee: navigateur.recharger,
+    ouvrirOnglet: navigateur.ouvrirOnglet,
   });
   reference.base = application.base;
   return application;

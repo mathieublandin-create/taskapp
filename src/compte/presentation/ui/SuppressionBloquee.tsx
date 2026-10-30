@@ -1,3 +1,4 @@
+import { IonText } from '@ionic/react';
 import { useEffect, useRef } from 'react';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 
@@ -21,7 +22,9 @@ export const SuppressionBloquee = ({
   return (
     <div role="alert" data-message="ERR-017">
       <h2>{libelle('ERR-017')}</h2>
-      <p>{libelle('ERR-017', {}, 'texte')}</p>
+      <IonText>
+        <p>{libelle('ERR-017', {}, 'texte')}</p>
+      </IonText>
       <button ref={reessayer} type="button" disabled={enCours} onClick={surReessayer}>
         {libelle('ERR-017', enCours ? { variante: 'en-cours' } : {}, 'action')}
       </button>

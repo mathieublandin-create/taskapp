@@ -150,6 +150,14 @@
   gap: 4px 10px;
 }
 
+.point-attente {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dj-accent, currentColor);
+}
+
 [data-code='MEN-EN-RETARD'] {
   color: var(--dj-danger);
   font-weight: 600;

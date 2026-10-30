@@ -109,6 +109,10 @@
       "debut": 5,
       "fin": 5
     },
+    "src/commun/presentation/format/heure.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/commun/presentation/messages/catalogue.fr.ts": {
       "debut": 2,
       "fin": 2
@@ -733,6 +737,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/elements-en-attente.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/domaine/etat-local.ts": {
       "debut": 0,
       "fin": 0
@@ -833,6 +841,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation.ts": {
       "debut": 1,
       "fin": 1
@@ -848,6 +860,10 @@
     "src/synchronisation/presentation/ui/Bandeau.tsx": {
       "debut": 1,
       "fin": 1
+    },
+    "src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx": {
+      "debut": 3,
+      "fin": 3
     },
     "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
       "debut": 1,

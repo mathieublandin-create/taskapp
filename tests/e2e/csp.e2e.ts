@@ -5,6 +5,9 @@ import { expect, test, type Page } from '@playwright/test';
 /** Composants Ionic « scoped » ou à Shadow DOM utilisés par src/ : instanciés pour déclencher leurs styles. */
 const COMPOSANTS_IONIC = [
   'ion-button',
+  'ion-card',
+  'ion-card-title',
+  'ion-card-content',
   'ion-buttons',
   'ion-header',
   'ion-toolbar',
@@ -14,6 +17,7 @@ const COMPOSANTS_IONIC = [
   'ion-textarea',
   'ion-chip',
   'ion-note',
+  'ion-text',
   'ion-fab',
   'ion-toast',
   'ion-modal',
@@ -64,7 +68,7 @@ test.describe('CSP du build de production (ADR-014)', () => {
     const definis = await instancierComposantsIonic(page);
     await page.waitForLoadState('networkidle');
 
-    expect(definis.length).toBeGreaterThan(0);
+    expect(definis).toEqual(COMPOSANTS_IONIC);
     expect(await violationsRelevees(page)).toEqual([]);
     expect(messagesCsp).toEqual([]);
     expect(erreursPage).toEqual([]);

@@ -25,12 +25,15 @@ export type ObjectifsTaches = {
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterDetailObjectif: ConsulterDetailObjectif;
   readonly consulterHistorique: ConsulterHistorique;
+  /** Changements du dépôt local, quel qu'en soit l'écrivain (DT-009) ; obligatoire à l'assemblage (RC-R3-11). */
+  readonly observer: (rappel: () => void) => () => void;
 };
 
 export const assemblerObjectifsTaches = (d: {
   readonly service: ServiceEtatLocal;
   readonly generateur: GenerateurIdentifiants;
   readonly horloge: Horloge;
+  readonly observer: (rappel: () => void) => () => void;
 }): ObjectifsTaches => ({
   horloge: d.horloge,
   creerObjectif: new CreerObjectif(d.service, d.generateur),
@@ -42,4 +45,5 @@ export const assemblerObjectifsTaches = (d: {
   consulterObjectifs: new ConsulterObjectifs(d.service, d.horloge),
   consulterDetailObjectif: new ConsulterDetailObjectif(d.service, d.horloge),
   consulterHistorique: new ConsulterHistorique(d.service),
+  observer: d.observer,
 });
