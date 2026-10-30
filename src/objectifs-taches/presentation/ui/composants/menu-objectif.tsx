@@ -4,8 +4,8 @@ import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confir
 import { LIBELLES_OBJECTIFS } from '../libelles-ui';
 
 // Menu « … » de l'objectif (ECR-003 C) : actions peu fréquentes regroupées, suppression isolée en bas et en rouge.
-// Seules les actions de l'objectif offertes par le modèle de vue et connues de l'écran sont présentées ; les actions
-// des rangs suivants (placer, créer un sous-objectif) y seront ajoutées avec leurs US.
+// Seules les actions de l'objectif offertes par le modèle de vue et connues de l'écran sont présentées. « Créer un
+// sous-objectif » n'y figure pas : « Ajouter » est dans l'en-tête de la section « Sous-objectifs » (ECR-003 D).
 export type ActionMenuObjectif = keyof typeof LIBELLES_OBJECTIFS.menu;
 
 const ORDRE_MENU: ReadonlyArray<ActionMenuObjectif> = [
@@ -13,6 +13,7 @@ const ORDRE_MENU: ReadonlyArray<ActionMenuObjectif> = [
   'MODIFIER_DESCRIPTION',
   'MODIFIER_DELAI',
   'RETIRER_DELAI',
+  'PLACER',
   'SUPPRIMER',
 ];
 

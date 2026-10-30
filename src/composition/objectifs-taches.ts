@@ -4,9 +4,13 @@ import {
   ConsulterDetailObjectif,
   ConsulterHistorique,
   ConsulterObjectifs,
+  ConsulterSelecteurParent,
   CreerObjectif,
+  CreerSousObjectif,
   ModifierDelaiObjectif,
   ModifierDescriptionObjectif,
+  PlacerObjectif,
+  RendreObjectifPrincipal,
   RenommerObjectif,
   RetirerDelaiObjectif,
   SupprimerObjectif,
@@ -17,6 +21,9 @@ import type { ServiceEtatLocal } from '../synchronisation';
 export type ObjectifsTaches = {
   readonly horloge: Horloge;
   readonly creerObjectif: CreerObjectif;
+  readonly creerSousObjectif: CreerSousObjectif;
+  readonly placerObjectif: PlacerObjectif;
+  readonly rendreObjectifPrincipal: RendreObjectifPrincipal;
   readonly renommerObjectif: RenommerObjectif;
   readonly modifierDescriptionObjectif: ModifierDescriptionObjectif;
   readonly modifierDelaiObjectif: ModifierDelaiObjectif;
@@ -24,6 +31,7 @@ export type ObjectifsTaches = {
   readonly supprimerObjectif: SupprimerObjectif;
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterDetailObjectif: ConsulterDetailObjectif;
+  readonly consulterSelecteurParent: ConsulterSelecteurParent;
   readonly consulterHistorique: ConsulterHistorique;
   /** Changements du dépôt local, quel qu'en soit l'écrivain (DT-009) ; obligatoire à l'assemblage (RC-R3-11). */
   readonly observer: (rappel: () => void) => () => void;
@@ -37,6 +45,9 @@ export const assemblerObjectifsTaches = (d: {
 }): ObjectifsTaches => ({
   horloge: d.horloge,
   creerObjectif: new CreerObjectif(d.service, d.generateur),
+  creerSousObjectif: new CreerSousObjectif(d.service, d.generateur),
+  placerObjectif: new PlacerObjectif(d.service),
+  rendreObjectifPrincipal: new RendreObjectifPrincipal(d.service),
   renommerObjectif: new RenommerObjectif(d.service),
   modifierDescriptionObjectif: new ModifierDescriptionObjectif(d.service),
   modifierDelaiObjectif: new ModifierDelaiObjectif(d.service),
@@ -44,6 +55,7 @@ export const assemblerObjectifsTaches = (d: {
   supprimerObjectif: new SupprimerObjectif(d.service),
   consulterObjectifs: new ConsulterObjectifs(d.service, d.horloge),
   consulterDetailObjectif: new ConsulterDetailObjectif(d.service, d.horloge),
+  consulterSelecteurParent: new ConsulterSelecteurParent(d.service, d.horloge),
   consulterHistorique: new ConsulterHistorique(d.service),
   observer: d.observer,
 });

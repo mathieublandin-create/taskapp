@@ -22,6 +22,8 @@ export type ProprietesDetailObjectif = {
   readonly surRetour: () => void;
   readonly surOuvrirMenu: () => void;
   readonly surOuvrirSousObjectif: (id: IdObjectif) => void;
+  /** Facultatif : sans lui, la section n'offre pas « Ajouter » (écrans et tests du rang 2). */
+  readonly surAjouterSousObjectif?: () => void;
 };
 
 const ESPACE_INSECABLE = ' ';
@@ -61,12 +63,19 @@ const MetaDetail = ({ modele }: { readonly modele: ModeleVueDetailObjectif }) =>
 const SousObjectifs = ({
   section,
   surOuvrir,
+  surAjouter,
 }: {
   readonly section: ModeleVueDetailObjectif['sousObjectifs'];
   readonly surOuvrir: (id: IdObjectif) => void;
+  readonly surAjouter: (() => void) | undefined;
 }) => (
   <section data-code={section.code}>
     <h2>{section.libelle}</h2>
+    {surAjouter === undefined ? null : (
+      <IonButton fill="clear" size="small" onClick={surAjouter}>
+        {LIBELLES_OBJECTIFS.ajouterSousObjectif}
+      </IonButton>
+    )}
     <ul className="liste-objectifs">
       {section.lignes.map((ligne) => (
         <LigneObjectifUi
@@ -100,25 +109,45 @@ const EnTeteDetail = ({ modele }: { readonly modele: ModeleVueDetailObjectif }) 
   </>
 );
 
-export const DetailObjectif = ({
+type ProprietesCorpsDetail = Pick<
+  ProprietesDetailObjectif,
+  'modele' | 'surOuvrirSousObjectif' | 'surAjouterSousObjectif'
+>;
+
+/** La section des sous-objectifs, dont « Ajouter » : absent (non désactivé) sur un sous-objectif. */
+const OrganisationDetail = ({
   modele,
   surOuvrirSousObjectif,
-  ...barre
-}: ProprietesDetailObjectif) => (
-  <>
-    <BarreDetail {...barre} />
-    <IonContent>
-      <EnTeteDetail modele={modele} />
-      {modele.alerteDelai === undefined ? null : (
-        <IonNote color="warning" role="status" data-code={modele.alerteDelai.code}>
-          {modele.alerteDelai.libelle}
-        </IonNote>
-      )}
-      {modele.description === undefined ? null : <p>{modele.description}</p>}
-      {modele.sousObjectifs.lignes.length === 0 ? null : (
-        <SousObjectifs section={modele.sousObjectifs} surOuvrir={surOuvrirSousObjectif} />
-      )}
-      {modele.etatVide === undefined ? null : <EtatVide code={modele.etatVide.code} />}
-    </IonContent>
-  </>
-);
+  surAjouterSousObjectif,
+}: ProprietesCorpsDetail) => {
+  const surAjouter = modele.actions.includes('CREER_SOUS_OBJECTIF')
+    ? surAjouterSousObjectif
+    : undefined;
+  return modele.sousObjectifs.lignes.length === 0 && surAjouter === undefined ? null : (
+    <SousObjectifs
+      section={modele.sousObjectifs}
+      surOuvrir={surOuvrirSousObjectif}
+      surAjouter={surAjouter}
+    />
+  );
+};
+
+export const DetailObjectif = ({ modele, ...proprietes }: ProprietesDetailObjectif) => {
+  const { surRetour, surOuvrirMenu, ...organisation } = proprietes;
+  return (
+    <>
+      <BarreDetail surRetour={surRetour} surOuvrirMenu={surOuvrirMenu} />
+      <IonContent>
+        <EnTeteDetail modele={modele} />
+        {modele.alerteDelai === undefined ? null : (
+          <IonNote color="warning" role="status" data-code={modele.alerteDelai.code}>
+            {modele.alerteDelai.libelle}
+          </IonNote>
+        )}
+        {modele.description === undefined ? null : <p>{modele.description}</p>}
+        <OrganisationDetail modele={modele} {...organisation} />
+        {modele.etatVide === undefined ? null : <EtatVide code={modele.etatVide.code} />}
+      </IonContent>
+    </>
+  );
+};

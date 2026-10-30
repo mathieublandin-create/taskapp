@@ -162,7 +162,7 @@ describe('FeuilleObjectif (ECR-008 B, ECR-003 C)', () => {
 });
 
 describe('MenuObjectif (ECR-003 C)', () => {
-  it('UT-COMP-US-001-75 actionsDuMenu — garde les actions connues de l’écran, dans l’ordre du menu ; PLACER et CREER_SOUS_OBJECTIF viennent avec US-023', () => {
+  it('UT-COMP-US-001-75 actionsDuMenu — garde les actions connues de l’écran, dans l’ordre du menu ; PLACER est dans le menu, CREER_SOUS_OBJECTIF n’y est pas (« Ajouter » est dans la section des sous-objectifs)', () => {
     expect(
       actionsDuMenu([
         'SUPPRIMER',
@@ -172,7 +172,7 @@ describe('MenuObjectif (ECR-003 C)', () => {
         'RETIRER_DELAI',
         'MODIFIER_DELAI',
       ]),
-    ).toEqual(['RENOMMER', 'MODIFIER_DELAI', 'RETIRER_DELAI', 'SUPPRIMER']);
+    ).toEqual(['RENOMMER', 'MODIFIER_DELAI', 'RETIRER_DELAI', 'PLACER', 'SUPPRIMER']);
     expect(actionsDuMenu([])).toEqual([]);
   });
 
@@ -192,7 +192,12 @@ describe('MenuObjectif (ECR-003 C)', () => {
     });
 
     const boutons = (await screen.findAllByRole('button')).map((b) => b.textContent);
-    expect(boutons).toEqual(['Renommer l’objectif', 'Supprimer l’objectif…', 'Annuler']);
+    expect(boutons).toEqual([
+      'Renommer l’objectif',
+      'Placer sous un autre objectif',
+      'Supprimer l’objectif…',
+      'Annuler',
+    ]);
     expect(screen.getByRole('button', { name: 'Supprimer l’objectif…' }).className).toContain(
       'action-sheet-destructive',
     );

@@ -5,6 +5,11 @@ import type { Resultat } from '../../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import type { ErreurDepotLocal } from '../../../../synchronisation';
 import type { CreerObjectif } from '../../../application/cas-usage/creer-objectif';
+import type { CreerSousObjectif } from '../../../application/cas-usage/creer-sous-objectif';
+import type {
+  PlacerObjectif,
+  RendreObjectifPrincipal,
+} from '../../../application/cas-usage/placer-objectif';
 import type {
   ModifierDelaiObjectif,
   ModifierDescriptionObjectif,
@@ -14,6 +19,7 @@ import type {
 import type { SupprimerObjectif } from '../../../application/cas-usage/supprimer-objectif';
 import type { ConsulterDetailObjectif } from '../../../application/requetes/consulter-detail-objectif';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
+import type { ConsulterSelecteurParent } from '../../../application/requetes/consulter-selecteur-parent';
 import type { RefusMetier } from '../../../domaine/refus';
 import {
   construireConfirmation,
@@ -28,6 +34,11 @@ import {
   type ModeleVueListeObjectifs,
 } from '../../modeles-de-vue/liste-objectifs';
 import { messagesDeRefus, type MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import {
+  construireSelecteurParent,
+  type ModeleVueSelecteurParent,
+  type OptionParent,
+} from '../../modeles-de-vue/selecteur-parent';
 
 // Magasin Zustand des objectifs (ST-US-001 §3 n° 32) : modèles de vue courants, recalculés après chaque commande.
 // Il ne porte que de l'état d'écran ; toute règle métier reste dans les cas d'usage.
@@ -36,6 +47,10 @@ import { messagesDeRefus, type MessageRefus } from '../../modeles-de-vue/message
 export type ServicesObjectifs = {
   readonly horloge: Horloge;
   readonly creerObjectif: CreerObjectif;
+  readonly creerSousObjectif: CreerSousObjectif;
+  readonly placerObjectif: PlacerObjectif;
+  readonly rendreObjectifPrincipal: RendreObjectifPrincipal;
+  readonly consulterSelecteurParent: ConsulterSelecteurParent;
   readonly renommerObjectif: RenommerObjectif;
   readonly modifierDescriptionObjectif: ModifierDescriptionObjectif;
   readonly modifierDelaiObjectif: ModifierDelaiObjectif;
@@ -62,12 +77,20 @@ export type SaisieObjectif = {
 export type EcranObjectifs =
   { readonly type: 'LISTE' } | { readonly type: 'DETAIL'; readonly id: IdObjectif };
 
+/** Sélecteur de parent ouvert (ECR-008 C, D) et, après un choix refusé, le refus à expliquer. */
+export type SelecteurParentOuvert = {
+  readonly objectifId: IdObjectif;
+  readonly modele: ModeleVueSelecteurParent;
+  readonly refus?: MessageRefus;
+};
+
 export type EtatMagasinObjectifs = {
   readonly ecran: EcranObjectifs;
   readonly liste?: ModeleVueListeObjectifs;
   readonly detail?: ModeleVueDetailObjectif | undefined;
   /** Confirmation de suppression en attente (CNF-SUPPR-OBJECTIF). */
   readonly confirmation?: ModeleVueConfirmation | undefined;
+  readonly selecteurParent?: SelecteurParentOuvert | undefined;
   /** Vrai après un échec d'écriture ou de lecture locale : toast ERR-014. */
   readonly erreurEnregistrement: boolean;
   readonly actions: ActionsMagasinObjectifs;
@@ -77,6 +100,16 @@ export type ActionsMagasinObjectifs = {
   readonly afficherListe: () => Promise<void>;
   readonly ouvrirDetail: (id: IdObjectif) => Promise<void>;
   readonly creer: (saisie: SaisieObjectif) => Promise<IssueSaisie>;
+  /** Crée un sous-objectif sous `parentId` et reste sur l'écran du parent. */
+  readonly creerSousObjectif: (
+    parentId: IdObjectif,
+    saisie: SaisieObjectif,
+  ) => Promise<IssueSaisie>;
+  readonly ouvrirSelecteurParent: (id: IdObjectif) => Promise<void>;
+  readonly fermerSelecteurParent: () => void;
+  /** Efface le refus affiché dans le sélecteur (« Compris »). */
+  readonly effacerRefusPlacement: () => void;
+  readonly placer: (id: IdObjectif, cible: OptionParent['cible']) => Promise<IssueSaisie>;
   readonly renommer: (id: IdObjectif, intitule: string) => Promise<IssueSaisie>;
   readonly modifierDescription: (id: IdObjectif, description: string) => Promise<IssueSaisie>;
   /** `undefined` retire le délai. */
@@ -186,6 +219,56 @@ class ActionsObjectifs implements ActionsMagasinObjectifs {
     await this.ouvrirDetail(creation.valeur);
     return { type: 'FAITE', id: creation.valeur };
   });
+
+  readonly creerSousObjectif = this.#effacee(
+    async (parentId: IdObjectif, saisie: SaisieObjectif): Promise<IssueSaisie> => {
+      const creation = await this.services.creerSousObjectif.executer({ parentId, ...saisie });
+      const issue = issueDe(creation);
+      await this.#apres(issue);
+      return creation.ok ? { type: 'FAITE', id: creation.valeur } : issue;
+    },
+  );
+
+  readonly ouvrirSelecteurParent = this.#effacee(async (id: IdObjectif): Promise<void> => {
+    const lecture = await this.services.consulterSelecteurParent.executer({ objectifId: id });
+    if (lecture.ok) {
+      this.ecrire({
+        selecteurParent: { objectifId: id, modele: construireSelecteurParent(lecture.valeur) },
+      });
+    } else {
+      await this.#apres(issueDe(lecture));
+    }
+  });
+
+  readonly fermerSelecteurParent = (): void => {
+    this.ecrire({ selecteurParent: undefined });
+  };
+
+  readonly effacerRefusPlacement = (): void => {
+    const { selecteurParent } = this.lire();
+    if (selecteurParent === undefined) return;
+    const { refus: _refus, ...sansRefus } = selecteurParent;
+    this.ecrire({ selecteurParent: sansRefus });
+  };
+
+  /** Un placement refusé garde le sélecteur ouvert avec l'explication ; un placement fait le referme. */
+  readonly placer = this.#effacee(
+    async (id: IdObjectif, cible: OptionParent['cible']): Promise<IssueSaisie> => {
+      const resultat =
+        cible.type === 'AUCUN'
+          ? await this.services.rendreObjectifPrincipal.executer({ objectifId: id })
+          : await this.services.placerObjectif.executer({ objectifId: id, parentId: cible.id });
+      const issue = issueDe(resultat);
+      const refus = issue.type === 'REFUSEE' ? issue.messages[0] : undefined;
+      const { selecteurParent } = this.lire();
+      if (refus !== undefined && selecteurParent !== undefined) {
+        this.ecrire({ selecteurParent: { ...selecteurParent, refus } });
+      } else {
+        this.ecrire({ selecteurParent: undefined });
+      }
+      return this.#apres(issue);
+    },
+  );
 
   readonly renommer = this.#effacee(async (id: IdObjectif, intitule: string) =>
     this.#apres(

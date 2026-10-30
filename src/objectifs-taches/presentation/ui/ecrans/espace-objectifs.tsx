@@ -16,7 +16,10 @@ import type {
   EcranObjectifs,
   IssueSaisie,
   MagasinObjectifs,
+  SaisieObjectif,
+  SelecteurParentOuvert,
 } from '../etat/magasin-objectifs-taches';
+import { SelecteurParent } from '../composants/selecteur-parent';
 import { DetailObjectif } from './detail-objectif';
 import { ListeObjectifs } from './liste-objectifs';
 
@@ -25,7 +28,7 @@ import { ListeObjectifs } from './liste-objectifs';
 export type ProprietesEspaceObjectifs = { readonly magasin: MagasinObjectifs };
 
 const FEUILLE_PAR_ACTION: Readonly<
-  Record<Exclude<ActionMenuObjectif, 'SUPPRIMER' | 'RETIRER_DELAI'>, ModeFeuille>
+  Record<Exclude<ActionMenuObjectif, 'SUPPRIMER' | 'RETIRER_DELAI' | 'PLACER'>, ModeFeuille>
 > = { RENOMMER: 'RENOMMAGE', MODIFIER_DESCRIPTION: 'DESCRIPTION', MODIFIER_DELAI: 'DELAI' };
 
 const delaiDepuisTexte = (texte: string): DateCalendaire | undefined => {
@@ -33,13 +36,13 @@ const delaiDepuisTexte = (texte: string): DateCalendaire | undefined => {
   return date.ok ? date.valeur : undefined;
 };
 
-const creer = (actions: ActionsMagasinObjectifs, valeurs: ValeursFeuille): Promise<IssueSaisie> => {
+const saisieDepuis = (valeurs: ValeursFeuille): SaisieObjectif => {
   const delai = delaiDepuisTexte(valeurs.delai);
-  return actions.creer({
+  return {
     intitule: valeurs.intitule,
     ...(valeurs.description === '' ? {} : { description: valeurs.description }),
     ...(delai === undefined ? {} : { delai }),
-  });
+  };
 };
 
 /** Enregistre la saisie de la feuille sur l'objectif ouvert (ou crée l'objectif). */
@@ -49,9 +52,12 @@ const enregistrer = (
   mode: ModeFeuille,
   valeurs: ValeursFeuille,
 ): Promise<IssueSaisie> => {
-  if (mode === 'CREATION') return creer(actions, valeurs);
+  if (mode === 'CREATION') return actions.creer(saisieDepuis(valeurs));
   if (ecran.type !== 'DETAIL') {
     throw new ErreurProgrammation(`Saisie « ${mode} » sans objectif ouvert`);
+  }
+  if (mode === 'CREATION_SOUS_OBJECTIF') {
+    return actions.creerSousObjectif(ecran.id, saisieDepuis(valeurs));
   }
   if (mode === 'RENOMMAGE') return actions.renommer(ecran.id, valeurs.intitule);
   if (mode === 'DESCRIPTION') return actions.modifierDescription(ecran.id, valeurs.description);
@@ -62,7 +68,7 @@ const valeursInitiales = (
   detail: ModeleVueDetailObjectif | undefined,
   mode: ModeFeuille,
 ): Partial<ValeursFeuille> => {
-  if (detail === undefined || mode === 'CREATION') return {};
+  if (detail === undefined || mode === 'CREATION' || mode === 'CREATION_SOUS_OBJECTIF') return {};
   if (mode === 'RENOMMAGE') return { intitule: detail.intitule };
   if (mode === 'DESCRIPTION') return { description: detail.description ?? '' };
   return { delai: detail.delai.type === 'DATE' ? detail.delai.date : '' };
@@ -125,6 +131,9 @@ const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
         surRetour={() => void actions.afficherListe()}
         surOuvrirMenu={geste.ouvrirMenu}
         surOuvrirSousObjectif={(id) => void actions.ouvrirDetail(id)}
+        surAjouterSousObjectif={() => {
+          geste.ouvrirFeuille('CREATION_SOUS_OBJECTIF');
+        }}
       />
     );
   }
@@ -137,25 +146,63 @@ const useGestesSaisie = ({ ecran, actions, geste }: Omit<ProprietesPage, 'liste'
     if (ecran.type !== 'DETAIL') return;
     if (action === 'SUPPRIMER') void actions.demanderSuppression(ecran.id);
     else if (action === 'RETIRER_DELAI') void actions.modifierDelai(ecran.id, undefined);
+    else if (action === 'PLACER') void actions.ouvrirSelecteurParent(ecran.id);
     else geste.ouvrirFeuille(FEUILLE_PAR_ACTION[action]);
   },
   valider: (mode: ModeFeuille, valeurs: ValeursFeuille): Promise<IssueSaisie> =>
     enregistrer(actions, ecran, mode, valeurs),
 });
 
-const Saisies = ({ ecran, detail, actions, geste }: Omit<ProprietesPage, 'liste'>) => {
+const SelecteurParentAffiche = ({
+  actions,
+  ouvert,
+}: {
+  readonly actions: ActionsMagasinObjectifs;
+  readonly ouvert: SelecteurParentOuvert | undefined;
+}) =>
+  ouvert === undefined ? null : (
+    <SelecteurParent
+      modele={ouvert.modele}
+      refus={ouvert.refus}
+      surRefusCompris={actions.effacerRefusPlacement}
+      surChoisir={(cible) => void actions.placer(ouvert.objectifId, cible)}
+      surFermer={actions.fermerSelecteurParent}
+    />
+  );
+
+const MenuDuDetail = ({
+  detail,
+  geste,
+  surAction,
+}: {
+  readonly detail: ModeleVueDetailObjectif | undefined;
+  readonly geste: Geste;
+  readonly surAction: (action: ActionMenuObjectif) => void;
+}) =>
+  detail === undefined ? null : (
+    <MenuObjectif
+      ouvert={geste.menuOuvert}
+      actions={detail.actions}
+      surAction={surAction}
+      surFermer={geste.fermerMenu}
+    />
+  );
+
+const Saisies = ({
+  ecran,
+  detail,
+  actions,
+  geste,
+  selecteurParent,
+}: Omit<ProprietesPage, 'liste'> & {
+  readonly selecteurParent: SelecteurParentOuvert | undefined;
+}) => {
   const { feuille } = geste;
   const { surActionMenu, valider } = useGestesSaisie({ ecran, actions, geste });
   return (
     <>
-      {detail === undefined ? null : (
-        <MenuObjectif
-          ouvert={geste.menuOuvert}
-          actions={detail.actions}
-          surAction={surActionMenu}
-          surFermer={geste.fermerMenu}
-        />
-      )}
+      <MenuDuDetail detail={detail} geste={geste} surAction={surActionMenu} />
+      <SelecteurParentAffiche actions={actions} ouvert={selecteurParent} />
       <FeuilleObjectif
         ouverte={feuille.ouverte}
         mode={feuille.mode}
@@ -175,11 +222,11 @@ export const EspaceObjectifs = ({ magasin }: ProprietesEspaceObjectifs) => {
   useEffect(() => {
     void actions.afficherListe();
   }, [actions]);
-  const { ecran, liste, detail, confirmation } = etat;
+  const { ecran, liste, detail, confirmation, selecteurParent } = etat;
   return (
     <>
       <Page {...{ ecran, liste, detail, actions, geste }} />
-      <Saisies {...{ ecran, detail, actions, geste }} />
+      <Saisies {...{ ecran, detail, actions, geste, selecteurParent }} />
       {confirmation === undefined ? null : (
         <BoiteConfirmation
           code={confirmation.code}

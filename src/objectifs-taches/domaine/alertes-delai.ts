@@ -1,6 +1,6 @@
 import { nonImplemente } from '@non-implemente';
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
-import type { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
+import { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
 import type { VueMetier } from './vue-metier';
 
 // RG-022 (ST-US-023 §6.3) : ALR-007.
@@ -10,10 +10,18 @@ export type AlerteDelaiObjectif = {
   readonly delaiParent: DateCalendaire;
 };
 
+/** Recalculée à chaque lecture : aucune écriture (ST-US-023 §6.3). Égalité de délais : pas d'alerte. */
 export const alerteDelaiObjectif = (
-  _vue: VueMetier,
-  _id: IdObjectif,
-): AlerteDelaiObjectif | undefined => nonImplemente('alerteDelaiObjectif');
+  vue: VueMetier,
+  id: IdObjectif,
+): AlerteDelaiObjectif | undefined => {
+  const objectif = vue.objectifs.get(id);
+  const parent =
+    objectif?.parentId === undefined ? undefined : vue.objectifs.get(objectif.parentId);
+  if (objectif?.delai === undefined || parent?.delai === undefined) return undefined;
+  if (DateCalendaire.comparer(objectif.delai, parent.delai) <= 0) return undefined;
+  return { parentId: parent.id, parentIntitule: parent.intitule, delaiParent: parent.delai };
+};
 
 // RG-024, RG-023 (ST-US-002 §6.3) : ALR-005 et ALR-006.
 export type AlerteDelaiTache =
