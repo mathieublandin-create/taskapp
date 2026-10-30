@@ -45,6 +45,10 @@ Les cinq agents les plus coûteux :
 | OPT-8 | **Compactage de la session Jarvis** à chaque changement d'étape. Jarvis s'appuie sur `suivi-projet.md` et l'état des lieux, qui sont faits pour cela, plutôt que sur l'historique de la conversation. | 10 à 20 % de la session | Neutre |
 | OPT-9 | **E13 des petits diffs sur sonnet** (ajout du 2026-10-30) : la revue d'une dette technique ou d'un changement d'outillage, sans code métier ni de synchronisation, est confiée à un agent Anthony **sonnet**. Opus reste réservé aux revues des rangs et au travail de Bruce. | 5 à 10 % | Neutre : diffs courts, sans conception |
 | OPT-10 | **Briefs opus resserrés** (ajout du 2026-10-30) : tout brief d'agent opus nomme les sections (§x.y) ou plages de lignes à lire ; aucun fichier entier hors E9 et E11. Mesure du 2026-10-30 : 42 agents opus = environ 54 % de la consommation de la session, soit 27 M de tokens relus par lancement en moyenne. | 10 à 20 % des agents opus | Neutre à positif |
+| OPT-11 | **Pas d'abonnement aux PR** (ajout du 2026-10-30) : chaque événement GitHub réveille un tour complet de la session principale (4 à 6 par PR). La CI est lue en une commande après l'E13. | 5 à 10 % de la session | Neutre |
+| OPT-12 | **État des lieux par script** (ajout du 2026-10-30) : `docs/etat-des-lieux-avancement.json` + `docs/outils/maj-etat-des-lieux.py` ; plus de HTML édité à la main ni de pourcentage calculé à la main ; mises à jour aux seuls changements d'étape et fusions. | 5 à 10 % | Positif : fin des erreurs d'arrondi |
+| OPT-13 | **Gestes mécaniques à Friday haiku** (ajout du 2026-10-30) : push, ouverture de PR, relevé de CI. | 5 % | Neutre |
+| OPT-14 | **Messages courts** (ajout du 2026-10-30) : 3 à 5 lignes pour le commanditaire, 5 lignes pour les comptes rendus d'agents. | 5 % | Neutre |
 
 **Gain global estimé : 40 à 55 %** de tokens pour le même travail. OPT-1 et OPT-2 représentent l'essentiel du gain.
 
