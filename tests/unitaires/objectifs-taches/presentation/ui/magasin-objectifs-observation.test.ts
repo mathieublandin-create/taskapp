@@ -47,4 +47,15 @@ describe('Magasin des objectifs — observation du dépôt local (DT-009)', () =
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(magasin.getState().detail?.intitule).toBe('Guide publié');
   });
+
+  it('UT-COMP-US-017-53 sans observateur fourni, observerDepot rend un désabonnement inoffensif', () => {
+    const banc = creerBancObjectifs();
+    const magasin = creerMagasinObjectifsTaches(banc.services);
+
+    const arreter = magasin.getState().actions.observerDepot();
+
+    expect(() => {
+      arreter();
+    }).not.toThrow();
+  });
 });
