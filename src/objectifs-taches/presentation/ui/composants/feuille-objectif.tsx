@@ -43,6 +43,7 @@ const CHAMPS_PAR_MODE: Readonly<Record<ModeFeuille, ReadonlyArray<keyof ValeursF
   RENOMMAGE: ['intitule'],
   DESCRIPTION: ['description'],
   DELAI: ['delai'],
+  CREATION_SOUS_OBJECTIF: ['intitule', 'description', 'delai'],
 };
 
 const sontEgales = (a: ValeursFeuille, b: ValeursFeuille): boolean =>

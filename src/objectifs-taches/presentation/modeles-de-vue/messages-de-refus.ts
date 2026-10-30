@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { CodeCatalogue } from '../../../commun/presentation/messages/codes';
 import type { VariablesLibelle } from '../../../commun/presentation/messages/libelle';
 import type { DefautSaisie, RefusMetier } from '../../domaine/refus';
@@ -40,9 +39,12 @@ export const messagesDeRefus = (refus: RefusMetier): ReadonlyArray<MessageRefus>
     case 'DeuxiemeNiveau':
       return [messageDeuxiemeNiveau(refus)];
     case 'EstimationCalculee':
+      return [{ code: 'ERR-033', variables: {} }];
     case 'ObjectifsHerites':
+      return [{ code: 'ERR-034', variables: {} }];
     case 'AjoutSousTacheATacheAbandonnee':
+      return [{ code: 'ERR-032', variables: {} }];
     case 'SousTachesRestantes':
-      return nonImplemente('messagesDeRefus (refus de ST-US-023, 002, 024 et 003)');
+      return [{ code: 'ERR-035', variables: { n: refus.nombre } }];
   }
 };

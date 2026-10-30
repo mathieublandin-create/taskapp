@@ -28,6 +28,25 @@
   box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
 }
 
+.selecteur-parent fieldset {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+
+.selecteur-parent ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selecteur-parent li {
+  display: flex;
+  flex-direction: column;
+  min-height: 44px;
+  justify-content: center;
+}
+
 .boite-confirmation .actions {
   display: flex;
   justify-content: flex-end;

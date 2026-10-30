@@ -9,6 +9,9 @@ export const LIBELLES_OBJECTIFS = {
   champIntitule: 'Intitulé',
   champDescription: 'Description',
   champDelai: 'Délai',
+  ajouterSousObjectif: 'Ajouter',
+  placerSous: 'Placer sous un autre objectif',
+  validerPlacement: 'Placer',
   facultatif: '(facultatif)',
   facultative: '(facultative)',
   exempleIntitule: 'Ex. Publier le guide pratique',
@@ -19,6 +22,10 @@ export const LIBELLES_OBJECTIFS = {
     RENOMMAGE: { titre: 'Renommer l’objectif', validation: 'Enregistrer' },
     DESCRIPTION: { titre: 'Description de l’objectif', validation: 'Enregistrer' },
     DELAI: { titre: 'Délai de l’objectif', validation: 'Enregistrer' },
+    CREATION_SOUS_OBJECTIF: {
+      titre: 'Nouveau sous-objectif',
+      validation: 'Créer le sous-objectif',
+    },
   },
   menu: {
     RENOMMER: 'Renommer l’objectif',
