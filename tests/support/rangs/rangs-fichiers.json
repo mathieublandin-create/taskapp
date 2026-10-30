@@ -738,8 +738,8 @@
       "fin": 0
     },
     "src/synchronisation/domaine/elements-en-attente.ts": {
-      "debut": 4,
-      "fin": 4
+      "debut": 3,
+      "fin": 3
     },
     "src/synchronisation/domaine/etat-local.ts": {
       "debut": 0,
