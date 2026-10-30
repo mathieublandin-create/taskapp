@@ -43,6 +43,8 @@ Les cinq agents les plus coûteux :
 | OPT-6 | **Au plus 2 agents opus en parallèle.** Les autres attendent ou passent sur sonnet. | Évite les reprises coûteuses | Positif : moins d'interruptions en cours de tâche |
 | OPT-7 | **Revues E13 et E13b sur le diff** de la branche (`git diff lot/LOT-001...us/xxx`) plutôt que sur l'ensemble des ST. La relecture complète reste réservée à l'E11. | 20 à 30 % des revues | Neutre : c'est le standard d'une revue de code |
 | OPT-8 | **Compactage de la session Jarvis** à chaque changement d'étape. Jarvis s'appuie sur `suivi-projet.md` et l'état des lieux, qui sont faits pour cela, plutôt que sur l'historique de la conversation. | 10 à 20 % de la session | Neutre |
+| OPT-9 | **E13 des petits diffs sur sonnet** (ajout du 2026-10-30) : la revue d'une dette technique ou d'un changement d'outillage, sans code métier ni de synchronisation, est confiée à un agent Anthony **sonnet**. Opus reste réservé aux revues des rangs et au travail de Bruce. | 5 à 10 % | Neutre : diffs courts, sans conception |
+| OPT-10 | **Briefs opus resserrés** (ajout du 2026-10-30) : tout brief d'agent opus nomme les sections (§x.y) ou plages de lignes à lire ; aucun fichier entier hors E9 et E11. Mesure du 2026-10-30 : 42 agents opus = environ 54 % de la consommation de la session, soit 27 M de tokens relus par lancement en moyenne. | 10 à 20 % des agents opus | Neutre à positif |
 
 **Gain global estimé : 40 à 55 %** de tokens pour le même travail. OPT-1 et OPT-2 représentent l'essentiel du gain.
 

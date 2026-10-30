@@ -83,6 +83,8 @@ Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consign
 - **OPT-5 : comptes rendus courts.** Exige 15 lignes au plus ; le détail va dans les livrables du dépôt.
 - **OPT-6 : au plus 2 agents opus en parallèle.**
 - **OPT-7 : revues E13 et E13b sur le diff** de la branche.
+- **OPT-9 : E13 des petits diffs sur sonnet.** Une revue de dette technique ou d'outillage (sans code métier ni de synchronisation) va à un Anthony **sonnet** ; opus pour les revues des rangs et pour Bruce.
+- **OPT-10 : briefs opus resserrés.** Tout brief d'agent opus nomme les sections (§x.y) ou plages de lignes à lire ; jamais de fichier entier hors E9 et E11.
 - **OPT-8 : appuie-toi sur `docs/suivi-projet.md`** et sur l'état des lieux plutôt que sur l'historique de la conversation. Propose au commanditaire de compacter la session (`/compact`) à chaque changement d'étape.
 
 ## Vue « État des lieux »
