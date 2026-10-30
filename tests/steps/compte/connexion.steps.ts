@@ -298,6 +298,18 @@ When(
   },
 );
 
+// ST-US-017 §12.4 n° 4 : l'accès n'est plus reconnu par Google, sans que l'application le sache encore.
+Given(
+  "(que )l'accès Google du compte {string} va expirer sur le {appareil} pendant l'utilisation",
+  async function (this: MondeDoneJuan, nomCompte: string, nomAppareil: NomAppareil) {
+    const appareil = this.banc.appareil(nomAppareil);
+    const session = (await appareil.assurerOuverte()).session.etat();
+    assert.ok(session.type === 'OUVERTE', `Aucune session ouverte sur le ${appareil.nom}`);
+    assert.equal(session.identite.compte, this.banc.google.identite(nomCompte).compte);
+    appareil.expirerAccesSansConstat();
+  },
+);
+
 const expirerSession = function (this: MondeDoneJuan, nomAppareil: NomAppareil): void {
   this.banc.appareil(nomAppareil).expirerSessionGoogle();
 };

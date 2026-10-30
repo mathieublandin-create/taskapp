@@ -37,6 +37,7 @@ const preparer = (etat: EtatSynchronisationLu | undefined) => {
       appels.push('synchroniserMaintenant');
       return Promise.resolve();
     },
+    observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => {
       appels.push('ouvrirGoogleDrive');
     },

@@ -12,6 +12,7 @@ import {
   construireIndicateur,
   type ModeleVueIndicateur,
 } from '@src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
+import { formaterAnciennete } from '@src/commun/presentation/format/heure';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { racineDe } from '../../support/compte/etapes-compte';
 import { convertirAppareil } from '../../support/conversions';
@@ -31,7 +32,13 @@ const codeAction = (libelle: unknown): string => {
   return code;
 };
 
-const indicateurDe = async (appareil: AppareilSimule): Promise<ModeleVueIndicateur | undefined> => {
+// ANO-001 (ST-US-017 §12.4) : sous `@ANO-001`, l'indicateur est celui de la vue affichée par le contrôleur,
+// jamais rafraîchie par le step ; ailleurs, celui que donne l'état courant.
+const indicateurDe = async (
+  appareil: AppareilSimule,
+  lectureAffichee = false,
+): Promise<ModeleVueIndicateur | undefined> => {
+  if (lectureAffichee) return (await appareil.vueAffichee()).indicateur;
   const etat = await (await appareil.assurerOuverte()).consulterEtat();
   return etat === undefined ? undefined : construireIndicateur(etat);
 };
@@ -45,23 +52,49 @@ const bandeauDe = async (appareil: AppareilSimule): Promise<ModeleVueBandeau | u
 
 etapeAssertion(
   /^l'indicateur de synchronisation est "([^"]*)", avec l'action "([^"]*)"$/,
-  async ({ appareil }, code, action) => {
-    const indicateur = await indicateurDe(appareil);
+  async ({ monde, appareil }, code, action) => {
+    const indicateur = await indicateurDe(appareil, monde.lectureAffichee);
     assert.deepEqual([indicateur?.code, indicateur?.action], [code, codeAction(action)]);
   },
 );
 
 etapeAssertion(
   /^l'indicateur de synchronisation est (?:toujours )?"([^"]*)"$/,
-  async ({ appareil }, code) => {
-    assert.equal((await indicateurDe(appareil))?.code, code);
+  async ({ monde, appareil }, code) => {
+    assert.equal((await indicateurDe(appareil, monde.lectureAffichee))?.code, code);
   },
 );
 
 etapeAssertion(
   /^l'indicateur de synchronisation n'est (?:plus|pas) "([^"]*)"$/,
-  async ({ appareil }, code) => {
-    assert.notEqual((await indicateurDe(appareil))?.code, code);
+  async ({ monde, appareil }, code) => {
+    assert.notEqual((await indicateurDe(appareil, monde.lectureAffichee))?.code, code);
+  },
+);
+
+// ANO-001 (ST-US-017 §12.4 n° 5 et 6) : feuille « Compte et synchronisation » lue dans la vue affichée, quel que soit le tag.
+etapeAssertion(
+  /^l'indicateur de synchronisation indique un dernier échange à l'instant$/,
+  async ({ appareil }) => {
+    const t = appareil.horloge.maintenant();
+    const libelle = (await appareil.vueAffichee()).feuille?.dernierEchange?.libelle;
+    assert.ok(
+      libelle?.includes(formaterAnciennete(t, t)),
+      `Dernier échange affiché : ${String(libelle)}`,
+    );
+  },
+);
+
+etapeAssertion(
+  /^la feuille "Compte et synchronisation" indique (\d+) modifications? en attente$/,
+  async ({ appareil }, n) => {
+    const attente = (await appareil.vueAffichee()).feuille?.attente;
+    const attendu = Number(n);
+    if (attendu === 0) assert.equal(attente?.code, 'SYN-FEUILLE-RIEN-EN-ATTENTE');
+    else {
+      assert.equal(attente?.code, 'SYN-FEUILLE-EN-ATTENTE');
+      assert.equal(attente.n, attendu);
+    }
   },
 );
 

@@ -17,6 +17,10 @@ Before(function (this: MondeDoneJuan) {
   };
 });
 
+Before({ tags: '@ANO-001' }, function (this: MondeDoneJuan) {
+  this.lectureAffichee = true;
+});
+
 After(function (this: MondeDoneJuan) {
   globalThis.fetch = fetchOrigine;
   this.banc.arreter();

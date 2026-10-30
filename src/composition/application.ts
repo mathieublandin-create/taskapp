@@ -3,7 +3,7 @@ import type { EtatReseau } from '../commun/application/ports/etat-reseau';
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
 import type { JournalTechnique } from '../commun/application/ports/journal-technique';
-import type { Planificateur } from '../commun/application/ports/planificateur';
+import type { Annulation, Planificateur } from '../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../commun/application/ports/source-aleatoire';
 import { ErreurProgrammation } from '../commun/domaine/erreur-programmation';
 import { echec, succes } from '../commun/domaine/resultat';
@@ -113,6 +113,11 @@ export type Application = {
   readonly lireDernierContact: () => Promise<Instant | undefined>;
   /** Cycle immédiat de l'espace ouvert ; sans effet sans espace. */
   readonly synchroniserMaintenant: () => Promise<void>;
+  /**
+   * ANO-001 (ST-US-017 v0.4.3 §6.9) : relais des notifications du cycle de l'espace ouvert, quel qu'il soit
+   * (l'abonnement vaut aussi pour les espaces ouverts après lui).
+   */
+  readonly observerSynchronisation: (rappel: () => void) => Annulation;
   /** Ouvre Google Drive dans un nouvel onglet (action de la carte ERR-011). */
   readonly ouvrirGoogleDrive: () => void;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
@@ -307,6 +312,8 @@ type Noyau = Stockage & {
   readonly signalerRefus: SignalerRefusJeton;
   readonly accesGoogle: AccesGoogle;
   readonly depot: DepotAvantSortie;
+  /** Abonnés de `observerSynchronisation`, alimentés par le cycle et le dépôt de chaque espace (ANO-001). */
+  readonly relais: Set<() => void>;
 };
 
 const assemblerConnexion = (a: AdaptateursApplication, n: Noyau) => {
@@ -369,11 +376,37 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
     synchroniserMaintenant: async () => {
       await n.espace()?.cycle.synchroniserMaintenant();
     },
+    observerSynchronisation: (rappel: () => void): Annulation => {
+      n.relais.add(rappel);
+      return () => {
+        n.relais.delete(rappel);
+      };
+    },
     ouvrirGoogleDrive: () => {
       a.ouvrirOnglet(URL_GOOGLE_DRIVE);
     },
   };
 };
+
+/** ANO-001 (ST-US-017 §6.9) : le cycle et le dépôt de chaque espace alimentent le relais de `observerSynchronisation`. */
+const fabriquerCycles =
+  (
+    a: AdaptateursApplication,
+    transport: TransportSynchro,
+    acces: AccesGoogle,
+    relais: ReadonlySet<() => void>,
+  ): ((depot: DepotLocalDexie) => CycleSynchronisation) =>
+  (depot) => {
+    const cycle = new CycleSynchronisation({ ...a, depot, transport, acces });
+    const notifier = (): void => {
+      relais.forEach((rappel) => {
+        rappel();
+      });
+    };
+    cycle.observer(notifier);
+    depot.observer(notifier);
+    return cycle;
+  };
 
 /** Session, coffre, fournisseur, transport et accès Google ; la fabrique de cycle est renseignée ici. */
 const assemblerNoyau = (
@@ -396,12 +429,13 @@ const assemblerNoyau = (
   });
   const accesGoogle = accesGoogleDe(session, signalerRefus);
   const transport = a.transport(coffre);
-  fabriqueCycle.creer = (depot) =>
-    new CycleSynchronisation({ ...a, depot, transport, acces: accesGoogle });
+  const relais = new Set<() => void>();
+  fabriqueCycle.creer = fabriquerCycles(a, transport, accesGoogle, relais);
   return {
     ...stockage,
     ...{ session, coffre, fournisseur, transport, signalerRefus, accesGoogle },
     depot: depotAvantSortie(a, stockage.espace, () => accesGoogle),
+    relais,
   };
 };
 

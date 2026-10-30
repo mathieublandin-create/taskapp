@@ -10,7 +10,7 @@ import type { HeureLocale } from './temps';
 
 // Fragments d'expression régulière, réutilisés par les préfixes (prefixes.ts) : sans groupe capturant.
 export const FRAGMENT_APPAREIL = 'smartphone|PC';
-export const FRAGMENT_ECART = String.raw`\d+ h(?: \d+ min)?|\d+ minutes?|\d+ min`;
+export const FRAGMENT_ECART = String.raw`\d+ h(?: \d+ min)?|\d+ minutes?|\d+ min|\d+ secondes?`;
 export const FRAGMENT_DUREE = String.raw`\d+ h(?: \d{2})?|\d+ min`;
 export const FRAGMENT_DATE = String.raw`\d{4}-\d{2}-\d{2}`;
 export const FRAGMENT_HEURE = String.raw`\d{2}:\d{2}`;
@@ -34,8 +34,10 @@ export const convertirDuree = (texte: string): number => {
   return Number.parseInt(texte, 10);
 };
 
-/** « 24 h 1 min », « 5 min », « 1 minute », « 10 minutes ». */
+/** « 24 h 1 min », « 5 secondes », « 5 min », « 1 minute », « 10 minutes ». */
 export const convertirEcart = (texte: string): EcartTemps => {
+  const secondes = /^(\d+) secondes?$/.exec(texte)?.[1];
+  if (secondes !== undefined) return EcartTemps.depuisMillisecondes(Number(secondes) * 1000);
   const [, heures = '0', minutes = '0'] =
     /^(?:(\d+) h)?(?: ?(\d+) min(?:utes?)?)?$/.exec(texte) ?? [];
   return EcartTemps.depuisMillisecondes((Number(heures) * 60 + Number(minutes)) * MS_PAR_MINUTE);

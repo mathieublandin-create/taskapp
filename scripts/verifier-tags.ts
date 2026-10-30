@@ -1,6 +1,7 @@
 // Contrôle des tags des scénarios (conventions.md §11.8). Commande : `pnpm verifier:tags`.
 // Chaque scénario porte @US-, au moins un @RG- (existant au cahier des charges) et @LOT- ; aucun @wip ;
-// aucun tag technique hors de la liste (les tags de traçabilité @DEC-nnn de Pepper sont admis : Q-BEN-E12-5).
+// aucun tag technique hors de la liste (tags de traçabilité de Pepper admis : @DEC-nnn, Q-BEN-E12-5 ; @ANO-nnn,
+// conventions v0.4.8 §11.8).
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { lireScenarios, type Scenario } from './lire-scenarios.mjs';
@@ -25,7 +26,7 @@ export const verifierTags = ({ scenarios, regles }: EntreesTags): ReadonlyArray<
         .filter((t) => !regles.has(t.slice(1)))
         .map((t) => `${lieu} : ${t} absent du cahier des charges`),
       ...tags
-        .filter((t) => !/^@(US|RG|LOT|DEC)-/.test(t) && t !== '@wip' && !TAGS_TECHNIQUES.has(t))
+        .filter((t) => !/^@(US|RG|LOT|DEC|ANO)-/.test(t) && t !== '@wip' && !TAGS_TECHNIQUES.has(t))
         .map((t) => `${lieu} : tag inconnu ${t}`),
     ];
   });

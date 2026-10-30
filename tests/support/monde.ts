@@ -23,6 +23,8 @@ export class MondeDoneJuan extends World {
   instantDerniereAction: Instant | undefined;
   /** URL des requêtes `fetch` tentées : aucune n'est admise (ST-US-022 §12.3). */
   readonly requetesInterdites: Array<string> = [];
+  /** Vrai sous `@ANO-001` : l'indicateur est lu dans la vue affichée du contrôleur (ST-US-017 §12.4). */
+  lectureAffichee = false;
 }
 
 setWorldConstructor(MondeDoneJuan);

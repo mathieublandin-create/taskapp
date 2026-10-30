@@ -92,6 +92,7 @@ export class CycleSynchronisation implements SuiviCycle {
   #periodique: Annulation | undefined;
   #declencheurs: ReadonlyArray<Annulation> | undefined;
   #premierPlan = true;
+  readonly #observateurs = new Set<() => void>();
 
   constructor(private readonly dependances: DependancesCycle) {}
 
@@ -166,6 +167,18 @@ export class CycleSynchronisation implements SuiviCycle {
     };
   }
 
+  /**
+   * ANO-001 (ST-US-017 v0.4.3 §6.9) : `rappel` est appelé deux fois par exécution (`synchroniserMaintenant` ou
+   * `deposerMaintenant` effectivement lancés) : au début (état EN_COURS), puis à la fin, relance comprise, une fois
+   * l'état final établi et `cycleEnCours()` revenu à undefined, en succès, en échec ou sur exception.
+   */
+  observer(rappel: () => void): Annulation {
+    this.#observateurs.add(rappel);
+    return () => {
+      this.#observateurs.delete(rappel);
+    };
+  }
+
   /** Promesse du cycle en cours, pour le banc (undefined au repos). */
   cycleEnCours(): Promise<IssueCycle> | undefined {
     return this.#enCours;
@@ -219,7 +232,14 @@ export class CycleSynchronisation implements SuiviCycle {
     if (garde !== undefined) return Promise.resolve(garde);
     const enCours = this.#executer(executer);
     this.#enCours = enCours;
+    this.#notifier();
     return enCours;
+  }
+
+  #notifier(): void {
+    this.#observateurs.forEach((rappel) => {
+      rappel();
+    });
   }
 
   async #executer(executer: () => Etape): Promise<IssueCycle> {
@@ -233,6 +253,7 @@ export class CycleSynchronisation implements SuiviCycle {
     } finally {
       this.#enCours = undefined;
       this.#aRefaire = false;
+      this.#notifier();
     }
   }
 

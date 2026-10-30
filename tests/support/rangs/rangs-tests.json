@@ -62,6 +62,10 @@
       "rang": 3
     },
     {
+      "motif": "UT-US-017-9\\d\\b",
+      "rang": 3
+    },
+    {
       "motif": "CT-TRANS-\\d+",
       "rang": 3
     },

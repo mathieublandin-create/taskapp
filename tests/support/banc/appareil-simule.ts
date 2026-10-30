@@ -14,6 +14,8 @@ import type { JetonAcces } from '@src/compte/application/ports/coffre-jetons';
 import type { RetourGoogle } from '@src/compte/application/ports/fournisseur-auth';
 import { BaseTechnique, MemoireRedirectionDexie } from '@src/compte/infrastructure/base-technique';
 import { assemblerApplication, type Application } from '@src/composition/application';
+import { ControleurInterface, type VueInterface } from '@src/composition/controleur-interface';
+import type { Annulation } from '@src/commun/application/ports/planificateur';
 import { echec, type Resultat } from '@src/commun/domaine/resultat';
 import {
   construireRacine,
@@ -96,6 +98,9 @@ export class AppareilSimule {
   /** ST-US-017 §12.1 n° 10 : racine et objectifs affichés à la fin de la dernière ouverture. */
   instantaneOuverture: InstantaneOuverture | undefined;
   private instance: Application | undefined;
+  /** Contrôleur de l'interface de l'instance ouverte (vue affichée, ANO-001, ST-US-017 §12.4). */
+  private controleurInstance: ControleurInterface | undefined;
+  private annulerReseau: Annulation | undefined;
   /** Réponses du Drive retenues pendant l'ouverture, jusqu'à l'instantané. */
   private porteDrive: Promise<void> = Promise.resolve();
 
@@ -187,8 +192,54 @@ export class AppareilSimule {
 
   /** Fermeture de l'application : la mémoire est perdue, les bases restent. */
   fermerApplication(): void {
+    this.annulerReseau?.();
+    this.annulerReseau = undefined;
+    this.controleurInstance = undefined;
     this.instance?.arreter();
     this.instance = undefined;
+  }
+
+  /** Contrôleur de l'interface de l'application ouverte ; erreur si elle est fermée. */
+  get controleur(): ControleurInterface {
+    if (this.controleurInstance === undefined) {
+      throw new Error(`L'application n'est pas ouverte sur le ${this.nom}`);
+    }
+    return this.controleurInstance;
+  }
+
+  /**
+   * Vue affichée par l'interface (ANO-001, ST-US-017 §12.4) : celle du contrôleur, une fois les cycles et les
+   * rafraîchissements en cours terminés. N'appelle jamais `rafraichir()` : seules les notifications la mettent à jour.
+   */
+  async vueAffichee(): Promise<VueInterface> {
+    do {
+      await this.attendreCycle();
+      await this.controleur.rafraichissementsTermines();
+    } while (this.cycleEnCours() !== undefined);
+    return this.controleur.vue();
+  }
+
+  /** Comme le `visibilitychange` de `web.ts` : page masquée. */
+  passerAuSecondPlan(): void {
+    this.espaceOuvert().cycle.definirPremierPlan(false);
+  }
+
+  /** Comme le `visibilitychange` de `web.ts` : page de nouveau visible (un cycle est lancé). */
+  revenirAuPremierPlan(): void {
+    this.espaceOuvert().cycle.definirPremierPlan(true);
+  }
+
+  /**
+   * L'accès Google expire sans que l'application le sache : la session reste ouverte, mais le jeton du coffre est
+   * échu et Google ne le reconnaît plus ; le premier appel au Drive reçoit 401, qualifié « à renouveler » (DAT §4.1.6
+   * bis : un jeton non échu refusé vaudrait retrait prouvé, donc accès perdu) et signalé par le cycle.
+   */
+  expirerAccesSansConstat(): void {
+    this.fournisseur.expirerJeton();
+    this.application.coffre.placer({
+      jeton: 'jeton-simule-echu' as JetonAcces,
+      echeance: this.horloge.monotone(),
+    });
   }
 
   /** Espace du compte ouvert (dépôt) ; erreur sans session. */
@@ -268,10 +319,14 @@ export class AppareilSimule {
     try {
       const instance = this.assembler();
       this.instance = instance;
+      const controleur = new ControleurInterface(instance, this.horloge, instance.objectifs);
+      this.controleurInstance = controleur;
+      this.annulerReseau = this.reseau.surChangement(() => void controleur.rafraichir());
       instance.session.observer((etat) => {
         if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
       });
       const issue = await instance.ouvrirApplication.executer(retour);
+      await controleur.apresOuverture(issue);
       this.instantaneOuverture = await this.capturerInstantane(instance);
       return issue;
     } finally {
