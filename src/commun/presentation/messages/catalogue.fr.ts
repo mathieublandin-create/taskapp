@@ -419,6 +419,12 @@ export const CATALOGUE = {
   'SEC-TACHES-A-FAIRE': { libelle: 'Tâches à faire · {n}' },
   'SEC-TACHES-ABANDONNEES': { libelle: 'Abandonnées ({n})' },
   'SEC-TACHES-TERMINEES': { libelle: 'Terminées ({n})' },
+  'SEL-PARENT-AUCUN': { libelle: 'Aucun, objectif principal' },
+  'SEL-PARENT-DELAI': { libelle: 'Son délai : {date}' },
+  'SEL-PARENT-EFFECTIF': { libelle: 'Aura {n} sous-objectif{n:|s}' },
+  'SEL-PARENT-MENU': { libelle: 'Placer sous un autre objectif' },
+  'SEL-PARENT-TITRE': { libelle: 'Placer « {element} » sous…' },
+  'SEL-PARENT-VALIDER': { libelle: 'Placer' },
 
   // ---- États de l'indicateur de synchronisation (§6.6.2)
   'SYN-ACTION': { libelle: 'Action requise' },
