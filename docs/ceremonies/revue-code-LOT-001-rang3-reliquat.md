@@ -124,3 +124,9 @@ c) Ligne DT-006 : ajouter « **Décision de revue (reliquat du rang 3)** : bouto
 1. Benjamin traite RC-R3-8 à RC-R3-10 (itération 1/2), puis rebase.
 2. Nouvelle revue, limitée à ces remarques et au nouveau différentiel (branchement, contrôleur, liste CSP, registre).
 3. Après le rebase : j'inscris DT-014 au registre.
+
+## 7. Question de Benjamin pendant l'itération 1
+
+| Id | Question | Réponse d'Anthony |
+|---|---|---|
+| Q-BEN-R3R-1 | Pour RC-R3-8 : construire les `LigneFeuilleOrdonnable[]` dans la composition (comme `attenteDe`), à partir de `espace.depot.lire()`, et exposer `lireElementsEnAttente()`, `lireDernierContact()` et `synchroniserMaintenant()` sur `Application` ? | **Validé, avec une correction**. La lecture du dépôt et le câblage restent dans la composition, comme `attenteDe`. C'est conforme au DAT : la présentation n'accède pas au dépôt. En revanche, la **règle** de regroupement ne va pas dans `application.ts` (CR-12, CR-13 : la composition câble, elle ne calcule pas) : elle va dans le domaine, avec la fonction pure `elementsEnAttenteDetailles(etat)` (`src/synchronisation/domaine/elements-en-attente.ts`). Cette règle couvre l'entrée par élément, le lien compté pour sa tâche, le plus grand `derniereHlc` et l'intitulé, même supprimé (`''` sans registre). J'ai livré son squelette et UT-COMP-US-017-54 en rouge, au rang 4 dans `rangs-fichiers.json`, à ramener à 3. En plus, il faut `Application.ouvrirGoogleDrive()`, par une nouvelle méthode `Navigateur.ouvrirOnglet(url)` implémentée dans `main.tsx`. Spécification : ST-US-017 v0.4.1, n° 17 e et 17 f, §4.5 bis, §13.1. Ordre : 17 e au vert, puis UT-COMP-US-017-53 écrit d'abord, le contrôleur, `main.tsx`, `ion-card*` dans la liste CSP, et enfin `pnpm e2e`. |
