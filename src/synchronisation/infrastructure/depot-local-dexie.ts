@@ -175,9 +175,15 @@ export class DepotLocalDexie implements DepotLocal {
     return ouverture.ok ? succes(depot) : ouverture;
   }
 
-  /** Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Idempotent. */
+  /**
+   * Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Libère les
+   * observateurs et l'écoute globale du stockage (RC-ANO-001-1). Idempotent.
+   */
   fermer(): void {
     this.ferme = true;
+    this.observateurs.clear();
+    this.desabonnementStockage?.();
+    this.desabonnementStockage = undefined;
     this.base.close({ disableAutoOpen: true });
   }
 

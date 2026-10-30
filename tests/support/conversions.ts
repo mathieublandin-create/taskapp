@@ -34,7 +34,7 @@ export const convertirDuree = (texte: string): number => {
   return Number.parseInt(texte, 10);
 };
 
-/** « 24 h 1 min », « 5 min », « 1 minute », « 10 minutes ». */
+/** « 24 h 1 min », « 5 secondes », « 5 min », « 1 minute », « 10 minutes ». */
 export const convertirEcart = (texte: string): EcartTemps => {
   const secondes = /^(\d+) secondes?$/.exec(texte)?.[1];
   if (secondes !== undefined) return EcartTemps.depuisMillisecondes(Number(secondes) * 1000);
