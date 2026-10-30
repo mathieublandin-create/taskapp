@@ -4,8 +4,8 @@ import type { Duree } from '../../domaine/duree';
 const MINUTES_PAR_HEURE = 60;
 
 export const formaterDuree = (d: Duree): string => {
-  const heures = Math.floor(d / MINUTES_PAR_HEURE);
+  const heures = String(Math.floor(d / MINUTES_PAR_HEURE));
   const minutes = d % MINUTES_PAR_HEURE;
-  if (heures === 0) return minutes === 0 ? '0 h' : `${minutes} min`;
-  return minutes === 0 ? `${heures} h` : `${heures} h ${minutes}`;
+  if (heures === '0') return minutes === 0 ? '0 h' : `${String(minutes)} min`;
+  return minutes === 0 ? `${heures} h` : `${heures} h ${String(minutes)}`;
 };

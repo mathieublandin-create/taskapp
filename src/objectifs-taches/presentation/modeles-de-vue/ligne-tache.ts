@@ -63,7 +63,11 @@ const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTach
   if (resume.sousTaches === undefined) return {};
   const { terminees, nonAbandonnees } = resume.sousTaches;
   return {
-    compteurSousTaches: { terminees, nonAbandonnees, libelle: `${terminees}/${nonAbandonnees}` },
+    compteurSousTaches: {
+      terminees,
+      nonAbandonnees,
+      libelle: `${String(terminees)}/${String(nonAbandonnees)}`,
+    },
   };
 };
 
@@ -86,6 +90,19 @@ const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string 
   return `${resume.intitule}, ${enMinuscules(etat)}, délai ${delai}${retard}`;
 };
 
+const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'enRetard'> =>
+  resume.enRetard
+    ? {
+        enRetard: {
+          code: 'MEN-EN-RETARD',
+          libelle: libelle('MEN-EN-RETARD', { date: delai, variante: 'liste' }),
+        },
+      }
+    : {};
+
+const modeleIncoherence = (resume: ResumeTache): Pick<LigneTache, 'incoherence'> =>
+  resume.incoherence === undefined ? {} : { incoherence: { code: 'MEN-INCOHERENCE' } };
+
 /** `aujourdhui` : jour de Paris, pour le format des dates (guide §6.6.1). */
 export const construireLigneTache = (
   resume: ResumeTache,
@@ -103,19 +120,10 @@ export const construireLigneTache = (
       calculee: resume.estimationCalculee,
     },
     objectifs: resume.objectifs.map((objectif) => objectif.intitule),
-    ...(resume.enRetard
-      ? {
-          enRetard: {
-            code: 'MEN-EN-RETARD' as const,
-            libelle: libelle('MEN-EN-RETARD', { date: delai, variante: 'liste' }),
-          },
-        }
-      : {}),
+    ...modeleEnRetard(resume, delai),
     alertes: resume.alertes.map((alerte) => modeleAlerte(alerte, delai)),
     ...modeleCompteur(resume),
-    ...(resume.incoherence === undefined
-      ? {}
-      : { incoherence: { code: 'MEN-INCOHERENCE' as const } }),
+    ...modeleIncoherence(resume),
     nomAccessible: nomAccessible(resume, aujourdhui),
   };
 };
