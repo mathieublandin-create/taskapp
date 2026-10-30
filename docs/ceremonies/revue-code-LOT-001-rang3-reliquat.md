@@ -130,3 +130,43 @@ c) Ligne DT-006 : ajouter « **Décision de revue (reliquat du rang 3)** : bouto
 | Id | Question | Réponse d'Anthony |
 |---|---|---|
 | Q-BEN-R3R-1 | Pour RC-R3-8 : construire les `LigneFeuilleOrdonnable[]` dans la composition (comme `attenteDe`), à partir de `espace.depot.lire()`, et exposer `lireElementsEnAttente()`, `lireDernierContact()` et `synchroniserMaintenant()` sur `Application` ? | **Validé, avec une correction**. La lecture du dépôt et le câblage restent dans la composition, comme `attenteDe`. C'est conforme au DAT : la présentation n'accède pas au dépôt. En revanche, la **règle** de regroupement ne va pas dans `application.ts` (CR-12, CR-13 : la composition câble, elle ne calcule pas) : elle va dans le domaine, avec la fonction pure `elementsEnAttenteDetailles(etat)` (`src/synchronisation/domaine/elements-en-attente.ts`). Cette règle couvre l'entrée par élément, le lien compté pour sa tâche, le plus grand `derniereHlc` et l'intitulé, même supprimé (`''` sans registre). J'ai livré son squelette et UT-COMP-US-017-54 en rouge, au rang 4 dans `rangs-fichiers.json`, à ramener à 3. En plus, il faut `Application.ouvrirGoogleDrive()`, par une nouvelle méthode `Navigateur.ouvrirOnglet(url)` implémentée dans `main.tsx`. Spécification : ST-US-017 v0.4.1, n° 17 e et 17 f, §4.5 bis, §13.1. Ordre : 17 e au vert, puis UT-COMP-US-017-53 écrit d'abord, le contrôleur, `main.tsx`, `ion-card*` dans la liste CSP, et enfin `pnpm e2e`. |
+
+## 8. Nouvelle revue (2e tour, itération 2/2) : **Approuvé**
+
+Périmètre : les corrections seulement, `6ba1214` (RC-R3-9 à 11), `1a6ac09` et `b097aed` (RC-R3-8) ; `39268b9` est mon E10 de Q-BEN-R3R-1 (contrôle de non-modification seulement). Branche rebasée sur `origin/lot/LOT-001` (contrôlé par `git merge-base --is-ancestor`).
+
+### 8.1 Contrôles exécutés (`b097aed`)
+
+L'environnement de ce tour n'a que Node 22 (`engine-strict`) : les outils sont lancés directement depuis `node_modules/.bin`, avec les mêmes arguments que les scripts de `package.json`.
+
+| Contrôle | Résultat |
+|---|---|
+| `prettier --check`, `eslint --max-warnings 0`, `tsc --noEmit`, `depcruise` | Verts (234 modules, aucune violation) |
+| `verifier-catalogue`, `-tags`, `-rangs`, `-depot` | 0 erreur. `elements-en-attente.ts` ramené au rang 3 |
+| `vitest run --coverage` | 123 fichiers, 628 tests passés, 161 ignorés (rangs > 3). Global : 98,16 % des lignes, 92,84 % des branches |
+| Cucumber (`default`) | 60 scénarios, 543 étapes, tous passés |
+| `pnpm e2e` | **Non exécutable ici** : Chromium 1248 absent de l'environnement, seul le 1243 est installé. À constater sur le job `e2e` de la CI de la PR avant la fusion (condition de fusion, voir 8.4) |
+| `git diff 39268b9 HEAD -- tests/unitaires/synchronisation/domaine/elements-en-attente.test.ts` | Vide : UT-COMP-US-017-54 est inchangé, et il est vert |
+
+### 8.2 Remarques
+
+| Id | Statut | Constat |
+|---|---|---|
+| RC-R3-8 | **Levée** | a) `vue.feuille` est construite par `construireFeuilleSynchronisation` avec l'état déjà lu, `lireDernierContact()`, `lireElementsEnAttente()` et `horloge.maintenant()`. Elle est recalculée aux mêmes notifications que l'indicateur, comme l'exige ST-US-017 v0.4.1 n° 17 f (qui précise le §5 a de cette revue). b) Montée dans `main.tsx` (`EtatSynchronisation`). c) `synchroniser` et `REESSAYER_MAINTENANT` appellent `synchroniserMaintenant()` ; `OUVRIR_GOOGLE_DRIVE` appelle `ouvrirGoogleDrive()`, puis `Navigateur.ouvrirOnglet`, et `window.open(..., 'noopener,noreferrer')` reste confiné à `main.tsx`. d) UT-COMP-US-017-53 : présence, absence sans espace, transmission des 3 actions. e) `ion-card*` ajoutés à `COMPOSANTS_IONIC`. f) Règle dans le domaine (`elementsEnAttenteDetailles`, pure, `maxHlc`, intitulé `''` sans registre) ; lecture et câblage dans la composition, en échec ramenés à `[]` ou `undefined`, comme `attenteDe`. **Position de la feuille** : elle est rendue avant `<SectionCompte>`, alors que la v0.4.1 disait « après ». Le guide d'ergonomie §4.26 fixe l'ordre Synchronisation puis Compte : c'est donc la réalisation qui est juste, et la ST est corrigée (v0.4.2) |
+| RC-R3-9 | **Levée** | Rebase fait. Historique du registre : 0.13 (DT-012, lot), 0.14 (mon E10), 0.15 (Benjamin), 0.16 (Benjamin, RC-R3-8). L'en-tête était resté en 0.15 : je l'aligne en 0.17 avec mon inscription. Le job `e2e` reste à constater sur la CI (8.4) |
+| RC-R3-10 | **Levée** | a) DT-009 « Remboursée (PR #9) ». b) DT-011 « Remboursée (2026-10-30, PR #9 ...) », correct maintenant que RC-R3-8 est levée. c) DT-006 : décision enregistrée mot pour mot, statut « Remboursée (PR #9) » |
+| RC-R3-11 | **Levée** | `observer` est obligatoire dans `ObjectifsTaches` et `assemblerObjectifsTaches`, et reste optionnel dans `ServicesObjectifs`. Le banc `ui-objectifs.ts` passe `env.depot.observer` |
+
+### 8.3 Points soumis à validation
+
+- **Stubs ajoutés aux doublures** (`controleur-interface.test.ts:80-83`, `controleur-reessai.test.ts:75-78`, `appareil-simule.ts:347`) : **acceptés**. Ce sont des compléments de type, imposés par l'élargissement de `ApplicationInterface` et d'`AdaptateursApplication`. Ils sont neutres : `consulterEtat` y rend `undefined`, donc la feuille n'est jamais construite dans ces tests, et `ouvrirOnglet` n'est jamais appelé par le banc. Aucune assertion n'est modifiée, retirée ou relâchée : ce ne sont pas des tests affaiblis.
+- **DT-014** : inscrite au registre (v0.17), P3, échéance avant l'E14 de LOT-001, contrôle par Steeve.
+
+### 8.4 Condition de fusion et observation
+
+- **Condition de fusion (non bloquante pour le verdict)** : le job `e2e` de la CI doit être vert sur la PR. Il est le seul à éprouver `ion-card*` et le montage réel de la feuille sous la CSP.
+- **Observation O-1, hors différentiel, sans exigence sur cette PR** : `ControleurInterface` n'est rafraîchi qu'aux changements de session et de réseau (`web.ts:124`), ainsi qu'après les gestes de l'utilisateur. Un cycle mené en arrière-plan (envoi terminé, accès perdu) ne met donc à jour ni l'indicateur ni la feuille avant le prochain geste. Le défaut existe depuis le rang 1 sur du code approuvé. Je le transmets à Jarvis pour qu'il soit qualifié (anomalie, ou rattachement à la composition de l'incrément 2 de US-017).
+
+### 8.5 Verdict : **Approuvé**
+
+RC-R3-8 à 11 sont levées. Aucun test n'est affaibli, et je n'ai aucune nouvelle remarque bloquante.
