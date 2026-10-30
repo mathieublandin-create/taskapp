@@ -11,8 +11,11 @@ import { instantDepuisHeureMurale, type HeureLocale } from '../../support/temps'
 
 Given(
   '(que )nous sommes le {date} à {heure} heure de {fuseau}',
-  function (this: MondeDoneJuan, date: string, heure: HeureLocale, fuseau: Fuseau) {
+  async function (this: MondeDoneJuan, date: string, heure: HeureLocale, fuseau: Fuseau) {
     this.banc.temps.positionner(instantDepuisHeureMurale(date, heure, fuseau));
+    // ST-US-018 §12.1 n° 4 : les échéances du planificateur devenues échues sont exécutées, et leurs cycles attendus.
+    this.banc.planificateur.executerEchus();
+    await this.banc.attendreCycles();
   },
 );
 

@@ -23,6 +23,16 @@ Given(
   },
 );
 
+// ST-US-017 §12.1 n° 9 (une seule instance) : réseau rétabli, application ouverte.
+Given(
+  "(que )l'application est ouverte sur le {appareil}, connecté au réseau",
+  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    const appareil = this.banc.appareil(nomAppareil);
+    appareil.reseau.retablir();
+    await appareil.assurerOuverte();
+  },
+);
+
 const fermer = function (this: MondeDoneJuan, nomAppareil: NomAppareil): void {
   this.banc.appareil(nomAppareil).fermerApplication();
 };
