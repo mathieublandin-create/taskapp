@@ -1,10 +1,11 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
-import { echec, succes } from '../../../commun/domaine/resultat';
+import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { normaliserDescription } from '../description';
 import { construireIntitule } from '../intitule';
-import type { DecisionSurVue } from '../vue-metier';
+import { estObjectifPrincipal } from '../hierarchie-objectifs';
+import type { RefusMetier } from '../refus';
+import { objectifActif, type DecisionSurVue, type VueMetier } from '../vue-metier';
 
 // ST-US-001 §6.4 ; parent : ST-US-023 §6.2.
 export type CommandeCreerObjectif = {
@@ -15,14 +16,26 @@ export type CommandeCreerObjectif = {
   readonly parentId?: IdObjectif;
 };
 
+/** Le parent d'un sous-objectif doit être actif et principal (RG-022 : un seul niveau). */
+const verifierParent = (vue: VueMetier, parentId: IdObjectif): Resultat<null, RefusMetier> => {
+  const parent = objectifActif(vue, parentId);
+  if (!parent.ok) return parent;
+  return estObjectifPrincipal(parent.valeur)
+    ? succes(null)
+    : echec({ type: 'ActionNonDisponible', action: 'CREER_SOUS_OBJECTIF' });
+};
+
 export const deciderCreationObjectif =
   (commande: CommandeCreerObjectif): DecisionSurVue<IdObjectif> =>
-  (_vue, contexte) => {
-    if (commande.parentId !== undefined) return nonImplemente('deciderCreationObjectif (parent)');
+  (vue, contexte) => {
+    const { id, delai, parentId } = commande;
+    if (parentId !== undefined) {
+      const parent = verifierParent(vue, parentId);
+      if (!parent.ok) return parent;
+    }
     const intitule = construireIntitule(commande.intitule);
     if (!intitule.ok) return echec({ type: 'SaisieInvalide', defauts: ['INTITULE_VIDE'] });
     const description = normaliserDescription(commande.description);
-    const { id, delai } = commande;
     return succes({
       modifications: [
         {
@@ -33,12 +46,16 @@ export const deciderCreationObjectif =
             intitule: intitule.valeur,
             ...(description === undefined ? {} : { description }),
             ...(delai === undefined ? {} : { delai }),
+            ...(parentId === undefined ? {} : { parentId }),
           },
           evenement: {
             type: 'CREATION',
             element: { type: 'OBJECTIF', id },
             avant: {},
-            apres: delai === undefined ? {} : { delai },
+            apres: {
+              ...(parentId === undefined ? {} : { parentId }),
+              ...(delai === undefined ? {} : { delai }),
+            },
             rang: 0,
           },
         },

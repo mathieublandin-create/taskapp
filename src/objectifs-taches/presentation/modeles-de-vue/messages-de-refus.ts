@@ -17,6 +17,17 @@ const CODES_DEFAUTS: Readonly<Record<DefautSaisie, CodeCatalogue>> = {
   ESTIMATION_INVALIDE: 'ERR-023',
 };
 
+const messageDeuxiemeNiveau = (
+  refus: Extract<RefusMetier, { readonly type: 'DeuxiemeNiveau' }>,
+): MessageRefus =>
+  refus.variante === 'objectif-a-des-sous-objectifs'
+    ? {
+        code: 'ERR-030',
+        variante: refus.variante,
+        variables: { element: refus.objectif, n: refus.nombreSousObjectifs },
+      }
+    : { code: 'ERR-030', variante: refus.variante, variables: { element: refus.cible } };
+
 export const messagesDeRefus = (refus: RefusMetier): ReadonlyArray<MessageRefus> => {
   switch (refus.type) {
     case 'SaisieInvalide':
@@ -25,7 +36,9 @@ export const messagesDeRefus = (refus: RefusMetier): ReadonlyArray<MessageRefus>
     case 'ActionNonDisponible':
       return [];
     case 'PlacementSousLuiMeme':
+      return [{ code: 'ERR-031', variables: {} }];
     case 'DeuxiemeNiveau':
+      return [messageDeuxiemeNiveau(refus)];
     case 'EstimationCalculee':
     case 'ObjectifsHerites':
     case 'AjoutSousTacheATacheAbandonnee':

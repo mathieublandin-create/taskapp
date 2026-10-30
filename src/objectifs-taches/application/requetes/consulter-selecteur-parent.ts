@@ -1,12 +1,15 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '../../../commun/application/ports/horloge';
-import type { Resultat } from '../../../commun/domaine/resultat';
+import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
 import type { ErreurDepotLocal, ServiceEtatLocal } from '../../../synchronisation';
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
+import { estObjectifPrincipal } from '../../domaine/hierarchie-objectifs';
 import type { RefusMetier } from '../../domaine/refus';
-import type { ResumeObjectif } from './resumes';
+import { sousObjectifsDe } from '../../domaine/vue-metier';
+import { lireVueCourante } from './lecture-courante';
+import { resumerObjectif, type ResumeObjectif } from './resumes';
 
-// ST-US-023 §4.2, §6.5.
+// ST-US-023 §4.2, §6.5 : les candidats comprennent l'objectif lui-même s'il est principal ; leur ordre
+// est donné par le modèle de vue.
 export type SelecteurParent = {
   readonly objectif: ResumeObjectif;
   readonly candidats: ReadonlyArray<ResumeObjectif>;
@@ -19,9 +22,22 @@ export class ConsulterSelecteurParent {
     private readonly horloge: Horloge,
   ) {}
 
-  executer(_c: {
+  async executer(c: {
     readonly objectifId: IdObjectif;
   }): Promise<Resultat<SelecteurParent, RefusMetier | ErreurDepotLocal>> {
-    return nonImplemente('ConsulterSelecteurParent.executer');
+    const lecture = await lireVueCourante(this.service, this.horloge);
+    if (!lecture.ok) return lecture;
+    const { vue, jour } = lecture.valeur;
+    const objectif = vue.objectifs.get(c.objectifId);
+    if (objectif === undefined) {
+      return echec({ type: 'ElementIntrouvable', element: { type: 'OBJECTIF', id: c.objectifId } });
+    }
+    return succes({
+      objectif: resumerObjectif(vue, objectif, jour),
+      candidats: [...vue.objectifs.values()]
+        .filter(estObjectifPrincipal)
+        .map((o) => resumerObjectif(vue, o, jour)),
+      nombreSousObjectifs: sousObjectifsDe(vue, c.objectifId).length,
+    });
   }
 }
