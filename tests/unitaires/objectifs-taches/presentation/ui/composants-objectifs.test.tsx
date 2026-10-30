@@ -256,3 +256,35 @@ describe('ProgressionObjectif et LigneObjectifUi', () => {
     expect(surOuvrir).toHaveBeenCalledExactlyOnceWith(ligne);
   });
 });
+
+describe('LigneObjectifUi — point « en attente » (ST-US-017 v0.4 §4.5, DT-011, RC-R3-4)', () => {
+  it('UT-US-001-37 LigneObjectifUi — MEN-ATTENTE : point data-code="MEN-ATTENTE" sans texte visible, décrit au bouton de la ligne par « Modification en attente d’envoi » ; absent sans attente', () => {
+    const ligneDe = (enAttente: boolean) =>
+      construireLigneObjectif(
+        resumeObjectif({ id: idObjectif(1), intitule: 'Publier le guide', enAttente }),
+        date('2026-10-21'),
+      );
+    const { container, rerender } = render(
+      <ul>
+        <LigneObjectifUi ligne={ligneDe(true)} surOuvrir={vi.fn()} />
+      </ul>,
+    );
+
+    const point = container.querySelector<HTMLElement>('[data-code="MEN-ATTENTE"]');
+    expect(point).not.toBeNull();
+    expect(point?.textContent).toBe('');
+    const bouton = screen.getByRole('button', {
+      name: /^Publier le guide/,
+      description: 'Modification en attente d’envoi',
+    });
+    expect(bouton.contains(point)).toBe(true);
+
+    rerender(
+      <ul>
+        <LigneObjectifUi ligne={ligneDe(false)} surOuvrir={vi.fn()} />
+      </ul>,
+    );
+    expect(container.querySelector('[data-code="MEN-ATTENTE"]')).toBeNull();
+    expect(screen.getByRole('button', { name: /^Publier le guide/, description: '' })).toBeTruthy();
+  });
+});

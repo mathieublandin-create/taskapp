@@ -13,8 +13,8 @@
 | Prérequis | `ST-socle-ecriture.md` (rang 0, dont le contenu logique du schéma 1, §5.3) ; ST-US-022 (rang 1 : accès, `TransportSynchro.preparerDossier`, indicateur et bandeaux) ; ST-US-001 (rang 2) |
 | Hypothèses du contrôle d'explicitation appliquées | H-1, H-2 (incrément 2), H-4 (socle), H-5 (§12), H-6 (incréments 2 et 3) |
 | Q-US traitées | Q-US-017-1 à 12 (E8) ; DEC-030 (Q-US-017-3, A8) ; Q-DEC034-1 |
-| Questions de cette ST | Toutes répondues et intégrées (Q-ST017-PEP-1, Q-ST017-STA-1 à 3) |
-| Version | 0.3.1 |
+| Questions de cette ST | Q-ST017-PEP-1, Q-ST017-STA-1 à 3 répondues et intégrées ; Q-ST017-STE-1 ouverte, non bloquante (§16) |
+| Version | 0.4 |
 | Statut | **E11 : remarques traitées (v0.3)**. Incrément 1 : tests du §13.1 livrés en rouge. Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
 | Auteur | Anthony |
 | Branches | `us/US-017-1-synchronisation-de-base`, `us/US-017-2-conflits`, `us/US-017-3-restauration`, `us/US-017-4-horloge-versions` |
@@ -24,6 +24,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-27 | Anthony | Création (E9, après R11 et M-RED ; R1 sans objet avec un client OAuth Web unique). Rangs d'exécution des scénarios revérifiés (§12.2). E10 de l'incrément 1 livrée. |
 | 0.2 | 2026-10-27 | Anthony | Réponses de Pepper (S06 et S06b corrigés : S06b exécuté au rang 3 sans condition) et de Starck (DAT v0.11.3). **Q-ST017-STA-1** : doublure `DepotLocalEnMemoire` et suite de contrat étendue (CT-DEPOT-08 à 11), une seule transaction stricte (§3.1, §4.2, §13.1). **Q-ST017-STA-2** : médiane de 5 mesures d'aller-retour < 3 s, seul un recul corrigé, contrôle chaque minute et au retour au premier plan (§6.8, constantes livrées). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace ; l'ancien fichier d'un appareil après suppression des données est celui d'un appareil inactif (§6.3). |
+| 0.4 | 2026-10-30 | Anthony | E10 du reliquat du rang 3 (DT-011, RC-R3-4) : §3.1 n° 17 b précisé, n° 17 c (`formaterHeure`, `formaterAnciennete`) et n° 17 d (point `MEN-ATTENTE` de la ligne d'objectif, `nomAccessible`) ; §4.5 bis (signatures et règles de `construireFeuilleSynchronisation` et de `FeuilleSynchronisation`) ; §13.1 : UT-US-017-34 à 39, UT-US-001-36 et 37, livrés en rouge ; squelettes au rang 4 dans `rangs-fichiers.json` pendant la phase rouge (§13.1) ; Q-ST017-STE-1 (§16). DT-006 et DT-009 : pas de test fourni par Anthony, tests complémentaires de Benjamin (§14). |
 | 0.3.1 | 2026-10-29 | Anthony | E13 du rang 3 (`docs/ceremonies/revue-code-LOT-001-rang3.md`) : **Q-BRU-R3-1** : feuille ECR-011 de l'incrément 1 ajoutée au §3.1 (n° 17 b), tests à fournir (§13.1), dette DT-011 ; **Q-BRU-R3-2** : entrée de journal de type inconnu ignorée à l'incrément 1 (§5.3) ; §6.3 aligné sur la réalisation revue : jeton mémorisé dès la fin des fusions, `RessourceIntrouvable` ignorée comme un fichier illisible, `definirPremierPlan(visible)` (§6.4) ; `attente` (`MEN-ATTENTE`) sur la ligne d'objectif (§4.5). |
 | 0.3 | 2026-10-28 | Anthony | E11. **RL-LOT-001-A3** : jeton de départ obtenu avant l'inventaire ; jeton refusé (`JetonChangementsInvalide`) → nouvel inventaire complet dans le même cycle, sans tentative comptée (§4.3, §6.3) ; CT-TRANS-09, 10 et UT-US-017-32. **RL-A7** : mesure d'horloge par un observateur de `ClientGoogle` (§6.8). **RL-A9 / Q-ST017-STA-3** : archivage hors du lot 1, dette DT-002 (§6.3, §16). **RL-S3** : ordre des listes de la feuille (`comparerLignesFeuille`, UT-US-017-33). **RL-P2** : étape n° 10 en échec tant que la racine est `ATTENTE_GOOGLE` (glossaire v1.10 §12). **RL-P3** : étape de S27 définie (n° 23), S27 exécuté au rang 2. |
 
@@ -96,7 +97,9 @@
 | 15 | `src/synchronisation/infrastructure/depot-local-dexie.ts` | Infrastructure | Modifier | Base Dexie version 2 : aucune nouvelle table ; méta étendue (§5.1) ; `lireMeta`, `appliquerSynchronisation` |
 | 16 | `src/synchronisation/application/requetes/consulter-etat-synchronisation.ts` | Application | Modifier | Lit `CycleSynchronisation` au lieu de `SUIVI_CYCLE_AU_REPOS` |
 | 17 | `src/synchronisation/presentation/modeles-de-vue/mention-attente.ts` | Modèle de vue | Créer | `mentionAttente(element, elementsEnAttente)` → `MEN-ATTENTE` ou rien (lu par les modèles de vue des lignes, ST-US-001 et ST-US-002) |
-| 17 b | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts`, `src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx` | Modèle de vue, UI | Créer | `construireFeuilleSynchronisation(e)` du §4.5 et son composant (ECR-011, partie synchronisation). **Ajout v0.3.1 (Q-BRU-R3-1)** : réalisé par Benjamin dans la PR séparée du reliquat du rang 3, après la livraison en rouge des tests UT-US-017-34 et suivants (dette DT-011) |
+| 17 b | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts`, `src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx` | Modèle de vue, UI | Compléter (squelettes E10 v0.4) | `construireFeuilleSynchronisation(e)` et `FeuilleSynchronisation` (§4.5 bis ; ECR-011, section « Synchronisation »). **Ajout v0.3.1 (Q-BRU-R3-1)** : réalisé par Benjamin dans la PR séparée du reliquat du rang 3 (dette DT-011) ; branchement dans `main.tsx` et la composition (état lu par `consulterEtatSynchronisation`, `lireMeta().dernierContactDrive`, éléments en attente du dépôt) dans la même PR |
+| 17 c | `src/commun/presentation/format/heure.ts` | Modèle de vue | Compléter (squelette E10 v0.4) | `formaterHeure(instant)`, `formaterAnciennete(instant, maintenant)` (guide §6.6.1, heure de Paris) ; **sans date-fns** (règle dependency-cruiser `date-fns-dans-temps-seulement`) : `Intl.DateTimeFormat` avec `timeZone: FUSEAU_REFERENCE`, ou fonction ajoutée à `commun/domaine/temps/` |
+| 17 d | `src/objectifs-taches/presentation/modeles-de-vue/ligne-objectif.ts`, `src/objectifs-taches/presentation/ui/composants/ligne-objectif.tsx` | Modèle de vue, UI | Modifier | `attente` porte `nomAccessible` (`libelle('MEN-ATTENTE', {}, 'nomAccessible')`) ; la ligne rend le point (§4.5 bis) (DT-011, RC-R3-4) |
 | 18 | `src/composition/web.ts` | Composition | Modifier | Cycle, déclencheurs (`visibilitychange`, `online`, observateur du dépôt, accès), `DepotAvantSortie` réel |
 | 19 | `tests/doublures/faux-drive.ts` | Test | Compléter | §12.3 |
 | 20 | `tests/contrats/transport-synchro.contrat.ts` | Test | Créer | Suite de contrat (CT-TRANS-01 à 10 ; 09 et 10 : RL-LOT-001-A3), exécutée sur `FauxDrive` et, avec MSW, sur `TransportSynchroDrive` |
@@ -248,6 +251,36 @@ Ordre et jeton (DAT v0.11.4 §4.3, RL-LOT-001-A3) : `listerFichiersAppareils` ob
 | Point « en attente » d'une ligne | `mentionAttente(element: RefElementMetier, enAttente: ReadonlySet<string>): { code: 'MEN-ATTENTE' } \| undefined` ; ligne d'objectif : champ `attente?: { code: 'MEN-ATTENTE'; libelle }` de `LigneObjectif` (v0.3.1) | `MEN-ATTENTE` |
 | Indicateur, bandeaux | ST-US-022 §4.5 (données réelles à partir du rang 3) | `SYN-…`, `BAN-…` |
 | Feuille (ECR-011) : dernier échange, modifications en attente, erreurs | `construireFeuilleSynchronisation(e)` (ECR-011 ; incrément 1 : `SYN-FEUILLE-DERNIER-ECHANGE`, `SYN-FEUILLE-RIEN-EN-ATTENTE`, `SYN-FEUILLE-EN-ATTENTE` (une ligne par élément), `SYN-FEUILLE-HORS-LIGNE`, `SYN-FEUILLE-BOUTON`, `SYN-FEUILLE-DOSSIER` ; cartes `ERR-011`, `ERR-016`) | idem ; **ordre des lignes** (guide v0.2.14 §5.8 f, RL-LOT-001-S3) : `comparerLignesFeuille` (`ordre-feuille.ts`) : la plus récente d'abord (physique du `derniereHlc` de l'élément), à égalité intitulé, puis id ; même ordre pour les informations à lire (incrément 2), `ALR-014` groupé sous `ALR-008` |
+
+### 4.5 bis Feuille ECR-011 de l'incrément 1 et point « en attente » (v0.4, DT-011)
+Les squelettes font foi pour les types (`feuille-synchronisation.ts`, `FeuilleSynchronisation.tsx`, `heure.ts`).
+
+```ts
+export type EntreeFeuilleSynchronisation = {
+  readonly etat: EtatSynchronisationAffichable;
+  readonly maintenant: Instant;
+  readonly dernierEchange?: Instant;                                 // MetaSynchronisation.dernierContactDrive
+  readonly elementsEnAttente: ReadonlyArray<LigneFeuilleOrdonnable>; // un élément MEN-ATTENTE par entrée
+};
+export const construireFeuilleSynchronisation: (e: EntreeFeuilleSynchronisation) => ModeleVueFeuilleSynchronisation;
+export const FeuilleSynchronisation: (p: {
+  vue: ModeleVueFeuilleSynchronisation; surSynchroniser: () => void; surActionCarte: (a: ActionCarteFeuille) => void;
+}) => ReactElement;
+export const formaterHeure: (i: Instant) => string;                       // « 10 h 32 »
+export const formaterAnciennete: (i: Instant, maintenant: Instant) => string;
+```
+
+| Élément | Règle | Test |
+|---|---|---|
+| `formaterHeure` | Heure de Paris (DEC-012) ; heures sans zéro initial, minutes sur deux chiffres ; espaces insécables : « 9 h 05 » | UT-US-017-34 |
+| `formaterAnciennete` | e = `maintenant - instant` : e < 1 min (négatif compris) « à l’instant » ; e < 1 h « il y a {⌊e / 1 min⌋} min » ; e < 24 h « il y a {⌊e / 1 h⌋} h » ; sinon « hier à {heure} » si le jour de Paris de l'instant est la veille de celui de `maintenant`, sinon « le {formaterDate} à {heure} ». Espace insécable entre le nombre et l'unité | UT-US-017-34 |
+| `dernierEchange` | Présent si et seulement si l'entrée a `dernierEchange` : `libelle('SYN-FEUILLE-DERNIER-ECHANGE', { anciennete, heure })` | UT-US-017-35 |
+| `attente` | Aucun élément : `SYN-FEUILLE-RIEN-EN-ATTENTE`. Sinon `SYN-FEUILLE-EN-ATTENTE`, `n` = **nombre de lignes** (guide §6.6.1, « Décompte » ; pas `etat.enAttente`), `lignes` = `{ id, intitule }` triées par `comparerLignesFeuille` | UT-US-017-36 |
+| `horsLigne`, `bouton` | `reseau = COUPE` : ligne `SYN-FEUILLE-HORS-LIGNE`, bouton `disponible: false` avec `explication` (`libelle('SYN-FEUILLE-BOUTON', {}, 'texte')`). Connecté : pas de ligne, bouton disponible sans `explication`, quel que soit le cycle | UT-US-017-37 |
+| `cartes` | `actionRequise = DRIVE_PLEIN` : `ERR-011`, action `OUVRIR_GOOGLE_DRIVE` ; `ECHEC_PERSISTANT` : `ERR-016` avec `n` = nombre de lignes, action `REESSAYER_MAINTENANT` ; titre = libellé, texte = partie `texte`, libellé d'action = partie `action` du catalogue. Aucune carte sinon (`ERR-012`, `ERR-013` : incréments 3 et 4 ; accès perdu : bandeau) | UT-US-017-38 |
+| `SYN-FEUILLE-DOSSIER` | Non repris dans la section « Synchronisation » : déjà affiché par la section « Compte » (`section-compte.ts`, UT-COMP-US-022-82) | — |
+| `FeuilleSynchronisation` | Chaque ligne expose son code dans `data-etat`, sur l'élément dont le texte est exactement le libellé ; liste `<ul>` nommée par son titre (`aria-labelledby`), une `<li>` par ligne, texte = intitulé ; bouton natif `<button data-etat="SYN-FEUILLE-BOUTON">` : indisponible, `aria-disabled="true"` (jamais `disabled`), focalisable, sans effet au clic ni au clavier, explication liée par `aria-describedby` ; carte : conteneur `data-message="ERR-0xx"` avec titre, texte et bouton natif de l'action, qui appelle `surActionCarte(type)`. Boutons natifs plutôt qu'`IonButton` : le contrat `aria-disabled` focalisable n'est pas tenu par `IonButton` (même décision que `BoiteConfirmation`, DT-006) | UT-US-017-39 |
+| Ligne d'objectif | `attente = { code: 'MEN-ATTENTE', libelle: '', nomAccessible: 'Modification en attente d’envoi' }` ; `nomAccessible` de la ligne inchangé. Composant : point `data-code="MEN-ATTENTE"` sans texte, dans le bouton de la ligne, qui le décrit par `aria-describedby` (le nom du bouton vient de son `aria-label`) | UT-US-001-36, 37 |
 
 ## 5. Modèle de données et migrations
 
@@ -503,6 +536,21 @@ Bilan : **39 cas** (UT-US-017-01 à 31, dont des cas multiples pour 04 et 29 à 
 
 **Compléments de la v0.3 (E11, 2026-10-28)** : CT-TRANS-09 et 10, UT-US-017-32 (jeton), UT-US-017-33 (ordre de la feuille) ; squelettes `JetonChangementsInvalide`, `FauxDrive.pendantLeProchainInventaire` et `invaliderJetons`, `ordre-feuille.ts`. Bilan : **58 cas**, tous en échec « NI ».
 
+**Compléments de la v0.4 (E10 du reliquat du rang 3, 2026-10-30, DT-011)** :
+
+| Id | Fichier | Élément | Cas | Exigence |
+|---|---|---|---|---|
+| UT-US-017-34 | `commun/presentation/heure.test.ts` | `formaterHeure`, `formaterAnciennete` | 4 heures (été, hiver, minuit à Paris) ; 11 anciennetés : bornes 59 s, 1 min, 59 min 59 s, 1 h, 23 h 59, 24 h, instant futur, veille à Paris mais avant-veille en UTC, deux jours, autre année | Guide §6.6.1, DEC-012 |
+| UT-US-017-35 | `synchronisation/presentation/feuille-synchronisation.test.ts` | `construireFeuilleSynchronisation` | dernier échange (« il y a », « hier ») ; absent sans échange | §4.5 bis |
+| UT-US-017-36 | idem | idem | rien en attente ; n = nombre de lignes ; ordre ; singulier | Guide §6.6.1, §5.8 f |
+| UT-US-017-37 | idem | idem | hors ligne : ligne, bouton indisponible et explication ; connecté (au repos, en cours) | Guide §6.6.2 |
+| UT-US-017-38 | idem | idem | `ERR-011`, `ERR-016` (n) ; aucune carte dans les autres états | §8 n° 3 et 4 |
+| UT-US-017-39 | `synchronisation/presentation/ui/feuille-synchronisation.test.tsx` | `FeuilleSynchronisation` | `data-etat`, liste nommée et ordonnée, bouton `aria-disabled` focalisable et inerte avec description, cartes `data-message` et actions | Guide §4.26, §6.6.2 |
+| UT-US-001-36 | `objectifs-taches/presentation/liste-objectifs.test.ts` | `construireLigneObjectif` | `attente` avec `nomAccessible` ; absente sans attente ; nom de la ligne inchangé | Guide §6.6.4 |
+| UT-US-001-37 | `objectifs-taches/presentation/ui/composants-objectifs.test.tsx` | `LigneObjectifUi` | point `MEN-ATTENTE` dans le bouton, description accessible ; absent sans attente | RC-R3-4 |
+
+Rangs : les règles existantes de `rangs-tests.json` couvrent ces identifiants (`UT-US-017-(?:0[1-9]|[12]\d|3[0-9])` → 3 ; `UT-US-001-\d+` → 2) : ils s'exécutent au rang courant (3) et restent rouges sur la branche `us/US-017-reliquat-rang3` jusqu'à la réalisation ; la branche n'est fusionnée qu'au vert. Les trois squelettes (n° 17 b, 17 c) sont inscrits dans `rangs-fichiers.json` avec `debut = fin = 4` pendant la phase rouge (exemption d'orphelin et de couverture, `@non-implemente` toléré par UT-OUT-06) ; **Benjamin les ramène à `debut = fin = 3` dans la PR du reliquat**, ce qui réactive les trois contrôles. À défaut, ils s'appliquent d'eux-mêmes au rang 4. Bilan : **22 cas**, tous en échec (« NI » ou assertion).
+
 ### 13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)
 Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure retenue seulement sous 3 s d'aller-retour, médiane de 5 (nombre pair compris), recul corrigé et mesures décalées, avance seulement journalisée, contrôle à la minute et au retour au premier plan, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
 
@@ -512,6 +560,8 @@ Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : d�
 | Contrat | `TransportSynchroDrive` avec MSW | CT-TRANS-01 à 10 ; erreurs 401, 403 (deux raisons), 404, 429, 5xx |
 | Intégration | `DepotLocalDexie` : `appliquerSynchronisation` atomique et en durabilité stricte (`FabriqueIndexedDbEspionne`), méta relue | 3 cas |
 | Performance | Encodage, décodage et fusion d'un état de 5 000 tâches | < 2 s en CI (indicatif) |
+| Composant (reliquat du rang 3, v0.4) | **DT-009** : abonnement du magasin des objectifs à `DepotLocal.observer` (par la composition) | `UT-COMP-US-017-…` : une écriture faite hors du magasin (autre cas d'usage sur le même dépôt) met à jour la liste (ECR-008) et le détail (ECR-003) ; plus de rafraîchissement après désabonnement. Pas de test fourni par Anthony : le critère de remboursement du registre fait foi |
+| Composant (reliquat du rang 3, v0.4) | **DT-006** : composants du rang 1 (`compte/presentation/ui`, `synchronisation/presentation/ui`) en composants Ionic | Tests de composants existants inchangés et verts ; contrôle par Steeve en E14. Pas de nouveau test fourni par Anthony |
 
 ## 15. Plan de réalisation
 Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compression, format v1 (UT 10 à 15) ; (2) fusion, dépôt (UT 01 à 09) ; (3) port `DepotLocal` étendu et `DepotLocalDexie` ; (4) `TransportSynchroDrive`, `FauxDrive`, contrat ; (5) `CycleSynchronisation`, déclencheurs (UT 17 à 31) ; (6) modèles de vue, steps, composition. Incréments 2 à 4 : E10 puis réalisation, dans l'ordre.
@@ -526,7 +576,8 @@ Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compre
   - **Réponse de Starck (2026-10-27, DAT v0.11.3 §6.4) : corrigé**, intégré au §6.8 : médiane des 5 dernières mesures prises au milieu de l'aller-retour, allers-retours de moins de 3 s seulement ; seuil de saut de 2 s contrôlé chaque minute et au retour au premier plan ; seul un recul est corrigé, une avance est journalisée ; mesures conservées décalées du saut.
 - **Q-ST017-STA-3 (nouvelle, non bloquante avant l'E10 du rang 10) — Archivage des appareils inactifs.** DAT §4.2 et v0.11.3 §4.1.4 : le fichier d'un appareil inactif depuis plus de 90 jours est « fusionné puis archivé ». Aucun scénario du lot ne le vérifie, et le DAT ne dit pas ce qu'est « archivé » (déplacé dans un sous-dossier, supprimé par qui ?). Comme le fichier est fusionné à chaque lecture de façon idempotente, l'absence d'archivage n'a pas de conséquence fonctionnelle. a) hors du lot 1, inscrit au registre de dette (DT) avec votre définition ★ ; b) à l'incrément 3 : précisez l'opération (déplacement dans `Done Juan/archives/` par l'appareil qui le constate ?).
   - **Réponse de Starck (E11, DAT v0.11.4 §4.2) : a)**, intégrée : archivage hors du lot 1 ; les fichiers inactifs sont fusionnés comme les autres ; entrée DT-002 créée au registre de dette (conditions et déclencheur de Starck).
-- **Dette** : aucune.
+- **Q-ST017-STE-1 (Steeve, v0.4, non bloquante)** : a) le guide §6.6.1 demande pour chaque ligne de `SYN-FEUILLE-EN-ATTENTE` la nature de la modification (« Nouvelle tâche », « Délai changé : 20 déc. → 15 déc. »), mais le catalogue n'a aucun code de nature et l'ancienne valeur n'est pas conservée (pas de journal d'opérations, même convention). À l'incrément 1, la ligne n'affiche que l'intitulé. 1) codes de nature à créer (création, suppression, champs modifiés, sans les valeurs), ajoutés au modèle de vue par un champ `nature?` ★ ; 2) intitulé seul. b) `ERR-016` « Vos {n} modifications » n'a ni singulier ni forme pour n = 0 (échec persistant sans modification en attente) : 1) gabarit `{n:|s}` et variante sans attente ★ ; 2) inchangé.
+- **Dette** : DT-011 (feuille ECR-011 et point « en attente » : tests livrés en v0.4, réalisation dans la PR du reliquat du rang 3).
 
 ## 17. Checklist de complétude
 - [x] Incrément 1 : fichiers, signatures, format, algorithmes, erreurs, steps, tests (E10 livrée).
