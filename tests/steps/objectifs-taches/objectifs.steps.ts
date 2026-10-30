@@ -1,11 +1,13 @@
 /**
  * Étapes des objectifs (glossaire d'étapes v1.4 §7 ; ST-US-001 §12 n° 1 à 12, 14 à 25). Les étapes agissent au niveau
  * des cas d'usage et des modèles de vue, sans interface (conventions.md §9.6). Les étapes des tâches, des
- * sous-objectifs et des deux appareils (n° 32 à 35) sont livrées aux rangs de leurs capacités.
+ * sous-objectifs et des deux appareils (n° 32 à 35) sont livrées aux rangs de leurs capacités. Étapes d'US-023
+ * (ST-US-023 §12 n° 1 à 13) : section « Sous-objectifs » en fin de fichier.
  */
 import assert from 'node:assert/strict';
 import type { DataTable } from '@cucumber/cucumber';
 import type { Resultat } from '@src/commun/domaine/resultat';
+import type { IdObjectif } from '@src/commun/domaine/identifiants';
 import { ACTIONS_OBJECTIF } from '@src/objectifs-taches/domaine/actions';
 import * as interfaceObjectifs from '@src/objectifs-taches';
 import { construireConfirmation } from '@src/objectifs-taches';
@@ -25,7 +27,9 @@ import {
   etapeContexte,
   type ContexteEtape,
 } from '../../support/prefixes';
+import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { etablirDansLeDrive } from '../../support/synchronisation/echanges';
+import { valeurDe } from '../../support/environnement';
 import { date } from '../../support/valeurs';
 
 const TEXTE = '"([^"]*)"';
@@ -392,5 +396,234 @@ etapeAssertion(
       [],
       "Une commande d'état est exportée par l'interface publique",
     );
+  },
+);
+
+// ---------------------------------------------------------------- Sous-objectifs (US-023, n° 1 à 13)
+
+type SaisieSousObjectif = SaisieObjectif & { readonly parent: string };
+
+const creerSousObjectif = async (
+  { monde, appareil }: ContexteEtape,
+  saisie: SaisieSousObjectif,
+): Promise<Resultat<unknown, unknown>> => {
+  const parentId = await resoudreObjectif(monde, appareil, saisie.parent);
+  const resultat = await (
+    await objectifsDe(appareil)
+  ).creerSousObjectif.executer({
+    parentId,
+    intitule: saisie.intitule,
+    ...(saisie.delai === undefined ? {} : { delai: date(saisie.delai) }),
+  });
+  if (resultat.ok) memoriserObjectif(monde, saisie.intitule.trim(), resultat.valeur);
+  return resultat;
+};
+
+/** Sans suffixe ou « , sans délai » : sans délai (glossaire §1). */
+const SUFFIXE_DELAI = `(?:, (?:sans délai|de délai ${DATE}))?`;
+
+etapeContexte(
+  new RegExp(`^un sous-objectif ${TEXTE} de l'objectif ${TEXTE}${SUFFIXE_DELAI}$`),
+  async (contexte, intitule, parent, delai) => {
+    const saisie = {
+      intitule: String(intitule),
+      parent: String(parent),
+      ...(typeof delai === 'string' ? { delai } : {}),
+    };
+    const resultat = await creerSousObjectif(contexte, saisie);
+    assert.ok(
+      resultat.ok,
+      `Création de « ${saisie.intitule} » refusée : ${JSON.stringify(resultat)}`,
+    );
+    await etablirDansLeDrive(contexte);
+  },
+  SMARTPHONE_PAR_DEFAUT,
+);
+
+etapeAction(
+  new RegExp(
+    `^l'utilisateur crée un sous-objectif ${TEXTE} de l'objectif ${TEXTE}${SUFFIXE_DELAI}$`,
+  ),
+  (contexte, intitule, parent, delai) =>
+    creerSousObjectif(contexte, {
+      intitule: String(intitule),
+      parent: String(parent),
+      ...(typeof delai === 'string' ? { delai } : {}),
+    }),
+);
+
+etapeAction(
+  new RegExp(`^l'utilisateur place l'objectif ${TEXTE} sous l'objectif ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, parent) =>
+    (await objectifsDe(appareil)).placerObjectif.executer({
+      objectifId: await resoudreObjectif(monde, appareil, String(intitule)),
+      parentId: await resoudreObjectif(monde, appareil, String(parent)),
+    }),
+);
+
+etapeAction(
+  new RegExp(`^l'utilisateur fait de l'objectif ${TEXTE} un objectif principal$`),
+  async ({ monde, appareil }, intitule) =>
+    (await objectifsDe(appareil)).rendreObjectifPrincipal.executer({
+      objectifId: await resoudreObjectif(monde, appareil, String(intitule)),
+    }),
+);
+
+/** Parent effectif de l'objectif dans la vue de l'appareil. */
+const parentEffectifDe = async (
+  { monde, appareil }: ContexteEtape,
+  intitule: string,
+): Promise<IdObjectif | undefined> => {
+  const id = await resoudreObjectif(monde, appareil, intitule);
+  return (await resumesDe(appareil)).find((o) => o.id === id)?.parentId;
+};
+
+etapeAssertion(new RegExp(`^${TEXTE} est un objectif principal$`), async (contexte, intitule) => {
+  assert.equal(await parentEffectifDe(contexte, String(intitule)), undefined);
+});
+
+etapeAssertion(
+  new RegExp(`^${TEXTE} est un sous-objectif de l'objectif ${TEXTE}$`),
+  async (contexte, intitule, parent) => {
+    assert.equal(
+      await parentEffectifDe(contexte, String(intitule)),
+      await resoudreObjectif(contexte.monde, contexte.appareil, String(parent)),
+    );
+  },
+);
+
+const ligneDeLaListe = (
+  { monde, appareil }: ContexteEtape,
+  intitule: string,
+): LigneListee | undefined => {
+  const liste = monde.derniereListeObjectifs.get(appareil.nom);
+  assert.ok(liste, "Aucune liste consultée : « l'utilisateur consulte la liste des objectifs »");
+  return [...liste.lignes, ...(liste.sectionAtteints?.lignes ?? [])].find(
+    (ligne) => ligne.intitule === intitule,
+  );
+};
+
+etapeAssertion(
+  new RegExp(`^la liste présente ${TEXTE} comme objectif principal$`),
+  (contexte, intitule) => {
+    const ligne = ligneDeLaListe(contexte, String(intitule));
+    assert.ok(ligne, `« ${String(intitule)} » absent de la liste`);
+    assert.deepEqual([ligne.niveau, ligne.parentId], ['PRINCIPAL', undefined]);
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^la liste présente ${TEXTE} comme sous-objectif de ${TEXTE}$`),
+  async (contexte, intitule, parent) => {
+    const ligne = ligneDeLaListe(contexte, String(intitule));
+    assert.ok(ligne, `« ${String(intitule)} » absent de la liste`);
+    assert.deepEqual(
+      [ligne.niveau, ligne.parentId],
+      ['SOUS_OBJECTIF', await resoudreObjectif(contexte.monde, contexte.appareil, String(parent))],
+    );
+  },
+);
+
+const ACTIONS_NOMMEES: Readonly<Record<string, (typeof ACTIONS_OBJECTIF)[number]>> = {
+  'créer un sous-objectif': 'CREER_SOUS_OBJECTIF',
+};
+
+etapeAssertion(
+  new RegExp(`^l'action ${TEXTE} n'est pas proposée pour l'objectif ${TEXTE}$`),
+  async ({ monde, appareil }, action, intitule) => {
+    const attendue = ACTIONS_NOMMEES[String(action)];
+    assert.ok(attendue, `Action inconnue : ${String(action)}`);
+    const detail = await detailObjectifDe(monde, appareil, String(intitule));
+    assert.ok(!detail.actions.includes(attendue), `${attendue} est proposée`);
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^l'objectif ${TEXTE} porte une alerte de délai qui nomme l'objectif ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, parent) => {
+    const alerte = (await ligneObjectifDe(monde, appareil, String(intitule))).alerteDelai;
+    assert.equal(alerte?.code, 'ALR-007', 'ALR-007 attendue');
+    assert.equal(alerte.parent, parent);
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^l'objectif ${TEXTE} ne porte aucune alerte de délai$`),
+  async ({ monde, appareil }, intitule) => {
+    assert.equal((await ligneObjectifDe(monde, appareil, String(intitule))).alerteDelai, undefined);
+  },
+);
+
+const detailConsulte = ({ monde, appareil }: ContexteEtape) => {
+  const detail = monde.dernierDetailObjectif.get(appareil.nom);
+  assert.ok(detail, "Aucun détail consulté : « l'utilisateur consulte le détail de l'objectif »");
+  return detail;
+};
+
+etapeAssertion(
+  /^le détail présente les sous-objectifs :$/,
+  (contexte, tableau) => {
+    const { lignes } = detailConsulte(contexte).sousObjectifs;
+    (tableau as DataTable).hashes().forEach((attendu) => {
+      const ligne = lignes.find((l) => l.intitule === attendu['intitulé']);
+      assert.ok(ligne, `Sous-objectif « ${String(attendu['intitulé'])} » absent du détail`);
+      Object.entries(attendu).forEach(([colonne, valeur]) => {
+        const extrait = COLONNES_LISTE[colonne];
+        assert.ok(extrait, `Colonne inconnue : ${colonne}`);
+        assert.equal(extrait(ligne), valeur, `${ligne.intitule}, colonne ${colonne}`);
+      });
+    });
+  },
+  { tableau: true },
+);
+
+etapeAssertion(
+  new RegExp(`^le détail présente le sous-objectif ${TEXTE}$`),
+  (contexte, intitule) => {
+    assert.ok(
+      detailConsulte(contexte).sousObjectifs.lignes.some((l) => l.intitule === intitule),
+      `Sous-objectif « ${String(intitule)} » absent du détail`,
+    );
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^aucun changement de parent n'est enregistré pour l'objectif ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) => {
+    const objectifs = await objectifsDe(appareil);
+    const id = await resoudreObjectif(monde, appareil, String(intitule));
+    const journal = valeurDe(
+      await objectifs.consulterHistorique.executer({ type: 'OBJECTIF', id }),
+    );
+    assert.deepEqual(
+      journal.filter((evenement) => evenement.type === 'CHANGEMENT_PARENT'),
+      [],
+    );
+  },
+);
+
+etapeAssertion(/^aucun sous-objectif n'a de sous-objectif$/, async ({ appareil }) => {
+  const resumes = await resumesDe(appareil);
+  const sousObjectifs = new Set(resumes.filter((o) => o.parentId !== undefined).map((o) => o.id));
+  assert.deepEqual(
+    resumes.filter((o) => o.parentId !== undefined && sousObjectifs.has(o.parentId)),
+    [],
+  );
+});
+
+const hierarchieDe = async (appareil: AppareilSimule): Promise<ReadonlyArray<string>> => {
+  const resumes = await resumesDe(appareil);
+  return resumes
+    .map((o) => `${o.intitule} < ${resumes.find((p) => p.id === o.parentId)?.intitule ?? '-'}`)
+    .sort();
+};
+
+etapeAssertion(
+  /^les deux appareils présentent la même hiérarchie d'objectifs$/,
+  async ({ monde }) => {
+    const [premier, ...autres] = monde.banc.appareils();
+    assert.ok(premier, 'Aucun appareil');
+    const reference = await hierarchieDe(premier);
+    for (const appareil of autres) assert.deepEqual(await hierarchieDe(appareil), reference);
   },
 );

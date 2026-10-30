@@ -1,4 +1,5 @@
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
+import type { ResumeObjectif } from '../../application/requetes/resumes';
 import type { SelecteurParent } from '../../application/requetes/consulter-selecteur-parent';
 import type { MessageRefus } from './messages-de-refus';
 import { comparerOrdreReference } from './ordre-reference';
@@ -22,42 +23,38 @@ export type ModeleVueSelecteurParent = {
 const INTITULE_AUCUN_PARENT = 'Aucun, objectif principal';
 const titreDuSelecteur = (element: string): string => `Placer «\u00a0${element}\u00a0» sous…`;
 
+const optionObjectif = (candidat: ResumeObjectif, objectifId: IdObjectif): OptionParent => ({
+  cible: { type: 'OBJECTIF', id: candidat.id },
+  intitule: candidat.intitule,
+  disponible: candidat.id !== objectifId,
+  ...(candidat.id === objectifId ? { raison: { code: 'ERR-031', variables: {} } } : {}),
+});
+
+const messageBloquant = (
+  objectif: ResumeObjectif,
+  nombreSousObjectifs: number,
+): Pick<ModeleVueSelecteurParent, 'messageBloquant'> =>
+  nombreSousObjectifs === 0
+    ? {}
+    : {
+        messageBloquant: {
+          code: 'ERR-030',
+          variante: 'objectif-a-des-sous-objectifs',
+          variables: { element: objectif.intitule, n: nombreSousObjectifs },
+        },
+      };
+
 export const construireSelecteurParent = ({
   objectif,
   candidats,
   nombreSousObjectifs,
-}: SelecteurParent): ModeleVueSelecteurParent => {
-  const optionAucun: OptionParent = {
-    cible: { type: 'AUCUN' },
-    intitule: INTITULE_AUCUN_PARENT,
-    disponible: true,
-  };
-  const optionsObjectifs = [...candidats].sort(comparerOrdreReference).map(
-    (candidat): OptionParent =>
-      candidat.id === objectif.id
-        ? {
-            cible: { type: 'OBJECTIF', id: candidat.id },
-            intitule: candidat.intitule,
-            disponible: false,
-            raison: { code: 'ERR-031', variables: {} },
-          }
-        : {
-            cible: { type: 'OBJECTIF', id: candidat.id },
-            intitule: candidat.intitule,
-            disponible: true,
-          },
-  );
-  return {
-    titre: titreDuSelecteur(objectif.intitule),
-    ...(nombreSousObjectifs === 0
-      ? {}
-      : {
-          messageBloquant: {
-            code: 'ERR-030' as const,
-            variante: 'objectif-a-des-sous-objectifs',
-            variables: { element: objectif.intitule, n: nombreSousObjectifs },
-          },
-        }),
-    options: [optionAucun, ...optionsObjectifs],
-  };
-};
+}: SelecteurParent): ModeleVueSelecteurParent => ({
+  titre: titreDuSelecteur(objectif.intitule),
+  ...messageBloquant(objectif, nombreSousObjectifs),
+  options: [
+    { cible: { type: 'AUCUN' }, intitule: INTITULE_AUCUN_PARENT, disponible: true },
+    ...[...candidats]
+      .sort(comparerOrdreReference)
+      .map((candidat) => optionObjectif(candidat, objectif.id)),
+  ],
+});

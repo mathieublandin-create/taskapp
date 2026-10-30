@@ -16,7 +16,8 @@ export const alerteDelaiObjectif = (
   id: IdObjectif,
 ): AlerteDelaiObjectif | undefined => {
   const objectif = vue.objectifs.get(id);
-  const parent = objectif?.parentId === undefined ? undefined : vue.objectifs.get(objectif.parentId);
+  const parent =
+    objectif?.parentId === undefined ? undefined : vue.objectifs.get(objectif.parentId);
   if (objectif?.delai === undefined || parent?.delai === undefined) return undefined;
   if (DateCalendaire.comparer(objectif.delai, parent.delai) <= 0) return undefined;
   return { parentId: parent.id, parentIntitule: parent.intitule, delaiParent: parent.delai };
