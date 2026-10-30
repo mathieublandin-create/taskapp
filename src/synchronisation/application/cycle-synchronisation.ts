@@ -166,6 +166,16 @@ export class CycleSynchronisation implements SuiviCycle {
     };
   }
 
+  /**
+   * ANO-001 (ST-US-017 v0.4.3 §6.9) : `rappel` est appelé deux fois par exécution (`synchroniserMaintenant` ou
+   * `deposerMaintenant` effectivement lancés) : au début (état EN_COURS), puis à la fin, relance comprise, une fois
+   * l'état final établi et `cycleEnCours()` revenu à undefined, en succès, en échec ou sur exception.
+   * Squelette de la phase rouge (E10) : n'enregistre pas le rappel.
+   */
+  observer(_rappel: () => void): Annulation {
+    return () => undefined;
+  }
+
   /** Promesse du cycle en cours, pour le banc (undefined au repos). */
   cycleEnCours(): Promise<IssueCycle> | undefined {
     return this.#enCours;

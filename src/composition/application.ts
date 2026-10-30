@@ -3,7 +3,7 @@ import type { EtatReseau } from '../commun/application/ports/etat-reseau';
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
 import type { JournalTechnique } from '../commun/application/ports/journal-technique';
-import type { Planificateur } from '../commun/application/ports/planificateur';
+import type { Annulation, Planificateur } from '../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../commun/application/ports/source-aleatoire';
 import { ErreurProgrammation } from '../commun/domaine/erreur-programmation';
 import { echec, succes } from '../commun/domaine/resultat';
@@ -113,6 +113,11 @@ export type Application = {
   readonly lireDernierContact: () => Promise<Instant | undefined>;
   /** Cycle immédiat de l'espace ouvert ; sans effet sans espace. */
   readonly synchroniserMaintenant: () => Promise<void>;
+  /**
+   * ANO-001 (ST-US-017 v0.4.3 §6.9) : relais des notifications du cycle de l'espace ouvert, quel qu'il soit
+   * (l'abonnement vaut aussi pour les espaces ouverts après lui).
+   */
+  readonly observerSynchronisation: (rappel: () => void) => Annulation;
   /** Ouvre Google Drive dans un nouvel onglet (action de la carte ERR-011). */
   readonly ouvrirGoogleDrive: () => void;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
@@ -369,6 +374,11 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
     synchroniserMaintenant: async () => {
       await n.espace()?.cycle.synchroniserMaintenant();
     },
+    // Squelette de la phase rouge (E10, ANO-001) : le relais n'est pas encore branché sur le cycle.
+    observerSynchronisation:
+      (_rappel: () => void): Annulation =>
+      () =>
+        undefined,
     ouvrirGoogleDrive: () => {
       a.ouvrirOnglet(URL_GOOGLE_DRIVE);
     },

@@ -56,6 +56,7 @@ export type ApplicationInterface = Pick<
   | 'lireElementsEnAttente'
   | 'lireDernierContact'
   | 'synchroniserMaintenant'
+  | 'observerSynchronisation'
   | 'ouvrirGoogleDrive'
 >;
 
@@ -110,6 +111,13 @@ export class ControleurInterface {
       this.#observateurs.delete(rappel);
     };
   };
+
+  /**
+   * Pour le banc (ANO-001, ST-US-017 v0.4.3 §6.9, §12.4), comme `CycleSynchronisation.cycleEnCours` : se résout quand
+   * aucun rafraîchissement n'est en cours, y compris ceux lancés pendant l'attente.
+   * Squelette de la phase rouge (E10) : se résout aussitôt.
+   */
+  readonly rafraichissementsTermines = (): Promise<void> => Promise.resolve();
 
   async rafraichir(): Promise<void> {
     const session = this.application.session.etat();
