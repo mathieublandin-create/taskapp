@@ -129,10 +129,32 @@ describe('Contrôles de CI (conventions.md §8.5, §9.1, §11.8, §11.13, §14)'
     expect(selectionnerScenarios(99, {})).toEqual([]);
   });
 
-  it('UT-COMP-86 lireScenarios — lit les dix fichiers du lot, 282 scénarios identifiés', () => {
+  it('UT-OUT-10 verifierTags — admet le tag de traçabilité @ANO-nnn d’un scénario de non-régression (conventions v0.4.8 §11.8)', () => {
+    const regles = reglesDuCahier('| RG-017 | texte |');
+
+    expect(
+      verifierTags({
+        scenarios: [
+          { chemin: 'a.feature', ligne: 1, tags: ['@US-017', '@RG-017', '@LOT-001', '@ANO-001'] },
+        ],
+        regles,
+      }),
+    ).toEqual([]);
+    expect(
+      verifierTags({
+        scenarios: [
+          { chemin: 'a.feature', ligne: 1, tags: ['@US-017', '@RG-017', '@LOT-001', '@ANOMALIE'] },
+        ],
+        regles,
+      }),
+    ).toEqual(['a.feature:1 : tag inconnu @ANOMALIE']);
+  });
+
+  it('UT-COMP-86 lireScenarios — lit les dix fichiers du lot, 286 scénarios identifiés', () => {
     const scenarios = lireScenarios();
 
-    expect(scenarios).toHaveLength(282);
+    // 286 depuis US-017 S06c à S06f (ANO-001, glossaire v1.11).
+    expect(scenarios).toHaveLength(286);
     expect(scenarios.every((s) => s.identifiant !== undefined)).toBe(true);
     expect(scenarios[0]?.tags).toEqual(expect.arrayContaining(['@US-001', '@LOT-001']));
   });
