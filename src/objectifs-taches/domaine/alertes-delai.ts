@@ -1,6 +1,6 @@
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
-import type { Objectif, Tache, VueMetier } from './vue-metier';
+import { objectifsDirectsDe, type Objectif, type Tache, type VueMetier } from './vue-metier';
 
 // RG-022 (ST-US-023 §6.3) : ALR-007.
 export type AlerteDelaiObjectif = {
@@ -43,10 +43,7 @@ export type AlerteDelaiTache =
 
 /** Objectifs de la tâche, ou ceux de sa tâche parente pour une sous-tâche (RG-023), dans l'ordre de rattachement. */
 const objectifsConcernes = (vue: VueMetier, tache: Tache): ReadonlyArray<Objectif> =>
-  (vue.objectifsDirectsPar.get(tache.tacheParenteId ?? tache.id) ?? []).flatMap((id) => {
-    const objectif = vue.objectifs.get(id);
-    return objectif === undefined ? [] : [objectif];
-  });
+  objectifsDirectsDe(vue, tache.tacheParenteId ?? tache.id);
 
 /** Objectifs dont le délai est dépassé par celui de la tâche, dans l'ordre de rattachement (RG-024). */
 const objectifsDepasses = (

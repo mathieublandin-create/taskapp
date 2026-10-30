@@ -165,3 +165,7 @@ export const tachesDirectesDe = (vue: VueMetier, id: IdObjectif): ReadonlyArray<
 
 export const sousTachesDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Tache> =>
   retrouver(vue.sousTachesPar.get(id), vue.taches);
+
+/** Objectifs rattachés directement à la tâche, dans l'ordre de rattachement (RG-001). */
+export const objectifsDirectsDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Objectif> =>
+  retrouver(vue.objectifsDirectsPar.get(id), vue.objectifs);

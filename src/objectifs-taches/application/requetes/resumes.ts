@@ -13,7 +13,13 @@ import { compteurObjectif, etatObjectif, type EtatObjectif } from '../../domaine
 import { estimationEnVigueur } from '../../domaine/estimation';
 import type { Incoherence } from '../../domaine/incoherence';
 import { estObjectifEnRetard, estTacheEnRetard } from '../../domaine/retard';
-import { sousTachesDe, type Objectif, type Tache, type VueMetier } from '../../domaine/vue-metier';
+import {
+  objectifsDirectsDe,
+  sousTachesDe,
+  type Objectif,
+  type Tache,
+  type VueMetier,
+} from '../../domaine/vue-metier';
 
 // ST-US-001 §4.2 ; ajouts ST-US-023 §4.2, ST-US-002 §4.2, ST-US-024 §4.2.
 export type ResumeObjectif = {
@@ -82,10 +88,10 @@ export const resumerObjectif = (
 
 /** Objectifs directs de la tâche, ou ceux de sa tâche parente pour une sous-tâche (RG-023), dans l'ordre de rattachement. */
 const objectifsDeTache = (vue: VueMetier, tache: Tache): ResumeTache['objectifs'] =>
-  (vue.objectifsDirectsPar.get(tache.tacheParenteId ?? tache.id) ?? []).flatMap((id) => {
-    const objectif = vue.objectifs.get(id);
-    return objectif === undefined ? [] : [{ id, intitule: objectif.intitule }];
-  });
+  objectifsDirectsDe(vue, tache.tacheParenteId ?? tache.id).map(({ id, intitule }) => ({
+    id,
+    intitule,
+  }));
 
 const compteurSousTaches = (vue: VueMetier, tache: Tache): ResumeTache['sousTaches'] => {
   const sousTaches = sousTachesDe(vue, tache.id);
