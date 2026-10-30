@@ -4,12 +4,15 @@ import { Given, Then, When } from '@cucumber/cucumber';
 import { connecter } from '../../support/compte/etapes-compte';
 import { convertirAppareil, FRAGMENT_APPAREIL, FRAGMENT_DATE } from '../../support/conversions';
 import type { MondeDoneJuan } from '../../support/monde';
+import { ecart } from '../../support/valeurs';
 import { creerObjectifEnregistre } from '../../support/synchronisation/echanges';
 import {
   etatMetierDuDrive,
   identifiantsDe,
   identifiantsDuCompte,
+  driveDeLAppareil,
   objectifsDuDrive,
+  tachesDuDrive,
 } from '../../support/synchronisation/drive-banc';
 
 const DOSSIER = 'application/vnd.google-apps.folder';
@@ -71,6 +74,34 @@ Then(
   new RegExp(`^le Drive du compte ${TEXTE} contient l'objectif ${TEXTE}$`),
   async function (this: MondeDoneJuan, compte: string, intitule: string) {
     await objectifUniqueDuDrive(this, compte, intitule);
+  },
+);
+
+Then(
+  new RegExp(`^le Drive du compte ${TEXTE} contient l'objectif ${TEXTE} exactement une fois$`),
+  async function (this: MondeDoneJuan, compte: string, intitule: string) {
+    await objectifUniqueDuDrive(this, compte, intitule);
+  },
+);
+
+/** « contient la tâche » (comme l'objectif) et « … exactement une fois » : un seul élément non supprimé. */
+const verifierTacheUniqueDuDrive = async (
+  monde: MondeDoneJuan,
+  compte: string,
+  intitule: string,
+): Promise<void> => {
+  const trouvees = await tachesDuDrive(monde.banc.google.drive(compte), intitule);
+  assert.equal(
+    trouvees.length,
+    1,
+    `Drive du compte ${compte} : ${String(trouvees.length)} tâche(s) « ${intitule} »`,
+  );
+};
+
+Then(
+  new RegExp(`^le Drive du compte ${TEXTE} contient la tâche ${TEXTE}( exactement une fois)?$`),
+  async function (this: MondeDoneJuan, compte: string, intitule: string, _exactement?: string) {
+    await verifierTacheUniqueDuDrive(this, compte, intitule);
   },
 );
 
@@ -145,5 +176,32 @@ Given(
     const application = await appareil.assurerOuverte();
     if (application.espace() === undefined) await connecter(this, appareil, compte);
     await creerObjectifEnregistre(this, appareil, intitule, delai);
+  },
+);
+
+/** Passe de la minute : les reprises du cycle après un dépôt interrompu sont espacées d'au plus quelques minutes. */
+const UNE_MINUTE = ecart(60_000);
+const MINUTES_MAX_AVANT_DEPOT = 60;
+
+/**
+ * ST-US-017 §12.1 n° 7 : les n prochains dépôts du Drive du compte échouent ; le banc laisse passer le temps
+ * jusqu'à ce que plus aucune modification n'attende dans les appareils ouverts.
+ */
+When(
+  "l'envoi au Drive est interrompu {int} fois avant d'aboutir",
+  async function (this: MondeDoneJuan, fois: number) {
+    const ouverts = this.banc.appareils().filter((a) => a.estOuverte());
+    for (const appareil of ouverts) driveDeLAppareil(this, appareil)?.interrompreDepots(fois);
+    const enAttente = async (): Promise<number> => {
+      let total = 0;
+      for (const appareil of ouverts) {
+        total += (await appareil.application.consulterEtat())?.enAttente ?? 0;
+      }
+      return total;
+    };
+    for (let minute = 0; minute < MINUTES_MAX_AVANT_DEPOT && (await enAttente()) > 0; minute += 1) {
+      await this.banc.avancerTemps(UNE_MINUTE);
+    }
+    assert.equal(await enAttente(), 0, "Des modifications attendent encore après l'interruption");
   },
 );

@@ -5,6 +5,7 @@
 import { Given, When } from '@cucumber/cucumber';
 import type { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { Fuseau } from '@src/commun/domaine/temps/fuseau';
+import type { NomAppareil } from '../../support/banc/appareil-simule';
 import type { MondeDoneJuan } from '../../support/monde';
 import { instantDepuisHeureMurale, type HeureLocale } from '../../support/temps';
 
@@ -22,3 +23,11 @@ const avancer = async function (this: MondeDoneJuan, ecart: EcartTemps): Promise
 When("l'horloge avance de {ecart}, sans aucune action de l'utilisateur", avancer);
 When("l'horloge avance de {ecart} depuis l'ouverture", avancer);
 When("l'horloge avance de {ecart} depuis la reconnexion", avancer);
+
+// ST-US-017 §12.1 n° 8 (S12) : horloge murale propre à l'appareil, en avance sur le temps du banc.
+Given(
+  "(que )l'horloge du {appareil} est en avance de {ecart}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil, ecart: EcartTemps) {
+    this.banc.appareil(nomAppareil).horloge.dereglerDe(ecart);
+  },
+);

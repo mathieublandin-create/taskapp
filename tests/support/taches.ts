@@ -4,9 +4,12 @@
  */
 import assert from 'node:assert/strict';
 import type { IdTache } from '@src/commun/domaine/identifiants';
+import { jourDeReference } from '@src/commun/domaine/temps/jour-de-reference';
 import {
   construireDetailTache,
+  construireLigneTache,
   construireListeTaches,
+  type LigneTache,
   type FiltreEtat,
   type FiltreObjectif,
   type ModeleVueDetailTache,
@@ -25,9 +28,10 @@ const NATURE = 'tâche';
 /** Intitulés des tâches non supprimées de l'appareil, sous-tâches comprises. */
 const tachesDeLAppareil = async (
   appareil: AppareilSimule,
-): Promise<ReadonlyArray<{ readonly id: IdTache; readonly intitule: string }>> => [
-  ...construireVueMetier(valeurDe(await appareil.service.lire())).taches.values(),
-];
+): Promise<ReadonlyArray<{ readonly id: IdTache; readonly intitule: string }>> => {
+  await appareil.assurerOuverte();
+  return [...construireVueMetier(valeurDe(await appareil.service.lire())).taches.values()];
+};
 
 /** Identifiant de la tâche désignée par son intitulé (conventions.md §11.7). */
 export const resoudreTache = async (
@@ -64,6 +68,23 @@ export const resumeTacheDe = async (
   const id = await resoudreTache(monde, appareil, intitule);
   const detail = valeurDe(await (await objectifsDe(appareil)).consulterDetailTache.executer(id));
   return detail.tache;
+};
+
+/** Ligne de la tâche, construite comme la liste de l'interface. */
+export const ligneTacheDe = async (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+  intitule: string,
+): Promise<LigneTache> =>
+  construireLigneTache(
+    await resumeTacheDe(monde, appareil, intitule),
+    jourDeReference(appareil.horloge.maintenant()),
+  );
+
+/** Vrai si au moins un objectif ou une tâche de l'appareil porte `MEN-ATTENTE` (lecture de la vue métier). */
+export const unElementEstEnAttente = async (appareil: AppareilSimule): Promise<boolean> => {
+  const vue = construireVueMetier(valeurDe(await appareil.service.lire()));
+  return [...vue.objectifs.values(), ...vue.taches.values()].some((element) => element.enAttente);
 };
 
 export const detailTacheDe = async (

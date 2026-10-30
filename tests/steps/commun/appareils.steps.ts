@@ -99,9 +99,24 @@ Given(
   },
 );
 
+// ST-US-018 §12.1 n° 5 : abandon de l'instance ; « éteint puis rallumé » repart en plus d'une nouvelle horloge monotone.
+When(
+  "l'application est arrêtée brutalement sur le {appareil}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).arreterBrutalement();
+  },
+);
+
 When(
   "l'utilisateur ramène l'application au premier plan sur le {appareil}",
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     this.banc.appareil(nomAppareil).revenirAuPremierPlan();
+  },
+);
+
+When(
+  'le {appareil} est éteint puis rallumé',
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).redemarrer();
   },
 );

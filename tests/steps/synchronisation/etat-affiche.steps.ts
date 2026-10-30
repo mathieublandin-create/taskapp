@@ -16,8 +16,14 @@ import { formaterAnciennete } from '@src/commun/presentation/format/heure';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { racineDe } from '../../support/compte/etapes-compte';
 import { convertirAppareil } from '../../support/conversions';
-import { listeObjectifsDe } from '../../support/objectifs';
-import { etapeAssertion } from '../../support/prefixes';
+import { listeObjectifsDe, ligneObjectifDe, resumesDe } from '../../support/objectifs';
+import { etapeAssertion, etapeContexte } from '../../support/prefixes';
+import {
+  listeTachesDe,
+  ligneTacheDe,
+  nombreDeTaches,
+  unElementEstEnAttente,
+} from '../../support/taches';
 
 /** Libellés des actions (guide §6.6.2, §6.6.3) ↦ codes des modèles de vue. */
 const ACTIONS: Readonly<Record<string, string>> = {
@@ -156,5 +162,111 @@ etapeAssertion(
     const message = (await indicateurDe(appareil))?.messageFeuille;
     if (forme === 'est') assert.equal(message, code);
     else assert.notEqual(message, code);
+  },
+);
+
+// ---------------------------------------------------------------- Décompte de l'indicateur (ST-US-017 §12.1 n° 19)
+
+// Pluriel « modification(s) » : expression régulière (conventions.md §11.6).
+etapeAssertion(
+  /^l'indicateur de synchronisation est "([^"]*)" avec (\d+) modifications?(?:\(s\))? en attente$/,
+  async ({ appareil }, code, n) => {
+    const indicateur = await indicateurDe(appareil);
+    assert.deepEqual([indicateur?.code, indicateur?.n ?? 0], [code, Number(n)]);
+  },
+);
+
+// ---------------------------------------------------------------- Bandeau « rappel 24 h » (ST-US-018 §12.1 n° 1, 2)
+
+// « Étant donné que sur le smartphone, le bandeau … » et « Alors sur le smartphone, le bandeau … » : même étape.
+etapeContexte(
+  /^le bandeau "([^"]*)" est affiché avec (\d+) modifications?(?:\(s\))? en attente$/,
+  async ({ appareil }, code, n) => {
+    const bandeau = await bandeauDe(appareil);
+    assert.deepEqual([bandeau?.code, bandeau?.n], [code, Number(n)]);
+  },
+);
+
+etapeAssertion(/^le bandeau "([^"]*)" est non bloquant$/, async ({ appareil }, code) => {
+  const bandeau = await bandeauDe(appareil);
+  assert.ok(bandeau, `Aucun bandeau affiché : « ${String(code)} » attendu`);
+  assert.deepEqual([bandeau.code, bandeau.bloquant], [code, false]);
+});
+
+etapeAssertion(
+  /^le bandeau "([^"]*)" variante 24H mentionne (\d+) modifications?(?:\(s\))? en attente$/,
+  async ({ appareil }, code, n) => {
+    const bandeau = await bandeauDe(appareil);
+    assert.deepEqual([bandeau?.code, bandeau?.variante, bandeau?.n], [code, '24H', Number(n)]);
+  },
+);
+
+etapeAssertion(
+  /^le bandeau "([^"]*)" variante 24H n'est pas affiché$/,
+  async ({ appareil }, code) => {
+    const bandeau = await bandeauDe(appareil);
+    const present = bandeau !== undefined && bandeau.code === code && bandeau.variante === '24H';
+    assert.ok(!present, `Le bandeau « ${String(code)} » porte la variante 24H`);
+  },
+);
+
+// ---------------------------------------------------------------- Mention « en attente » (ST-US-017 §12.1 n° 18)
+
+const MENTION_ATTENTE = 'MEN-ATTENTE';
+
+/** Mention `MEN-ATTENTE` de la ligne de l'objectif ou de la tâche (seule mention prise en charge ici). */
+const porteLaMention = async (
+  { monde, appareil }: Parameters<Parameters<typeof etapeAssertion>[1]>[0],
+  nature: string,
+  intitule: string,
+  mention: string,
+): Promise<boolean> => {
+  assert.equal(mention, MENTION_ATTENTE, `Mention non prise en charge : ${mention}`);
+  const ligne =
+    nature === 'objectif'
+      ? await ligneObjectifDe(monde, appareil, intitule)
+      : await ligneTacheDe(monde, appareil, intitule);
+  return ligne.attente?.code === MENTION_ATTENTE;
+};
+
+// « l'objectif … porte la mention » est défini avec les objectifs (objectifs.steps.ts, mentions de la ligne).
+etapeAssertion(
+  /^l'objectif "([^"]*)" (?:ne porte pas|ne porte plus) la mention "([^"]*)"$/,
+  async (contexte, intitule, mention) => {
+    assert.equal(
+      await porteLaMention(contexte, 'objectif', String(intitule), String(mention)),
+      false,
+      `${String(intitule)} : mention ${String(mention)}`,
+    );
+  },
+);
+
+etapeAssertion(
+  /^la tâche "([^"]*)" (porte|ne porte pas|ne porte plus) la mention "([^"]*)"$/,
+  async (contexte, intitule, forme, mention) => {
+    const porte = await porteLaMention(contexte, 'tâche', String(intitule), String(mention));
+    assert.equal(porte, forme === 'porte', `${String(intitule)} : mention ${String(mention)}`);
+  },
+);
+
+etapeAssertion(/^aucun élément ne porte la mention "([^"]*)"$/, async ({ appareil }, mention) => {
+  assert.equal(mention, MENTION_ATTENTE, `Mention non prise en charge : ${String(mention)}`);
+  assert.equal(await unElementEstEnAttente(appareil), false);
+});
+
+// ---------------------------------------------------------------- État vide de la première connexion (ST-US-022 §12.1)
+
+etapeAssertion(/^aucun objectif et aucune tâche n'existent$/, async ({ appareil }) => {
+  assert.deepEqual(await resumesDe(appareil), []);
+  assert.equal(await nombreDeTaches(appareil), 0);
+});
+
+/** EVD-BIENVENUE propose de créer un premier objectif ou d'ajouter une première tâche (guide §6.6.5). */
+etapeAssertion(
+  /^l'application propose de créer un premier objectif et d'ajouter une première tâche$/,
+  async ({ appareil }) => {
+    const liste = await listeTachesDe(appareil, { etat: 'A_FAIRE', objectif: { type: 'TOUS' } });
+    assert.equal(liste.etatVide?.code, 'EVD-BIENVENUE');
+    assert.equal((await listeObjectifsDe(appareil)).etatVide?.code, 'EVD-OBJECTIFS');
   },
 );

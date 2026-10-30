@@ -3,6 +3,7 @@ import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendai
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { formaterDuree } from '../../../commun/presentation/format/duree';
 import { libelle } from '../../../commun/presentation/messages/libelle';
+import { mentionAttenteSi } from '../../../synchronisation';
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { AlerteDelaiTache } from '../../domaine/alertes-delai';
 
@@ -37,6 +38,12 @@ export type LigneTache = {
     readonly libelle: string;
   };
   readonly incoherence?: { readonly code: 'MEN-INCOHERENCE' };
+  /** ST-US-017 §4.5 : modification de la tâche non encore enregistrée dans le Drive. */
+  readonly attente?: {
+    readonly code: 'MEN-ATTENTE';
+    readonly libelle: string;
+    readonly nomAccessible: string;
+  };
   readonly nomAccessible: string;
 };
 
@@ -103,6 +110,19 @@ const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'e
 const modeleIncoherence = (resume: ResumeTache): Pick<LigneTache, 'incoherence'> =>
   resume.incoherence === undefined ? {} : { incoherence: { code: 'MEN-INCOHERENCE' } };
 
+const modeleAttente = (resume: ResumeTache): Pick<LigneTache, 'attente'> => {
+  const mention = mentionAttenteSi(resume.enAttente);
+  return mention === undefined
+    ? {}
+    : {
+        attente: {
+          ...mention,
+          libelle: libelle(mention.code),
+          nomAccessible: libelle(mention.code, {}, 'nomAccessible'),
+        },
+      };
+};
+
 /** `aujourdhui` : jour de Paris, pour le format des dates (guide §6.6.1). */
 export const construireLigneTache = (
   resume: ResumeTache,
@@ -124,6 +144,7 @@ export const construireLigneTache = (
     alertes: resume.alertes.map((alerte) => modeleAlerte(alerte, delai)),
     ...modeleCompteur(resume),
     ...modeleIncoherence(resume),
+    ...modeleAttente(resume),
     nomAccessible: nomAccessible(resume, aujourdhui),
   };
 };
