@@ -1,7 +1,6 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
 import type { ActionObjectif, ActionTache } from './types-actions';
-import type { VueMetier } from './vue-metier';
+import { sousTachesDe, type VueMetier } from './vue-metier';
 
 // Glossaire d'étapes v1.4 §7 ; ST-US-001 §4.1, ST-US-023 §6.4, ST-US-002 §6.5, ST-US-024 §6.5,
 // ST-US-003 §6.3, ST-US-025 §6.3.
@@ -33,6 +32,18 @@ export const actionsObjectif = (vue: VueMetier, id: IdObjectif): ReadonlyArray<A
   ];
 };
 
-/** ST-US-002 §6.5, ST-US-024 §6.5, ST-US-003 §6.3, ST-US-025 §6.3. */
-export const actionsTache = (_vue: VueMetier, _id: IdTache): ReadonlyArray<ActionTache> =>
-  nonImplemente('actionsTache');
+/**
+ * ST-US-002 §6.5 : `MODIFIER_ESTIMATION` sauf avec sous-tâches (champ verrouillé), `RATTACHER` et `DETACHER` sauf pour une
+ * sous-tâche (objectifs verrouillés). Les actions de cycle de vie et `CREER_SOUS_TACHE` : ST-US-024, 003, 025.
+ */
+export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionTache> => {
+  const tache = vue.taches.get(id);
+  if (tache === undefined) return [];
+  return [
+    'RENOMMER',
+    'MODIFIER_DELAI',
+    ...(sousTachesDe(vue, id).length === 0 ? (['MODIFIER_ESTIMATION'] as const) : []),
+    ...(tache.tacheParenteId === undefined ? (['RATTACHER', 'DETACHER'] as const) : []),
+    'SUPPRIMER',
+  ];
+};

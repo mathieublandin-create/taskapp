@@ -1,7 +1,6 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
-import type { VueMetier } from './vue-metier';
+import type { Objectif, Tache, VueMetier } from './vue-metier';
 
 // RG-022 (ST-US-023 §6.3) : ALR-007.
 export type AlerteDelaiObjectif = {
@@ -42,5 +41,39 @@ export type AlerteDelaiTache =
       };
     };
 
-export const alertesDelaiTache = (_vue: VueMetier, _id: IdTache): ReadonlyArray<AlerteDelaiTache> =>
-  nonImplemente('alertesDelaiTache');
+/** Objectifs de la tâche, ou ceux de sa tâche parente pour une sous-tâche (RG-023), dans l'ordre de rattachement. */
+const objectifsConcernes = (vue: VueMetier, tache: Tache): ReadonlyArray<Objectif> =>
+  (vue.objectifsDirectsPar.get(tache.tacheParenteId ?? tache.id) ?? []).flatMap((id) => {
+    const objectif = vue.objectifs.get(id);
+    return objectif === undefined ? [] : [objectif];
+  });
+
+/** Objectifs dont le délai est dépassé par celui de la tâche, dans l'ordre de rattachement (RG-024). */
+const objectifsDepasses = (
+  objectifs: ReadonlyArray<Objectif>,
+  delaiTache: DateCalendaire,
+): ReadonlyArray<{ id: IdObjectif; intitule: string; delai: DateCalendaire }> =>
+  objectifs.flatMap(({ id, intitule, delai }) =>
+    delai !== undefined && DateCalendaire.comparer(delaiTache, delai) > 0
+      ? [{ id, intitule, delai }]
+      : [],
+  );
+
+export const alertesDelaiTache = (vue: VueMetier, id: IdTache): ReadonlyArray<AlerteDelaiTache> => {
+  const tache = vue.taches.get(id);
+  if (tache === undefined) return [];
+  const depasses = objectifsDepasses(objectifsConcernes(vue, tache), tache.delai);
+  const parente =
+    tache.tacheParenteId === undefined ? undefined : vue.taches.get(tache.tacheParenteId);
+  return [
+    ...(depasses.length === 0 ? [] : [{ type: 'OBJECTIFS', objectifs: depasses } as const]),
+    ...(parente !== undefined && DateCalendaire.comparer(tache.delai, parente.delai) > 0
+      ? [
+          {
+            type: 'TACHE_PARENTE',
+            tache: { id: parente.id, intitule: parente.intitule, delai: parente.delai },
+          } as const,
+        ]
+      : []),
+  ];
+};

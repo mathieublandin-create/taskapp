@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import { DateCalendaire } from '../../commun/domaine/temps/date-calendaire';
 import type { EtatObjectif } from './etat-objectif';
 import type { Objectif, Tache } from './vue-metier';
@@ -14,5 +13,5 @@ export const estObjectifEnRetard = (
   etat !== 'ATTEINT';
 
 /** A_FAIRE et délai < jour. */
-export const estTacheEnRetard = (_tache: Tache, _jour: DateCalendaire): boolean =>
-  nonImplemente('estTacheEnRetard');
+export const estTacheEnRetard = (tache: Tache, jour: DateCalendaire): boolean =>
+  tache.cycleDeVie.etat === 'A_FAIRE' && DateCalendaire.comparer(tache.delai, jour) < 0;

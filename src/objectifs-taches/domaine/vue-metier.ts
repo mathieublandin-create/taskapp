@@ -140,6 +140,14 @@ export const objectifActif = (vue: VueMetier, id: IdObjectif): Resultat<Objectif
     : succes(objectif);
 };
 
+/** ElementIntrouvable si la tâche est absente, supprimée ou sous une tâche parente supprimée. */
+export const tacheActive = (vue: VueMetier, id: IdTache): Resultat<Tache, RefusMetier> => {
+  const tache = vue.taches.get(id);
+  return tache === undefined
+    ? echec({ type: 'ElementIntrouvable', element: { type: 'TACHE', id } })
+    : succes(tache);
+};
+
 const retrouver = <K, V>(
   ids: ReadonlyArray<K> | undefined,
   source: ReadonlyMap<K, V>,

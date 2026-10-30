@@ -1,14 +1,44 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdTache } from '../../../commun/domaine/identifiants';
-import type { DecisionSurVue, EvaluationSurVue } from '../vue-metier';
+import { succes } from '../../../commun/domaine/resultat';
+import {
+  sousTachesDe,
+  tacheActive,
+  type DecisionSurVue,
+  type EvaluationSurVue,
+} from '../vue-metier';
 
-// ST-US-002 §6.2 (RG-046) ; recopie de l'estimation : ST-US-024 §6.3 (H-3).
+// ST-US-002 §6.2 (RG-046) : les sous-tâches sont supprimées par dérivation, aucune écriture sur elles.
+// Recopie de l'estimation dans la tâche parente : ST-US-024 §6.3 (H-3).
 export const evaluerSuppressionTache =
-  (_c: { readonly tacheId: IdTache }): EvaluationSurVue =>
-  () =>
-    nonImplemente('evaluerSuppressionTache');
+  (c: { readonly tacheId: IdTache }): EvaluationSurVue =>
+  (vue) => {
+    const tache = tacheActive(vue, c.tacheId);
+    if (!tache.ok) return tache;
+    return succes({
+      type: 'CONFIRMATION_REQUISE',
+      confirmation: {
+        type: 'SUPPRESSION_TACHE',
+        tacheId: c.tacheId,
+        intitule: tache.valeur.intitule,
+        sousTaches: sousTachesDe(vue, c.tacheId).length,
+      },
+    });
+  };
 
 export const deciderSuppressionTache =
-  (_c: { readonly tacheId: IdTache }): DecisionSurVue<void> =>
-  () =>
-    nonImplemente('deciderSuppressionTache');
+  (c: { readonly tacheId: IdTache }): DecisionSurVue<void> =>
+  (vue) => {
+    const tache = tacheActive(vue, c.tacheId);
+    if (!tache.ok) return tache;
+    const element = { type: 'TACHE', id: c.tacheId } as const;
+    return succes({
+      modifications: [
+        {
+          type: 'SUPPRIMER',
+          element,
+          evenement: { type: 'SUPPRESSION', element, avant: {}, apres: {}, rang: 0 },
+        },
+      ],
+      valeur: undefined,
+    });
+  };
