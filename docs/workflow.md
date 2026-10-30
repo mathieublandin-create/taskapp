@@ -2,6 +2,44 @@
 
 > Version 3 — 2026-10-22 (ajout d'E-1, backlog d'idées, DEC-033). Version 2 — 2026-10-20. Jarvis lit ce fichier avant toute coordination et l'applique strictement.
 
+## Sommaire
+
+- [Acteurs](#acteurs) (l. 43)
+- [Principe : le travail est organisé en lots](#principe--le-travail-est-organisé-en-lots) (l. 56)
+- [Vue d'ensemble](#vue-densemble) (l. 70)
+- [Étapes](#étapes) (l. 105)
+  - [E-1 — Backlog d'idées (Jarvis qualifie, ★ le commanditaire priorise)](#e-1--backlog-didées-jarvis-qualifie--le-commanditaire-priorise) (l. 107)
+  - [E0 — Réception des demandes (Jarvis)](#e0--réception-des-demandes-jarvis) (l. 134)
+  - [E1 — Analyse d'écart et rédaction des US (Pepper)](#e1--analyse-décart-et-rédaction-des-us-pepper) (l. 138)
+  - [E2 — Constitution du lot (Pepper propose, ★ le commanditaire valide)](#e2--constitution-du-lot-pepper-propose--le-commanditaire-valide) (l. 144)
+  - [E3 — Analyse d'impact architecture (Starck)](#e3--analyse-dimpact-architecture-starck) (l. 154)
+  - [E4 — Analyse ergonomique (Steeve)](#e4--analyse-ergonomique-steeve) (l. 159)
+  - [E5 — Rédaction des tests métiers (Pepper)](#e5--rédaction-des-tests-métiers-pepper) (l. 164)
+  - [E6 — ★ Validation des US par le commanditaire](#e6---validation-des-us-par-le-commanditaire) (l. 169)
+  - [E7 — Refinement du lot (Jarvis, tous les agents)](#e7--refinement-du-lot-jarvis-tous-les-agents) (l. 182)
+  - [E8 — Contrôle d'explicitation (Anthony)](#e8--contrôle-dexplicitation-anthony) (l. 188)
+  - [E9 — Conception détaillée (Anthony)](#e9--conception-détaillée-anthony) (l. 193)
+  - [E10 — Écriture des tests unitaires (Anthony)](#e10--écriture-des-tests-unitaires-anthony) (l. 205)
+  - [E11 — Revue de lancement du lot (Anthony → Benjamin, Pepper, Steeve, Starck ; animée par Jarvis)](#e11--revue-de-lancement-du-lot-anthony--benjamin-pepper-steeve-starck--animée-par-jarvis) (l. 209)
+  - [E12 — Développement (Benjamin)](#e12--développement-benjamin) (l. 219)
+  - [E13 — Revue de code (Anthony), pour chaque US](#e13--revue-de-code-anthony-pour-chaque-us) (l. 224)
+  - [E13b — Revue de fin de développement (Benjamin, Anthony, Starck, Pepper, Steeve ; animée par Jarvis)](#e13b--revue-de-fin-de-développement-benjamin-anthony-starck-pepper-steeve--animée-par-jarvis) (l. 236)
+  - [E14 — Recette des agents (en parallèle, une fois toutes les US du lot approuvées)](#e14--recette-des-agents-en-parallèle-une-fois-toutes-les-us-du-lot-approuvées) (l. 255)
+  - [E15 — Traitement des anomalies](#e15--traitement-des-anomalies) (l. 264)
+  - [E16 — ★ Recette du commanditaire (itérations majeures uniquement)](#e16---recette-du-commanditaire-itérations-majeures-uniquement) (l. 269)
+  - [E17 — Clôture du lot (Jarvis)](#e17--clôture-du-lot-jarvis) (l. 282)
+- [Gravité des anomalies](#gravité-des-anomalies) (l. 293)
+- [Règle anti-boucle et arbitrage](#règle-anti-boucle-et-arbitrage) (l. 303)
+- [Definition of Ready (E7)](#definition-of-ready-e7) (l. 315)
+- [Definition of Done (E17)](#definition-of-done-e17) (l. 324)
+- [Statuts](#statuts) (l. 331)
+- [Points de validation du commanditaire](#points-de-validation-du-commanditaire) (l. 335)
+- [Politique de modèles (optimisation des tokens)](#politique-de-modèles-optimisation-des-tokens) (l. 346)
+  - [Modèles par défaut](#modèles-par-défaut) (l. 349)
+  - [Choix du modèle par type de tâche](#choix-du-modèle-par-type-de-tâche) (l. 361)
+  - [Règles](#règles) (l. 368)
+- [Vue « État des lieux »](#vue--état-des-lieux-) (l. 375)
+
 ## Acteurs
 | Acteur | Rôle |
 |---|---|
@@ -11,7 +49,9 @@
 | Steeve | Expert UX/UI |
 | Starck | Architecte logiciel |
 | Anthony | Responsable technique |
-| Benjamin | Développeur |
+| Benjamin | Développeur fonctionnel et interface |
+| Bruce | Développeur cœur de données et synchronisation |
+| Friday | Développeuse outillage et intégration continue |
 
 ## Principe : le travail est organisé en lots
 Les US sont regroupées en **lots**, chacun correspondant à une itération. Un lot réunit des US dont le regroupement est pertinent :
@@ -182,6 +222,7 @@ Une idée peut aussi être **écartée** ou mise **en sommeil**, sur décision d
 - Peut ajouter des tests, mais ne supprime ni n'affaiblit aucun test existant.
 
 ### E13 — Revue de code (Anthony), pour chaque US
+- Porte sur le **diff** de la branche de l'US ou du rang par rapport à la branche de lot (DEC-040, OPT-7). La relecture complète des ST reste réservée à l'E11.
 - Contrôle :
   - la maintenabilité ;
   - le respect des normes de développement et de la spécification technique ;
@@ -313,7 +354,9 @@ Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<age
 | Steeve | sonnet | Production de maquettes et de guides à partir d'un besoin établi |
 | Starck | opus | Choix d'architecture, compromis, risques |
 | Anthony | opus | Conception détaillée, tests, revue de code et sécurité |
-| Benjamin | sonnet | Implémentation guidée par une spécification technique complète |
+| Benjamin | sonnet | Développement fonctionnel et interface, guidé par une spécification technique complète |
+| Bruce | opus | Développement du cœur de données et de synchronisation : fusion, horloge, Drive, sécurité de connexion (DEC-040) |
+| Friday | haiku | Outillage, scripts, CI, dépendances (DEC-040) |
 
 ### Choix du modèle par type de tâche
 | Niveau | Modèle | Tâches typiques |
@@ -326,6 +369,8 @@ Chaque agent a un **modèle par défaut** (champ `model` de `.claude/agents/<age
 - En cas de doute, on choisit le niveau **supérieur** pour ce qui **produit une référence** (spécification, conception, revue) et le niveau **inférieur** pour ce qui **exécute** une référence.
 - **Escalade** : si un agent lancé sur un modèle inférieur échoue ou livre un résultat insuffisant (critère de fin non atteint, remarque de qualité), Jarvis relance la tâche sur le niveau supérieur. Il consigne l'escalade dans le journal des échanges. Les relances comptent dans la règle anti-boucle.
 - Une tâche en cours garde le modèle avec lequel elle a été lancée. Un changement de modèle par défaut ne vaut que pour les lancements suivants.
+- **Économie de tokens (DEC-040)** : un agent neuf par sujet, avec au plus 2 relances d'un même agent ; un modèle imposé à chaque délégation ; une lecture ciblée par sections ; des comptes rendus de 15 lignes au plus ; au plus 2 agents opus en parallèle ; des revues E13 et E13b sur le diff ; une session Jarvis lancée par `claude --agent jarvis` (sonnet). Le détail figure dans `docs/analyse-tokens.md`.
+- **Documents longs** : tout document de plus de 300 lignes commence par un sommaire avec ancres, tenu par son auteur.
 
 ## Vue « État des lieux »
 Jarvis maintient `docs/etat-des-lieux.html`, publiée à l'adresse https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187. Il la met à jour et la republie à chaque changement d'étape, à chaque décision du commanditaire et à chaque livrable rendu.

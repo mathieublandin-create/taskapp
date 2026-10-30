@@ -1,0 +1,94 @@
+{
+ "bareme": {
+  "Fusionné": 100,
+  "En revue E13": 80,
+  "E12 en cours": 40,
+  "À venir": 0
+ },
+ "rangs": [
+  {
+   "rang": 0,
+   "contenu": "Socle d'écriture",
+   "jours": 12.0,
+   "etape": "Fusionné"
+  },
+  {
+   "rang": 1,
+   "contenu": "US-022 Connexion",
+   "jours": 11.5,
+   "etape": "Fusionné"
+  },
+  {
+   "rang": 2,
+   "contenu": "US-001 Objectifs",
+   "jours": 5.0,
+   "etape": "Fusionné"
+  },
+  {
+   "rang": 3,
+   "contenu": "US-017 Synchro, incr. 1",
+   "jours": 10.0,
+   "etape": "Fusionné"
+  },
+  {
+   "rang": 4,
+   "contenu": "US-023 Sous-objectifs",
+   "jours": 3.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 5,
+   "contenu": "US-002 Tâches",
+   "jours": 6.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 6,
+   "contenu": "US-024 Sous-tâches",
+   "jours": 4.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 7,
+   "contenu": "US-003 Terminer, rouvrir",
+   "jours": 3.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 8,
+   "contenu": "US-025 Abandonner",
+   "jours": 3.5,
+   "etape": "À venir"
+  },
+  {
+   "rang": 9,
+   "contenu": "US-017 Synchro, incr. 2",
+   "jours": 11.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 10,
+   "contenu": "US-017 Synchro, incr. 3",
+   "jours": 6.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 11,
+   "contenu": "US-017 Synchro, incr. 4",
+   "jours": 6.0,
+   "etape": "À venir"
+  },
+  {
+   "rang": 12,
+   "contenu": "US-018 Hors ligne smartphone",
+   "jours": 6.5,
+   "etape": "À venir"
+  },
+  {
+   "rang": 13,
+   "contenu": "US-031 Hors ligne PC",
+   "jours": 3.5,
+   "etape": "À venir"
+  }
+ ]
+}

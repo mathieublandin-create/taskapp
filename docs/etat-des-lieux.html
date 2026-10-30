@@ -108,6 +108,16 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
 
 @media (max-width:900px){.agents{grid-template-columns:repeat(2,minmax(0,1fr))}.todo-grid{grid-template-columns:1fr}.track{grid-template-columns:1fr}}
 @media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.agents{grid-template-columns:1fr}}
+.prog{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.prog table{width:100%;border-collapse:collapse;font-size:13.5px}
+.prog th,.prog td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.prog th{color:var(--muted);font-weight:600;font-size:12px}
+.prog td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--todo-soft);min-width:60px;position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--done);border-radius:4px}
+.bar.doing i{background:var(--doing)}
+.prog .total{font-weight:700}
+@media (max-width:560px){.prog .hide-s{display:none}}
 </style>
 
 <div class="wrap">
@@ -117,9 +127,9 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
     <h1>Done <span>Juan</span>, lot 1 en préparation</h1>
     <p class="lede">Le socle documentaire est posé et le premier lot (socle, objectifs et tâches) avance en parallèle sur deux fronts (DEC-031). Pour le socle d'écriture et les six US métier, la conception détaillée est faite et 284 tests unitaires sont écrits, rouges comme prévu en TDD. Vous avez choisi une application web unique (PWA) pour tous les appareils (DEC-034, DEC-036), sous condition d'une mesure sur Android. Le test technique web est concluant (R11, M-RED, M-PERSIST, M-DUR favorables) : la conception de la connexion, de la synchronisation et du hors ligne est lancée.</p>
     <div class="kpis">
-      <div class="kpi"><b>10</b><small>US dans le lot 1, sur 36 au backlog</small></div>
+      <div class="kpi"><b>42 %</b><small>avancement du lot 1 (pondéré par l'estimation de 91 j)</small></div>
       <div class="kpi"><b>36</b><small>décisions du commanditaire (DEC-001 à 036)</small></div>
-      <div class="kpi"><b>0</b><small>action attendue de vous à ce stade</small></div>
+      <div class="kpi"><b>0</b><small>action attendue de vous (fusions des PR annoncées par Jarvis)</small></div>
       <div class="kpi"><b>2</b><small>épiques mûres au backlog d'idées (EPI-001, EPI-002)</small></div>
     </div>
   </header>
@@ -155,8 +165,8 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
           <li class="step done"><span class="id">E8</span><span class="lbl">Contrôle d'explicitation (10 US explicites)</span><span class="who">Anthony</span></li>
           <li class="step done"><span class="id">E9</span><span class="lbl">Conception détaillée (10 US et socle)</span><span class="who">Anthony</span></li>
           <li class="step done"><span class="id">E10</span><span class="lbl">Tests unitaires (TDD) : 408 écrits, rangs suivants avant leur E12</span><span class="who">Anthony</span></li>
-          <li class="step doing"><span class="id">E11</span><span class="lbl">Revue de lancement<span class="here">ici</span></span><span class="who">Tous</span></li>
-          <li class="step"><span class="id">E12</span><span class="lbl">Développement</span><span class="who">Benjamin</span></li>
+          <li class="step done"><span class="id">E11</span><span class="lbl">Revue de lancement (avis favorables)</span><span class="who">Tous</span></li>
+          <li class="step doing"><span class="id">E12</span><span class="lbl">Développement : rangs 0 à 3 fusionnés (socle, connexion, objectifs, synchronisation de base) ; reliquat du rang 3 (dettes DT-006, DT-009, DT-011, DT-012) en cours<span class="here">ici</span></span><span class="who">Bruce, Benjamin</span></li>
           <li class="step"><span class="id">E13</span><span class="lbl">Revue de code</span><span class="who">Anthony</span></li>
           <li class="step"><span class="id">E13b</span><span class="lbl">Revue de fin de développement</span><span class="who">Tous</span></li>
         </ol>
@@ -170,6 +180,18 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
           <li class="step"><span class="id">E17</span><span class="lbl">Clôture du lot</span><span class="who">Jarvis</span></li>
         </ol>
       </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-prog">
+    <div class="sec-head"><h2 id="t-prog">Avancement du lot 1 par rapport à l'estimation</h2><span class="legend">Fusionné 100 % · en revue E13 80 % · E12 en cours 40 % · à venir 0 %</span></div>
+    <div class="prog">
+      <table>
+        <thead><tr><th>Rang</th><th>Contenu</th><th class="hide-s">Estimation</th><th>Étape</th><th>Avancement</th><th></th></tr></thead>
+        <tbody><tr><td class="n">0</td><td>Socle d'écriture</td><td class="n hide-s">12 j</td><td>Fusionné</td><td><div class="bar" role="img" aria-label="100 %"><i style="width:100%"></i></div></td><td class="n">100 %</td></tr><tr><td class="n">1</td><td>US-022 Connexion</td><td class="n hide-s">11,5 j</td><td>Fusionné</td><td><div class="bar" role="img" aria-label="100 %"><i style="width:100%"></i></div></td><td class="n">100 %</td></tr><tr><td class="n">2</td><td>US-001 Objectifs</td><td class="n hide-s">5 j</td><td>Fusionné</td><td><div class="bar" role="img" aria-label="100 %"><i style="width:100%"></i></div></td><td class="n">100 %</td></tr><tr><td class="n">3</td><td>US-017 Synchro, incr. 1</td><td class="n hide-s">10 j</td><td>Fusionné</td><td><div class="bar" role="img" aria-label="100 %"><i style="width:100%"></i></div></td><td class="n">100 %</td></tr><tr><td class="n">4</td><td>US-023 Sous-objectifs</td><td class="n hide-s">3 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">5</td><td>US-002 Tâches</td><td class="n hide-s">6 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">6</td><td>US-024 Sous-tâches</td><td class="n hide-s">4 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">7</td><td>US-003 Terminer, rouvrir</td><td class="n hide-s">3 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">8</td><td>US-025 Abandonner</td><td class="n hide-s">3,5 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">9</td><td>US-017 Synchro, incr. 2</td><td class="n hide-s">11 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">10</td><td>US-017 Synchro, incr. 3</td><td class="n hide-s">6 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">11</td><td>US-017 Synchro, incr. 4</td><td class="n hide-s">6 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">12</td><td>US-018 Hors ligne smartphone</td><td class="n hide-s">6,5 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr><tr><td class="n">13</td><td>US-031 Hors ligne PC</td><td class="n hide-s">3,5 j</td><td>À venir</td><td><div class="bar" role="img" aria-label="0 %"><i style="width:0%"></i></div></td><td class="n">0 %</td></tr>
+          <tr class="total"><td></td><td>Lot 1, global (pondéré par l'estimation)</td><td class="n hide-s">91 j</td><td>38,5 j réalisés</td><td><div class="bar doing" role="img" aria-label="42 %"><i style="width:42%"></i></div></td><td class="n">42 %</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 

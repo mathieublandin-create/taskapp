@@ -5,6 +5,50 @@
 > **PWA unique sous condition (v0.11, DEC-034, ADR-013).** La cible est désormais **une seule PWA** sur le PC, sur Android (Chrome, application installée) et, pour EPI-001, sur iPhone. Tout ce qui relève de Capacitor, du module natif d'authentification, de SQLite, de l'APK et de sa signature est marqué **« repli si la condition échoue »** : ce n'est plus la cible, mais cela redevient applicable, avec ADR-012, si la mesure M-RED ou M-PERSIST échoue sur Chrome Android. Le §4.1.7 décrit la connexion par redirection.
 > **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-013 sont au statut **Proposé** (ADR-012 : remplacé sous condition par ADR-013) et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique v3 (R11, M-RED, M-PERSIST, M-DUR), qui confirme ou non la PWA unique (ADR-013, condition de DEC-034) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
 
+## Sommaire
+
+- [Historique](#historique) (l. 52)
+- [1. Contexte et exigences structurantes](#1-contexte-et-exigences-structurantes) (l. 75)
+  - [1.1 Contexte](#11-contexte) (l. 77)
+  - [1.2 Exigences structurantes](#12-exigences-structurantes) (l. 86)
+  - [1.3 Exigences non fonctionnelles techniques (proposées)](#13-exigences-non-fonctionnelles-techniques-proposées) (l. 102)
+- [2. Vue d'ensemble](#2-vue-densemble) (l. 116)
+  - [2.1 Principe directeur : local-first, sans serveur applicatif](#21-principe-directeur--local-first-sans-serveur-applicatif) (l. 118)
+  - [2.2 C4 niveau 1 : contexte](#22-c4-niveau-1--contexte) (l. 123)
+  - [2.3 C4 niveau 2 : conteneurs](#23-c4-niveau-2--conteneurs) (l. 148)
+  - [2.4 Découpage logique du noyau (architecture hexagonale, ADR-010)](#24-découpage-logique-du-noyau-architecture-hexagonale-adr-010) (l. 179)
+- [3. Choix technologiques](#3-choix-technologiques) (l. 212)
+  - [3.1 Plateforme : options étudiées (détail dans ADR-001)](#31-plateforme--options-étudiées-détail-dans-adr-001) (l. 216)
+  - [3.2 Pile retenue](#32-pile-retenue) (l. 227)
+  - [3.3 Outillage de tests : organisation (ADR-009)](#33-outillage-de-tests--organisation-adr-009) (l. 255)
+- [4. Intégration Google](#4-intégration-google) (l. 274)
+  - [4.1 OAuth 2.0, scopes et jetons (ADR-004, ADR-005)](#41-oauth-20-scopes-et-jetons-adr-004-adr-005) (l. 276)
+  - [4.2 Google Drive : stockage et format (ADR-003)](#42-google-drive--stockage-et-format-adr-003) (l. 442)
+  - [4.3 Cycle de synchronisation des données](#43-cycle-de-synchronisation-des-données) (l. 584)
+  - [4.4 Google Calendar (ADR-006)](#44-google-calendar-adr-006) (l. 619)
+- [5. Traitements planifiés sans serveur (ADR-007)](#5-traitements-planifiés-sans-serveur-adr-007) (l. 676)
+- [6. Modèle de données de haut niveau](#6-modèle-de-données-de-haut-niveau) (l. 699)
+  - [6.1 Entités](#61-entités) (l. 701)
+  - [6.2 Données dérivées (calculées, jamais stockées)](#62-données-dérivées-calculées-jamais-stockées) (l. 759)
+  - [6.3 Rotation équitable des fun facts (DEM-002, ADR-008)](#63-rotation-équitable-des-fun-facts-dem-002-adr-008) (l. 771)
+  - [6.4 Temps et horloges (ADR-011)](#64-temps-et-horloges-adr-011) (l. 780)
+- [7. Sécurité, données personnelles, observabilité, déploiement, environnements](#7-sécurité-données-personnelles-observabilité-déploiement-environnements) (l. 809)
+  - [7.1 Sécurité](#71-sécurité) (l. 811)
+  - [7.2 Données personnelles (RGPD)](#72-données-personnelles-rgpd) (l. 833)
+  - [7.3 Observabilité (sans serveur)](#73-observabilité-sans-serveur) (l. 840)
+  - [7.4 Environnements et déploiement](#74-environnements-et-déploiement) (l. 851)
+  - [7.4 bis Adresse de recette sur GitHub Pages (v0.11.1, ANT-26)](#74-bis-adresse-de-recette-sur-github-pages-v0111-ant-26) (l. 868)
+  - [7.5 Distribution et hébergement (DEC-006, DEC-023, DEC-034 ; repli DEC-021)](#75-distribution-et-hébergement-dec-006-dec-023-dec-034--repli-dec-021) (l. 893)
+- [8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper, via Jarvis)](#8-exigences-fonctionnelles-techniquement-sensibles-signalements-à-pepper-via-jarvis) (l. 925)
+  - [8.1 Points métier liés au fuseau horaire (pour Pepper, via Jarvis), mis à jour après DEC-012](#81-points-métier-liés-au-fuseau-horaire-pour-pepper-via-jarvis-mis-à-jour-après-dec-012) (l. 947)
+- [9. Arbitrages commanditaire](#9-arbitrages-commanditaire) (l. 960)
+- [10. Risques et points ouverts](#10-risques-et-points-ouverts) (l. 975)
+  - [10.1 Risques](#101-risques) (l. 977)
+  - [10.2 Points ouverts](#102-points-ouverts) (l. 1001)
+- [11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité](#11-décisions-pour-la-spécification-technique-ds-01-à-ds-20-et-points-de-testabilité) (l. 1020)
+  - [Réponses aux points de testabilité](#réponses-aux-points-de-testabilité) (l. 1047)
+- [12. Index des ADR](#12-index-des-adr) (l. 1065)
+
 ## Historique
 
 | Version | Date | Auteur | Origine | Nature de la modification |
@@ -28,22 +72,6 @@
 | 0.11.4 | 2026-10-27 | Starck | E11 de LOT-001, revue de lancement (`ceremonies/lancement-LOT-001-starck.md`) : Q-ST022-STA-4, Q-ST017-STA-3, remarques RL-LOT-001-A1 à A9 | **§4.1.7 (Q-ST022-STA-4)** : une erreur sans preuve au retour d'un repli ne change jamais un accès perdu (`SYN-SESSION` seulement si l'accès était « à renouveler »). **§4.2 (RL-A2)** : les fichiers d'appareil sont rangés **directement dans le dossier** `Done Juan/`, sans sous-dossier `appareils/`, et identifiés par leurs `appProperties`. **§4.2 (Q-ST017-STA-3)** : l'archivage des appareils inactifs est **hors du lot 1** et inscrit à la dette ; les fichiers inactifs sont fusionnés comme les autres. **§4.1.6 (RL-A1)** : fermeture des connexions IndexedDB des autres onglets avant la suppression d'un espace ou une montée de version, sans réouverture automatique. **§4.3 (RL-A3)** : jeton de départ de `changes.list` obtenu **avant** l'inventaire ; jeton invalide → nouvel inventaire complet. Aucune décision d'ADR modifiée. |
 | 0.11.5 | 2026-10-28 | Starck | E11 de LOT-001 : vérification de la correction de RL-LOT-001-A1 (réserve levée) | **§4.1.6** : une suppression d'espace confirmée ne peut pas être annulée (limite d'IndexedDB) ; si elle reste bloquée, elle aboutit dès la fermeture de l'autre fenêtre ; « Fermer » sur `ERR-017` ramène l'onglet à l'écran de connexion. Aucune décision d'ADR modifiée. |
 | 0.11.6 | 2026-10-29 | Starck | E13 du rang 2 de LOT-001 : **Q-ANT-E13-R2-1** (Anthony), DT-008 ; mesure en navigateur réel (Chromium, build de production servi en statique) | **§7.1 et nouvel ADR-014 (Proposé)** : la CSP `style-src 'self'` bloque 14 feuilles `<style>` injectées par Stencil pour les composants Ionic « scoped », ce qui dégrade le rendu (`ion-buttons`, `ion-input`, `ion-textarea`, `ion-header`, `ion-action-sheet`). Décision : `style-src 'self' 'unsafe-inline'`, avec `script-src` inchangé, toujours sans `unsafe-inline` ni `unsafe-eval`. Le nonce est écarté, car il serait fixe et public sur un hébergement statique. Les hachages sont écartés à cause de leur maintenance, liée aux versions d'Ionic. La sonde de Zod 4 (`Function('')`, violation `eval` sans effet) est à neutraliser par `z.config({ jitless: true })`. Un test de fumée CSP en navigateur réel (Playwright) est ajouté. §10.2 : PO-13, styles éventuels de GIS, à vérifier en E14. §12 : index. |
-
-## Sommaire
-1. Contexte et exigences structurantes
-2. Vue d'ensemble (C4 niveaux 1 et 2)
-3. Choix technologiques
-4. Intégration Google (OAuth, Drive, Calendar)
-5. Traitements planifiés sans serveur
-6. Modèle de données de haut niveau
-7. Sécurité, données personnelles, observabilité, déploiement, environnements
-8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper)
-9. Arbitrages commanditaire
-10. Risques et points ouverts
-11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité
-12. Index des ADR
-
----
 
 ## 1. Contexte et exigences structurantes
 

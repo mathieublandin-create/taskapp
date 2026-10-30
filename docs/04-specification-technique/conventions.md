@@ -12,6 +12,92 @@
 >
 > Toute contradiction entre ce document et un livrable d'un autre agent est remontée à Jarvis. Elle n'est jamais tranchée unilatéralement. Une règle du DAT ou d'un ADR prévaut sur ce document.
 
+## Sommaire
+
+- [Historique](#historique) (l. 101)
+- [1. Portée et force des règles](#1-portée-et-force-des-règles) (l. 113)
+- [2. Principes de conception](#2-principes-de-conception) (l. 121)
+  - [2.1 Principes généraux](#21-principes-généraux) (l. 123)
+  - [2.2 Séparation en couches (DAT §2.4, ADR-010)](#22-séparation-en-couches-dat-24-adr-010) (l. 136)
+  - [2.3 Ports (DAT §2.4, ADR-010)](#23-ports-dat-24-adr-010) (l. 155)
+  - [2.4 Logique métier pure et testable](#24-logique-métier-pure-et-testable) (l. 179)
+- [3. Stack et versions figées](#3-stack-et-versions-figées) (l. 187)
+  - [3.1 Pile (DAT v0.11 §3.2, DS-01, DS-14, DS-16, ADR-013)](#31-pile-dat-v011-32-ds-01-ds-14-ds-16-adr-013) (l. 189)
+  - [3.2 Règles de version](#32-règles-de-version) (l. 208)
+- [4. Organisation du code](#4-organisation-du-code) (l. 213)
+  - [4.1 Contextes métier](#41-contextes-métier) (l. 215)
+  - [4.2 Arborescence physique (DS-15)](#42-arborescence-physique-ds-15) (l. 226)
+  - [4.3 Requêtes et modèles de vue](#43-requêtes-et-modèles-de-vue) (l. 275)
+- [5. Règles de nommage](#5-règles-de-nommage) (l. 281)
+  - [5.1 Langue](#51-langue) (l. 283)
+  - [5.2 Glossaire code (CdC v0.11 §6, DAT v0.10.1 §6.1)](#52-glossaire-code-cdc-v011-6-dat-v0101-61) (l. 290)
+  - [5.3 Conventions de forme TypeScript](#53-conventions-de-forme-typescript) (l. 343)
+- [6. Règles de codage](#6-règles-de-codage) (l. 363)
+  - [6.1 Règles générales](#61-règles-générales) (l. 365)
+  - [6.2 Idiomes TypeScript (DS-01, DS-12, DS-13)](#62-idiomes-typescript-ds-01-ds-12-ds-13) (l. 385)
+- [7. Temps, durées, hasard et identifiants](#7-temps-durées-hasard-et-identifiants) (l. 406)
+  - [7.1 Types temporels (commun/domaine/temps/)](#71-types-temporels-commundomainetemps) (l. 410)
+  - [7.2 Usage de date-fns et @date-fns/tz](#72-usage-de-date-fns-et-date-fnstz) (l. 434)
+  - [7.3 Port Horloge et horloge simulée](#73-port-horloge-et-horloge-simulée) (l. 443)
+  - [7.4 Hasard](#74-hasard) (l. 456)
+  - [7.5 Identifiants (DS-08)](#75-identifiants-ds-08) (l. 461)
+- [8. Gestion des erreurs et catalogue de messages](#8-gestion-des-erreurs-et-catalogue-de-messages) (l. 468)
+  - [8.1 Mécanisme (DS-12)](#81-mécanisme-ds-12) (l. 470)
+  - [8.2 Catégories](#82-catégories) (l. 480)
+  - [8.3 Erreurs des ports](#83-erreurs-des-ports) (l. 488)
+  - [8.4 Nouvelles tentatives et interdits](#84-nouvelles-tentatives-et-interdits) (l. 509)
+  - [8.5 Catalogue des codes d'état et des messages](#85-catalogue-des-codes-détat-et-des-messages) (l. 514)
+  - [8.6 Commandes avec confirmation (CNF-…)](#86-commandes-avec-confirmation-cnf-) (l. 528)
+- [9. Sécurité, jetons OAuth, données personnelles et journalisation](#9-sécurité-jetons-oauth-données-personnelles-et-journalisation) (l. 534)
+  - [9.1 Secrets et configuration](#91-secrets-et-configuration) (l. 538)
+  - [9.2 Jetons OAuth (DS-04, DS-06, ADR-004, ADR-013)](#92-jetons-oauth-ds-04-ds-06-adr-004-adr-013) (l. 575)
+  - [9.3 Données personnelles et stockage local (DS-07)](#93-données-personnelles-et-stockage-local-ds-07) (l. 603)
+  - [9.4 Journal technique (DAT §7.3)](#94-journal-technique-dat-73) (l. 615)
+  - [9.5 Chaîne d'approvisionnement](#95-chaîne-dapprovisionnement) (l. 623)
+- [10. Stockage local et synchronisation](#10-stockage-local-et-synchronisation) (l. 627)
+  - [10.1 Écritures locales](#101-écritures-locales) (l. 631)
+  - [10.2 Cycle de synchronisation](#102-cycle-de-synchronisation) (l. 641)
+  - [10.3 Format des données dans le Drive et versions (RG-044, RG-058)](#103-format-des-données-dans-le-drive-et-versions-rg-044-rg-058) (l. 649)
+- [11. Stratégie de tests](#11-stratégie-de-tests) (l. 661)
+  - [11.1 Démarche TDD dans le workflow](#111-démarche-tdd-dans-le-workflow) (l. 663)
+  - [11.2 Pyramide de tests](#112-pyramide-de-tests) (l. 675)
+  - [11.3 Responsabilités](#113-responsabilités) (l. 689)
+  - [11.4 Règles d'écriture des tests](#114-règles-décriture-des-tests) (l. 697)
+  - [11.5 Tests affaiblis : interdits](#115-tests-affaiblis--interdits) (l. 707)
+  - [11.6 Fichiers .feature et glossaire d'étapes](#116-fichiers-feature-et-glossaire-détapes) (l. 718)
+  - [11.7 Step definitions : organisation et types de paramètres](#117-step-definitions--organisation-et-types-de-paramètres) (l. 736)
+  - [11.8 Tags et profils d'exécution](#118-tags-et-profils-dexécution) (l. 793)
+  - [11.9 Données de test et cas temporels](#119-données-de-test-et-cas-temporels) (l. 815)
+  - [11.10 Doublures (ADR-009)](#1110-doublures-adr-009) (l. 833)
+  - [11.11 Banc de synchronisation](#1111-banc-de-synchronisation) (l. 850)
+  - [11.12 Tests des modèles de vue et de l'interface](#1112-tests-des-modèles-de-vue-et-de-linterface) (l. 861)
+  - [11.13 Rattachement des scénarios aux rangs de réalisation (LOT-001)](#1113-rattachement-des-scénarios-aux-rangs-de-réalisation-lot-001) (l. 866)
+  - [11.14 Sélection des tests unitaires, de contrat et d'intégration par rang (v0.4.3, Q-BEN-LOT001-2 et 3)](#1114-sélection-des-tests-unitaires-de-contrat-et-dintégration-par-rang-v043-q-ben-lot001-2-et-3) (l. 882)
+- [12. Couverture minimale](#12-couverture-minimale) (l. 890)
+- [13. Gestion de configuration et branches Git](#13-gestion-de-configuration-et-branches-git) (l. 911)
+  - [13.1 Dépôt et branches](#131-dépôt-et-branches) (l. 913)
+  - [13.2 Convention de commits](#132-convention-de-commits) (l. 930)
+  - [13.3 Versions et livrables](#133-versions-et-livrables) (l. 944)
+- [14. Outillage et intégration continue](#14-outillage-et-intégration-continue) (l. 949)
+  - [14.1 Contrôles (GitHub Actions)](#141-contrôles-github-actions) (l. 951)
+  - [14.2 Configuration des outils](#142-configuration-des-outils) (l. 974)
+  - [14.3 Workflows](#143-workflows) (l. 981)
+- [15. Definition of Done technique](#15-definition-of-done-technique) (l. 991)
+- [16. Points de testabilité](#16-points-de-testabilité) (l. 1025)
+- [17. Décisions de Starck et points ouverts](#17-décisions-de-starck-et-points-ouverts) (l. 1048)
+  - [17.1 Décisions DS-01 à DS-20 (DAT §11) : intégration](#171-décisions-ds-01-à-ds-20-dat-11--intégration) (l. 1050)
+  - [17.2 Points ouverts et clos](#172-points-ouverts-et-clos) (l. 1074)
+  - [17.3 Hypothèses de conception du contrôle d'explicitation (H-1 à H-7)](#173-hypothèses-de-conception-du-contrôle-dexplicitation-h-1-à-h-7) (l. 1089)
+  - [17.4 Décisions du commanditaire liées à la plateforme et à la distribution](#174-décisions-du-commanditaire-liées-à-la-plateforme-et-à-la-distribution) (l. 1103)
+- [18. Documents associés](#18-documents-associés) (l. 1114)
+- [19. Repli (ADR-012), si la condition de DEC-034 échoue](#19-repli-adr-012-si-la-condition-de-dec-034-échoue) (l. 1124)
+  - [19.1 Pile complémentaire](#191-pile-complémentaire) (l. 1128)
+  - [19.2 Organisation du code](#192-organisation-du-code) (l. 1134)
+  - [19.3 Signature, nom de paquet et vérification des développeurs](#193-signature-nom-de-paquet-et-vérification-des-développeurs) (l. 1140)
+  - [19.4 Adaptateurs Android](#194-adaptateurs-android) (l. 1147)
+  - [19.5 Versions Android](#195-versions-android) (l. 1155)
+  - [19.6 Intégration continue et publication](#196-intégration-continue-et-publication) (l. 1158)
+
 ## Historique
 
 | Version | Date | Auteur | Modification |
@@ -28,30 +114,6 @@
 | 0.4.5 | 2026-10-28 | Anthony | E13 du rang 1 (`revue-code-LOT-001-rang1.md`, écart 4 de Bruce) : §11.11, l'`appareilId` d'un appareil simulé naît avec l'espace du compte (ST-US-022 §12.3, DAT v0.11.3 §4.1.4) ; il est tiré du `GenerateurIdentifiantsSequentiel` au préfixe de l'appareil, ce qui conserve l'ordre smartphone < PC ; les identifiants fixes ne servent plus qu'avant l'ouverture d'un espace. |
 | 0.4.2 | 2026-10-28 | Anthony | E11 (RL-LOT-001-A4) : RED-04 et §9 (stockages) alignés sur la base technique IndexedDB ; dérogation `sessionStorage` supprimée ; préfixe `VITE_ENV` étendu au canal `BroadcastChannel` et aux verrous Web Locks. |
 | 0.4.1 | 2026-10-22 | Anthony | DAT v0.11.1 §7.4 bis : ANT-26 et ANT-27 clos. `VITE_ENV` (`dev`, `recette`, `production`) préfixe tous les noms de stockage ; portée du service worker, manifeste (`start_url`, `scope`) et URI de redirection dérivés de `VITE_BASE_PATH` et `VITE_APP_ORIGIN` ; PWA de recette nommée « Done Juan (recette) » ; origine de recette en attente de Q-ANT26 (§9.1, §9.2.1, §9.3, §14.3, §17.2). |
-
-## Sommaire
-
-1. Portée et force des règles
-2. Principes de conception
-3. Stack et versions figées
-4. Organisation du code
-5. Règles de nommage
-6. Règles de codage
-7. Temps, durées, hasard et identifiants
-8. Gestion des erreurs et catalogue de messages
-9. Sécurité, jetons OAuth, données personnelles et journalisation
-10. Stockage local et synchronisation
-11. Stratégie de tests
-12. Couverture minimale
-13. Gestion de configuration et branches Git
-14. Outillage et intégration continue
-15. Definition of Done technique
-16. Points de testabilité
-17. Décisions de Starck et points ouverts
-18. Documents associés
-19. Repli (ADR-012), si la condition de DEC-034 échoue
-
----
 
 ## 1. Portée et force des règles
 
