@@ -50,7 +50,8 @@ describe('Magasin des objectifs — observation du dépôt local (DT-009)', () =
 
   it('UT-COMP-US-017-53 sans observateur fourni, observerDepot rend un désabonnement inoffensif', () => {
     const banc = creerBancObjectifs();
-    const magasin = creerMagasinObjectifsTaches(banc.services);
+    const { observer: _observer, ...servicesSansObservateur } = banc.services;
+    const magasin = creerMagasinObjectifsTaches(servicesSansObservateur);
 
     const arreter = magasin.getState().actions.observerDepot();
 
