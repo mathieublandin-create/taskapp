@@ -8,7 +8,7 @@
 | Branche | `fix/ANO-001` → `lot/LOT-001` (PR #11), tête `f25e557` |
 | Périmètre | Différentiel `git diff origin/lot/LOT-001...HEAD` (4 commits, 28 fichiers). Le code examiné est celui de Benjamin (`f25e557`). Les commits d'Anthony et de Pepper ont été relus pour vérifier que les tests sont intacts (CR-60) |
 | Référentiel | ST-US-017 v0.4.3 §3.3, §6.9, §12.4, §13.3 (portée en v0.4.4 par cette revue) ; DAT §4.1.6 bis ; ADR-013 ; `checklist-revue-code.md` v0.3 ; glossaire d'étapes v1.11 §13 |
-| Passage | 1 |
+| Passage | 1 ; **2** (tête `39063f6`, différentiel `git diff 0964705..HEAD`, §9) |
 
 ## 1. Verdict : **Changements requis**
 
@@ -61,10 +61,10 @@ Les commandes ont été lancées depuis `node_modules/.bin`, car le poste a Node
 
 | Id | Gravité | Critère | Localisation | Constat | Action attendue | Statut | Itération |
 |---|---|---|---|---|---|---|---|
-| RC-ANO-001-1 | **Majeure** | CR-13, CR-41 ; ST-US-017 v0.4.4 §6.9 n° 4, §3.3 A8 | `src/synchronisation/infrastructure/depot-local-dexie.ts:179-182` (cause : `src/composition/application.ts:407`) | Fuite de l'écoute globale `Dexie.on('storagemutated')` après la fermeture d'un espace (§4) | Dans `fermer()`, avant `this.base.close(...)` : `this.observateurs.clear()`, puis `this.desabonnementStockage?.()` et `this.desabonnementStockage = undefined`. La méthode reste idempotente, et son commentaire doit mentionner la libération des observateurs. Test fourni : **UT-COMP-US-017-56**, rouge (`tests/integration/synchronisation/depot-local-dexie-fermeture.test.ts`), et UT-COMP-US-017-57, vert, qui sert de garde. Ce correctif a été essayé sans être commité : tous les tests unitaires, d'intégration et de contrat, ainsi que les 86 scénarios Cucumber, sont verts | Ouverte | 1 |
-| RC-ANO-001-2 | Suggestion | CR-22 | `tests/support/banc/appareil-simule.ts:170-176` et `:236-243` | `expirerSessionGoogle()` et `expirerAccesSansConstat()` répètent les mêmes trois instructions. Seul `retourDiffere` les distingue | Faire appeler `expirerAccesSansConstat()` par `expirerSessionGoogle()`, puis poser `retourDiffere` | Ouverte (facultative) | 1 |
-| RC-ANO-001-3 | Suggestion | CR-25 | `tests/support/conversions.ts:37` | Le commentaire de `convertirEcart` ne cite pas les secondes | Ajouter « 5 secondes » aux exemples | Ouverte (facultative) | 1 |
-| RC-ANO-001-4 | Suggestion | CR-41 | `src/composition/controleur-interface.ts:135-157` | Deux rafraîchissements peuvent se chevaucher : celui du début et celui de la fin d'un cycle, ou une écriture suivie d'un cycle. Si le premier se termine après le second, il réécrit une vue plus ancienne, jusqu'à la notification suivante. Le risque existait déjà avec la session et le réseau, mais il devient plus fréquent. Je ne l'ai pas observé : les lectures Dexie sont servies dans l'ordre | Facultatif dans cette correction : un numéro de génération, pour que seul le dernier calcul lancé écrive `#vue`. Sinon, je l'inscrirai au registre de la dette à la prochaine revue | Ouverte (facultative) | 1 |
+| RC-ANO-001-1 | **Majeure** | CR-13, CR-41 ; ST-US-017 v0.4.4 §6.9 n° 4, §3.3 A8 | `src/synchronisation/infrastructure/depot-local-dexie.ts:179-182` (cause : `src/composition/application.ts:407`) | Fuite de l'écoute globale `Dexie.on('storagemutated')` après la fermeture d'un espace (§4) | Dans `fermer()`, avant `this.base.close(...)` : `this.observateurs.clear()`, puis `this.desabonnementStockage?.()` et `this.desabonnementStockage = undefined`. La méthode reste idempotente, et son commentaire doit mentionner la libération des observateurs. Test fourni : **UT-COMP-US-017-56**, rouge (`tests/integration/synchronisation/depot-local-dexie-fermeture.test.ts`), et UT-COMP-US-017-57, vert, qui sert de garde. Ce correctif a été essayé sans être commité : tous les tests unitaires, d'intégration et de contrat, ainsi que les 86 scénarios Cucumber, sont verts | **Levée** (`39063f6`, passage 2) | 2 |
+| RC-ANO-001-2 | Suggestion | CR-22 | `tests/support/banc/appareil-simule.ts:170-176` et `:236-243` | `expirerSessionGoogle()` et `expirerAccesSansConstat()` répètent les mêmes trois instructions. Seul `retourDiffere` les distingue | Faire appeler `expirerAccesSansConstat()` par `expirerSessionGoogle()`, puis poser `retourDiffere` | **Levée sans suite** (justification de Benjamin acceptée, §9) | 2 |
+| RC-ANO-001-3 | Suggestion | CR-25 | `tests/support/conversions.ts:37` | Le commentaire de `convertirEcart` ne cite pas les secondes | Ajouter « 5 secondes » aux exemples | **Levée** (`39063f6`) | 2 |
+| RC-ANO-001-4 | Suggestion | CR-41 | `src/composition/controleur-interface.ts:135-157` | Deux rafraîchissements peuvent se chevaucher : celui du début et celui de la fin d'un cycle, ou une écriture suivie d'un cycle. Si le premier se termine après le second, il réécrit une vue plus ancienne, jusqu'à la notification suivante. Le risque existait déjà avec la session et le réseau, mais il devient plus fréquent. Je ne l'ai pas observé : les lectures Dexie sont servies dans l'ordre | Facultatif dans cette correction : un numéro de génération, pour que seul le dernier calcul lancé écrive `#vue`. Sinon, je l'inscrirai au registre de la dette à la prochaine revue | **Inscrite en dette : DT-016** (P3, `dette-technique.md` v0.20) | 2 |
 
 ## 7. Dette
 
@@ -74,3 +74,19 @@ Aucune dette nouvelle n'est déclarée. Si RC-ANO-001-4 n'est pas traitée, je p
 
 1. Benjamin corrige RC-ANO-001-1 sur `fix/ANO-001`. UT-COMP-US-017-56 doit passer au vert, et rien d'autre ne doit changer dans `src/`.
 2. Au passage 2, je contrôle uniquement RC-ANO-001-1 et le nouveau différentiel (checklist §1.5). Si tout est conforme, j'approuve et la branche est fusionnée. ANO-001 passe ensuite en nouvelle recette (S06c à S06f).
+
+## 9. Passage 2 (2026-10-30, tête `39063f6`)
+
+**Verdict : Approuvé.** Aucun point bloquant.
+
+| Contrôle | Résultat |
+|---|---|
+| Différentiel `0964705..HEAD` | 2 fichiers : `src/synchronisation/infrastructure/depot-local-dexie.ts` (`fermer()`, +6/−1) et `tests/support/conversions.ts` (commentaire). Aucune autre modification de `src/`, ni de la couche de stockage, ni des tests fournis (CR-60) |
+| RC-ANO-001-1 | Conforme à l'action attendue : `observateurs.clear()`, `desabonnementStockage?.()` puis `undefined`, avant `base.close(...)`. Le commentaire mentionne la libération. L'idempotence est conservée : au 2e appel, l'ensemble est vide et le désabonnement vaut `undefined`. Un désabonnement tardif d'un ancien observateur reste sans effet (`?.`). UT-COMP-US-017-56 et 57 passent, sans modification du test |
+| RC-ANO-001-3 | Appliquée (« 5 secondes » dans les exemples de `convertirEcart`) |
+| RC-ANO-001-2 | Levée sans suite. Les deux méthodes ne sont pas strictement identiques : `expirerSessionGoogle()` écrit dans le coffre de `this.instance?` (instance ouverte, facultative), et `expirerAccesSansConstat()` dans celui de `this.application`. Les factoriser changerait la cible du coffre. Pas de dette inscrite (code de banc de test, duplication de trois lignes) |
+| RC-ANO-001-4 | Non traitée dans cette correction, car elle relève de la logique du contrôleur. Elle est inscrite en **DT-016**, avec la priorité P3 : gêne localisée, non observée, et la vue est corrigée à la notification suivante |
+| Exécution locale (Node 22 ; pnpm refuse l'exécution hors de `engines`, d'où un lancement direct) | `vitest run` : 136 fichiers, 680 tests verts, 134 ignorés. Lint des deux fichiers sans avertissement |
+| CI de `39063f6` | `qualite`, `build`, `securite`, `e2e` et `tests` (America/New_York, Pacific/Auckland) au vert ; `tests (UTC)` en cours au moment de la revue. **La fusion est conditionnée à son succès** |
+
+Suite : fusion de la PR #11 dans `lot/LOT-001` une fois la CI entièrement verte, puis nouvelle recette d'ANO-001 (S06c à S06f).
