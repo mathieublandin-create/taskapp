@@ -28,7 +28,7 @@ import { ListeObjectifs } from './liste-objectifs';
 export type ProprietesEspaceObjectifs = { readonly magasin: MagasinObjectifs };
 
 const FEUILLE_PAR_ACTION: Readonly<
-  Record<Exclude<ActionMenuObjectif, 'SUPPRIMER' | 'RETIRER_DELAI'>, ModeFeuille>
+  Record<Exclude<ActionMenuObjectif, 'SUPPRIMER' | 'RETIRER_DELAI' | 'PLACER'>, ModeFeuille>
 > = { RENOMMER: 'RENOMMAGE', MODIFIER_DESCRIPTION: 'DESCRIPTION', MODIFIER_DELAI: 'DELAI' };
 
 const delaiDepuisTexte = (texte: string): DateCalendaire | undefined => {
@@ -134,7 +134,6 @@ const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
         surAjouterSousObjectif={() => {
           geste.ouvrirFeuille('CREATION_SOUS_OBJECTIF');
         }}
-        surPlacer={() => void actions.ouvrirSelecteurParent(ecran.id)}
       />
     );
   }
@@ -147,6 +146,7 @@ const useGestesSaisie = ({ ecran, actions, geste }: Omit<ProprietesPage, 'liste'
     if (ecran.type !== 'DETAIL') return;
     if (action === 'SUPPRIMER') void actions.demanderSuppression(ecran.id);
     else if (action === 'RETIRER_DELAI') void actions.modifierDelai(ecran.id, undefined);
+    else if (action === 'PLACER') void actions.ouvrirSelecteurParent(ecran.id);
     else geste.ouvrirFeuille(FEUILLE_PAR_ACTION[action]);
   },
   valider: (mode: ModeFeuille, valeurs: ValeursFeuille): Promise<IssueSaisie> =>

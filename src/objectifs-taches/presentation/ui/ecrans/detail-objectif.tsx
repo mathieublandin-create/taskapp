@@ -22,9 +22,8 @@ export type ProprietesDetailObjectif = {
   readonly surRetour: () => void;
   readonly surOuvrirMenu: () => void;
   readonly surOuvrirSousObjectif: (id: IdObjectif) => void;
-  /** Absents tant que l'écran n'offre pas le geste : l'action du modèle de vue ne suffit pas à l'afficher. */
+  /** Facultatif : sans lui, la section n'offre pas « Ajouter » (écrans et tests du rang 2). */
   readonly surAjouterSousObjectif?: () => void;
-  readonly surPlacer?: () => void;
 };
 
 const ESPACE_INSECABLE = ' ';
@@ -112,34 +111,24 @@ const EnTeteDetail = ({ modele }: { readonly modele: ModeleVueDetailObjectif }) 
 
 type ProprietesCorpsDetail = Pick<
   ProprietesDetailObjectif,
-  'modele' | 'surOuvrirSousObjectif' | 'surAjouterSousObjectif' | 'surPlacer'
+  'modele' | 'surOuvrirSousObjectif' | 'surAjouterSousObjectif'
 >;
 
-/** « Placer sous… » et la section des sous-objectifs, dont « Ajouter » : absent (non désactivé) sur un sous-objectif. */
+/** La section des sous-objectifs, dont « Ajouter » : absent (non désactivé) sur un sous-objectif. */
 const OrganisationDetail = ({
   modele,
   surOuvrirSousObjectif,
   surAjouterSousObjectif,
-  surPlacer,
 }: ProprietesCorpsDetail) => {
   const surAjouter = modele.actions.includes('CREER_SOUS_OBJECTIF')
     ? surAjouterSousObjectif
     : undefined;
-  return (
-    <>
-      {surPlacer === undefined || !modele.actions.includes('PLACER') ? null : (
-        <IonButton fill="clear" onClick={surPlacer}>
-          {LIBELLES_OBJECTIFS.placerSous}
-        </IonButton>
-      )}
-      {modele.sousObjectifs.lignes.length === 0 && surAjouter === undefined ? null : (
-        <SousObjectifs
-          section={modele.sousObjectifs}
-          surOuvrir={surOuvrirSousObjectif}
-          surAjouter={surAjouter}
-        />
-      )}
-    </>
+  return modele.sousObjectifs.lignes.length === 0 && surAjouter === undefined ? null : (
+    <SousObjectifs
+      section={modele.sousObjectifs}
+      surOuvrir={surOuvrirSousObjectif}
+      surAjouter={surAjouter}
+    />
   );
 };
 

@@ -6,12 +6,13 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { valeurDe } from '@tests/support/environnement';
-import { construireSelecteurParent, messagesDeRefus } from '@src/objectifs-taches';
+import { construireSelecteurParent } from '@src/objectifs-taches';
 import { SelecteurParent } from '@src/objectifs-taches/presentation/ui/composants/selecteur-parent';
 import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { resumeObjectif } from '@tests/support/fabriques/resumes';
 import { idObjectif } from '@tests/support/valeurs';
 import {
+  choixDuMenu,
   cliquerBoutonIon,
   creerBancObjectifs,
   nettoyerDocument,
@@ -124,7 +125,7 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
     expect(screen.getByRole('heading', { level: 1, name: 'Publier le guide' })).toBeTruthy();
   });
 
-  it('UT-COMP-US-023-05 un sous-objectif n’offre pas « Ajouter » (absent) ; « Placer sous un autre objectif » le rend principal', async () => {
+  it('UT-COMP-US-023-05 un sous-objectif n’offre pas « Ajouter » (absent) ; « Placer sous un autre objectif » (menu « … ») le rend principal', async () => {
     const banc = creerBancObjectifs();
     const parent = await banc.creer('Publier le guide');
     valeurDe(
@@ -140,7 +141,8 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
     expect(screen.queryByRole('button', { name: 'Ajouter' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Sous-objectifs' })).toBeNull();
 
-    await userEvent.click(screen.getByText('Placer sous un autre objectif'));
+    await ouvrir('ActionSheet', () => userEvent.click(screen.getByText('…')));
+    await choixDuMenu('Placer sous un autre objectif');
     await userEvent.click(await screen.findByRole('radio', { name: 'Aucun, objectif principal' }));
     await userEvent.click(screen.getByRole('button', { name: 'Placer' }));
 
@@ -148,8 +150,9 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
       expect(screen.queryByRole('radio')).toBeNull();
     });
     await waitFor(() => {
-      expect(document.body.textContent).toContain('Objectif principal');
+      expect(screen.getByText('Objectif principal')).toBeTruthy();
     });
+    expect(screen.queryByText(/^Sous-objectif de/)).toBeNull();
   });
 });
 
@@ -204,22 +207,5 @@ describe('Magasin des objectifs — sous-objectifs (US-023 CA-5, CA-6)', () => {
       type: 'REFUSEE',
       messages: [],
     });
-  });
-});
-
-describe('Messages de refus des tâches (complément de couverture, messagesDeRefus livré au rang 4)', () => {
-  it('UT-COMP-US-023-09 messagesDeRefus — ERR-032 à ERR-035 sont attribués à leur refus (les tests de leurs US s’exécutent aux rangs 5, 6 et 8)', () => {
-    expect(messagesDeRefus({ type: 'EstimationCalculee' })).toEqual([
-      { code: 'ERR-033', variables: {} },
-    ]);
-    expect(messagesDeRefus({ type: 'ObjectifsHerites' })).toEqual([
-      { code: 'ERR-034', variables: {} },
-    ]);
-    expect(messagesDeRefus({ type: 'AjoutSousTacheATacheAbandonnee' })).toEqual([
-      { code: 'ERR-032', variables: {} },
-    ]);
-    expect(messagesDeRefus({ type: 'SousTachesRestantes', nombre: 3 })).toEqual([
-      { code: 'ERR-035', variables: { n: 3 } },
-    ]);
   });
 });

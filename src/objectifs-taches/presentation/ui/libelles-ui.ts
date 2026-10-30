@@ -32,6 +32,7 @@ export const LIBELLES_OBJECTIFS = {
     MODIFIER_DESCRIPTION: 'Modifier la description',
     MODIFIER_DELAI: 'Changer le délai',
     RETIRER_DELAI: 'Retirer le délai',
+    PLACER: 'Placer sous un autre objectif',
     SUPPRIMER: 'Supprimer l’objectif…',
   },
 } as const;

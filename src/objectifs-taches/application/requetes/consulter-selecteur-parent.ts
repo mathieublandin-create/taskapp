@@ -1,10 +1,10 @@
 import type { Horloge } from '../../../commun/application/ports/horloge';
-import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
+import { succes, type Resultat } from '../../../commun/domaine/resultat';
 import type { ErreurDepotLocal, ServiceEtatLocal } from '../../../synchronisation';
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
 import { estObjectifPrincipal } from '../../domaine/hierarchie-objectifs';
 import type { RefusMetier } from '../../domaine/refus';
-import { sousObjectifsDe } from '../../domaine/vue-metier';
+import { objectifActif, sousObjectifsDe } from '../../domaine/vue-metier';
 import { lireVueCourante } from './lecture-courante';
 import { resumerObjectif, type ResumeObjectif } from './resumes';
 
@@ -28,12 +28,10 @@ export class ConsulterSelecteurParent {
     const lecture = await lireVueCourante(this.service, this.horloge);
     if (!lecture.ok) return lecture;
     const { vue, jour } = lecture.valeur;
-    const objectif = vue.objectifs.get(c.objectifId);
-    if (objectif === undefined) {
-      return echec({ type: 'ElementIntrouvable', element: { type: 'OBJECTIF', id: c.objectifId } });
-    }
+    const objectif = objectifActif(vue, c.objectifId);
+    if (!objectif.ok) return objectif;
     return succes({
-      objectif: resumerObjectif(vue, objectif, jour),
+      objectif: resumerObjectif(vue, objectif.valeur, jour),
       candidats: [...vue.objectifs.values()]
         .filter(estObjectifPrincipal)
         .map((o) => resumerObjectif(vue, o, jour)),
