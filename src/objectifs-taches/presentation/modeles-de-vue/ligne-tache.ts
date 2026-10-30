@@ -1,7 +1,10 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
+import { formaterDate } from '../../../commun/presentation/format/date';
+import { formaterDuree } from '../../../commun/presentation/format/duree';
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { ResumeTache } from '../../application/requetes/resumes';
+import type { AlerteDelaiTache } from '../../domaine/alertes-delai';
 
 // ST-US-002 §4.5 ; ALR-006 : ST-US-024 ; MEN-INCOHERENCE : ST-US-024 (rang 9).
 export type AlerteLigneTache =
@@ -37,7 +40,82 @@ export type LigneTache = {
   readonly nomAccessible: string;
 };
 
+const CODES_ETAT = {
+  A_FAIRE: 'ETA-TACHE-A-FAIRE',
+  TERMINEE: 'ETA-TACHE-TERMINEE',
+  ABANDONNEE: 'ETA-TACHE-ABANDONNEE',
+} as const satisfies Record<ResumeTache['cycleDeVie']['etat'], LigneTache['etat']['code']>;
+
+const modeleAlerte = (alerte: AlerteDelaiTache, delai: string): AlerteLigneTache =>
+  alerte.type === 'OBJECTIFS'
+    ? {
+        code: 'ALR-005',
+        objectifs: alerte.objectifs.map((objectif) => objectif.intitule),
+        libelle: libelle('ALR-005', { date: delai }),
+      }
+    : {
+        code: 'ALR-006',
+        tache: alerte.tache.intitule,
+        libelle: libelle('ALR-006', { date: delai }),
+      };
+
+const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTaches'> => {
+  if (resume.sousTaches === undefined) return {};
+  const { terminees, nonAbandonnees } = resume.sousTaches;
+  return {
+    compteurSousTaches: { terminees, nonAbandonnees, libelle: `${terminees}/${nonAbandonnees}` },
+  };
+};
+
+const enMinuscules = (texte: string): string => texte.charAt(0).toLowerCase() + texte.slice(1);
+
+/** Date de fin ou d'abandon, absente pour une tâche à faire. */
+const dateDeFin = ({ cycleDeVie }: ResumeTache): DateCalendaire | undefined => {
+  if (cycleDeVie.etat === 'TERMINEE') return cycleDeVie.dateFin;
+  return cycleDeVie.etat === 'ABANDONNEE' ? cycleDeVie.dateAbandon : undefined;
+};
+
+/** WCAG 4.1.2 : « {intitulé}, {état en toutes lettres}, délai {date} », suivi de « , en retard ». */
+const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string => {
+  const fin = dateDeFin(resume);
+  const etat = libelle(CODES_ETAT[resume.cycleDeVie.etat], {
+    date: fin === undefined ? '' : formaterDate(fin, aujourdhui),
+  });
+  const retard = resume.enRetard ? `, ${enMinuscules(libelle('MEN-EN-RETARD'))}` : '';
+  const delai = formaterDate(resume.delai, aujourdhui);
+  return `${resume.intitule}, ${enMinuscules(etat)}, délai ${delai}${retard}`;
+};
+
+/** `aujourdhui` : jour de Paris, pour le format des dates (guide §6.6.1). */
 export const construireLigneTache = (
-  _resume: ResumeTache,
-  _aujourdhui: DateCalendaire,
-): LigneTache => nonImplemente('construireLigneTache');
+  resume: ResumeTache,
+  aujourdhui: DateCalendaire,
+): LigneTache => {
+  const delai = formaterDate(resume.delai, aujourdhui);
+  return {
+    id: resume.id,
+    intitule: resume.intitule,
+    etat: { code: CODES_ETAT[resume.cycleDeVie.etat] },
+    delai: { date: resume.delai, libelle: delai },
+    estimation: {
+      minutes: resume.estimation,
+      libelle: formaterDuree(resume.estimation),
+      calculee: resume.estimationCalculee,
+    },
+    objectifs: resume.objectifs.map((objectif) => objectif.intitule),
+    ...(resume.enRetard
+      ? {
+          enRetard: {
+            code: 'MEN-EN-RETARD' as const,
+            libelle: libelle('MEN-EN-RETARD', { date: delai, variante: 'liste' }),
+          },
+        }
+      : {}),
+    alertes: resume.alertes.map((alerte) => modeleAlerte(alerte, delai)),
+    ...modeleCompteur(resume),
+    ...(resume.incoherence === undefined
+      ? {}
+      : { incoherence: { code: 'MEN-INCOHERENCE' as const } }),
+    nomAccessible: nomAccessible(resume, aujourdhui),
+  };
+};
