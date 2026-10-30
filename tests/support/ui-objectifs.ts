@@ -29,6 +29,7 @@ const banc = (env: Environnement, service: ServiceEtatLocal): BancObjectifs => {
     service,
     generateur: env.generateur,
     horloge: env.horloge,
+    observer: (rappel) => env.depot.observer(rappel),
   });
   return {
     env,
