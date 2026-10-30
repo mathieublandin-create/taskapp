@@ -110,8 +110,8 @@
       "fin": 5
     },
     "src/commun/presentation/format/heure.ts": {
-      "debut": 4,
-      "fin": 4
+      "debut": 3,
+      "fin": 3
     },
     "src/commun/presentation/messages/catalogue.fr.ts": {
       "debut": 2,
@@ -838,8 +838,8 @@
       "fin": 1
     },
     "src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts": {
-      "debut": 4,
-      "fin": 4
+      "debut": 3,
+      "fin": 3
     },
     "src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation.ts": {
       "debut": 1,
@@ -858,8 +858,8 @@
       "fin": 1
     },
     "src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx": {
-      "debut": 4,
-      "fin": 4
+      "debut": 3,
+      "fin": 3
     },
     "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
       "debut": 1,

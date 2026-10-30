@@ -21,28 +21,51 @@ const MetaLigne = ({ ligne }: { readonly ligne: LigneObjectif }) => (
   </span>
 );
 
-export const LigneObjectifUi = ({ ligne, surOuvrir }: ProprietesLigneObjectif) => (
-  <li className="ligne-objectif" data-niveau={ligne.niveau}>
-    <button
-      type="button"
-      aria-label={ligne.nomAccessible}
-      data-etat={ligne.etat.code}
-      onClick={() => {
-        surOuvrir(ligne);
-      }}
-    >
-      <ProgressionObjectif
-        progression={ligne.progression}
-        atteint={ligne.etat.code === 'ETA-OBJ-ATTEINT'}
-        petit={ligne.niveau === 'SOUS_OBJECTIF'}
-      />
-      <span className="ligne-objectif-texte" aria-hidden="true">
-        <span className="ligne-objectif-intitule">{ligne.intitule}</span>
-        <MetaLigne ligne={ligne} />
-        {ligne.alerteDelai === undefined ? null : (
-          <span data-code={ligne.alerteDelai.code}>{ligne.alerteDelai.libelle}</span>
-        )}
-      </span>
-    </button>
-  </li>
+/** Point « modification en attente d'envoi » (guide §6.6.4) : sans texte visible, décrit au bouton de la ligne. */
+const PointAttente = ({
+  attente,
+  id,
+}: {
+  readonly attente: NonNullable<LigneObjectif['attente']>;
+  readonly id: string;
+}) => (
+  <>
+    <span className="point-attente" data-code={attente.code} aria-hidden="true" />
+    <span id={id} hidden>
+      {attente.nomAccessible}
+    </span>
+  </>
 );
+
+export const LigneObjectifUi = ({ ligne, surOuvrir }: ProprietesLigneObjectif) => {
+  const idAttente = `attente-${ligne.id}`;
+  return (
+    <li className="ligne-objectif" data-niveau={ligne.niveau}>
+      <button
+        type="button"
+        aria-label={ligne.nomAccessible}
+        {...(ligne.attente === undefined ? {} : { 'aria-describedby': idAttente })}
+        data-etat={ligne.etat.code}
+        onClick={() => {
+          surOuvrir(ligne);
+        }}
+      >
+        <ProgressionObjectif
+          progression={ligne.progression}
+          atteint={ligne.etat.code === 'ETA-OBJ-ATTEINT'}
+          petit={ligne.niveau === 'SOUS_OBJECTIF'}
+        />
+        <span className="ligne-objectif-texte" aria-hidden="true">
+          <span className="ligne-objectif-intitule">{ligne.intitule}</span>
+          <MetaLigne ligne={ligne} />
+          {ligne.alerteDelai === undefined ? null : (
+            <span data-code={ligne.alerteDelai.code}>{ligne.alerteDelai.libelle}</span>
+          )}
+        </span>
+        {ligne.attente === undefined ? null : (
+          <PointAttente attente={ligne.attente} id={idAttente} />
+        )}
+      </button>
+    </li>
+  );
+};

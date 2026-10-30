@@ -64,7 +64,7 @@ test.describe('CSP du build de production (ADR-014)', () => {
     const definis = await instancierComposantsIonic(page);
     await page.waitForLoadState('networkidle');
 
-    expect(definis.length).toBeGreaterThan(0);
+    expect(definis).toEqual(COMPOSANTS_IONIC);
     expect(await violationsRelevees(page)).toEqual([]);
     expect(messagesCsp).toEqual([]);
     expect(erreursPage).toEqual([]);
