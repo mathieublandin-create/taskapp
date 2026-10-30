@@ -5,7 +5,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-import { StrictMode, useEffect, useMemo, useSyncExternalStore } from 'react';
+import { StrictMode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -27,6 +27,12 @@ import { IndicateurSynchronisation } from './synchronisation/presentation/ui/Ind
 import './commun/presentation/ui/styles.css';
 import type { ObjectifsTaches } from './composition/objectifs-taches';
 import { EspaceObjectifs } from './objectifs-taches/presentation/ui/ecrans/espace-objectifs';
+import { EspaceTaches } from './objectifs-taches/presentation/ui/ecrans/espace-taches';
+import { creerMagasinTaches } from './objectifs-taches/presentation/ui/etat/magasin-taches';
+import {
+  LIBELLES_OBJECTIFS,
+  LIBELLES_TACHES,
+} from './objectifs-taches/presentation/ui/libelles-ui';
 import { creerMagasinObjectifsTaches } from './objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
 
 // RED-02 : première instruction, synchrone, avant tout rendu, toute requête et le chargement de GIS : le fragment
@@ -52,11 +58,63 @@ setupIonicReact();
 /** Appareil affiché dans les textes (« ce smartphone », « ce PC »), calculé une fois (RC-R2-7). */
 const APPAREIL = appareilDepuisAgent(navigator.userAgent, navigator.maxTouchPoints);
 
-/** Écrans des objectifs (US-001, rang 2), sur le magasin de l'espace ouvert. */
+type Onglet = 'TACHES' | 'OBJECTIFS';
+
+const ONGLETS: ReadonlyArray<readonly [Onglet, string]> = [
+  ['TACHES', LIBELLES_TACHES.titreListe],
+  ['OBJECTIFS', LIBELLES_OBJECTIFS.titreListe],
+];
+
+/** Navigation entre les deux espaces ; la liste « Tâches » est l'accueil (ECR-002). */
+const NavigationEspaces = ({
+  onglet,
+  surChoisir,
+}: {
+  readonly onglet: Onglet;
+  readonly surChoisir: (onglet: Onglet) => void;
+}) => (
+  <nav aria-label="Espaces">
+    {ONGLETS.map(([valeur, texte]) => (
+      <button
+        key={valeur}
+        type="button"
+        aria-current={valeur === onglet ? 'page' : undefined}
+        onClick={() => {
+          surChoisir(valeur);
+        }}
+      >
+        {texte}
+      </button>
+    ))}
+  </nav>
+);
+
+/** Écrans des tâches (US-002, rang 5) et des objectifs (US-001, rang 2), sur les magasins de l'espace ouvert. */
 const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches }) => {
-  const magasin = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
-  useEffect(() => magasin.getState().actions.observerDepot(), [magasin]);
-  return <EspaceObjectifs magasin={magasin} />;
+  const magasinObjectifs = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
+  const magasinTaches = useMemo(() => creerMagasinTaches(objectifs), [objectifs]);
+  const [onglet, setOnglet] = useState<Onglet>('TACHES');
+  useEffect(() => magasinObjectifs.getState().actions.observerDepot(), [magasinObjectifs]);
+  useEffect(() => magasinTaches.getState().actions.observerDepot(), [magasinTaches]);
+  return (
+    <>
+      <NavigationEspaces onglet={onglet} surChoisir={setOnglet} />
+      {onglet === 'TACHES' ? (
+        <EspaceTaches magasin={magasinTaches} />
+      ) : (
+        <EspaceObjectifs
+          magasin={magasinObjectifs}
+          taches={{
+            magasin: magasinTaches,
+            surOuvrirTache: (id) => {
+              setOnglet('TACHES');
+              void magasinTaches.getState().actions.ouvrirDetail(id);
+            },
+          }}
+        />
+      )}
+    </>
+  );
 };
 
 /** Indicateur, bandeau et feuille de synchronisation (ECR-011), présents avec l'état de synchronisation. */

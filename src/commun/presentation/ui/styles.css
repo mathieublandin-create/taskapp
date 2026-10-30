@@ -74,13 +74,15 @@
   text-align: center;
 }
 
-.liste-objectifs {
+.liste-objectifs,
+.liste-taches {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.ligne-objectif button {
+.ligne-objectif button,
+.ligne-tache button {
   display: flex;
   width: 100%;
   min-height: 56px;
@@ -94,17 +96,21 @@
   text-align: start;
 }
 
-.ligne-objectif[data-niveau='SOUS_OBJECTIF'] button {
+.ligne-objectif[data-niveau='SOUS_OBJECTIF'] button,
+.ligne-tache[data-niveau='SOUS_TACHE'] button {
   padding-inline-start: 44px;
 }
 
 .ligne-objectif-texte,
-.ligne-objectif-meta {
+.ligne-objectif-meta,
+.ligne-tache-texte,
+.ligne-tache-meta {
   display: flex;
   flex-direction: column;
 }
 
-.ligne-objectif-meta {
+.ligne-objectif-meta,
+.ligne-tache-meta {
   flex-flow: row wrap;
   align-items: center;
   gap: 4px 10px;
@@ -183,7 +189,8 @@
 }
 
 /* Feuille de saisie : feuille basse sur smartphone, panneau de 400 px à droite sur PC (ECR-008 B et G). */
-ion-modal.feuille-objectif .feuille-objectif-contenu {
+ion-modal.feuille-objectif .feuille-objectif-contenu,
+ion-modal.saisie-rapide .saisie-rapide-contenu {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -198,4 +205,54 @@ ion-modal.feuille-objectif .feuille-objectif-contenu {
 
     justify-content: flex-end;
   }
+}
+
+/* Filtres, puces et sélecteur de durée des tâches (guide §4.3, §4.4, §5.7) : l'état « actif » est écrit par aria-pressed. */
+.filtre-etat,
+.filtre-objectif,
+.puces-objectif,
+.selecteur-duree {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.filtre-etat button,
+.filtre-objectif button,
+.puces-objectif button,
+.selecteur-duree button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--dj-bord);
+  border-radius: 22px;
+  background: transparent;
+  font: inherit;
+}
+
+.filtre-etat button[aria-pressed='true'],
+.filtre-objectif button[aria-pressed='true'],
+.puces-objectif button[aria-pressed='true'] {
+  border-color: var(--dj-accent);
+  font-weight: 600;
+}
+
+.selecteur-duree [role='spinbutton'] {
+  min-width: 72px;
+  text-align: center;
+}
+
+.champ-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--dj-bord);
+}
+
+.champ-detail-nom {
+  font-weight: 600;
 }

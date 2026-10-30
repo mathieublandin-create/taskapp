@@ -36,3 +36,34 @@ export const LIBELLES_OBJECTIFS = {
     SUPPRIMER: 'Supprimer l’objectif…',
   },
 } as const;
+
+// Libellés des écrans de tâches qui n'ont pas de code au catalogue (titres, champs, filtres, boutons), réunis ici pour
+// qu'aucun texte ne soit codé dans les composants (DT-006). Source : maquettes ECR-002, ECR-006, ECR-007 et guide §4.2 à §4.4.
+export const LIBELLES_TACHES = {
+  titreListe: 'Tâches',
+  titreDetail: 'Tâche',
+  retourListe: 'Tâches',
+  ajouterTache: 'Ajouter une tâche',
+  saisieTitre: 'Nouvelle tâche',
+  champIntitule: 'Intitulé',
+  champDelai: 'Délai',
+  champEstimation: 'Estimation',
+  champObjectifs: 'Objectifs',
+  exempleIntitule: 'Ex. Rédiger l’interview',
+  ajouter: 'Ajouter',
+  fermer: 'Fermer',
+  aucunObjectif: 'Aucun objectif',
+  modifier: 'Modifier',
+  enregistrer: 'Enregistrer',
+  valeurNonSaisie: '—',
+  filtreEtat: 'Filtrer par état',
+  filtreObjectif: 'Filtrer par objectif',
+  tousObjectifs: 'Tous',
+  sansObjectif: 'Sans objectif',
+  etats: { A_FAIRE: 'À faire', TERMINEE: 'Terminées', ABANDONNEE: 'Abandonnées' },
+  stepper: { moins: 'Moins 30 minutes', plus: 'Plus 30 minutes', nonSaisi: 'Non saisie' },
+  menuActions: 'Actions sur la tâche',
+  menu: { RENOMMER: 'Renommer la tâche', SUPPRIMER: 'Supprimer la tâche…' },
+  renommage: 'Renommer la tâche',
+  tacheParente: 'Sous-tâche de «\u00a0{parent}\u00a0»',
+} as const;

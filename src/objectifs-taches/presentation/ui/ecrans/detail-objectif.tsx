@@ -7,16 +7,17 @@ import {
   IonNote,
   IonToolbar,
 } from '@ionic/react';
-import type { IdObjectif } from '../../../../commun/domaine/identifiants';
+import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import type { ModeleVueDetailObjectif } from '../../modeles-de-vue/detail-objectif';
 import { LigneObjectifUi } from '../composants/ligne-objectif';
+import { SectionsTaches } from '../composants/sections-taches';
 import { ProgressionObjectif } from '../composants/progression-objectif';
-import { LIBELLES_OBJECTIFS } from '../libelles-ui';
+import { LIBELLES_OBJECTIFS, LIBELLES_TACHES } from '../libelles-ui';
 
 // Écran ECR-003 (cadres C, D) : en-tête (état, niveau, progression, délai), description, sous-objectifs. Les sections
-// de tâches arrivent avec US-002 (rang 5) ; sans tâche, l'état vide « À décliner en tâches » (CA-8).
+// de tâches (US-002, rang 5) ; sans tâche, l'état vide « À décliner en tâches » (CA-8).
 export type ProprietesDetailObjectif = {
   readonly modele: ModeleVueDetailObjectif;
   readonly surRetour: () => void;
@@ -24,6 +25,9 @@ export type ProprietesDetailObjectif = {
   readonly surOuvrirSousObjectif: (id: IdObjectif) => void;
   /** Facultatif : sans lui, la section n'offre pas « Ajouter » (écrans et tests du rang 2). */
   readonly surAjouterSousObjectif?: () => void;
+  /** Facultatifs (US-002) : sans eux, les tâches ne sont pas cliquables et « Ajouter une tâche » n'est pas offert. */
+  readonly surOuvrirTache?: (id: IdTache) => void;
+  readonly surAjouterTache?: () => void;
 };
 
 const ESPACE_INSECABLE = ' ';
@@ -132,8 +136,36 @@ const OrganisationDetail = ({
   );
 };
 
+type ProprietesTaches = Pick<ProprietesDetailObjectif, 'surOuvrirTache' | 'surAjouterTache'>;
+
+/** Tâches directes de l'objectif, ou l'état vide « À décliner en tâches » ; « Ajouter une tâche » pré-remplit l'objectif. */
+const TachesDuDetail = ({
+  modele,
+  surOuvrirTache,
+  surAjouterTache,
+}: { readonly modele: ModeleVueDetailObjectif } & ProprietesTaches) => (
+  <>
+    {surAjouterTache === undefined ? null : (
+      <IonButton fill="clear" size="small" onClick={surAjouterTache}>
+        {LIBELLES_TACHES.ajouterTache}
+      </IonButton>
+    )}
+    <SectionsTaches taches={modele.taches} surOuvrir={surOuvrirTache ?? (() => undefined)} />
+    {modele.etatVide === undefined ? null : (
+      <EtatVide
+        code={modele.etatVide.code}
+        {...(surAjouterTache === undefined ? {} : { surAction: surAjouterTache })}
+      />
+    )}
+  </>
+);
+
 export const DetailObjectif = ({ modele, ...proprietes }: ProprietesDetailObjectif) => {
-  const { surRetour, surOuvrirMenu, ...organisation } = proprietes;
+  const { surRetour, surOuvrirMenu, surOuvrirTache, surAjouterTache, ...organisation } = proprietes;
+  const taches = {
+    ...(surOuvrirTache === undefined ? {} : { surOuvrirTache }),
+    ...(surAjouterTache === undefined ? {} : { surAjouterTache }),
+  };
   return (
     <>
       <BarreDetail surRetour={surRetour} surOuvrirMenu={surOuvrirMenu} />
@@ -146,7 +178,7 @@ export const DetailObjectif = ({ modele, ...proprietes }: ProprietesDetailObject
         )}
         {modele.description === undefined ? null : <p>{modele.description}</p>}
         <OrganisationDetail modele={modele} {...organisation} />
-        {modele.etatVide === undefined ? null : <EtatVide code={modele.etatVide.code} />}
+        <TachesDuDetail modele={modele} {...taches} />
       </IonContent>
     </>
   );
