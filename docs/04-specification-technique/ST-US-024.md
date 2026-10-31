@@ -12,7 +12,7 @@
 | Maquettes | ECR-007 (A, H, I, J), ECR-003 D, ECR-002 ; guide v0.2.8 §4.22, §4.23, §6.6.9 |
 | Q-US traitées | Q-US-024-1, Q-US-024-2, Q-US-024-3, Q-US-001-2 (E8) ; hypothèse H-3 ; Q-US-001-6 (e) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-002 (rang 5) |
-| Version | 0.3 |
+| Version | 0.4 |
 | Statut | **Prête pour E10** (Q-US-001-6 (e) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-024-sous-taches` (rang 6) ; la partie RG-049 est livrée sur la branche de l'incrément 2 d'US-017 |
@@ -23,6 +23,7 @@
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (e) (guide v0.2.9 §5.8) : section `SEC-SOUS-TACHES`, ordre de référence ; §4.5, §6.7, UT-US-024-23 ; statut levé |
 | 0.3 | 2026-10-31 | Anthony | E12 du rang 6, écart de rattachement signalé par Benjamin : UT-US-024-21, 22 et `incoherence.ts` restent au **rang 9** (§2.1, §3, §13, §15 ; `rangs-scenarios.json` : S20 à S22 au rang 9 ; LOT-001 « Ordre de réalisation »). `rangs-tests.json` et `rangs-fichiers.json` sont corrigés. Conduite à tenir pour le code déjà écrit (§15). Nom accessible de la case « Terminer » codé en constante, DT-019 (§4.5, §16). |
+| 0.4 | 2026-10-31 | Anthony | E13 du rang 6 (`docs/ceremonies/revue-code-LOT-001-rang6.md`, RC-US-024-2) : `LigneSousTache.delai` devient `LigneTache['delai']` (`{ date, libelle }`), la section affiche le libellé formaté et non la date ISO (§4.5). |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Création d'une sous-tâche (un seul niveau ; refus `ERR-032` sous une tâche abandonnée ; confirmation `CNF-AJOUT-SOUS-TACHE-TERMINEE` et réouverture de la tâche parente sous une tâche terminée), estimation calculée de la tâche parente (somme des sous-tâches non abandonnées, 0 h admis), information `ALR-012` avant la première sous-tâche, objectifs hérités (`ERR-034`, ST-US-002), alerte `ALR-006`, détail d'une tâche parente (sous-tâches, compteur, `ALR-013`), recopie de l'estimation à la suppression de la dernière sous-tâche (H-3). Au rang 9 : incohérences dérivées RG-049 (`MEN-INCOHERENCE`, `ALR-003`, `ALR-004`).
@@ -103,7 +104,7 @@ Sans objet.
 // ModeleVueDetailTache (ajouts)
 readonly sousTaches?: {                                   // section SEC-SOUS-TACHES (guide v0.2.9 §5.8 e)
   readonly code: 'SEC-SOUS-TACHES'; readonly libelle: string;   // « Sous-tâches » + compteur « {t} / {n} »
-  readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: DateCalendaire; readonly estimation: { readonly minutes: number; readonly libelle: string };
+  readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: LigneTache['delai'];   /* { date, libelle } : libellé formaté affiché (v0.4, RC-US-024-2) */ readonly estimation: { readonly minutes: number; readonly libelle: string };
                                   readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'];
                                   readonly nomAccessible: string;                       // « {intitulé}, {état en toutes lettres}, délai {date} » (+ « , en retard »), comme LigneTache (RL-LOT-001-S4)
                                   readonly caseTerminer: { readonly nomAccessible: string } }>;   // « Terminer « {intitulé} » » (texte des maquettes ECR-003 D et ECR-005, sans code au §6.6 : constante du modèle de vue, DT-019) ; une seule liste, tous états, ordre de référence (§6.7)
