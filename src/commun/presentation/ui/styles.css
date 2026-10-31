@@ -193,6 +193,17 @@
   gap: 4px 10px;
 }
 
+.icone-abandonnee {
+  flex: none;
+  vertical-align: middle;
+  margin-inline-end: 4px;
+}
+
+.ligne-tache-etiquette {
+  font-size: 13px;
+  color: var(--dj-text-tertiary, inherit);
+}
+
 .point-attente {
   flex: none;
   width: 8px;

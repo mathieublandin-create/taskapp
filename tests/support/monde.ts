@@ -29,7 +29,10 @@ export class MondeDoneJuan extends World {
   readonly derniereListeObjectifs = new Map<NomAppareil, ModeleVueListeObjectifs>();
   readonly dernierDetailObjectif = new Map<NomAppareil, ModeleVueDetailObjectif>();
   /** ST-US-002 §12 n° 5, 22 à 27 : dernier formulaire de saisie, dernière liste des tâches et son filtre d'état. */
-  readonly dernierFormulaireTache = new Map<NomAppareil, ModeleVueFormulaireTache>();
+  readonly dernierFormulaireTache = new Map<
+    NomAppareil,
+    ModeleVueFormulaireTache | ModeleVueFormulaireSousTache
+  >();
   /** ST-US-024 §12 n° 3, 4 : dernier formulaire de sous-tâche, et saisie en cours (US-018 S13). */
   readonly dernierFormulaireSousTache = new Map<NomAppareil, ModeleVueFormulaireSousTache>();
   readonly saisieSousTacheEnCours = new Map<NomAppareil, SaisieSousTacheEnCours>();

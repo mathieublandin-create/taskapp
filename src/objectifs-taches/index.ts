@@ -1,6 +1,7 @@
 // Interface publique du contexte objectifs-taches (ST-US-001 §3 n° 33) : cas d'usage, requêtes, modèles de vue et
 // types dont la composition et l'interface ont besoin. Aucune commande ne permet de saisir l'état d'un objectif
 // (US-001 CA-8) : l'état est calculé.
+export { AbandonnerTache } from './application/cas-usage/abandonner-tache';
 export { CreerObjectif } from './application/cas-usage/creer-objectif';
 export { CreerSousObjectif } from './application/cas-usage/creer-sous-objectif';
 export { CreerSousTache } from './application/cas-usage/creer-sous-tache';
@@ -11,6 +12,7 @@ export {
   RenommerTache,
 } from './application/cas-usage/modifier-tache';
 export { DetacherTache, RattacherTache } from './application/cas-usage/rattacher-tache';
+export { ReprendreTache } from './application/cas-usage/reprendre-tache';
 export { RouvrirTache } from './application/cas-usage/rouvrir-tache';
 export { TerminerTache } from './application/cas-usage/terminer-tache';
 export { SupprimerTache } from './application/cas-usage/supprimer-tache';

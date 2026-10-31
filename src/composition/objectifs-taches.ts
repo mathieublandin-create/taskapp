@@ -2,6 +2,7 @@ import type { GenerateurIdentifiants } from '../commun/application/ports/generat
 import type { Horloge } from '../commun/application/ports/horloge';
 import type { Planificateur } from '../commun/application/ports/planificateur';
 import {
+  AbandonnerTache,
   ConsulterDetailObjectif,
   ConsulterDetailTache,
   ConsulterHistorique,
@@ -22,6 +23,7 @@ import {
   RendreObjectifPrincipal,
   RenommerObjectif,
   RenommerTache,
+  ReprendreTache,
   RetirerDelaiObjectif,
   RouvrirTache,
   SupprimerObjectif,
@@ -52,6 +54,8 @@ export type ObjectifsTaches = {
   readonly supprimerTache: SupprimerTache;
   readonly terminerTache: TerminerTache;
   readonly rouvrirTache: RouvrirTache;
+  readonly abandonnerTache: AbandonnerTache;
+  readonly reprendreTache: ReprendreTache;
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterTaches: ConsulterTaches;
   readonly consulterDetailTache: ConsulterDetailTache;
@@ -84,6 +88,8 @@ const assemblerTaches = (d: Dependances) => ({
   supprimerTache: new SupprimerTache(d.service),
   terminerTache: new TerminerTache(d.service),
   rouvrirTache: new RouvrirTache(d.service),
+  abandonnerTache: new AbandonnerTache(d.service),
+  reprendreTache: new ReprendreTache(d.service),
   consulterTaches: new ConsulterTaches(d.service, d.horloge),
   consulterDetailTache: new ConsulterDetailTache(d.service, d.horloge),
 });

@@ -64,12 +64,15 @@ export const LIBELLES_TACHES = {
   etats: { A_FAIRE: 'À faire', TERMINEE: 'Terminées', ABANDONNEE: 'Abandonnées' },
   stepper: { moins: 'Moins 30 minutes', plus: 'Plus 30 minutes', nonSaisi: 'Non saisie' },
   menuActions: 'Actions sur la tâche',
-  menu: { RENOMMER: 'Renommer la tâche', SUPPRIMER: 'Supprimer la tâche…' },
+  menu: {
+    RENOMMER: 'Renommer la tâche',
+    ABANDONNER: 'Abandonner la tâche…',
+    SUPPRIMER: 'Supprimer la tâche…',
+  },
   renommage: 'Renommer la tâche',
-  tacheParente: 'Sous-tâche de «\u00a0{parent}\u00a0»',
   ajouterSousTache: 'Ajouter une sous-tâche',
   saisieSousTacheTitre: 'Nouvelle sous-tâche',
   terminerTache: 'Terminer la tâche',
   rouvrirTache: 'Rouvrir la tâche',
-  deTacheParente: 'de «\u00a0{parent}\u00a0»',
+  reprendreTache: 'Reprendre la tâche',
 } as const;

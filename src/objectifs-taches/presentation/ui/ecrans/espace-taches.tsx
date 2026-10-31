@@ -68,11 +68,13 @@ const PageListe = ({
   );
 };
 
-/** Fin et réouverture de la tâche du détail, et case « Terminer » de ses sous-tâches. */
+/** Abandon, fin, réouverture et reprise de la tâche du détail, et case « Terminer » de ses sous-tâches. */
 const commandesDeFin = (actions: ActionsMagasinTaches, id: IdTache) => ({
+  surAbandonner: () => actions.abandonner(id),
   surTerminer: () => actions.terminer(id),
   surTerminerSousTache: (sousTacheId: IdTache) => void actions.terminer(sousTacheId),
   surRouvrir: () => actions.rouvrir(id),
+  surReprendre: () => actions.reprendre(id),
 });
 
 const PageDetail = ({
@@ -202,6 +204,7 @@ const SaisieSousTacheDeLEspace = ({
       formulaire={formulaireSousTache}
       objectifs={[]}
       surValider={(saisie) => etat.actions.creerSousTache(ecran.id, saisie)}
+      surReprendre={() => etat.actions.reprendre(ecran.id)}
       surFermee={surFermee}
     />
   ) : null;

@@ -633,6 +633,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/modeles-de-vue/phrases-tache-parente.ts": {
+      "debut": 8,
+      "fin": 8
+    },
     "src/objectifs-taches/presentation/modeles-de-vue/selecteur-parent.ts": {
       "debut": 4,
       "fin": 4
@@ -648,6 +652,10 @@
     "src/objectifs-taches/presentation/ui/composants/champ-detail.tsx": {
       "debut": 5,
       "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/commande-confirmee.tsx": {
+      "debut": 8,
+      "fin": 8
     },
     "src/objectifs-taches/presentation/ui/composants/feuille-objectif.tsx": {
       "debut": 2,
