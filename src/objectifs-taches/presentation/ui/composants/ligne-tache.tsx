@@ -86,6 +86,23 @@ const CaseTerminerLigne = ({
     />
   );
 
+/** Tâche abandonnée (guide §4.2) : cercle barré décoratif, l'état est dit par le nom accessible de la ligne. */
+const IconeAbandonnee = () => (
+  <svg
+    className="icone-abandonnee"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+    <line x1="5.6" y1="18.4" x2="18.4" y2="5.6" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
+
+const CODE_ETAT_ABANDONNEE: LigneTache['etat']['code'] = 'ETA-TACHE-ABANDONNEE';
+
 const BoutonLigne = ({ ligne, surOuvrir }: Pick<ProprietesLigneTache, 'ligne' | 'surOuvrir'>) => {
   const idAttente = `attente-${ligne.id}`;
   return (
@@ -99,6 +116,7 @@ const BoutonLigne = ({ ligne, surOuvrir }: Pick<ProprietesLigneTache, 'ligne' | 
       }}
     >
       <span className="ligne-tache-texte" aria-hidden="true">
+        {ligne.etat.code === CODE_ETAT_ABANDONNEE ? <IconeAbandonnee /> : null}
         <span className="ligne-tache-intitule">{ligne.intitule}</span>
         <MetaLigne ligne={ligne} />
         <Alertes alertes={ligne.alertes} />

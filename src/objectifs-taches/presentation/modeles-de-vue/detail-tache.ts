@@ -1,4 +1,3 @@
-import { assertNever } from '../../../commun/domaine/assert-never';
 import type { Horloge } from '../../../commun/application/ports/horloge';
 import type { IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
@@ -11,6 +10,7 @@ import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import { construireLigneTache, nomAccessibleCaseTerminer, type LigneTache } from './ligne-tache';
 import { comparerOrdreReference } from './ordre-reference';
+import { phraseSousTacheDe } from './phrases-tache-parente';
 
 // ST-US-002 §4.5 ; ST-US-024 §4.5 ; ST-US-003 §4.5 ; ST-US-025 §4.5.
 type MentionHeureParis = { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
@@ -63,6 +63,8 @@ export type ModeleVueDetailTache = {
     readonly verrou?: { readonly code: 'MEN-OBJECTIFS-HERITES'; readonly libelle: string };
   };
   readonly tacheParente?: { readonly id: IdTache; readonly intitule: string };
+  /** « Sous-tâche de « {tâche parente} » », composé ici (DT-021 point 2). */
+  readonly libelleTacheParente?: string;
   readonly enRetard?: LigneTache['enRetard'];
   readonly actions: ReadonlyArray<ActionTache>;
   /** Section SEC-SOUS-TACHES : une seule liste, tous états, ordre de référence (guide §5.8 e). */
@@ -134,20 +136,14 @@ const etiquetteSousTache = (
 ): Pick<LigneSousTache, 'etiquette'> => {
   if (parente.cycleDeVie.etat !== 'ABANDONNEE') return {};
   const { cycleDeVie } = sousTache;
-  switch (cycleDeVie.etat) {
-    case 'ABANDONNEE':
-      return etiquetteDe(
-        cycleDeVie.abandonParCascade === parente.cycleDeVie.evenementAbandon
-          ? 'ETA-SOUS-TACHE-ABANDONNEE-AVEC'
-          : 'ETA-SOUS-TACHE-ABANDONNEE-AVANT',
-      );
-    case 'TERMINEE':
-      return etiquetteDe('ETA-SOUS-TACHE-TERMINEE-AVANT');
-    case 'A_FAIRE':
-      return {};
-    default:
-      return assertNever(cycleDeVie);
+  if (cycleDeVie.etat === 'ABANDONNEE') {
+    return etiquetteDe(
+      cycleDeVie.abandonParCascade === parente.cycleDeVie.evenementAbandon
+        ? 'ETA-SOUS-TACHE-ABANDONNEE-AVEC'
+        : 'ETA-SOUS-TACHE-ABANDONNEE-AVANT',
+    );
   }
+  return cycleDeVie.etat === 'TERMINEE' ? etiquetteDe('ETA-SOUS-TACHE-TERMINEE-AVANT') : {};
 };
 
 const construireLigneSousTache = (
@@ -231,6 +227,17 @@ const dateAbandonDe = (
   };
 };
 
+/** La tâche parente d'une sous-tâche et la phrase qui la nomme (DT-021 point 2). */
+const tacheParenteDe = (
+  tache: ResumeTache,
+): Pick<ModeleVueDetailTache, 'tacheParente' | 'libelleTacheParente'> =>
+  tache.tacheParente === undefined
+    ? {}
+    : {
+        tacheParente: tache.tacheParente,
+        libelleTacheParente: phraseSousTacheDe(tache.tacheParente.intitule),
+      };
+
 const objectifsDe = (tache: ResumeTache, ligne: LigneTache): ModeleVueDetailTache['objectifs'] => ({
   intitules: ligne.objectifs,
   ids: tache.objectifs.map((objectif) => objectif.id),
@@ -263,7 +270,7 @@ export const construireDetailTache = (
     },
     estimationInitiale: { minutes: tache.estimationInitiale },
     objectifs: objectifsDe(tache, ligne),
-    ...(tache.tacheParente === undefined ? {} : { tacheParente: tache.tacheParente }),
+    ...tacheParenteDe(tache),
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     actions: donnees.actions,
     ...sectionSousTaches(donnees, aujourdhui),

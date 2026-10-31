@@ -43,6 +43,8 @@ export type ProprietesSaisieRapide = {
   readonly formulaire: FormulaireSaisie;
   readonly objectifs: ReadonlyArray<ObjectifProposable>;
   readonly surValider: (saisie: SaisieTacheUi) => Promise<IssueSaisie>;
+  /** Sous-tâche : « Reprendre la tâche » proposée avec le refus ERR-032 (tâche parente abandonnée). */
+  readonly surReprendre?: (() => Promise<IssueSaisie>) | undefined;
   readonly surFermee: () => void;
   readonly registre?: Pick<RegistreSaisie, 'declarer'>;
 };
@@ -171,6 +173,20 @@ const confirmerAjout = async (
   await appliquerIssue(c, await confirmation.confirmer());
 };
 
+/** « Reprendre la tâche » (ERR-032) : le refus disparaît une fois la tâche reprise ; la saisie est conservée. */
+const reprendreTacheParente = async (
+  c: ContexteAjout,
+  surReprendre: () => Promise<IssueSaisie>,
+): Promise<void> => {
+  const issue = await surReprendre();
+  if (issue.type !== 'FAITE') {
+    await appliquerIssue(c, issue);
+    return;
+  }
+  c.ecrireEtat({ messages: [], ajoutee: false, enCours: false });
+  await c.foyers.intitule.current?.setFocus();
+};
+
 const useRefsChamps = () => ({
   refIntitule: useRef<HTMLIonInputElement>(null),
   refDelai: useRef<HTMLIonInputElement>(null),
@@ -183,16 +199,24 @@ const sansConfirmation = ({ messages, ajoutee, enCours }: EtatSaisie): EtatSaisi
   enCours,
 });
 
+type CommandesExternes = Pick<ProprietesSaisieRapide, 'surValider' | 'surReprendre'>;
+
 /** Gestes du formulaire : « Ajouter », confirmation de la commande évaluée, renoncement à cette confirmation. */
 const commandesDe = (
   contexteDe: () => ContexteAjout,
   valeurs: Valeurs,
   etat: EtatSaisie,
-  surValider: ProprietesSaisieRapide['surValider'],
+  { surValider, surReprendre }: CommandesExternes,
 ) => ({
   ajouter: async (): Promise<void> => {
     if (!etat.enCours) await ajouterTache(contexteDe(), valeurs, surValider);
   },
+  reprendre:
+    surReprendre === undefined
+      ? undefined
+      : async (): Promise<void> => {
+          await reprendreTacheParente(contexteDe(), surReprendre);
+        },
   confirmer: async (): Promise<void> => {
     if (etat.confirmation !== undefined) await confirmerAjout(contexteDe(), etat.confirmation);
   },
@@ -201,10 +225,7 @@ const commandesDe = (
   },
 });
 
-const useSaisie = (
-  formulaire: FormulaireSaisie,
-  surValider: ProprietesSaisieRapide['surValider'],
-) => {
+const useSaisie = (formulaire: FormulaireSaisie, externes: CommandesExternes) => {
   const [valeurs, setValeurs] = useState<Valeurs>(() => depart(formulaire));
   const [etat, setEtat] = useState<EtatSaisie>({ messages: [], ajoutee: false, enCours: false });
   const refs = useRefsChamps();
@@ -219,7 +240,7 @@ const useSaisie = (
     setEtat((courant) => ({ ...courant, ajoutee: false }));
     setValeurs((courantes) => ({ ...courantes, ...changement }));
   };
-  const commandes = commandesDe(contexteDe, valeurs, etat, surValider);
+  const commandes = commandesDe(contexteDe, valeurs, etat, externes);
   return { valeurs, ...etat, ...refs, modifier, ...commandes };
 };
 
@@ -287,7 +308,7 @@ const ChampEstimationObligatoire = ({ valeurs, messages, refEstimation, modifier
 };
 
 const estSousTache = (formulaire: FormulaireSaisie): formulaire is ModeleVueFormulaireSousTache =>
-  'tacheParente' in formulaire;
+  formulaire.variante === 'SOUS_TACHE';
 
 const titreDe = (formulaire: FormulaireSaisie): string =>
   estSousTache(formulaire) ? LIBELLES_TACHES.saisieSousTacheTitre : LIBELLES_TACHES.saisieTitre;
@@ -298,9 +319,7 @@ const EnTeteSaisie = ({ formulaire }: { readonly formulaire: FormulaireSaisie })
     <h2>{titreDe(formulaire)}</h2>
     {estSousTache(formulaire) ? (
       <>
-        <p>
-          {LIBELLES_TACHES.deTacheParente.replace('{parent}', formulaire.tacheParente.intitule)}
-        </p>
+        <p>{formulaire.libelleTacheParente}</p>
         {formulaire.information === undefined ? null : (
           <IonNote role="status" data-code={formulaire.information.code}>
             {formulaire.information.libelle}
@@ -338,9 +357,24 @@ const Champs = ({
 );
 
 /** Refus qui ne désignent aucun champ (ERR-032) : affichés sous les champs, jamais perdus. */
-const MessagesHorsChamp = ({ messages }: { readonly messages: ReadonlyArray<MessageRefus> }) => (
+const MessagesHorsChamp = ({
+  messages,
+  surReprendre,
+}: {
+  readonly messages: ReadonlyArray<MessageRefus>;
+  readonly surReprendre: Saisie['reprendre'];
+}) => (
   <MessagesRefus
     messages={messages.filter((message) => champDuMessage(message.code) === undefined)}
+    actions={
+      surReprendre === undefined
+        ? {}
+        : {
+            'ERR-032': () => {
+              void surReprendre();
+            },
+          }
+    }
   />
 );
 
@@ -452,7 +486,7 @@ const FormulaireSaisieRapide = ({
   >
     <EnTeteSaisie formulaire={formulaire} />
     <Champs saisie={saisie} formulaire={formulaire} objectifs={objectifs} />
-    <MessagesHorsChamp messages={saisie.messages} />
+    <MessagesHorsChamp messages={saisie.messages} surReprendre={saisie.reprendre} />
     <Boutons saisie={saisie} surFermer={surFermer} refAjouter={refAjouter} />
   </form>
 );
@@ -460,15 +494,15 @@ const FormulaireSaisieRapide = ({
 const CorpsSaisie = ({
   formulaire,
   objectifs,
-  surValider,
   surFermer,
   registre = registreSaisie,
   surConfirmationAffichee,
+  ...externes
 }: Omit<ProprietesSaisieRapide, 'ouverte' | 'surFermee'> & {
   readonly surFermer: () => void;
   readonly surConfirmationAffichee: (affichee: boolean) => void;
 }) => {
-  const saisie = useSaisie(formulaire, surValider);
+  const saisie = useSaisie(formulaire, externes);
   const { refAjouter, annulerConfirmation } = useConfirmationDeLaFeuille(
     saisie,
     surConfirmationAffichee,

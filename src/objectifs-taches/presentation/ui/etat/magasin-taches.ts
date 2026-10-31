@@ -6,6 +6,7 @@ import type { Resultat } from '../../../../commun/domaine/resultat';
 import { EcartTemps } from '../../../../commun/domaine/temps/ecart-temps';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import type { ErreurDepotLocal } from '../../../../synchronisation';
+import type { AbandonnerTache } from '../../../application/cas-usage/abandonner-tache';
 import type {
   CreerSousTache,
   EntreeCreerSousTache,
@@ -17,9 +18,11 @@ import type {
   RenommerTache,
 } from '../../../application/cas-usage/modifier-tache';
 import type { DetacherTache, RattacherTache } from '../../../application/cas-usage/rattacher-tache';
+import type { ReprendreTache } from '../../../application/cas-usage/reprendre-tache';
 import type { RouvrirTache } from '../../../application/cas-usage/rouvrir-tache';
 import type { SupprimerTache } from '../../../application/cas-usage/supprimer-tache';
 import type { TerminerTache } from '../../../application/cas-usage/terminer-tache';
+import type { Evaluation } from '../../../domaine/confirmation';
 import type { RefusMetier } from '../../../domaine/refus';
 import type { ConsulterDetailTache } from '../../../application/requetes/consulter-detail-tache';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
@@ -62,6 +65,8 @@ export type ServicesTaches = {
   readonly supprimerTache: SupprimerTache;
   readonly terminerTache: TerminerTache;
   readonly rouvrirTache: RouvrirTache;
+  readonly abandonnerTache: AbandonnerTache;
+  readonly reprendreTache: ReprendreTache;
   readonly consulterTaches: ConsulterTaches;
   readonly consulterDetailTache: ConsulterDetailTache;
   readonly consulterObjectifs: ConsulterObjectifs;
@@ -154,6 +159,10 @@ export type ActionsMagasinTaches = {
   readonly oublierFin: (id: IdTache) => void;
   /** Rouvre la tâche ; `CONFIRMATION_REQUISE` (CNF-ROUVRIR-SOUS-TACHE) tant que l'utilisateur n'a pas confirmé. */
   readonly rouvrir: (id: IdTache) => Promise<IssueSaisie>;
+  /** Abandonne la tâche ; la confirmation (CNF-ABANDON-TACHE, avec le nombre de sous-tâches abandonnées) est toujours demandée. */
+  readonly abandonner: (id: IdTache) => Promise<IssueSaisie>;
+  /** Reprend la tâche ; `CONFIRMATION_REQUISE` (CNF-REPRENDRE-SOUS-TACHE) si la tâche parente de la sous-tâche est terminée. */
+  readonly reprendre: (id: IdTache) => Promise<IssueSaisie>;
   /** Commence à observer le dépôt local (DT-009) et rend la fonction qui cesse de l'observer (démontage). */
   readonly observerDepot: () => () => void;
 };
@@ -410,20 +419,46 @@ class ActionsTaches implements ActionsMagasinTaches {
     if (this.lire().finAnnulable === id) this.ecrire({ finAnnulable: undefined });
   };
 
-  /** `evaluer` d'abord (conventions.md §8.6) : la réouverture d'une sous-tâche sous une tâche terminée se confirme. */
-  readonly rouvrir = this.#effacee(async (id: IdTache): Promise<IssueSaisie> => {
-    this.ecrire({ finAnnulable: undefined });
-    const evaluation = await this.services.rouvrirTache.evaluer({ tacheId: id });
+  /**
+   * `evaluer` d'abord (conventions.md §8.6) : une commande qui demande confirmation rend la confirmation et
+   * `confirmer` ; sinon elle est exécutée aussitôt. Un refus de l'évaluation est rendu en issue.
+   */
+  readonly #evaluerPuisExecuter = async (
+    evaluation: Resultat<Evaluation, RefusMetier | ErreurDepotLocal>,
+    executer: () => Promise<Resultat<unknown, RefusMetier | ErreurDepotLocal>>,
+  ): Promise<IssueSaisie> => {
     if (!evaluation.ok) return this.#apres(issueDe(evaluation));
-    const executer = async (): Promise<IssueTache> =>
-      this.#apres(issueDe(await this.services.rouvrirTache.executer({ tacheId: id })));
+    const confirmer = async (): Promise<IssueTache> => this.#apres(issueDe(await executer()));
     return evaluation.valeur.type === 'CONFIRMATION_REQUISE'
       ? {
           type: 'CONFIRMATION_REQUISE',
           confirmation: construireConfirmation(evaluation.valeur.confirmation),
-          confirmer: executer,
+          confirmer,
         }
-      : executer();
+      : confirmer();
+  };
+
+  /** La réouverture d'une sous-tâche sous une tâche terminée se confirme. */
+  readonly rouvrir = this.#effacee(async (id: IdTache): Promise<IssueSaisie> => {
+    this.ecrire({ finAnnulable: undefined });
+    const commande = { tacheId: id };
+    return this.#evaluerPuisExecuter(await this.services.rouvrirTache.evaluer(commande), () =>
+      this.services.rouvrirTache.executer(commande),
+    );
+  });
+
+  readonly abandonner = this.#effacee(async (id: IdTache): Promise<IssueSaisie> => {
+    const commande = { tacheId: id };
+    return this.#evaluerPuisExecuter(await this.services.abandonnerTache.evaluer(commande), () =>
+      this.services.abandonnerTache.executer(commande),
+    );
+  });
+
+  readonly reprendre = this.#effacee(async (id: IdTache): Promise<IssueSaisie> => {
+    const commande = { tacheId: id };
+    return this.#evaluerPuisExecuter(await this.services.reprendreTache.evaluer(commande), () =>
+      this.services.reprendreTache.executer(commande),
+    );
   });
 
   /** DT-009 : une écriture d'un autre écrivain (fusion distante, autre onglet) rafraîchit l'écran courant. */
