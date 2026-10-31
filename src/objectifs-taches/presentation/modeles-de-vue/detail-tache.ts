@@ -1,3 +1,4 @@
+import { assertNever } from '../../../commun/domaine/assert-never';
 import type { Horloge } from '../../../commun/application/ports/horloge';
 import type { IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
@@ -120,8 +121,38 @@ const verrouObjectifs = (tache: ResumeTache): Pick<ModeleVueDetailTache['objecti
       }
     : {};
 
+type EtiquetteSousTache = NonNullable<LigneSousTache['etiquette']>;
+
+const etiquetteDe = (
+  code: EtiquetteSousTache['code'],
+): { readonly etiquette: EtiquetteSousTache } => ({ etiquette: { code, libelle: libelle(code) } });
+
+/** Étiquette d'une sous-tâche d'une tâche parente abandonnée (ST-US-025 §6.4) ; aucune si elle est à faire. */
+const etiquetteSousTache = (
+  sousTache: ResumeTache,
+  parente: ResumeTache,
+): Pick<LigneSousTache, 'etiquette'> => {
+  if (parente.cycleDeVie.etat !== 'ABANDONNEE') return {};
+  const { cycleDeVie } = sousTache;
+  switch (cycleDeVie.etat) {
+    case 'ABANDONNEE':
+      return etiquetteDe(
+        cycleDeVie.abandonParCascade === parente.cycleDeVie.evenementAbandon
+          ? 'ETA-SOUS-TACHE-ABANDONNEE-AVEC'
+          : 'ETA-SOUS-TACHE-ABANDONNEE-AVANT',
+      );
+    case 'TERMINEE':
+      return etiquetteDe('ETA-SOUS-TACHE-TERMINEE-AVANT');
+    case 'A_FAIRE':
+      return {};
+    default:
+      return assertNever(cycleDeVie);
+  }
+};
+
 const construireLigneSousTache = (
   resume: ResumeTache,
+  parente: ResumeTache,
   aujourdhui: DateCalendaire,
 ): LigneSousTache => {
   const ligne = construireLigneTache(resume, aujourdhui);
@@ -135,6 +166,7 @@ const construireLigneSousTache = (
     alertes: ligne.alertes,
     nomAccessible: ligne.nomAccessible,
     caseTerminer: { nomAccessible: nomAccessibleCaseTerminer(ligne.intitule) },
+    ...etiquetteSousTache(resume, parente),
   };
 };
 
@@ -151,7 +183,7 @@ const sectionSousTaches = (
       libelle: libelle('SEC-SOUS-TACHES'),
       lignes: [...donnees.sousTaches]
         .sort(comparerOrdreReference)
-        .map((resume) => construireLigneSousTache(resume, aujourdhui)),
+        .map((resume) => construireLigneSousTache(resume, donnees.tache, aujourdhui)),
       compteur: {
         terminees,
         nonAbandonnees,
@@ -174,6 +206,25 @@ const dateFinDe = (
       date: cycleDeVie.dateFin,
       libelle: libelle('ETA-TACHE-TERMINEE', {
         date: formaterDate(cycleDeVie.dateFin, aujourdhui),
+      }),
+      ...mentionHeureParis(horloge),
+    },
+  };
+};
+
+/** « Abandonnée le {date} » (ETA-TACHE-ABANDONNEE) ; MEN-HEURE-PARIS si l'appareil n'est pas à Paris (RG-054). */
+const dateAbandonDe = (
+  tache: ResumeTache,
+  aujourdhui: DateCalendaire,
+  horloge: Horloge,
+): Pick<ModeleVueDetailTache, 'dateAbandon'> => {
+  const { cycleDeVie } = tache;
+  if (cycleDeVie.etat !== 'ABANDONNEE') return {};
+  return {
+    dateAbandon: {
+      date: cycleDeVie.dateAbandon,
+      libelle: libelle('ETA-TACHE-ABANDONNEE', {
+        date: formaterDate(cycleDeVie.dateAbandon, aujourdhui),
       }),
       ...mentionHeureParis(horloge),
     },
@@ -218,5 +269,6 @@ export const construireDetailTache = (
     ...sectionSousTaches(donnees, aujourdhui),
     ...infoFinImpossible(donnees.sousTachesAFaire),
     ...dateFinDe(tache, aujourdhui, dependances.horloge),
+    ...dateAbandonDe(tache, aujourdhui, dependances.horloge),
   };
 };
