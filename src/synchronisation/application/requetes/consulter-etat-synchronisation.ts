@@ -9,6 +9,11 @@ export type AttenteLocale = {
   /** Décompte par élément (DAT §4.1.5 bis). */
   readonly enAttente: number;
   readonly plusAncienneEnAttente?: Instant;
+  /**
+   * ST-US-017 v0.5 §4.6 (incrément 2, tranche B3) : `compterALire` des signalements de l'espace ; absent ≡ 0. Source
+   * d'`aLire`, à la place d'`EtatMoteur.aLire` (DT-022).
+   */
+  readonly aLire?: number;
 };
 
 /**

@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "CT-DEPOT-1[2-9]\\b",
+      "rang": 9
+    },
+    {
       "motif": "UT-COMP-\\d+",
       "rang": 0
     },

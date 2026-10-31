@@ -36,6 +36,7 @@ const depotIllisible: DepotLocal = {
   observer: () => () => undefined,
   lireMeta: () => Promise.resolve(echec(ILLISIBLE)),
   appliquerSynchronisation: () => Promise.resolve(echec(ILLISIBLE)),
+  lireSignalements: () => Promise.resolve(echec(ILLISIBLE)),
 };
 
 const serviceSur = (depot: DepotLocal) =>

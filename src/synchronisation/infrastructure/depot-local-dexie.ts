@@ -12,6 +12,7 @@ import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
 import { cleEnTexte } from '../domaine/information';
 import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
 import type { PlanEcriture } from '../domaine/planifier-ecritures';
+import { SIGNALEMENTS_VIDES, type Signalements } from '../domaine/signalements';
 import {
   decoderEnAttente,
   decoderEvenement,
@@ -248,13 +249,22 @@ export class DepotLocalDexie implements DepotLocal {
     }
   }
 
+  /** Squelette inerte E10 du rang 9 (ST-US-017 v0.5 §13.4) : base version 3, tranche B2. */
+  lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    return Promise.resolve(this.ferme ? ESPACE_NON_OUVERT : succes(SIGNALEMENTS_VIDES));
+  }
+
   /**
    * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état et méta lus, calcul, puis plan et méta écrits
    * ensemble. La méta est fusionnée clé à clé ; `version` et les observateurs ne changent que si le plan est
    * non vide. Une exception du calcul est propagée et rien n'est écrit.
    */
   async appliquerSynchronisation(
-    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     if (this.ferme) return ESPACE_NON_OUVERT;
     const surveillance: Surveillance = { exception: undefined };
@@ -352,7 +362,11 @@ export class DepotLocalDexie implements DepotLocal {
 
   /** Dans la transaction : lit l'état et la méta, appelle le calcul, écrit la méta puis le plan s'il est non vide. */
   private async executerSynchronisation(
-    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
     surveillance: Surveillance,
   ): Promise<IssueExecution<undefined, never>> {
     const etat = await this.etatAJour();
@@ -361,7 +375,8 @@ export class DepotLocalDexie implements DepotLocal {
     if (!meta.ok) return meta;
     let synchronisation: PlanSynchronisation;
     try {
-      synchronisation = calcul(etat.valeur, meta.valeur);
+      // Squelette E10 du rang 9 (ST-US-017 v0.5 §13.4) : tables `valeursEcartees` et `lectures` (version 3) à lire.
+      synchronisation = calcul(etat.valeur, meta.valeur, SIGNALEMENTS_VIDES);
     } catch (exception) {
       if (exception instanceof Error) surveillance.exception = exception;
       throw exception;

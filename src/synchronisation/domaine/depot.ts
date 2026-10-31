@@ -3,12 +3,18 @@ import type { EtatLocal } from './etat-local';
 import { comparerHlc, type Hlc } from './hlc';
 import type { IndexEnAttente } from './index-en-attente';
 import type { MetaSynchronisation } from './meta-synchronisation';
+import type { Signalements } from './signalements';
 import { SCHEMA_VERSION } from './version-schema';
 
 // DAT §4.1.5 bis, §4.3 ; ENF-T-07 (ST-US-017 §6.2).
 export const contenuAEnvoyer = (
   etat: EtatLocal,
-  p: { readonly versionApplication: string; readonly generation: Generation },
+  p: {
+    readonly versionApplication: string;
+    readonly generation: Generation;
+    /** ST-US-017 v0.5 §5.2 (incrément 2, tranche B2) : recopiés s'ils sont non vides, triés par identifiant. */
+    readonly signalements?: Signalements;
+  },
 ): ContenuFichierAppareil => ({
   schemaVersion: SCHEMA_VERSION,
   versionApplication: p.versionApplication,

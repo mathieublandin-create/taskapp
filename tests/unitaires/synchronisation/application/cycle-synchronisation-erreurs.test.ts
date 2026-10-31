@@ -96,6 +96,7 @@ const depotAvecPannes = (
     appliquer: (calcul) => reel.appliquer(calcul),
     observer: (rappel) => reel.observer(rappel),
     lireMeta: () => (enPanne('lireMeta') ? Promise.resolve(ECRITURE_IMPOSSIBLE) : reel.lireMeta()),
+    lireSignalements: () => reel.lireSignalements(),
     appliquerSynchronisation: (calcul) =>
       enPanne('appliquerSynchronisation')
         ? Promise.resolve(ECRITURE_IMPOSSIBLE)

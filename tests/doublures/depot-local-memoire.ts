@@ -13,6 +13,7 @@ import {
   type PlanSynchronisation,
 } from '@src/synchronisation/domaine/meta-synchronisation';
 import type { PlanEcriture } from '@src/synchronisation/domaine/planifier-ecritures';
+import { SIGNALEMENTS_VIDES, type Signalements } from '@src/synchronisation/domaine/signalements';
 
 /**
  * Doublure en mémoire du port DepotLocal (ST-US-017 §12.3 ; condition de Starck sur Q-ST017-STA-1).
@@ -107,11 +108,20 @@ export class DepotLocalEnMemoire implements DepotLocal {
     return Promise.resolve(succes(this.stockage.meta));
   }
 
+  /** Squelette inerte E10 du rang 9 (ST-US-017 v0.5 §13.4) : signalements à stocker (tranche B2, CT-DEPOT-12, 13). */
+  lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    return Promise.resolve(succes(SIGNALEMENTS_VIDES));
+  }
+
   appliquerSynchronisation(
-    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     return Promise.resolve().then(() => {
-      const { plan, meta } = calcul(this.stockage.etat, this.stockage.meta);
+      const { plan, meta } = calcul(this.stockage.etat, this.stockage.meta, SIGNALEMENTS_VIDES);
       this.stockage.valider(plan, meta);
       return succes(undefined);
     });

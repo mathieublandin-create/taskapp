@@ -2,50 +2,60 @@
 
 ## Sommaire
 
-- [0. En-tête](#0-en-tête) (l. 50)
-  - [Historique](#historique) (l. 69)
-- [1. Résumé technique](#1-résumé-technique) (l. 76)
-- [2. Traçabilité](#2-traçabilité) (l. 87)
-  - [2.1 Critères d'acceptation](#21-critères-dacceptation) (l. 89)
-  - [2.2 Règles de gestion](#22-règles-de-gestion) (l. 108)
-- [3. Composants et fichiers](#3-composants-et-fichiers) (l. 123)
-  - [3.1 Incrément 1 (rang 3)](#31-incrément-1-rang-3) (l. 125)
-  - [3.2 Incréments 2 à 4](#32-incréments-2-à-4) (l. 152)
-- [4. Interfaces et signatures (incrément 1, et ce que les incréments suivants doivent respecter)](#4-interfaces-et-signatures-incrément-1-et-ce-que-les-incréments-suivants-doivent-respecter) (l. 167)
-  - [4.1 Domaine](#41-domaine) (l. 169)
-  - [4.2 Application](#42-application) (l. 223)
-  - [4.3 Port TransportSynchro (complet)](#43-port-transportsynchro-complet) (l. 261)
-  - [4.4 Adaptateurs](#44-adaptateurs) (l. 284)
-  - [4.5 Présentation](#45-présentation) (l. 290)
-- [5. Modèle de données et migrations](#5-modèle-de-données-et-migrations) (l. 297)
-  - [5.1 Stockage local](#51-stockage-local) (l. 299)
-  - [5.2 Fichier d'appareil, schéma 1 (contenu logique : ST-socle §5.3)](#52-fichier-dappareil-schéma-1-contenu-logique--st-socle-53) (l. 302)
-  - [5.3 Compatibilité (RG-058, conventions §10.3)](#53-compatibilité-rg-058-conventions-103) (l. 331)
-- [6. Règles et algorithmes](#6-règles-et-algorithmes) (l. 334)
-  - [6.1 Fusion](#61-fusion) (l. 336)
-  - [6.2 Dépôt](#62-dépôt) (l. 349)
-  - [6.3 Cycle](#63-cycle) (l. 362)
-  - [6.4 Déclencheurs (DAT §4.3)](#64-déclencheurs-dat-43) (l. 390)
-  - [6.5 DepotAvantSortieSynchro](#65-depotavantsortiesynchro) (l. 401)
-  - [6.6 Incrément 2 (rang 9) : règles arrêtées](#66-incrément-2-rang-9--règles-arrêtées) (l. 404)
-  - [6.7 Incrément 3 (rang 10) : règles arrêtées](#67-incrément-3-rang-10--règles-arrêtées) (l. 410)
-  - [6.8 Incrément 4 (rang 11) : règles arrêtées](#68-incrément-4-rang-11--règles-arrêtées) (l. 413)
-- [7. Intégration Google](#7-intégration-google) (l. 419)
-- [8. Gestion des erreurs](#8-gestion-des-erreurs) (l. 431)
-- [9. Patterns imposés](#9-patterns-imposés) (l. 441)
-- [10. Sécurité et données personnelles](#10-sécurité-et-données-personnelles) (l. 451)
-- [11. Exigences non fonctionnelles](#11-exigences-non-fonctionnelles) (l. 454)
-- [12. Step definitions Cucumber](#12-step-definitions-cucumber) (l. 461)
-  - [12.1 Phrases](#121-phrases) (l. 463)
-  - [12.2 Rangs d'exécution revérifiés](#122-rangs-dexécution-revérifiés) (l. 492)
-  - [12.3 Banc](#123-banc) (l. 507)
-- [13. Tests unitaires fournis](#13-tests-unitaires-fournis) (l. 513)
-  - [13.1 Incrément 1 (E10, livrés en rouge le 2026-10-27)](#131-incrément-1-e10-livrés-en-rouge-le-2026-10-27) (l. 515)
-  - [13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)](#132-incréments-2-à-4-e10-à-livrer-avant-leur-e12) (l. 551)
-- [14. Tests attendus de Benjamin](#14-tests-attendus-de-benjamin) (l. 554)
-- [15. Plan de réalisation](#15-plan-de-réalisation) (l. 561)
-- [16. Dette, hypothèses et points ouverts](#16-dette-hypothèses-et-points-ouverts) (l. 564)
-- [17. Checklist de complétude](#17-checklist-de-complétude) (l. 576)
+- [0. En-tête](#0-en-tête) (l. 60)
+  - [Historique](#historique) (l. 79)
+- [1. Résumé technique](#1-résumé-technique) (l. 93)
+- [2. Traçabilité](#2-traçabilité) (l. 104)
+  - [2.1 Critères d'acceptation](#21-critères-dacceptation) (l. 106)
+  - [2.2 Règles de gestion](#22-règles-de-gestion) (l. 125)
+- [3. Composants et fichiers](#3-composants-et-fichiers) (l. 140)
+  - [3.1 Incrément 1 (rang 3)](#31-incrément-1-rang-3) (l. 142)
+  - [3.2 Incréments 2 à 4](#32-incréments-2-à-4) (l. 174)
+  - [3.3 Correction d'ANO-001 (v0.4.3, branche fix/ANO-001)](#33-correction-dano-001-v043-branche-fixano-001) (l. 189)
+  - [3.4 Incrément 2 (rang 9, v0.5) : fichiers et tranches](#34-incrément-2-rang-9-v05--fichiers-et-tranches) (l. 204)
+- [4. Interfaces et signatures (incrément 1, et ce que les incréments suivants doivent respecter)](#4-interfaces-et-signatures-incrément-1-et-ce-que-les-incréments-suivants-doivent-respecter) (l. 232)
+  - [4.1 Domaine](#41-domaine) (l. 234)
+  - [4.2 Application](#42-application) (l. 288)
+  - [4.3 Port TransportSynchro (complet)](#43-port-transportsynchro-complet) (l. 326)
+  - [4.4 Adaptateurs](#44-adaptateurs) (l. 349)
+  - [4.5 Présentation](#45-présentation) (l. 355)
+  - [4.5 bis Feuille ECR-011 de l'incrément 1 et point « en attente » (v0.4, DT-011)](#45-bis-feuille-ecr-011-de-lincrément-1-et-point--en-attente--v04-dt-011) (l. 362)
+  - [4.6 Incrément 2 (rang 9, v0.5) : signatures](#46-incrément-2-rang-9-v05--signatures) (l. 394)
+- [5. Modèle de données et migrations](#5-modèle-de-données-et-migrations) (l. 481)
+  - [5.1 Stockage local](#51-stockage-local) (l. 483)
+  - [5.2 Fichier d'appareil, schéma 1 (contenu logique : ST-socle §5.3)](#52-fichier-dappareil-schéma-1-contenu-logique--st-socle-53) (l. 488)
+  - [5.3 Compatibilité (RG-058, conventions §10.3)](#53-compatibilité-rg-058-conventions-103) (l. 518)
+- [6. Règles et algorithmes](#6-règles-et-algorithmes) (l. 521)
+  - [6.1 Fusion](#61-fusion) (l. 523)
+  - [6.2 Dépôt](#62-dépôt) (l. 536)
+  - [6.3 Cycle](#63-cycle) (l. 549)
+  - [6.4 Déclencheurs (DAT §4.3)](#64-déclencheurs-dat-43) (l. 577)
+  - [6.5 DepotAvantSortieSynchro](#65-depotavantsortiesynchro) (l. 588)
+  - [6.6 Incrément 2 (rang 9) : règles arrêtées (détaillées en v0.5)](#66-incrément-2-rang-9--règles-arrêtées-détaillées-en-v05) (l. 591)
+  - [6.7 Incrément 3 (rang 10) : règles arrêtées](#67-incrément-3-rang-10--règles-arrêtées) (l. 608)
+  - [6.8 Incrément 4 (rang 11) : règles arrêtées](#68-incrément-4-rang-11--règles-arrêtées) (l. 611)
+  - [6.9 Correction d'ANO-001 : la vue suit les cycles sans geste et les écritures locales (v0.4.3)](#69-correction-dano-001--la-vue-suit-les-cycles-sans-geste-et-les-écritures-locales-v043) (l. 617)
+- [7. Intégration Google](#7-intégration-google) (l. 636)
+- [8. Gestion des erreurs](#8-gestion-des-erreurs) (l. 648)
+- [9. Patterns imposés](#9-patterns-imposés) (l. 662)
+- [10. Sécurité et données personnelles](#10-sécurité-et-données-personnelles) (l. 672)
+- [11. Exigences non fonctionnelles](#11-exigences-non-fonctionnelles) (l. 675)
+- [12. Step definitions Cucumber](#12-step-definitions-cucumber) (l. 682)
+  - [12.1 Phrases](#121-phrases) (l. 684)
+  - [12.2 Rangs d'exécution revérifiés](#122-rangs-dexécution-revérifiés) (l. 713)
+  - [12.3 Banc](#123-banc) (l. 728)
+  - [12.4 Scénarios S06c à S06f (ANO-001, glossaire v1.11 §13) : banc et steps (E12 de la correction)](#124-scénarios-s06c-à-s06f-ano-001-glossaire-v111-13--banc-et-steps-e12-de-la-correction) (l. 734)
+  - [12.5 Incrément 2 (rang 9, v0.5) : phrases, banc et scénarios différés](#125-incrément-2-rang-9-v05--phrases-banc-et-scénarios-différés) (l. 760)
+- [13. Tests unitaires fournis](#13-tests-unitaires-fournis) (l. 795)
+  - [13.1 Incrément 1 (E10, livrés en rouge le 2026-10-27)](#131-incrément-1-e10-livrés-en-rouge-le-2026-10-27) (l. 797)
+  - [13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)](#132-incréments-2-à-4-e10-à-livrer-avant-leur-e12) (l. 850)
+  - [13.3 Correction d'ANO-001 (E10 v0.4.3, livrés en rouge le 2026-10-30)](#133-correction-dano-001-e10-v043-livrés-en-rouge-le-2026-10-30) (l. 853)
+  - [13.4 Incrément 2 (E10 v0.5, livrés en rouge le 2026-10-31)](#134-incrément-2-e10-v05-livrés-en-rouge-le-2026-10-31) (l. 872)
+- [14. Tests attendus de Benjamin](#14-tests-attendus-de-benjamin) (l. 904)
+- [15. Plan de réalisation](#15-plan-de-réalisation) (l. 915)
+  - [15.1 Incrément 2 (rang 9) : réalisation en tranches (OPT-15, v0.5)](#151-incrément-2-rang-9--réalisation-en-tranches-opt-15-v05) (l. 918)
+- [16. Dette, hypothèses et points ouverts](#16-dette-hypothèses-et-points-ouverts) (l. 932)
+- [17. Checklist de complétude](#17-checklist-de-complétude) (l. 952)
 
 ## 0. En-tête
 
@@ -60,9 +70,9 @@
 | Prérequis | `ST-socle-ecriture.md` (rang 0, dont le contenu logique du schéma 1, §5.3) ; ST-US-022 (rang 1 : accès, `TransportSynchro.preparerDossier`, indicateur et bandeaux) ; ST-US-001 (rang 2) |
 | Hypothèses du contrôle d'explicitation appliquées | H-1, H-2 (incrément 2), H-4 (socle), H-5 (§12), H-6 (incréments 2 et 3) |
 | Q-US traitées | Q-US-017-1 à 12 (E8) ; DEC-030 (Q-US-017-3, A8) ; Q-DEC034-1 |
-| Questions de cette ST | Q-ST017-PEP-1, Q-ST017-STA-1 à 3 répondues et intégrées ; Q-ST017-STE-1 ouverte, non bloquante (§16) |
-| Version | 0.4.4 |
-| Statut | **E11 : remarques traitées (v0.3)**. Incrément 1 : tests du §13.1 livrés en rouge. Incréments 2 à 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
+| Questions de cette ST | Q-ST017-PEP-1, Q-ST017-STA-1 à 3 répondues et intégrées ; Q-ST017-STE-1 ouverte, non bloquante ; v0.5 : Q-ST017-STA-4, Q-ST017-PEP-2, Q-ST017-STE-2 ouvertes (§16) |
+| Version | 0.5 |
+| Statut | **E10 de l'incrément 2 livrée (v0.5)** : conception détaillée (§3.4, §4.6, §5, §6.6, §12.5), tests du §13.4 livrés en rouge, plan en tranches (§15). Incréments 3 et 4 : conception arrêtée ; E10 avant l'E12 de chacun (§13.2) |
 | Auteur | Anthony |
 | Branches | `us/US-017-1-synchronisation-de-base`, `us/US-017-2-conflits`, `us/US-017-3-restauration`, `us/US-017-4-horloge-versions` |
 
@@ -73,6 +83,7 @@
 | 0.2 | 2026-10-27 | Anthony | Réponses de Pepper (S06 et S06b corrigés : S06b exécuté au rang 3 sans condition) et de Starck (DAT v0.11.3). **Q-ST017-STA-1** : doublure `DepotLocalEnMemoire` et suite de contrat étendue (CT-DEPOT-08 à 11), une seule transaction stricte (§3.1, §4.2, §13.1). **Q-ST017-STA-2** : médiane de 5 mesures d'aller-retour < 3 s, seul un recul corrigé, contrôle chaque minute et au retour au premier plan (§6.8, constantes livrées). **Q-ST022-STA-3** : l'`appareilId` naît avec l'espace ; l'ancien fichier d'un appareil après suppression des données est celui d'un appareil inactif (§6.3). |
 | 0.4.1 | 2026-10-30 | Anthony | E13 du reliquat du rang 3, **Q-BEN-R3R-1** (RC-R3-8) : n° 17 e (`elementsEnAttenteDetailles`, domaine) et n° 17 f (branchement de la feuille) ; §4.5 bis complété ; §13.1 : UT-COMP-US-017-54 livré en rouge (squelette au rang 4), UT-COMP-US-017-53 à écrire par Benjamin. |
 | 0.4.3 | 2026-10-30 | Anthony | **Correction d'ANO-001** (E9, E10 ; `docs/anomalies.md` ; scénarios US-017 S06c à S06f de Pepper, glossaire v1.11) : l'indicateur et la feuille ECR-011 suivent les cycles menés sans geste et les écritures locales. §3.3 (fichiers), §6.9 (conception), §12.4 (steps et banc), §13.3 (UT-US-017-90 à 99, livrés en rouge ; règle `UT-US-017-9\d` → rang 3). Conventions v0.4.8 (§11.8, tag `@ANO-nnn`). Ni le cœur de données ni la fusion ne changent. |
+| 0.5 | 2026-10-31 | Anthony | **E10 de l'incrément 2 (rang 9)**. §3.4 : fichiers et tranches ; §4.6 : signatures (valeurs écartées, lectures, signalements, réparation, intégration d'un fichier reçu, port `DepotLocal` étendu de `lireSignalements`, « Compris », liste ECR-011) ; §5.1, §5.2 : base Dexie version 3, tableaux `valeursEcartees` et `lectures` du schéma 1 ; §6.6 réécrit en règles numérotées (n° 1 à 13) ; **correction** : la réparation RG-048 n'écrit **pas** d'entrée de journal (la v0.4 en prévoyait une, à tort : l'identifiant déterministe du DAT §4.2 est celui de l'entrée « Modifications non retenues ») ; §8 n° 7 à 10 ; §12.5 : phrases du rang 9 et couverture des scénarios différés ; §13.4 : UT-US-017-40 à 59 et CT-DEPOT-12, 13 livrés en rouge (domaine vérifié vert sur une réalisation d'essai non commitée) ; §15 : plan en tranches ; §16 : Q-ST017-STA-4, Q-ST017-PEP-2, Q-ST017-STE-2, DT-025. |
 | 0.4.4 | 2026-10-30 | Anthony | **E13 d'ANO-001** (`docs/ceremonies/revue-code-LOT-001-ANO-001.md`) : §12.4 corrigé sur deux points relevés par Benjamin, sa réalisation fait foi : `expirerAccesSansConstat()` place un jeton **échu** (un 401 sur un jeton non échu prouve un retrait, DAT §4.1.6 bis : `PERDU`, `SYN-ACTION`) ; n° 1 ferme puis rouvre l'application (instantané d'ouverture d'une session connue, exigé par S06f) ; unité « secondes » de `{ecart}`. **RC-ANO-001-1** : l'abonnement permanent du relais au dépôt laissait l'écoute globale `Dexie.on('storagemutated')` active après la fermeture de l'espace ; §6.9 n° 4 et §3.3 A8 : `DepotLocalDexie.fermer()` la retire ; §13.3 : UT-COMP-US-017-56 (rouge) et 57. UT-COMP-90 complété (secondes). |
 | 0.4.2 | 2026-10-30 | Anthony | E13 du reliquat du rang 3, 2e tour : n° 17 f, la feuille est rendue **avant** `<SectionCompte>` et non après (ordre d'ECR-011, guide d'ergonomie §4.26 ; écart de la v0.4.1 relevé à la revue, réalisation de Benjamin conforme au guide). |
 | 0.4 | 2026-10-30 | Anthony | E10 du reliquat du rang 3 (DT-011, RC-R3-4) : §3.1 n° 17 b précisé, n° 17 c (`formaterHeure`, `formaterAnciennete`) et n° 17 d (point `MEN-ATTENTE` de la ligne d'objectif, `nomAccessible`) ; §4.5 bis (signatures et règles de `construireFeuilleSynchronisation` et de `FeuilleSynchronisation`) ; §13.1 : UT-US-017-34 à 39, UT-US-001-36 et 37, livrés en rouge ; squelettes au rang 4 dans `rangs-fichiers.json` pendant la phase rouge (§13.1) ; Q-ST017-STE-1 (§16). DT-006 et DT-009 : pas de test fourni par Anthony, tests complémentaires de Benjamin (§14). |
@@ -189,6 +200,34 @@
 | A9 (v0.4.4) | `tests/integration/synchronisation/depot-local-dexie-fermeture.test.ts` ; `tests/unitaires/support/steps-communes.test.ts` | Test | Créé / complété en E13 | UT-COMP-US-017-56 et 57 ; UT-COMP-90 (unité « secondes » de `{ecart}`, `tests/support/conversions.ts`) |
 
 Aucun autre fichier : ni `web.ts` (le contrôleur s'abonne lui-même), ni `main.tsx`, ni le port `SuiviCycle`, ni `src/synchronisation/domaine/**`, ni les modèles de vue ; dans `depot-local-dexie.ts`, seul `fermer()` change (A8). Aucun nouveau fichier de `src/` : `rangs-fichiers.json` est inchangé ; `rang-courant.json` aussi. Pas de nouveau libellé : le catalogue est inchangé.
+
+### 3.4 Incrément 2 (rang 9, v0.5) : fichiers et tranches
+Remplace les n° 22 à 26 et la ligne « version 3 » du n° 32 du §3.2. Tranches et ordre : §15.
+
+| # | Fichier | Couche | Action | Tranche | Responsabilité |
+|---|---|---|---|---|---|
+| I2-1 | `src/synchronisation/domaine/condensat-sha256.ts` | Domaine | Compléter (squelette) | B1 | `condensatSha256`, `encoderBase32Hex` : synchrones, sans dépendance (§6.6 n° 1) |
+| I2-2 | `src/synchronisation/domaine/valeurs-ecartees.ts` | Domaine | Compléter (squelette) | B1 | `IdValeurEcartee`, `idValeurEcartee`, `ValeurEcartee`, `MOTIFS_A_LIRE`, `hlcDuGagnant`, `detecterValeursEcartees`, `fusionnerValeursEcartees` (§6.6 n° 1 à 5). **Types figés** : D1 en dépend |
+| I2-3 | `src/synchronisation/domaine/lectures.ts` | Domaine | Compléter (squelette) | B1 | `Lecture`, `fusionnerLectures`, `compterALire` (n° 6) |
+| I2-4 | `src/synchronisation/domaine/signalements.ts` | Domaine | Livré complet (E10) | — | `Signalements`, `SIGNALEMENTS_VIDES`, `AjoutsSignalements` |
+| I2-5 | `src/synchronisation/domaine/reparation-hierarchie.ts` | Domaine | Compléter (squelette) | B1 | `reparerHierarchie` (n° 7 à 10) |
+| I2-6 | `src/synchronisation/domaine/planifier-synchronisation.ts` | Domaine | Compléter (squelette) | B1 | `planifierSynchronisation` (n° 11) |
+| I2-7 | `src/synchronisation/domaine/pierre-tombale.ts` | Domaine | Modifier (facultatif) | B1 | Peut exporter `estRattacheA` (renommé `pointeVers`) pour I2-2 ; comportement inchangé |
+| I2-8 | `src/synchronisation/domaine/meta-synchronisation.ts`, `contenu-fichier.ts`, `depot.ts` | Domaine | Modifiés en E10 (types) ; `depot.ts` à compléter | B2 | `PlanSynchronisation.signalements?`, `ContenuFichierAppareil.valeursEcartees?` et `lectures?` ; `contenuAEnvoyer` recopie les signalements (n° 11, §5.2) |
+| I2-9 | `src/synchronisation/application/ports/depot-local.ts` | Application | Modifié en E10 | — | `lireSignalements()` ; 3e paramètre `signalements` du calcul d'`appliquerSynchronisation` (§4.6) |
+| I2-10 | `src/synchronisation/infrastructure/depot-local-dexie.ts`, `infrastructure/stockage-local/schemas.ts` | Infrastructure | Compléter (squelette inerte) | B2 | Base version 3 (§5.1) ; `lireSignalements` ; le calcul reçoit les signalements lus dans la transaction ; écriture (`bulkPut`) de `signalements` dans la même transaction ; version et observateurs si plan **ou** signalements non vides ; `etatApres.dernierHlc` écrit dans ce cas |
+| I2-11 | `src/synchronisation/infrastructure/drive/format-v1.ts`, `drive/schemas/v1.ts` | Infrastructure | Compléter | B2 | Encodage et décodage de `valeursEcartees` et `lectures` (§5.2) |
+| I2-12 | `tests/doublures/depot-local-memoire.ts` | Test | Compléter (squelette inerte) | B2 | Stockage des signalements (CT-DEPOT-12, 13) |
+| I2-13 | `src/synchronisation/application/cycle-synchronisation.ts` | Application | Modifier | B3 | Lecture (`#lire`) des signalements ; `#integrer` par `planifierSynchronisation` (pré-contrôle compris) ; `#deposer` : `contenuAEnvoyer(…, { signalements })` (§6.3 complété, n° 11) |
+| I2-14 | `src/synchronisation/application/cas-usage/marquer-comme-lue.ts` | Application | Compléter (squelette) | B3 | `MarquerCommeLue` (n° 6) |
+| I2-15 | `src/synchronisation/application/requetes/consulter-modifications-non-retenues.ts` | Application | Compléter (squelette) | B3 | `consulterModificationsNonRetenues` (§4.6) |
+| I2-16 | `src/synchronisation/application/requetes/consulter-etat-synchronisation.ts` | Application | Compléter (squelette inerte : champ `AttenteLocale.aLire?` livré) | B3 | `aLire = attente.aLire ?? 0` ; `moteur.aLire` n'est plus lu (DT-025) |
+| I2-17 | `src/synchronisation/domaine/detail-valeurs-ecartees.ts` | Domaine | Compléter (squelette) | D1 | `detaillerValeursEcartees` (n° 12) |
+| I2-18 | `src/synchronisation/presentation/modeles-de-vue/modifications-non-retenues.ts` | Modèle de vue | Compléter (squelette) | D1 | `construireModificationsNonRetenues` (n° 13) |
+| I2-19 | `src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx` | UI | Compléter (squelette) | D1 | Section « À lire » (n° 13) |
+| I2-20 | `src/objectifs-taches/application/requetes/resumes.ts` ; modèles de vue `ligne-tache.ts`, `detail-tache.ts` | Application, modèle de vue | Modifier | D2 | RG-049 : appel de `incoherenceDe` rétabli dans `resumerTache` (ST-US-024 §16, n° 5) ; UT-US-024-21, 22 |
+| I2-21 | `src/composition/application.ts`, `src/composition/controleur-interface.ts`, `src/main.tsx` | Composition, UI | Modifier | D3 | `attenteDe` : `aLire = compterALire(...)` de `lireSignalements()` ; `Application.lireModificationsNonRetenues()` (`consulterModificationsNonRetenues`, `undefined` sans espace ou en échec) ; `Application.marquerCommeLue(ids)` (`MarquerCommeLue`, sans effet sans espace) ; contrôleur : `vue.nonRetenues = construireModificationsNonRetenues(lu.valeurs)`, recalculée aux mêmes notifications que la feuille, actions `surCompris(ids)` → `marquerCommeLue`, `surVoir(element)` → navigation existante vers le détail ; `main.tsx` rend `<ModificationsNonRetenues>` **en tête** de la feuille (guide §6.6.2 `SYN-FEUILLE-A-LIRE`), avant `<FeuilleSynchronisation>` |
+| I2-22 | `tests/steps/synchronisation/modifications-non-retenues.steps.ts` (nouveau), `etat-affiche.steps.ts`, `tests/steps/commun/appareils.steps.ts`, `tests/steps/objectifs-taches/taches.steps.ts`, `tests/support/synchronisation/valeurs-non-retenues.ts` (nouveau) | Test (steps) | Créer, modifier | D2, D3 | §12.5 |
 
 ## 4. Interfaces et signatures (incrément 1, et ce que les incréments suivants doivent respecter)
 
@@ -352,10 +391,99 @@ export const formaterAnciennete: (i: Instant, maintenant: Instant) => string;
 | `elementsEnAttenteDetailles` (v0.4.1) | Une entrée par élément (objectif ou tâche) ayant au moins une entrée dans `etat.enAttente` ; une entrée de lien compte pour sa tâche (`elementDeCle`) ; nombre d'entrées = `decompterModificationsEnAttente` ; `instant` = physique du plus grand `derniereHlc` de l'élément ; `intitule` = valeur du registre `intitule`, même si l'élément est supprimé, `''` si le registre est absent ; ordre non garanti. Forme identique à `LigneFeuilleOrdonnable` (pas de dépendance du domaine vers la présentation) | UT-COMP-US-017-54 |
 | Contrôleur (v0.4.1) | `vue.feuille` présente dès qu'un espace est ouvert et que l'indicateur l'est ; actions transmises | UT-COMP-US-017-53 (Benjamin, écrit avant le code) |
 
+### 4.6 Incrément 2 (rang 9, v0.5) : signatures
+Les squelettes font foi pour les types et les commentaires de contrat (fichiers du §3.4) ; résumé :
+
+```ts
+// domaine/condensat-sha256.ts
+export const condensatSha256: (octets: Uint8Array) => Uint8Array;          // FIPS 180-4, 32 octets
+export const encoderBase32Hex: (octets: Uint8Array) => string;             // RFC 4648 §7, minuscules, sans « = »
+
+// domaine/valeurs-ecartees.ts
+export type IdValeurEcartee = Marque<string, 'IdValeurEcartee'>;
+export const idValeurEcartee: (cle: CleInformation, hlcEcarte: Hlc) => IdValeurEcartee;
+export type ValeurEcartee =
+  | { id; ecartee: RegistreQuelconque; motif: 'CONFLIT'; gagnante: RegistreQuelconque }                       // ALR-009
+  | { id; ecartee; motif: 'SUPPRESSION'; gagnante: RegistreQuelconque /* registre suppression */; intituleElement?: string } // ALR-010
+  | { id; ecartee; motif: 'PLACEMENT_ANNULE'; gagnante: RegistreQuelconque /* registre de réparation */ }     // ALR-011
+  | { id; ecartee; motif: 'DONNEES_EFFACEES'; generation: Hlc };                                               // ALR-014 (incr. 3)
+export const MOTIFS_A_LIRE: ReadonlySet<MotifValeurEcartee>;               // CONFLIT, SUPPRESSION, PLACEMENT_ANNULE (H-6)
+export const hlcDuGagnant: (v: ValeurEcartee) => Hlc;                      // gagnante.ecriture.hlc ou generation
+export type RegistresDeLEtat = { readonly registres: ReadonlyMap<CleTexte, RegistreQuelconque> };
+export const detecterValeursEcartees: (local: RegistresDeLEtat, recu: RegistresDeLEtat) => ReadonlyArray<ValeurEcartee>;
+export const fusionnerValeursEcartees: (connues: ReadonlyMap<IdValeurEcartee, ValeurEcartee>, nouvelles: Iterable<ValeurEcartee>)
+  => ReadonlyMap<IdValeurEcartee, ValeurEcartee>;
+
+// domaine/lectures.ts
+export type Lecture = { readonly id: IdValeurEcartee; readonly hlc: Hlc };
+export const fusionnerLectures: (connues: ReadonlyMap<IdValeurEcartee, Lecture>, nouvelles: Iterable<Lecture>) => ReadonlyMap<…>;
+export const compterALire: (valeurs: ReadonlyMap<IdValeurEcartee, ValeurEcartee>, lectures: ReadonlyMap<IdValeurEcartee, Lecture>) => number;
+
+// domaine/signalements.ts (livré complet)
+export type Signalements = { valeursEcartees: ReadonlyMap<IdValeurEcartee, ValeurEcartee>; lectures: ReadonlyMap<IdValeurEcartee, Lecture> };
+export const SIGNALEMENTS_VIDES: Signalements;
+export type AjoutsSignalements = { valeursEcartees: ReadonlyArray<ValeurEcartee>; lectures: ReadonlyArray<Lecture> };
+
+// domaine/reparation-hierarchie.ts
+export type ReparationHierarchie = { registresEcrits: ReadonlyArray<RegistreQuelconque>;
+  valeursEcartees: ReadonlyArray<ValeurEcartee & { motif: 'PLACEMENT_ANNULE' }>; dernierHlc?: Hlc };
+export const reparerHierarchie: (etat: EtatLocal, physiqueCorrigee: Instant) => ReparationHierarchie;
+
+// domaine/planifier-synchronisation.ts
+export const planifierSynchronisation: (etat: EtatLocal, signalements: Signalements, recu: ContenuFichierAppareil,
+  physiqueCorrigee: Instant) => PlanSynchronisation;
+
+// domaine/meta-synchronisation.ts, contenu-fichier.ts, depot.ts (ajouts optionnels, absents ≡ vides)
+PlanSynchronisation.signalements?: AjoutsSignalements;
+ContenuFichierAppareil.valeursEcartees?: ReadonlyArray<ValeurEcartee>; ContenuFichierAppareil.lectures?: ReadonlyArray<Lecture>;
+contenuAEnvoyer(etat, { versionApplication, generation, signalements?: Signalements });
+
+// domaine/detail-valeurs-ecartees.ts (D1)
+export type InformationSignalee = 'INTITULE' | 'DESCRIPTION' | 'DELAI' | 'ESTIMATION' | 'OBJECTIFS' | 'PARENT' | 'ETAT' | 'CREATION';
+export type ValeurSignalee = { type: 'TEXTE'; texte } | { type: 'AUCUNE' } | { type: 'DATE'; date } | { type: 'DUREE'; duree }
+  | { type: 'ETAT'; etat } | { type: 'SOUS'; intitule } | { type: 'PRINCIPAL' } | { type: 'RATTACHEE'; intitule }
+  | { type: 'DETACHEE'; intitule } | { type: 'SOUS_TACHE_DE'; intitule } | { type: 'CREEE' } | { type: 'TACHE_SUPPRIMEE' }
+  | { type: 'OBJECTIF_SUPPRIME' } | { type: 'SUPPRIMEE_AVEC'; intitule } | { type: 'PLACEMENT_ANNULE' } | { type: 'DONNEES_EFFACEES' };
+export type ValeurEcarteeDetaillee = { id; motif; element: RefElementMetier; intitule: string; information: InformationSignalee;
+  valeurNonRetenue: ValeurSignalee; valeurConservee: ValeurSignalee; instant: Instant; lue: boolean; elementExiste: boolean;
+  supprime?: RefElementMetier };
+export const detaillerValeursEcartees: (etat: EtatLocal, s: Signalements) => ReadonlyArray<ValeurEcarteeDetaillee>;
+
+// application/ports/depot-local.ts
+appliquerSynchronisation(calcul: (etat: EtatLocal, meta: MetaSynchronisation, signalements: Signalements) => PlanSynchronisation)
+  : Promise<Resultat<undefined, ErreurDepotLocal>>;
+lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>>;
+
+// application/cas-usage/marquer-comme-lue.ts
+export class MarquerCommeLue {
+  constructor(d: { readonly depot: DepotLocal; readonly horloge: Horloge });
+  executer(ids: ReadonlyArray<IdValeurEcartee>): Promise<Resultat<undefined, ErreurDepotLocal>>;
+}
+// application/requetes/consulter-modifications-non-retenues.ts
+export type ModificationsNonRetenuesLues = { readonly valeurs: ReadonlyArray<ValeurEcarteeDetaillee>; readonly aLire: number };
+export const consulterModificationsNonRetenues: (depot: Pick<DepotLocal, 'lire' | 'lireSignalements'>)
+  => Promise<Resultat<ModificationsNonRetenuesLues, ErreurDepotLocal>>;
+// application/requetes/consulter-etat-synchronisation.ts
+AttenteLocale.aLire?: number;   // absent ≡ 0 ; source d'EtatSynchronisationLu.aLire
+
+// presentation/modeles-de-vue/modifications-non-retenues.ts (D1)
+export type LigneModificationNonRetenue = { id; code: 'ALR-009' | 'ALR-010' | 'ALR-011'; variante?: 'tache' | 'rattachement' | 'placement';
+  element: string; information; valeurNonRetenue; valeurConservee; titre: string; voir?: RefElementMetier };
+export type ModeleVueModificationsNonRetenues = { code: 'SYN-FEUILLE-A-LIRE'; n: number; libelle: string;
+  lignes: ReadonlyArray<LigneModificationNonRetenue>;
+  donneesEffacees?: { code: 'ALR-008'; ids: ReadonlyArray<string>; lignes: ReadonlyArray<LigneDonneeEffacee> } };
+export const construireModificationsNonRetenues: (valeurs: ReadonlyArray<ValeurEcarteeDetaillee>) => ModeleVueModificationsNonRetenues | undefined;
+// presentation/ui/ModificationsNonRetenues.tsx (D1)
+export const ModificationsNonRetenues: (p: { vue; surCompris: (ids: ReadonlyArray<string>) => void;
+  surVoir: (element: RefElementMetier) => void }) => ReactElement;
+```
+
 ## 5. Modèle de données et migrations
 
 ### 5.1 Stockage local
 Base de l'espace : **version Dexie 2** (incrément 1) : aucune nouvelle table ; table `meta` : clés `dossier`, `fichierPropre`, `manifeste`, `deposeJusquA`, `pageToken`, `dernierContactDrive`, `fusionNonDeposee`. Version 3 (incrément 2) : tables `valeursEcartees` (clé `id`) et `lectures` (clé `id`). Version 4 (incrément 4) : table `registresInconnus` (clé `cle`) ; clé `mesuresHorloge` de la méta (tableau de millisecondes, 5 au plus). Toutes sont des ajouts purs (aucune transformation de donnée).
+
+**Version 3 (v0.5, tranche B2)** : `base.version(3).stores({ ...tables, valeursEcartees: 'id', lectures: 'id' })`, sans fonction de mise à niveau ; `TABLES` inclut les deux nouvelles tables (transactions `rw` d'`appliquer` et d'`appliquerSynchronisation`). Lignes validées par Zod (`stockage-local/schemas.ts`) : une ligne illisible donne `DonneesLocalesIllisibles`, comme les autres tables. Forme des lignes : celle du fichier Drive (§5.2), sans table d'appareils (`appareil` en clair, comme les registres de la table `registres`). Test : UT-US-017-53 (base version 2 existante ouverte sans perte), CT-DEPOT-12, 13.
 
 ### 5.2 Fichier d'appareil, schéma 1 (contenu logique : ST-socle §5.3)
 JSON avant compression (clés dans l'ordre de la sérialisation canonique, tri lexicographique à tous les niveaux) :
@@ -383,6 +511,7 @@ JSON avant compression (clés dans l'ordre de la sérialisation canonique, tri l
 - **Empreinte** : SHA-256 (hexadécimal minuscule) de `serialiserCanonique(objet sans la clé empreinte)` encodé en UTF-8.
 - **Compression** : gzip de l'UTF-8 de `serialiserCanonique(objet complet)`.
 - `lectures` et `valeursEcartees` restent vides jusqu'à l'incrément 2 ; un lecteur les tolère.
+- **Incrément 2 (v0.5)** : l'encodeur écrit toujours les deux tableaux (vides compris), triés par `id`. Lecture : `{ "id": "<52 car.>", "hlc": <hlc> }`. Valeur écartée : `{ "id", "motif", "ecartee": <registre>, "gagnante"?: <registre>, "generation"?: <hlc>, "intituleElement"?: "…" }`, où `<registre>` a la forme d'une entrée de `registres` (type, id, champ, valeur, hlc, contexte) et `<hlc>` celle des HLC du fichier (`appareil` = indice dans `appareils`, qui inclut les appareils cités par ces tableaux). `gagnante` présent pour `CONFLIT`, `SUPPRESSION`, `PLACEMENT_ANNULE` ; `generation` pour `DONNEES_EFFACEES`. Le décodeur rend `valeursEcartees` et `lectures` **si et seulement si** le tableau lu est non vide (UT-US-017-12 inchangé) ; une entrée de `motif` inconnu, ou dont un registre est de type ou de champ inconnu, est ignorée (tolérance du §5.3) ; une entrée mal formée rend `FichierIllisible` `SCHEMA`. UT-US-017-52.
 
 Manifeste : `{ "empreinte": "…", "generation": { "type": "INITIALE" }, "schemaVersion": 1 }` (+ `restauration` : incrément 3). `LISEZ-MOI.txt` : « Ce dossier contient les données de l'application Done Juan. Ne modifiez pas ces fichiers : l'application les gère seule. »
 
@@ -459,11 +588,22 @@ erreurs (à toute étape) :
 ### 6.5 `DepotAvantSortieSynchro`
 `compterEnAttente` = décompte du socle ; `deposerSiPossible` : réseau connecté, accès `VALIDE` et pas de consultation seule (incrément 4) → `deposerMaintenant()` (`TERMINE` → `DEPOSE`, sinon `ECHEC`) ; sinon `NON_TENTE`.
 
-### 6.6 Incrément 2 (rang 9) : règles arrêtées
-- **Valeur écartée** (DAT §4.2.1) : à chaque fusion, pour chaque information où deux écritures distinctes coexistent (locale et reçue), la perdante L est écartée si `non estConnue(W, L)`. Pour une pierre tombale D de l'élément, toute écriture R d'un champ de l'élément, ou pointant vers lui (lien `(t, E)`, `parent = E`, H-1), est écartée si `non estConnue(D, R)`. Identifiant : `idValeurEcartee = base32hex(SHA-256(type|id|champ|appareil de L|HLC de L))` (sans « : »). Pour un même identifiant, l'entrée retenue est celle dont le gagnant a le plus petit HLC. Union dans `valeursEcartees` ; « lu » : registre par identifiant, fusionné par HLC.
-- **Réparation RG-048** : boucle du DAT §4.2 (candidats = placements d'origine `DEPLACEMENT` participant à une violation ; annulation du plus ancien (HLC, puis `appareilId`, puis identifiant) ; valeur rétablie = `avant` de l'entrée `CHANGEMENT_PARENT` du journal ; écriture de réparation et entrée de journal à identifiant déterministe `hash(élément, HLC du déplacement annulé)` en base32hex ; une valeur écartée « placement annulé » par annulation). Test imposé : chaîne de trois déplacements croisés qui exige deux annulations.
-- **RG-049** : dérivée à la lecture (ST-US-024 §6.6), sans écriture.
-- **Affichage** : `ALR-009` (valeur conservée ordinaire), `ALR-010` (suppression ; variantes `rattachement`, `placement`, H-2), `ALR-011` (placement annulé), `ALR-014` (repartir de zéro, groupé sous `ALR-008`, non compté) ; `aLire` = nombre d'entrées `ALR-009` à `ALR-011` non lues (H-6).
+### 6.6 Incrément 2 (rang 9) : règles arrêtées (détaillées en v0.5)
+Rappel de la v0.3 : valeur écartée (DAT §4.2.1), réparation RG-048 (DAT §4.2), RG-049 dérivée (ST-US-024 §6.6), affichage `ALR-009` à `ALR-011`, `ALR-014`, `aLire` (H-6). Règles détaillées, qui font foi :
+
+1. **Identifiant** : `idValeurEcartee(cle, h)` = `encoderBase32Hex(condensatSha256(UTF-8 de "${type}|${id}|${champ}|${h.appareil}|${h.physique}|${h.compteur}"))` (52 caractères `[0-9a-v]`, sans « : »), `physique` en millisecondes entières écrites en décimal. `h` = HLC de l'écriture écartée L ; pour un placement annulé, `hlcOrigine` du placement annulé (« HLC du déplacement annulé », DAT §4.2), donc identique sur tous les appareils même si la valeur annulée a été réécrite par une réparation. Condensat synchrone codé dans le domaine (`crypto.subtle` est asynchrone, donc exclu d'un calcul de transaction ; aucune dépendance ajoutée). UT-US-017-40.
+2. **Conflit** (`CONFLIT`, RG-036) : `detecterValeursEcartees(local, recu)` reçoit les états **avant** fusion. Pour chaque clé présente des deux côtés avec deux écritures de HLC différents : W = la plus grande (`comparerHlc`), L = l'autre ; entrée si et seulement si `champ ≠ 'suppression'`, `non estConnue(W.ecriture, L.ecriture)` et les deux valeurs ne sont pas **structurellement égales** (égalité récursive des objets et des primitives, une propriété `undefined` valant absence). `ecartee = L`, `gagnante = W`. UT-US-017-41, 42.
+3. **Pierre tombale** (`SUPPRESSION`, RG-047, H-1) : pour chaque élément E qui a au moins un registre `suppression` dans `local` ou `recu` (les pierres tombales de E : D₁…Dₙ, au plus deux écritures), sont examinées toutes les écritures R de `local` et de `recu` (les deux versions d'une clé si elles diffèrent) qui sont **d'un champ de E** autre que `suppression`, ou qui **pointent vers E** : registre de lien dont l'`objectifId` vaut E (quelle que soit la valeur d'`actif`), registre `parent` dont `parentId` vaut E, registre `creation` d'une tâche dont `tacheParenteId` vaut E (même prédicat que `contexteDePierreTombale`, socle §6.4). Seules les paires dont D ou R est une écriture de `recu` sont examinées. R est écartée si **aucune** des Dᵢ ne la connaît (`estConnue(Dᵢ.ecriture, R.ecriture)` faux pour tout i) ; `gagnante` = la Dᵢ de plus grand HLC. UT-US-017-43, 44.
+4. **Intitulé connu de la suppression** (`intituleElement`, US-002 S23, US-018 S08) : pour une entrée `SUPPRESSION`, parmi les registres `intitule` de l'élément de R (`elementDeCle(R.cle)`) présents dans `local` et dans `recu`, ceux que la `gagnante` connaît ; `intituleElement` = la valeur du plus grand (HLC) d'entre eux ; absent s'il n'y en a aucun. UT-US-017-45.
+5. **Union** (`fusionnerValeursEcartees`) : par identifiant ; pour un même identifiant, l'entrée de plus petit `hlcDuGagnant` (DAT §4.2.1) ; à égalité, celle qui porte `intituleElement`, puis le plus petit `intituleElement` (unités de code) ; à égalité complète, l'entrée déjà connue (même référence : rien à réécrire). Commutative, associative, idempotente. `detecterValeursEcartees` rend ses entrées triées par identifiant. UT-US-017-45, 46.
+6. **Lectures** (« Compris », RG-056 b) : `Lecture = { id, hlc }` ; union par identifiant, plus grand HLC. `compterALire` = nombre d'entrées de motif `CONFLIT`, `SUPPRESSION` ou `PLACEMENT_ANNULE` sans lecture ; une lecture d'identifiant inconnu est conservée mais ne compte pas (H-6). `MarquerCommeLue.executer(ids)` : une transaction `appliquerSynchronisation` ; identifiants inconnus de `signalements.valeursEcartees` ou déjà lus ignorés ; s'il n'en reste aucun, plan vide et aucun signalement (version inchangée) ; sinon h = `hlcSuivant(etat.dernierHlc, Instant.decaler(horloge.maintenant(), etat.correctionHorloge), etat.appareilId)`, **une** lecture `{ id, hlc: h }` par identifiant retenu, `plan = PLAN_VIDE(etat)` avec `etatApres.dernierHlc = h`, `meta = {}` (le dépôt suit : `dernierHlc ≠ deposeJusquA`). La lecture n'entre pas dans l'index des écritures en attente (ni `MEN-ATTENTE`, ni décompte). UT-US-017-47, 55.
+7. **Réparation, validité** (RG-048) : sur l'état **fusionné**. Objectifs considérés : ceux qui ont un registre `creation` et pas de registre `suppression`. Parent effectif de x : `parent.parentId` s'il désigne un objectif considéré, sinon aucun (RG-047 dérivée : parent supprimé ou absent = principal). Violation : x a un parent effectif p et p a lui-même un parent effectif ; **participants** : x et p. Les cycles sont des cas particuliers.
+8. **Boucle** : tant qu'il existe des participants, candidats = participants dont le placement **courant** a l'origine `DEPLACEMENT` (une création n'est jamais candidate) ; annuler le candidat de plus petit `hlcOrigine` (`comparerHlc` : physique, compteur, appareil), puis de plus petit identifiant (unités de code) ; réévaluer. Aucun candidat : arrêt (garde de terminaison, non atteinte d'après le DAT). Valeur rétablie = `avant` de l'entrée `CHANGEMENT_PARENT` du journal dont l'élément est x et dont le **HLC est égal** à `hlcOrigine` du placement annulé (celle du déplacement ; une valeur rétablie d'origine `DEPLACEMENT` reste candidate avec son propre `hlcOrigine`) ; entrée absente : `{ origine: 'CREATION', hlcOrigine: HLC du registre creation de x }` (principal). UT-US-017-48 à 50.
+9. **Écritures de réparation** : un registre `parent` par objectif annulé au moins une fois, de valeur finale (la dernière valeur rétablie), écrits dans l'ordre de la première annulation de chaque objectif ; HLC successifs `hlcSuivant(dernier, physiqueCorrigee, etat.appareilId)` à partir de `etat.dernierHlc` ; contexte = `contexteDeNouvelleEcriture(registre parent de x dans l'état fusionné, etat.appareilId)`. **Aucune entrée de journal** (correction de la v0.4 : l'identifiant déterministe du DAT §4.2 est celui du signalement ; une entrée de journal datée par chaque appareil divergerait à l'union) ; Q-ST017-STA-4 d, Q-ST017-PEP-2 b. Les réparations n'entrent pas dans l'index des écritures en attente ; elles sont déposées par `fusionNonDeposee`. Deux appareils écrivent la même valeur : le conflit entre leurs deux réparations n'est pas signalé (n° 2, valeurs égales).
+10. **Signalement des annulations** : une entrée `PLACEMENT_ANNULE` par annulation, dans l'ordre : `id` = `idValeurEcartee(cle parent de x, hlcOrigine annulé)`, `ecartee` = registre `parent` de x dans l'état fusionné, `gagnante` = registre de réparation de x (n° 9). Une chaîne de N annulations produit N entrées (US-023 S18c : 2).
+11. **Intégration d'un fichier reçu** (`planifierSynchronisation`, appelé par `#integrer` dans la transaction, `physiqueCorrigee = Instant.decaler(horloge.maintenant(), e.correctionHorloge)`) : (a) `detecterValeursEcartees(etat, registres de recu)` ; (b) `fusion = planifierFusion(etat, recu)` ; (c) `rep = reparerHierarchie(fusion.etatApres, physiqueCorrigee)` ; (d) plan = fusion, registres de `rep` appliqués à `etatApres`, `registresEcrits` = ceux de la fusion dont la clé n'est pas réécrite par `rep`, puis ceux de `rep` ; `etatApres.dernierHlc = rep.dernierHlc ?? fusion` ; index inchangé ; (e) `valeurs = fusionnerValeursEcartees(signalements.valeursEcartees, [...a, ...recu.valeursEcartees ?? [], ...rep.valeursEcartees])`, à écrire : les entrées nouvelles ou dont la référence a changé ; (f) lectures : `fusionnerLectures(signalements.lectures, recu.lectures ?? [])`, même règle ; (g) `meta = { fusionNonDeposee: true }` si `registresEcrits`, `evenementsAjoutes` ou l'un des deux tableaux à écrire est non vide, `{}` sinon. Pré-contrôle de `#integrer` (aucune transaction si rien n'est apporté) : même calcul sur l'état et les signalements lus au début du cycle. Dépôt : `contenuAEnvoyer(etat, { …, signalements })` (signalements lus avec l'état). UT-US-017-51, 52, 54.
+12. **Détail pour l'affichage** (`detaillerValeursEcartees`, D1) : une entrée par valeur écartée. `element = elementDeCle(ecartee.cle)` ; `intitule` = `intituleElement` (s'il existe) sinon valeur du registre `intitule` de l'élément (même supprimé), sinon `''`. `information` : `intitule` → `INTITULE`, `description` → `DESCRIPTION`, `delai` → `DELAI`, `estimationInitiale` → `ESTIMATION`, lien → `OBJECTIFS`, `parent` → `PARENT`, `cycleDeVie` → `ETAT`, `creation` → `CREATION`. Valeur d'une écriture : texte → `TEXTE` ; description ou délai `undefined` → `AUCUNE` ; date → `DATE` ; estimation → `DUREE` ; `cycleDeVie` → `ETAT` (son `etat`) ; `parent` : `SOUS` (intitulé courant du parent) ou `PRINCIPAL` ; lien : `actif` vrai → `RATTACHEE`, faux → `DETACHEE` (intitulé courant de l'objectif) ; `creation` d'une tâche avec `tacheParenteId` → `SOUS_TACHE_DE` (intitulé courant de la tâche parente), sinon `CREEE`. `valeurNonRetenue` = valeur de `ecartee`. `valeurConservee` : `CONFLIT` → valeur de `gagnante` ; `SUPPRESSION` → `SUPPRIMEE_AVEC` (intitulé courant de E) si `ecartee` est la création d'une sous-tâche de E, sinon `TACHE_SUPPRIMEE` ou `OBJECTIF_SUPPRIME` selon le type de E ; `PLACEMENT_ANNULE` → `PLACEMENT_ANNULE` ; `DONNEES_EFFACEES` → `DONNEES_EFFACEES`. `instant` = physique de `hlcDuGagnant`. `lue` = une lecture existe. `elementExiste` = registre `creation` présent, pas de registre `suppression`, et, pour une sous-tâche, tâche parente sans registre `suppression`. `supprime` = E pour `SUPPRESSION`. UT-US-017-57.
+13. **Section « À lire »** (`construireModificationsNonRetenues`, D1 ; guide §4.24, §6.6.2, §6.6.9, §5.8 f) : entrées non lues seulement ; aucune : `undefined` (section absente). Lignes `CONFLIT` → `ALR-009` ; `SUPPRESSION` → `ALR-010`, variante `rattachement` si `information = OBJECTIFS`, `placement` si `PARENT`, sinon `tache` si E est une tâche, aucune si E est un objectif ; `PLACEMENT_ANNULE` → `ALR-011`. Ordre `comparerLignesFeuille` (`instant`, puis `intitule`, puis `id`). `titre` = `libelle(code, { variante?, element: intitule, information? })` : `ALR-010` et `ALR-011` sans autre variable que `element` ; `ALR-009` attend les noms d'information de Q-ST017-STE-2 a (non testé d'ici là). `voir` = `element` si `elementExiste`. `n` = nombre de lignes ; `libelle` = `libelle('SYN-FEUILLE-A-LIRE', { n })`. Entrées `DONNEES_EFFACEES` non lues : `donneesEffacees = { code: 'ALR-008', ids, lignes }` dans le même ordre, non comptées dans `n` (H-6) ; section présente avec `n = 0` si elles sont seules. **Composant** : titre `data-etat="SYN-FEUILLE-A-LIRE"` ; `<ul aria-labelledby>` ; une `<li data-message="ALR-0xx" data-variante?>` par ligne, qui contient le titre ; bouton natif « Compris » (`libelle('ALR-009', {}, 'action')`), nom accessible `« Compris : » + titre`, première lettre du titre en minuscule (guide §10, « Compris : intitulé de Rédiger le plan »), qui appelle `surCompris([id])` ; bouton natif « Voir … » si `voir` (libellé : Q-ST017-STE-2 c ; en attendant, partie `action` de la variante pour `ALR-010` `rattachement` et `placement` et pour `ALR-011`), qui appelle `surVoir(voir)` ; carte `data-message="ALR-008"` contenant une ligne `data-message="ALR-014"` par entrée (repliable, guide §6.6.9) et **un seul** bouton « Compris » qui appelle `surCompris(ids)`. UT-US-017-58, 59.
 
 ### 6.7 Incrément 3 (rang 10) : règles arrêtées
 Ordre des contrôles du DAT §4.2.2 à chaque cycle, en un seul point (`controlerDrive`) : (1) dossier et manifeste ; (2) compatibilité (incrément 4) ; (3) génération effective = maximum des générations du ou des manifestes et des fichiers valides, `INITIALE` < `NOUVELLE(hlc)` ordonnées par HLC ; génération plus récente que la locale → valeurs en attente signalées (`ALR-014`), effacement de l'espace, relecture ; (4) fichier propre ; (5) autres fichiers. `ERR-012` : manifeste attendu absent, illisible ou modifié (tout appareil) ; fichier propre attendu altéré (cet appareil seulement) ; un autre fichier altéré est ignoré sans message. Tant que `ERR-012` est affiché, l'appareil n'écrit rien dans le Drive. « Restaurer » : réécrit le fichier propre et le manifeste (`restauration = (HLC, appareil)`, génération inchangée) ; hors ligne : mémorisé, exécuté après les contrôles 1 à 3 au retour du réseau. « Repartir de zéro » (`CNF-REPARTIR-ZERO`, réseau exigé) : manifeste avec `NOUVELLE(hlc)`, fichier propre vide, effacement local. Dossier ou manifeste en double : le plus ancien (`createdTime`, puis `id`) est canonique ; un appareil supprime seulement le double qu'il a créé. Une erreur transitoire n'est jamais une altération.
@@ -514,6 +654,10 @@ Portée : `drive.file` (inchangée). Idempotence : chaque dépôt réécrit le f
 | 4 | 5xx, 429 répétés | Trois tentatives, puis action requise, tentatives poursuivies | `SYN-RETENTATIVE`, `ERR-016` | UT-US-017-28 |
 | 5 | Fichier reçu illisible | Non fusionné (incr. 1 : journalisé ; incr. 3 : RG-044) | — / `ERR-012` | UT-US-017-13 |
 | 6 | Dépôt interrompu (panne entre dépôt et confirmation) | `deposeJusquA` inchangé ; dépôt rejoué | — | UT-US-017-19 |
+| 7 | (incr. 2) Entrée de `valeursEcartees` ou de `lectures` mal formée dans un fichier reçu ; motif ou registre inconnu | Mal formée : `FichierIllisible` `SCHEMA` (fichier non fusionné, comme n° 5) ; inconnue : entrée ignorée | — | UT-US-017-52 |
+| 8 | (incr. 2) Ligne illisible des tables `valeursEcartees` ou `lectures` | `DonneesLocalesIllisibles`, comme les autres tables | — | tests complémentaires de Bruce (B2) |
+| 9 | (incr. 2) « Compris » : écriture locale impossible | `Echec` du dépôt rendu tel quel ; l'appelant (contrôleur) l'affiche comme toute écriture refusée (`ERR-014`) | `ERR-014` | UT-US-017-55 |
+| 10 | (incr. 2) Réparation sans candidat alors que la hiérarchie est invalide (non atteint, DAT §4.2) | Arrêt de la boucle, hiérarchie laissée telle quelle, sans exception | — | — |
 
 ## 9. Patterns imposés
 | Pattern | Où | Pourquoi |
@@ -562,7 +706,7 @@ Le contenu des fichiers n'est jamais journalisé (seulement identifiants opaques
 | 20 | `les données sont identiques à celles enregistrées` | idem | 7 | `EtatMetier` de l'appareil égal à la projection du Drive |
 | 21 | `le message d'erreur {string} est affiché` ; `… n'est pas affiché` ; `que … le message d'erreur … est affiché` | idem | 3 (`ERR-011`), 10 (`ERR-012`) | `messageFeuille` |
 | 23 | `sur le {appareil}, la mention "MEN-HEURE-PARIS" apparaît` ; `… n'apparaît pas` | `synchronisation/etat-affiche.steps.ts` | 2 | Glossaire v1.10 §12 (RL-LOT-001-P3) : `construireListeObjectifs(…, { horloge })` de l'appareil (ST-US-001 §4.5) ; `mentionHeureParis` présente si et seulement si le fuseau de l'appareil n'est pas Europe/Paris. La liste « Tâches » et la ligne « Fuseau » ne sont pas vérifiées par cette étape |
-| 22 | Phrases des incréments 2 à 4 (modifications non retenues, RG-044, horloge, versions, fuseau, `ALR-…`) | `modifications-non-retenues.steps.ts`, `drive.steps.ts`, `etat-affiche.steps.ts`, `commun/temps.steps.ts` | 9, 10, 11 | Spécifiées dans la mise à jour de cette ST qui précède l'E10 de chaque incrément (§13.2) ; formes : glossaire v1.8 §1, §3, §6, §7, §8 |
+| 22 | Phrases des incréments 2 à 4 (modifications non retenues, RG-044, horloge, versions, fuseau, `ALR-…`) | `modifications-non-retenues.steps.ts`, `drive.steps.ts`, `etat-affiche.steps.ts`, `commun/temps.steps.ts` | 9, 10, 11 | Spécifiées dans la mise à jour de cette ST qui précède l'E10 de chaque incrément (§13.2) ; formes : glossaire v1.8 §1, §3, §6, §7, §8. **Incrément 2 : §12.5 (v0.5)** |
 
 Étapes réutilisées : objectifs, tâches, sous-objectifs, terminer, rouvrir, abandonner, reprendre, supprimer, « l'opération est acceptée » (ST-US-001 à ST-US-025) ; connexion et session (ST-US-022).
 
@@ -612,6 +756,41 @@ Les steps existants de l'indicateur lisent `consulterEtat()`, toujours à jour :
 **Unité « secondes »** (v0.4.4) : `l'horloge avance de 5 secondes, …` (S06c, S06f) ; `FRAGMENT_ECART` et `convertirEcart` (`tests/support/conversions.ts`) admettent `\d+ secondes?` (UT-COMP-90).
 
 Rangs : S06c à S06f au rang 3 (`rangs-scenarios.json`, Pepper) ; ils doivent être verts sur `fix/ANO-001` avant la fusion, **et rouges sans le correctif** (contrôle de revue E13 : retirer l'abonnement du constructeur fait échouer S06c à S06f).
+
+### 12.5 Incrément 2 (rang 9, v0.5) : phrases, banc et scénarios différés
+**Phrases nouvelles** (glossaire v1.11 §1, §6, §8 ; livrées au rang 9, rang de la capacité). « Liste » = lignes de `construireModificationsNonRetenues(detaillerValeursEcartees(état, signalements))` de l'appareil (non lues, `ALR-009` à `ALR-011`), lue après `banc.attendreCycles()`. Comparaison des cellules du glossaire §8 : `tests/support/synchronisation/valeurs-non-retenues.ts` (nouveau, D3) convertit la colonne `information` en `InformationSignalee` (intitulé → `INTITULE`, …, création → `CREATION`) et les colonnes de valeurs en `ValeurSignalee` selon l'information : `intitulé`/`description` → `TEXTE` ; `délai` → `DATE` ; `estimation` → `DUREE` (`convertirDuree`) ; `état` → `ETAT` ; `objectifs` → `RATTACHEE` ; `sous <X>` → `SOUS` ; `sous-tâche de <X>` → `SOUS_TACHE_DE` ; `tâche supprimée`, `objectif supprimé`, `supprimée avec la tâche <X>`, `placement annulé`, `données effacées (repartir de zéro)` → types spéciaux.
+
+| # | Phrase | Type | Fichier | Tranche | Mise en œuvre |
+|---|---|---|---|---|---|
+| N1 | `la liste des modifications non retenues contient :` + tableau (préfixes `sur chacun des deux appareils,`, `sur le <appareil>,`) | Alors | `synchronisation/modifications-non-retenues.steps.ts` | D3 | Pour chaque appareil visé : chaque ligne du tableau est présente (élément, information, deux valeurs) ; inclusion, pas égalité (US-023 S18b combine N1 et N2) |
+| N2 | `la liste des modifications non retenues contient exactement {int} information(s)` (mêmes préfixes) | Alors | idem | D3 | `lignes.length === n` (0 si section absente) |
+| N3 | `la liste des modifications non retenues est vide` (préfixes `sur le <appareil>,`, `sur les deux appareils,`) | Alors | idem | D3 | Aucune ligne non lue |
+| N4 | `que sur le <appareil>, la liste des modifications non retenues contient une valeur écartée pour <l'intitulé \| le délai> de la tâche "X"` | Étant donné | idem | D3 | Construction réelle au banc (deux appareils), entrée non lue : intitulé : tâche « Plan » créée sur le PC et échangée, smartphone hors ligne, PC renomme « Plan » en « A », 10 min après le smartphone renomme en « X », réseau rétabli, échange (procédure de S10) ; délai : tâche « X » (créée si absente, délai 2026-11-30, 1 h) échangée, PC fixe le délai au 2026-12-01, 10 min après le smartphone au 2026-12-05, échange. Vérifie que la ligne existe sur l'appareil |
+| N5 | `sur le <appareil>, la liste des modifications non retenues contient toujours la valeur écartée pour <l'intitulé \| le délai> de la tâche "X"` | Alors | idem | D3 | Une ligne d'élément « X » et d'information `INTITULE` (ou `DELAI`) |
+| N6 | `sur le <appareil>, l'utilisateur marque comme lue la modification non retenue de la tâche "X"` | Quand | idem | D3 | Exactement une ligne non lue d'élément « X » (sinon échec) ; `surCompris([id])` du contrôleur de l'appareil, puis attente du rafraîchissement |
+| N7 | `sur le <appareil>, l'indicateur de synchronisation signale {int} information(s) à lire` ; `… ne signale aucune information à lire` | Alors | `synchronisation/etat-affiche.steps.ts` | D3 | `construireIndicateur(consulterEtat()).aLire` égal à n (absent pour « aucune ») ; vaut dans tous les états (glossaire §6) |
+| N8 | `sur le <appareil>, toutes les fonctions restent utilisables` | Alors | `commun/appareils.steps.ts` | D3 | **Sans écriture** (S15 vérifie ensuite `SYN-INFO`) : racine de l'appareil = application (pas d'écran d'attente), aucune confirmation ni carte bloquante ouverte dans la vue du contrôleur, saisie non bloquée (garde de saisie libre) |
+| N9 | `les deux appareils affichent le même intitulé pour la tâche "X", "A" ou "B"` | Alors | `objectifs-taches/taches.steps.ts` | D3 | Tâche d'intitulé initial « X » retrouvée par son identifiant (référence du monde) ; même intitulé sur les deux appareils, égal à « A » ou « B » |
+| N10 | `que la tâche "X", <terminée \| abandonnée>, est signalée en incohérence avec sa sous-tâche à faire "Y"` | Étant donné | `objectifs-taches/taches.steps.ts` | D2 | ST-US-024 §12 n° 16 (glossaire §1, construction au banc) |
+| N11 | `la tâche "X" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Y"` (préfixes) | Alors | idem | D2 | ST-US-024 §12 n° 17 |
+
+**Scénarios du rang 9 et ce qui les rend exécutables** (en plus des phrases existantes) :
+
+| Scénarios | Capacité de l'incrément 2 | Phrases |
+|---|---|---|
+| US-017 S09, S11 ; US-025 S14 | Détection (n° 2) : rien | N3 |
+| US-017 S10, S16 ; US-018 S07 ; US-031 S10 ; US-003 S17 | `CONFLIT` (n° 2, 5, 6), lecture partagée (S16) | N1, N2, N3, N6 |
+| US-017 S12b | Départage par l'appareil, entrée unique | N2, N9 |
+| US-017 S14, S15, S15b | Lectures, `aLire`, `SYN-INFO` (H-6) | N4, N5, N6, N7, N8 |
+| US-017 S24 ; US-001 S19 ; US-031 S11 | `SUPPRESSION` d'un champ (n° 3) | N1 |
+| US-002 S23 ; US-018 S08 | `SUPPRESSION` de l'intitulé, élément = intitulé connu de la suppression (n° 4) | N1 |
+| US-001 S20 ; US-023 S19 | H-1 : rattachement, placement (n° 3) | N1 |
+| US-024 S22 | H-1 : création de sous-tâche (n° 3), `SUPPRIMEE_AVEC` | N1 |
+| US-017 S25 ; US-023 S16, S17, S18, S18b, S18c | Réparation (n° 7 à 10) | N1, N2 |
+| US-017 S26 ; US-024 S20, S21 ; US-003 S18, S19 ; US-025 S15, S16 ; US-031 S12 | RG-049 (D2) ; aucune logique de synchronisation nouvelle | N10, N11 |
+| US-025 S12c, S12e | RG-049 réactivée (l'absence de `MEN-INCOHERENCE` n'a de sens qu'avec elle) ; S12e : N3 | N3 |
+
+Aucun scénario différé n'exige de capacité hors de l'incrément 2 et de la réactivation de RG-049 (D2) ; aucun test unitaire de plus que UT-US-017-40 à 59, CT-DEPOT-12, 13 et UT-US-024-21, 22 (déjà écrits) n'est nécessaire. Tous ces scénarios passent au **rang 9** dans la PR de la tranche D3, qui porte `rangCourant = 9`.
 
 ## 13. Tests unitaires fournis
 
@@ -669,7 +848,7 @@ Bilan : **39 cas** (UT-US-017-01 à 31, dont des cas multiples pour 04 et 29 à 
 Rangs : les règles existantes de `rangs-tests.json` couvrent ces identifiants (`UT-US-017-(?:0[1-9]|[12]\d|3[0-9])` → 3 ; `UT-US-001-\d+` → 2) : ils s'exécutent au rang courant (3) et restent rouges sur la branche `us/US-017-reliquat-rang3` jusqu'à la réalisation ; la branche n'est fusionnée qu'au vert. Les trois squelettes (n° 17 b, 17 c) sont inscrits dans `rangs-fichiers.json` avec `debut = fin = 4` pendant la phase rouge (exemption d'orphelin et de couverture, `@non-implemente` toléré par UT-OUT-06) ; **Benjamin les ramène à `debut = fin = 3` dans la PR du reliquat**, ce qui réactive les trois contrôles. À défaut, ils s'appliquent d'eux-mêmes au rang 4. Bilan : **22 cas**, tous en échec (« NI » ou assertion). **v0.4.1** : squelette `elements-en-attente.ts` à `debut = fin = 4`, ramené à 3 par Benjamin ; UT-COMP-US-017-54 (2 cas) en échec « NI ».
 
 ### 13.2 Incréments 2 à 4 (E10 à livrer avant leur E12)
-Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure retenue seulement sous 3 s d'aller-retour, médiane de 5 (nombre pair compris), recul corrigé et mesures décalées, avance seulement journalisée, contrôle à la minute et au retour au premier plan, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
+**Incrément 2 : livré en v0.5, §13.4.** Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : détection par contexte, pierre tombale étendue H-1, signalement unique, gagnant de plus petit HLC, lecture fusionnée, `aLire` H-6, réparation RG-048 dont la chaîne de trois déplacements à deux annulations, identifiant sans « : ») ; UT-US-017-60 à 74 (incrément 3 : ordre des contrôles, qui affiche `ERR-012`, restauration mémorisée, génération plus récente, choix concurrents DEC-030, doublons) ; UT-US-017-75 à 89 (incrément 4 : mesure retenue seulement sous 3 s d'aller-retour, médiane de 5 (nombre pair compris), recul corrigé et mesures décalées, avance seulement journalisée, contrôle à la minute et au retour au premier plan, seuil strict d'`ALR-001`, consultation seule sans écriture ni effacement, coexistence de champs inconnus, lecture de chaque version antérieure).
 
 ### 13.3 Correction d'ANO-001 (E10 v0.4.3, livrés en rouge le 2026-10-30)
 | ID | Fichier (`tests/unitaires/…`) | Cible | Cas | Exigence |
@@ -690,17 +869,65 @@ Liste arrêtée, identifiants réservés : UT-US-017-40 à 59 (incrément 2 : d�
 
 Rangs : règle `UT-US-017-9\d\b` → 3 ajoutée à `rangs-tests.json` (après celle des UT-US-017-01 à 39) ; ces tests s'exécutent au rang courant et restent rouges sur `fix/ANO-001` jusqu'à la réalisation (§11.14 ; précédent du reliquat du rang 3) ; la branche n'est fusionnée qu'au vert. Squelettes **inertes** (`observer` et `observerSynchronisation` rendent une annulation sans rien enregistrer ; `rafraichissementsTermines` se résout aussitôt) plutôt que `@non-implemente` : les fichiers touchés sont livrés (`fin` ≤ rang courant, UT-OUT-06) et le contrôleur appellera `observerSynchronisation` dans tous les tests existants ; échecs par assertion (11 cas). Vérifiés verts sur une réalisation d'essai non commitée, suite complète sans régression. Doublures des trois tests existants du contrôleur complétées (§3.3, A4).
 
+### 13.4 Incrément 2 (E10 v0.5, livrés en rouge le 2026-10-31)
+| ID | Fichier (`tests/…`) | Cible | Cas | Exigence | Tranche |
+|---|---|---|---|---|---|
+| UT-US-017-40 | `unitaires/synchronisation/domaine/valeurs-ecartees.test.ts` | `condensatSha256`, `encoderBase32Hex`, `idValeurEcartee` | vecteurs « abc » et vide ; égalité avec `crypto.subtle` sur plusieurs blocs ; vecteurs RFC 4648 ; identifiant = condensat de la chaîne du n° 1, `[0-9a-v]{52}`, distinct si compteur, appareil ou champ changent | §6.6 n° 1 | B1 |
+| UT-US-017-41 | idem | `detecterValeursEcartees` | S10 : « A » écartée par « B » ; S11 : connue, rien (des deux côtés) ; S09 : informations différentes, rien | RG-036, DAT §4.2.1 | B1 |
+| UT-US-017-42 | idem | idem | même entrée des deux côtés ; S12b départagé par l'appareil ; valeurs égales non signalées ; deux pierres tombales concurrentes non signalées | n° 2 | B1 |
+| UT-US-017-43 | idem | idem | S24 : délai écarté par la suppression, même entrée des deux côtés, `intituleElement` ; écriture connue de la suppression : rien | RG-047 | B1 |
+| UT-US-017-44 | idem | idem | H-1 : rattachement et placement sous l'objectif supprimé (US-001 S20) ; création d'une sous-tâche sous la tâche supprimée (US-024 S22) ; rattachement connu : rien | H-1, DEC-030 | B1 |
+| UT-US-017-45 | idem | `detecterValeursEcartees`, `fusionnerValeursEcartees` | S23 : `intituleElement` = intitulé connu de la suppression, des deux côtés ; absent après la fusion de l'intitulé écarté ; l'entrée qui le porte l'emporte à l'union, dans les deux sens | n° 4, 5 | B1 |
+| UT-US-017-46 | idem | `fusionnerValeursEcartees` | union ; même identifiant : gagnant de plus petit HLC, dans les deux sens ; associative, idempotente | n° 5, RG-056 c | B1 |
+| UT-US-017-47 | idem | `fusionnerLectures`, `compterALire` | plus grand HLC ; `aLire` compte `CONFLIT`, `SUPPRESSION`, `PLACEMENT_ANNULE` non lues, ni `DONNEES_EFFACEES` ni lecture inconnue | n° 6, H-6 | B1 |
+| UT-US-017-48 | `unitaires/synchronisation/domaine/reparation-hierarchie.test.ts` | `reparerHierarchie` | S25 (cycle) : registre rétabli (valeur, HLC, contexte), entrée `PLACEMENT_ANNULE`, `dernierHlc` ; hiérarchie valide : rien | RG-048 | B1 |
+| UT-US-017-49 | idem | idem | US-023 S17 (création jamais candidate), S18, S18b (une seule annulation) ; parent supprimé = principal | n° 7, 8 | B1 |
+| UT-US-017-50 | idem | idem | **S18c : chaîne de trois déplacements, deux annulations dans l'ordre** (cas imposé, DAT §4.2) ; mêmes valeurs et identifiants sur l'autre appareil ; valeur rétablie d'origine `DEPLACEMENT` annulée à son tour (deux entrées, un registre) | n° 8 à 10 | B1 |
+| UT-US-017-51 | `unitaires/synchronisation/domaine/planifier-synchronisation.test.ts` | `planifierSynchronisation` | S25 réparé dans le plan (hors index, `dernierHlc`, `fusionNonDeposee`) ; S10 : une entrée, puis rien quand elle est connue (plan et méta vides) ; signalements reçus unis | n° 11 | B1 |
+| UT-US-017-52 | `unitaires/synchronisation/infrastructure/drive/format-v1-signalements.test.ts` | `encoderFichierAppareil`, `decoderFichierAppareil`, `contenuAEnvoyer` | aller-retour des quatre motifs et d'une lecture, table d'appareils ; motif inconnu ignoré ; `contenuAEnvoyer` recopie et trie, n'ajoute rien s'il n'y a rien | §5.2 | B2 |
+| UT-US-017-53 | `unitaires/synchronisation/infrastructure/depot-local-dexie-version3.test.ts` | `DepotLocalDexie` | base version 2 existante ouverte en version 3 sans perte (état, méta) ; tables créées et vides | §5.1, CR-02 | B2 |
+| CT-DEPOT-12 | `contrats/depot-local.contrat.ts` (Dexie et mémoire) | `lireSignalements`, `appliquerSynchronisation` | vides pour un espace neuf ; écriture des signalements, version + 1, observateurs, relue par une autre instance ; 3e paramètre du calcul ; plan et signalements vides : version inchangée | §4.6 | B2 |
+| CT-DEPOT-13 | idem | idem | remplacement par identifiant ; exception du calcul : rien d'écrit | §4.6 | B2 |
+| UT-US-017-54 | `unitaires/synchronisation/application/cycle-valeurs-ecartees.test.ts` (FauxDrive, deux appareils) | `CycleSynchronisation` | S10 : une entrée, la même sur les deux appareils et dans les deux fichiers Drive ; S16 : « Compris », lue partout après échange ; S25 : hiérarchie et entrée identiques, rien en attente | n° 11, CA-8, CA-10, CA-14 | B3 |
+| UT-US-017-55 | `unitaires/synchronisation/application/marquer-comme-lue.test.ts` | `MarquerCommeLue` | lecture datée par `hlcSuivant`, `dernierHlc`, version, observateur ; déjà lue ou inconnue : rien ; deux identifiants : un HLC ; erreur du dépôt propagée | n° 6, RG-056 b | B3 |
+| UT-US-017-56 | `unitaires/synchronisation/application/consulter-modifications-non-retenues.test.ts` | `consulterModificationsNonRetenues`, `consulterEtatSynchronisation` | détail de toutes les entrées et `aLire` ; erreur propagée ; `aLire` lu de l'attente → `SYN-INFO` | §4.6, S15 | B3 |
+| UT-US-017-57 | `unitaires/synchronisation/domaine/detail-valeurs-ecartees.test.ts` | `detaillerValeursEcartees` | quatre colonnes, instant, lecture, existence, pour les quatre motifs et les formes `TEXTE`, `ETAT`, `RATTACHEE`, `SOUS`, `SOUS_TACHE_DE`, `SUPPRIMEE_AVEC`, `DATE` | n° 12, glossaire §8, H-2 | D1 |
+| UT-US-017-58 | `unitaires/synchronisation/presentation/modifications-non-retenues.test.ts` | `construireModificationsNonRetenues` | codes, variantes, titres `ALR-010` et `ALR-011`, `voir`, ordre, lues exclues, `ALR-014` sous `ALR-008` non comptées ; section absente | n° 13, H-6 | D1 |
+| UT-US-017-59 | `unitaires/synchronisation/presentation/ui/modifications-non-retenues.test.tsx` | `ModificationsNonRetenues` | titre, liste nommée, `data-message`, `data-variante`, « Compris » nommé par la ligne, « Voir » si l'élément existe, carte `ALR-008` à un seul « Compris » | n° 13, guide §4.24 | D1 |
+
+Support de test livré : `tests/support/synchronisation/ecritures-concurrentes.ts` (écritures, contextes, journal construits à la main).
+
+**Rangs** : règle existante `UT-US-017-(?:4\d|5\d)\b` → 9 ; règle `CT-DEPOT-1[2-9]\b` → 9 ajoutée **en tête** de `rangs-tests.json` (avant `DepotLocalEnMemoire.*CT-DEPOT-\d+` → 3). Onze fichiers de `src/` créés avec `debut = fin = 9` dans `rangs-fichiers.json` (§3.4 I2-1 à I2-6, I2-14, I2-15, I2-17 à I2-19) ; seuls ceux-là importent `@non-implemente`. Fichiers existants touchés en E10 par des squelettes **inertes** (aucun `@non-implemente`, `fin` inchangé, précédent d'ANO-001) : port `DepotLocal`, `meta-synchronisation.ts`, `contenu-fichier.ts`, `depot.ts` (paramètre `signalements` ignoré), `depot-local-dexie.ts` (`lireSignalements` rend des signalements vides ; le calcul reçoit `SIGNALEMENTS_VIDES` ; les signalements du plan sont ignorés), `consulter-etat-synchronisation.ts` (champ `AttenteLocale.aLire` livré, non lu) ; doublures (`DepotLocalEnMemoire`, `DepotAvecCorrection`, `depotAvecPannes`, `depotIllisible`) complétées de `lireSignalements` sans assertion changée.
+
+**Bilan** : au rang 8 (`pnpm test`), 905 tests verts, ces tests non sélectionnés ; `pnpm verifier` vert. Avec `RANG_COURANT=9` : 25 en échec (UT-US-017-40 à 59, CT-DEPOT-12 et 13 sur les deux adaptateurs, UT-US-024-22 déjà rouge), « NI » ou assertion, rien d'autre. **Vérification** : UT-US-017-40 à 51 verts sur une réalisation d'essai du domaine (non commitée), ce qui garantit la cohérence des cas entre eux.
+
 ## 14. Tests attendus de Benjamin
 | Niveau | Objet | Critère |
 |---|---|---|
 | Contrat | `TransportSynchroDrive` avec MSW | CT-TRANS-01 à 10 ; erreurs 401, 403 (deux raisons), 404, 429, 5xx |
 | Intégration | `DepotLocalDexie` : `appliquerSynchronisation` atomique et en durabilité stricte (`FabriqueIndexedDbEspionne`), méta relue | 3 cas |
 | Performance | Encodage, décodage et fusion d'un état de 5 000 tâches | < 2 s en CI (indicatif) |
+| Intégration (incr. 2, Bruce, B2) | `DepotLocalDexie` version 3 : ligne illisible de `valeursEcartees` ou de `lectures` → `DonneesLocalesIllisibles` ; transaction stricte commune aux registres et aux signalements | `UT-COMP-US-017-2-nn` (règle ajoutée par Anthony à l'E13) |
+| Propriété (incr. 2, Bruce, B1) | Détection : même ensemble d'entrées quel que soit l'ordre de fusion de trois fichiers (fast-check, graine fixe) ; réparation : hiérarchie valide en sortie pour des placements aléatoires | `UT-COMP-US-017-2-nn` ; complète UT-US-017-29 (convergence) |
 | Composant (reliquat du rang 3, v0.4) | **DT-009** : abonnement du magasin des objectifs à `DepotLocal.observer` (par la composition) | `UT-COMP-US-017-…` : une écriture faite hors du magasin (autre cas d'usage sur le même dépôt) met à jour la liste (ECR-008) et le détail (ECR-003) ; plus de rafraîchissement après désabonnement. Pas de test fourni par Anthony : le critère de remboursement du registre fait foi |
 | Composant (reliquat du rang 3, v0.4) | **DT-006** : composants du rang 1 (`compte/presentation/ui`, `synchronisation/presentation/ui`) en composants Ionic | Tests de composants existants inchangés et verts ; contrôle par Steeve en E14. Pas de nouveau test fourni par Anthony |
 
 ## 15. Plan de réalisation
-Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compression, format v1 (UT 10 à 15) ; (2) fusion, dépôt (UT 01 à 09) ; (3) port `DepotLocal` étendu et `DepotLocalDexie` ; (4) `TransportSynchroDrive`, `FauxDrive`, contrat ; (5) `CycleSynchronisation`, déclencheurs (UT 17 à 31) ; (6) modèles de vue, steps, composition. Incréments 2 à 4 : E10 puis réalisation, dans l'ordre.
+Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compression, format v1 (UT 10 à 15) ; (2) fusion, dépôt (UT 01 à 09) ; (3) port `DepotLocal` étendu et `DepotLocalDexie` ; (4) `TransportSynchroDrive`, `FauxDrive`, contrat ; (5) `CycleSynchronisation`, déclencheurs (UT 17 à 31) ; (6) modèles de vue, steps, composition. Incréments 3 et 4 : E10 puis réalisation, dans l'ordre.
+
+### 15.1 Incrément 2 (rang 9) : réalisation en tranches (OPT-15, v0.5)
+Branche de travail : `us/US-017-rang9` (E10), puis une branche par tranche depuis `lot/LOT-001` à jour, chacune fusionnée au vert de ses tests (règle du §13.1 : tests au rang courant 8 non sélectionnés ; `RANG_COURANT=9` en local). **Aucun fichier n'est touché par deux développeurs en parallèle** : la colonne « Fichiers » est exhaustive pour `src/` ; un besoin hors de la liste passe par Anthony.
+
+| Tranche | Développeur | Dépend de | Fichiers (§3.4) | Tests visés | Parallélisme |
+|---|---|---|---|---|---|
+| **B1** Domaine : détection, union, lectures, réparation, intégration | Bruce | — | I2-1, I2-2, I2-3, I2-5, I2-6, I2-7 (facultatif) | UT-US-017-40 à 51 | Parallèle à D1 et D2 |
+| **B2** Persistance et format | Bruce | B1 (types seulement ; `contenuAEnvoyer` n'appelle pas B1) | I2-8 (`depot.ts`), I2-10, I2-11, I2-12 | UT-US-017-52, 53 ; CT-DEPOT-12, 13 ; tests complémentaires (§14) | Parallèle à D1 et D2 |
+| **B3** Application : cycle, « Compris », requêtes | Bruce | B1, B2 | I2-13, I2-14, I2-15, I2-16 | UT-US-017-54 à 56 ; non-régression de UT-US-017-17 à 32 et 90 à 94 | Parallèle à D1 et D2 |
+| **D1** Détail, modèle de vue et composant « À lire » | Benjamin | Types de B1 (figés par les squelettes) | I2-17, I2-18, I2-19 | UT-US-017-57 à 59 | Parallèle à B1 à B3 |
+| **D2** RG-049 réactivée et étapes d'incohérence | Benjamin | — | I2-20 ; `taches.steps.ts` (N10, N11) | UT-US-024-21, 22 ; US-017 S26, US-024 S20, S21, US-003 S18, S19, US-025 S12c, S15, S16, US-031 S12 (vérifiés en local avec `RANG_COURANT=9`) | Parallèle à B1 à B3 ; après D1 ou avant, au choix de Benjamin (aucun fichier commun) |
+| **D3** Composition, interface, étapes du rang 9, **livraison du rang** | Benjamin | B3, D1, D2 | I2-21, I2-22 (sauf N10, N11) ; `rang-courant.json` → 9 | Tous les scénarios du rang 9 (§12.5) ; `pnpm e2e` (feuille), `pnpm verifier`, couverture | Dernière ; porte `rangCourant = 9` |
+
+Points de vigilance : (1) B1 ne change aucun type exporté de `valeurs-ecartees.ts`, `lectures.ts`, `signalements.ts` sans accord d'Anthony (D1 en dépend) ; (2) B3 et D3 se suivent sur la frontière `AttenteLocale.aLire` (B3 la lit, D3 la renseigne dans `attenteDe`) : les tests UT-US-017-56 et un test de composition de D3 en font le contrat ; (3) D2 touche `taches.steps.ts`, D3 aussi (N9) : même développeur, tranches successives ; (4) la question Q-ST017-STE-2 conditionne seulement les textes de D1 et D3 (titres `ALR-009`, libellés « Voir », noms d'information) : D1 peut être livrée avec les éléments testés, les textes suivent la réponse de Steeve avant D3 ; (5) Q-ST017-STA-4 conditionne B2 (port, tables, format) : si Starck refuse, seule B2 change de forme, les tests B1 et D1 restent.
 
 ## 16. Dette, hypothèses et points ouverts
 
@@ -716,9 +943,15 @@ Incrément 1 : (1) version, contenu, sérialisation canonique, empreinte, compre
 - **Q-BEN-R3R-1 (Benjamin, E13 du reliquat, RC-R3-8)** : rester dans la composition comme `attenteDe`, une fonction de `application.ts` construisant les `LigneFeuilleOrdonnable[]` depuis `depot.lire()` ? **Réponse d'Anthony : découpage validé avec une correction.** La lecture (`depot.lire()`, `lireMeta`) et le câblage restent dans la composition, comme `attenteDe` (conforme au DAT : la présentation n'accède pas au dépôt). La **règle** de regroupement (élément, lien → tâche, plus grand `derniereHlc`, intitulé) va dans le domaine (`elementsEnAttenteDetailles`, n° 17 e, UT-COMP-US-017-54 livré en rouge), pas dans `application.ts` (CR-12, CR-13 : la composition câble, elle ne calcule pas). Détail au n° 17 f. Ordre : 17 e (vert), UT-COMP-US-017-53, contrôleur, `main.tsx`, liste CSP, `pnpm e2e`.
 - **ANO-001 (v0.4.3)** : pas de dette introduite ; pas de question ouverte. Recoupement avec le rang 5 (US-002) : aucun fichier de `src/` commun (§3.3) ; à l'E12, les steps `objectifs.steps.ts` (n° 7, une phrase ajoutée) et le banc peuvent être touchés aussi par le rang 5 (fusion à surveiller).
 - **Dette** : DT-011 (feuille ECR-011 et point « en attente » : tests livrés en v0.4, réalisation dans la PR du reliquat du rang 3).
+- **Q-ST017-STA-4 (Starck, v0.5 ; non bloquante, sauf pour la tranche B2)** — Incrément 2, quatre points : a) le port `DepotLocal` reçoit `lireSignalements()` et un 3e paramètre `signalements` du calcul d'`appliquerSynchronisation`, dont le résultat porte `signalements?` écrits dans la **même** transaction stricte ; base Dexie version 3 (tables `valeursEcartees`, `lectures`, ajout pur) ; même démarche que Q-ST017-STA-1, suite de contrat étendue (CT-DEPOT-12, 13) et doublure en mémoire ; b) contenu des tableaux `valeursEcartees` et `lectures` du schéma 1 (§5.2), lecture tolérante d'un motif inconnu ; c) règles complémentaires du DAT §4.2.1 : à gagnant égal, l'entrée qui porte l'intitulé connu de la suppression l'emporte (n° 4, 5 ; US-002 S23 et US-018 S08 l'exigent : l'intitulé d'origine n'existe plus ailleurs) ; deux valeurs structurellement égales ne sont pas signalées (n° 2 ; nécessaire pour que les réparations identiques des deux appareils ne se signalent pas l'une l'autre) ; avec deux pierres tombales concurrentes, une écriture n'est écartée que si aucune ne la connaît (n° 3) ; d) la réparation RG-048 n'écrit pas d'entrée de journal (n° 9 ; le DAT ne la demande pas ; datée par chaque appareil, elle divergerait à l'union du journal) et le condensat SHA-256 est codé, synchrone, dans le domaine (n° 1). Validez-vous a) à d) ? a) oui ★ ; b) non, préciser le point.
+- **Q-ST017-PEP-2 (Pepper, v0.5, non bloquante)** — a) Deux modifications concurrentes qui donnent la **même** valeur (deux renommages en « A ») ou deux suppressions concurrentes du même élément ne sont pas signalées dans « Modifications non retenues » (rien n'est perdu). 1) oui ★ ; 2) les signaler. b) Le placement annulé par la réparation (RG-048) apparaît dans la liste (`ALR-011`), mais **pas** dans l'historique de l'objectif (RG-050). 1) oui ★ (l'annulation n'est pas une action de l'utilisateur) ; 2) une entrée « changement de parent » est attendue dans l'historique (je la spécifierai, datée de façon déterministe).
+- **Q-ST017-STE-2 (Steeve, v0.5 ; non bloquante pour Bruce, à répondre avant la tranche D3)** — Textes de la section « À lire » sans code au catalogue : a) noms des informations pour `{information}` d'`ALR-009` et d'`ALR-010` (intitulé, description, délai, estimation, objectifs, placement, état, création), avec majuscule en titre ; b) `{appareil}` : les données ne portent aucun nom d'appareil (PWA unique, `plateforme: web`) ; 1) « cet appareil » / « l'autre appareil » ★ ; 2) autre ; même question pour `{heure}` (heure de l'écriture, `formaterHeure`) ★ ; c) libellés « Voir la tâche » / « Voir l'objectif » d'`ALR-009` et d'`ALR-010` générique (le catalogue n'a qu'une partie `action`, « Compris ») ; libellé « Compris » d'`ALR-011` (son `action` est « Voir l'objectif ») ; d) US-024 S22 (sous-tâche créée sous une tâche supprimée) : 1) variante `sous-tache` d'`ALR-010` ★ ; 2) variante `tache` (titre « Tâche « Section A » supprimée ») ; e) `ALR-011` emploie `{element}` dans le titre (objectif annulé) et dans le texte (objectif déplacé) : deux variables distinctes ★ ; f) textes des valeurs hors glossaire §8 : objectif principal, détachée de « X », création, aucune (description ou délai vides).
+- **Dette (v0.5)** : DT-025 (`EtatMoteur.aLire` n'est plus lu après B3).
+
 
 ## 17. Checklist de complétude
 - [x] Incrément 1 : fichiers, signatures, format, algorithmes, erreurs, steps, tests (E10 livrée).
 - [x] Incréments 2 à 4 : règles arrêtées (§6.6 à §6.8) ; E10 et phrases détaillées à livrer avant leur E12.
 - [x] Q-ST017-PEP-1, Q-ST017-STA-1 et Q-ST017-STA-2 répondues et intégrées (v0.2).
 - [x] Q-ST017-STA-3 répondue (DT-002).
+- [x] Incrément 2 (v0.5) : fichiers et tranches, signatures, données, règles n° 1 à 13, erreurs, phrases et scénarios différés, tests (E10 livrée) ; Q-ST017-STA-4, Q-ST017-PEP-2, Q-ST017-STE-2 ouvertes, non bloquantes pour B1, D1, D2.
