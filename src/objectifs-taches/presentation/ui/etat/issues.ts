@@ -27,7 +27,5 @@ export const issueDe = (r: Resultat<unknown, RefusMetier | ErreurDepotLocal>): I
 };
 
 /** Messages d'une issue : ceux du refus, aucun pour les autres issues. */
-export const messagesDeIssue = (issue: {
-  readonly type: string;
-  readonly messages?: ReadonlyArray<MessageRefus>;
-}): ReadonlyArray<MessageRefus> => (issue.type === 'REFUSEE' ? (issue.messages ?? []) : []);
+export const messagesDeIssue = (issue: IssueCommande): ReadonlyArray<MessageRefus> =>
+  issue.type === 'REFUSEE' ? issue.messages : [];
