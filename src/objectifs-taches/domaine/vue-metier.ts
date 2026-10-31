@@ -168,9 +168,7 @@ export const sousTachesDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Tache> 
 
 /** Sous-tâches par création croissante, puis identifiant : ordre des conséquences d'une cascade (ST-US-025 §6.1). */
 export const sousTachesParCreation = (vue: VueMetier, id: IdTache): ReadonlyArray<Tache> =>
-  [...sousTachesDe(vue, id)].sort(
-    (a, b) => a.creeLe - b.creeLe || (a.id === b.id ? 0 : a.id < b.id ? -1 : 1),
-  );
+  [...sousTachesDe(vue, id)].sort((a, b) => a.creeLe - b.creeLe || (a.id < b.id ? -1 : 1));
 
 /** Objectifs rattachés directement à la tâche, dans l'ordre de rattachement (RG-001). */
 export const objectifsDirectsDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Objectif> =>

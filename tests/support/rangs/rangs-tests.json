@@ -106,6 +106,10 @@
       "rang": 7
     },
     {
+      "motif": "UT-COMP-US-025-\\d+",
+      "rang": 8
+    },
+    {
       "motif": "UT-US-025-\\d+",
       "rang": 8
     },
