@@ -72,3 +72,14 @@ Actions d'Anthony (faites dans ce commit) :
 Aucune remarque bloquante. Le domaine, l'application, les modèles de vue, les étapes Cucumber, les rangs et la couverture sont conformes ; la synchronisation est intacte et les tests d'E10 aussi.
 
 Il reste une remarque majeure, RC-US-024-1 : Échap sur la confirmation ferme la feuille et perd la saisie, et le focus n'est pas rendu à « Ajouter ». Deux remarques mineures s'y ajoutent : RC-US-024-2 (date ISO affichée) et RC-US-024-3 (coquille). Les corrections se font sur `us/US-024-rang6` ; la nouvelle revue portera sur ces seuls points.
+
+## 7. Revue du 2e tour (90af092)
+
+- RC-US-024-1 **levée** : `backdropDismiss={!confirmationAffichee}` ; UT-COMP-US-024-10 vérifie la propriété avant et après, `surFermee` et `confirmer` non appelés, saisie conservée, focus sur « Ajouter ». L'extraction (`useConfirmationDeLaFeuille`, `FormulaireSaisieRapide`) est à comportement constant.
+- RC-US-024-2, 3, 5, 7 **levées** (`delai` `{ date, libelle }` conforme à ST v0.4 ; UT-07 vérifie « 20 nov. »).
+- RC-US-024-4 et 6 **acceptées**, inscrites en **DT-021** (registre v0.24), à traiter au rang 7.
+- `void saisie.ajouter()` : l'issue passe par `ajouterTache` puis `appliquerIssue` (confirmation, refus, faite) ; rien n'est ignoré.
+- Couverture : CI encore en cours au moment de la revue ; elle fait foi.
+
+**Verdict : Approuvé.** Aucun bloquant.
+

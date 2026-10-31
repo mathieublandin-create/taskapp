@@ -1,12 +1,13 @@
 # Registre de la dette technique
 
-> **Version 0.23 — 2026-10-31 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
+> **Version 0.24 — 2026-10-31 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
 
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-20 | Anthony | Registre initialisé, vide. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001 : inscription de DT-001 (données locales non chiffrées au repos, DS-07, RG-043, DEC-015). |
 | 0.5 | 2026-10-28 | Anthony | E13 du rang 0 de LOT-001 (`docs/ceremonies/revue-code-LOT-001-rang0.md`) : inscription de DT-003 (exception osv-scanner GHSA-gcqx-w48m-w2h4, deepmerge), DT-004 (jsx-a11y sous ESLint 10) et DT-005 (contrôle de non-régression de couverture absent de la CI). |
+| 0.24 | 2026-10-31 | Anthony | E13 du rang 6 (US-024), 2e tour : inscription de DT-021 (RC-US-024-4 et RC-US-024-6, suggestions laissées ouvertes). |
 | 0.23 | 2026-10-31 | Anthony | E12 du rang 6 (US-024), qualification d'un point de Benjamin : inscription de DT-019 (nom accessible « Terminer « {intitulé} » » de la case d'une ligne de sous-tâche, sans code au guide §6.6). La v0.21 (DT-017, DT-018) est sur la branche corrective du rang 5. |
 | 0.22 | 2026-10-31 | Anthony | E13 de l'outillage OPT-9 (PR #15, `fix/osv-glob-minimatch`) : inscription de DT-020 (exception osv-scanner GHSA-g3hv-75wg-m249, minimatch 3.1.5). |
 | 0.21 | 2026-10-31 | Anthony | E13 du rang 5, US-002 (`docs/ceremonies/revue-code-LOT-001-rang5.md` §8) : inscription de DT-017 (nom accessible de la ligne de tâche sans gabarit, RC-US-002-10) et de DT-018 (navigation provisoire entre les espaces, guide §2.2 et §4.14). |
@@ -151,3 +152,4 @@ Une fiche détaillée est rédigée ci-dessous pour toute dette de priorité P1 
 - Plan de remboursement : code attribué par Steeve, puis branchement par `libelle(code, { intitule })` ; UT-US-024-16 inchangé.
 - Critère de remboursement : plus aucune constante « Terminer « » dans `src/objectifs-taches/presentation/` ; le texte vient du catalogue.
 - Historique : 2026-10-31, Identifiée.
+| DT-021 | 2026-10-31 | E13 rang 6, 2e tour (RC-US-024-4, RC-US-024-6) | Maintenabilité | 1) Séquence « lire l'état, construire la vue, évaluer, ré-emballer » copiée dans `creer-sous-tache.ts`, `supprimer-tache.ts`, `supprimer-objectif.ts` (CR-22). 2) Variante sous-tâche reconnue par `'tacheParente' in formulaire` et phrase « Sous-tâche de « {parent} » » composée dans le composant (CR-16, CR-23). | `src/objectifs-taches/application/cas-usage/`, `saisie-rapide.tsx`, `ecrans/detail-tache.tsx` | Duplication mineure ; le prochain `evaluer` (rang 7) ferait une 4e copie. Aucun effet fonctionnel | P3 | 1) Extraire `evaluerSurEtat` dans `requetes/lecture-courante.ts` avec les `evaluer` du rang 7 (ST-US-003) ; 2) discriminant `variante` et libellé composé par le modèle de vue, au rang 7 | Identifiée |
