@@ -40,6 +40,7 @@ export const LIBELLES_OBJECTIFS = {
 // Libellés des écrans de tâches qui n'ont pas de code au catalogue (titres, champs, filtres, boutons), réunis ici pour
 // qu'aucun texte ne soit codé dans les composants (DT-006). Source : maquettes ECR-002, ECR-006, ECR-007 et guide §4.2 à §4.4.
 export const LIBELLES_TACHES = {
+  navigationEspaces: 'Espaces',
   titreListe: 'Tâches',
   titreDetail: 'Tâche',
   retourListe: 'Tâches',

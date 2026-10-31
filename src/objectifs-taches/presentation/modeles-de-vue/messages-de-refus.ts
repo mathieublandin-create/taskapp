@@ -16,6 +16,19 @@ const CODES_DEFAUTS: Readonly<Record<DefautSaisie, CodeCatalogue>> = {
   ESTIMATION_INVALIDE: 'ERR-023',
 };
 
+export type ChampSaisie = 'intitule' | 'delai' | 'estimation';
+
+const CHAMPS_DES_MESSAGES: Readonly<Partial<Record<CodeCatalogue, ChampSaisie>>> = {
+  'ERR-020': 'intitule',
+  'ERR-021': 'delai',
+  'ERR-022': 'estimation',
+  'ERR-023': 'estimation',
+};
+
+/** Champ de la saisie d'une tâche que le message désigne ; aucun pour les autres messages. */
+export const champDuMessage = (code: CodeCatalogue): ChampSaisie | undefined =>
+  CHAMPS_DES_MESSAGES[code];
+
 const messageDeuxiemeNiveau = (
   refus: Extract<RefusMetier, { readonly type: 'DeuxiemeNiveau' }>,
 ): MessageRefus =>
