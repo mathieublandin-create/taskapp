@@ -4,10 +4,11 @@
  */
 import { describe, expect, it } from 'vitest';
 import { construireDetailTache } from '@src/objectifs-taches/presentation/modeles-de-vue/detail-tache';
+import { construireLigneTache } from '@src/objectifs-taches/presentation/modeles-de-vue/ligne-tache';
 import { champDuMessage } from '@src/objectifs-taches/presentation/modeles-de-vue/messages-de-refus';
 import { resumeTache } from '@tests/support/fabriques/resumes';
 import { horlogeSur } from '@tests/support/horloge';
-import { idObjectif, idTache } from '@tests/support/valeurs';
+import { date, idObjectif, idTache } from '@tests/support/valeurs';
 
 describe('Corrections du rang 5 — modèles de vue', () => {
   it('UT-COMP-US-002-85 construireDetailTache — objectifs.ids suit objectifs.intitules, même ordre, y compris pour deux objectifs homonymes (RC-US-002-3)', () => {
@@ -34,5 +35,19 @@ describe('Corrections du rang 5 — modèles de vue', () => {
     expect(champDuMessage('ERR-022')).toBe('estimation');
     expect(champDuMessage('ERR-023')).toBe('estimation');
     expect(champDuMessage('ERR-033')).toBeUndefined();
+  });
+});
+
+describe('Corrections du rang 5 — ligne de tâche', () => {
+  it('UT-COMP-US-002-93 construireLigneTache — une tâche incohérente porte la mention MEN-INCOHERENCE (branche conservée après l’extraction de terminaison)', () => {
+    const ligne = construireLigneTache(
+      resumeTache({
+        id: idTache(1),
+        incoherence: { etatParent: 'TERMINEE', sousTachesAFaire: [] },
+      }),
+      date('2026-10-25'),
+    );
+
+    expect(ligne.incoherence).toEqual({ code: 'MEN-INCOHERENCE' });
   });
 });
