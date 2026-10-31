@@ -83,9 +83,9 @@ const enMinuscules = (texte: string): string => texte.charAt(0).toLowerCase() + 
 
 /** WCAG 4.1.2 : « {intitulé}, {état en toutes lettres}, délai {date} », suivi de « , en retard ». */
 const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string => {
-  const fin = terminaison(resume)?.date;
+  const fin = terminaison(resume);
   const etat = libelle(CODES_ETAT[resume.cycleDeVie.etat], {
-    date: fin === undefined ? '' : formaterDate(fin, aujourdhui),
+    date: fin === undefined ? '' : formaterDate(fin.date, aujourdhui),
   });
   const retard = resume.enRetard ? `, ${enMinuscules(libelle('MEN-EN-RETARD'))}` : '';
   const delai = formaterDate(resume.delai, aujourdhui);
