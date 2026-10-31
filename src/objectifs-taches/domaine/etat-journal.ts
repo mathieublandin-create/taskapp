@@ -1,3 +1,4 @@
+import { assertNever } from '../../commun/domaine/assert-never';
 import type { CycleDeVie, EtatJournal } from '../../synchronisation';
 
 // ST-US-003 §4.1 : A_FAIRE → { A_FAIRE } ; TERMINEE → { TERMINEE, dateFin } ; ABANDONNEE → { ABANDONNEE, dateAbandon }.
@@ -9,5 +10,7 @@ export const etatJournalDe = (cycleDeVie: CycleDeVie): EtatJournal => {
       return { etat: 'TERMINEE', dateFin: cycleDeVie.dateFin };
     case 'ABANDONNEE':
       return { etat: 'ABANDONNEE', dateAbandon: cycleDeVie.dateAbandon };
+    default:
+      return assertNever(cycleDeVie);
   }
 };

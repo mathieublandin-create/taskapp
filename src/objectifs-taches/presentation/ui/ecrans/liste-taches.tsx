@@ -10,6 +10,8 @@ import type {
 } from '../../modeles-de-vue/liste-taches';
 import { FiltreEtatUi, FiltreObjectifUi } from '../composants/filtre-etat';
 import { LigneTacheUi } from '../composants/ligne-tache';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { MessagesRefus } from '../composants/messages-refus';
 import type { ObjectifProposable } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
@@ -23,6 +25,8 @@ export type ProprietesListeTaches = {
   /** Case « Terminer » de chaque ligne ; `retenues` : lignes tout juste terminées, encore affichées. */
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
   readonly retenues?: ReadonlyArray<IdTache> | undefined;
+  /** Refus (ERR-035) du dernier geste « Terminer », annoncé sous les filtres (ST-US-003 §4.5). */
+  readonly refus?: ReadonlyArray<MessageRefus> | undefined;
   readonly surFiltrerEtat: (etat: FiltreEtat) => void;
   readonly surFiltrerObjectif: (filtre: FiltreObjectif) => void;
 };
@@ -118,6 +122,7 @@ export const ListeTaches = ({
   surOuvrir,
   surTerminer,
   retenues,
+  refus = [],
   ...filtres
 }: ProprietesListeTaches) => {
   useRaccourciCreation(surCreer);
@@ -127,6 +132,7 @@ export const ListeTaches = ({
       <EnTeteListe />
       <IonContent>
         <Filtres modele={modele} {...filtres} />
+        <MessagesRefus messages={refus} />
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
         {etatVide === undefined ? null : <EtatVide code={etatVide.code} surAction={surCreer} />}
         <Lignes

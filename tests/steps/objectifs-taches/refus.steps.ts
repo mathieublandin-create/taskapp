@@ -5,6 +5,8 @@
 import assert from 'node:assert/strict';
 import { Then } from '@cucumber/cucumber';
 import { messagesDeRefus, type MessageRefus, type RefusMetier } from '@src/objectifs-taches';
+import type { NomAppareil } from '../../support/banc/appareil-simule';
+import type { NatureCommande } from '../../support/commandes-en-attente';
 import type { MondeDoneJuan } from '../../support/monde';
 import { etapeAssertion, type ContexteEtape } from '../../support/prefixes';
 
@@ -38,12 +40,15 @@ etapeAssertion(/^l'opération est acceptée$/, ({ monde, appareil }) => {
 });
 
 /** L'appareil qui a exactement une confirmation en attente (H-5, sans la consommer). */
-const confirmationAffichee = (monde: MondeDoneJuan) => {
+const nomUniqueEnAttente = (monde: MondeDoneJuan): NomAppareil => {
   const noms = [...monde.commandesEnAttente.keys()];
   const nom = noms.length === 1 ? noms[0] : undefined;
   assert.ok(nom, 'Aucune confirmation en attente, ou une sur chaque appareil');
-  return monde.commandesEnAttente.get(nom)?.confirmation;
+  return nom;
 };
+
+const confirmationAffichee = (monde: MondeDoneJuan) =>
+  monde.commandesEnAttente.get(nomUniqueEnAttente(monde))?.confirmation;
 
 // Pluriels « (s) » : expression régulière (conventions.md §11.6).
 Then(
@@ -65,21 +70,22 @@ Then(
   },
 );
 
-// ST-US-024 §12 n° 12 et ST-US-003 §12 n° 11 : CNF-AJOUT-SOUS-TACHE-TERMINEE (ajout d'une sous-tâche) ou
-// CNF-ROUVRIR-SOUS-TACHE (réouverture d'une sous-tâche), qui annoncent l'une et l'autre la réouverture de la tâche.
-const CODES_REOUVERTURE_PARENTE: ReadonlyArray<string> = [
-  'CNF-AJOUT-SOUS-TACHE-TERMINEE',
-  'CNF-ROUVRIR-SOUS-TACHE',
-];
+// ST-US-024 §12 n° 12 et ST-US-003 §12 n° 11 : une seule phrase, mais le code exact dépend de la nature de la
+// commande en attente (ajout d'une sous-tâche à une tâche terminée, ou réouverture d'une sous-tâche).
+const CONFIRMATION_DE_REOUVERTURE: Readonly<Record<NatureCommande, string>> = {
+  AJOUT_SOUS_TACHE: 'CNF-AJOUT-SOUS-TACHE-TERMINEE',
+  REOUVERTURE: 'CNF-ROUVRIR-SOUS-TACHE',
+};
 
 Then(
   /^une confirmation est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
   function (this: MondeDoneJuan, tache: string) {
-    const confirmation = confirmationAffichee(this);
-    assert.ok(
-      confirmation && CODES_REOUVERTURE_PARENTE.includes(confirmation.code),
-      `Confirmation inattendue : ${JSON.stringify(confirmation)}`,
+    const nom = nomUniqueEnAttente(this);
+    const { nature, confirmation } = this.commandesEnAttente.get(nom) ?? {};
+    assert.ok(nature, 'La commande en attente ne déclare pas sa nature');
+    assert.deepEqual(
+      { code: confirmation?.code, element: confirmation?.element },
+      { code: CONFIRMATION_DE_REOUVERTURE[nature], element: tache },
     );
-    assert.equal(confirmation.element, tache);
   },
 );

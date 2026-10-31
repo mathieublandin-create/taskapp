@@ -150,7 +150,8 @@ export type ActionsMagasinTaches = {
   /** « Annuler » du toast TST-TERMINEE : rouvre la dernière tâche terminée. */
   readonly annulerFin: () => Promise<IssueTache>;
   /** Le toast TST-TERMINEE est fermé : la fin n'est plus annulable. */
-  readonly oublierFin: () => void;
+  /** La fermeture d'un toast n'oublie que sa propre fin, pas celle d'une fin plus récente. */
+  readonly oublierFin: (id: IdTache) => void;
   /** Rouvre la tâche ; `CONFIRMATION_REQUISE` (CNF-ROUVRIR-SOUS-TACHE) tant que l'utilisateur n'a pas confirmé. */
   readonly rouvrir: (id: IdTache) => Promise<IssueSaisie>;
   /** Commence à observer le dépôt local (DT-009) et rend la fonction qui cesse de l'observer (démontage). */
@@ -405,8 +406,8 @@ class ActionsTaches implements ActionsMagasinTaches {
     );
   });
 
-  readonly oublierFin = (): void => {
-    this.ecrire({ finAnnulable: undefined });
+  readonly oublierFin = (id: IdTache): void => {
+    if (this.lire().finAnnulable === id) this.ecrire({ finAnnulable: undefined });
   };
 
   /** `evaluer` d'abord (conventions.md §8.6) : la réouverture d'une sous-tâche sous une tâche terminée se confirme. */

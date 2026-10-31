@@ -10,6 +10,7 @@ import type { IdObjectif } from '@src/commun/domaine/identifiants';
 import { echec } from '@src/commun/domaine/resultat';
 import { creerMagasinObjectifsTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
 import type { ServiceEtatLocal } from '@src/synchronisation/application/service-etat-local';
+import { PlanificateurSimule } from '../doublures/planificateur-simule';
 import { creerEnvironnement, valeurDe, type Environnement } from './environnement';
 
 export type BancObjectifs = {
@@ -29,6 +30,7 @@ const banc = (env: Environnement, service: ServiceEtatLocal): BancObjectifs => {
     generateur: env.generateur,
     horloge: env.horloge,
     observer: (rappel) => env.depot.observer(rappel),
+    planificateur: new PlanificateurSimule(env.temps),
   });
   return {
     env,

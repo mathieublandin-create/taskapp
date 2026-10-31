@@ -37,6 +37,7 @@ import {
   existeUneTacheIntitulee,
   formulaireSousTacheDe,
   listeIntitules,
+  listeTachesDe,
   minutes,
   memoriserTache,
   nombreDeTaches,
@@ -133,6 +134,7 @@ const demanderSousTache = async (
   const modele = construireConfirmation(evaluation.valeur.confirmation);
   monde.commandesEnAttente.set(appareil.nom, {
     description: `Ajouter la sous-tâche « ${saisie.intitule} » à la tâche « ${parente} »`,
+    nature: 'AJOUT_SOUS_TACHE',
     confirmation: { code: modele.code, element: parente },
     executer: () => creerSousTache(contexte, parente, saisie),
   });
@@ -616,6 +618,7 @@ const demanderReouverture = async ({ monde, appareil }: ContexteEtape, intitule:
   const { confirmation } = evaluation.valeur;
   monde.commandesEnAttente.set(appareil.nom, {
     description: `Rouvrir la tâche « ${intitule} »`,
+    nature: 'REOUVERTURE',
     confirmation: {
       code: construireConfirmation(confirmation).code,
       element: confirmation.intitule,
@@ -685,13 +688,16 @@ etapeAssertion(
   async ({ monde, appareil }, intitule) => {
     const detail = await detailTacheDe(monde, appareil, String(intitule));
     assert.ok(!('mentionHeureParis' in detail.delai), 'Le délai du détail porte la mention');
-    const ligne = monde.derniereListeTaches
-      .get(appareil.nom)
-      ?.lignes.find((l) => l.intitule === String(intitule));
+    const liste = await listeTachesDe(appareil, {
+      etat: 'TERMINEE',
+      objectif: { type: 'TOUS' },
+    });
+    const ligne = liste.lignes.find((l) => l.intitule === String(intitule));
     assert.ok(
-      !ligne || !('mentionHeureParis' in ligne.delai),
-      'Le délai de la ligne porte la mention',
+      ligne,
+      `La tâche « ${String(intitule)} » est absente de la liste des tâches terminées`,
     );
+    assert.ok(!('mentionHeureParis' in ligne.delai), 'Le délai de la ligne porte la mention');
   },
 );
 

@@ -4,6 +4,7 @@ import { BoiteConfirmation } from '../../../../commun/presentation/ui/boite-conf
 import type { ModeleVueConfirmation } from '../../modeles-de-vue/confirmation';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { messagesDeIssue } from '../etat/issues';
 import type { IssueSaisie, IssueTache } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
 import { MessagesRefus } from './messages-refus';
@@ -22,9 +23,6 @@ type ConfirmationEnAttente = {
   readonly confirmer: () => Promise<IssueTache>;
 };
 
-const messagesDe = (issue: IssueTache): ReadonlyArray<MessageRefus> =>
-  issue.type === 'REFUSEE' ? issue.messages : [];
-
 /** Un refus ERR-035 ne survit pas à un changement du nombre de sous-tâches restantes (état ajusté pendant le rendu). */
 const useMessagesDeRefus = (restantes: number | undefined) => {
   const [messages, setMessages] = useState<ReadonlyArray<MessageRefus>>([]);
@@ -41,14 +39,14 @@ const useActionFin = ({ modele, surTerminer, surRouvrir }: ProprietesActionFin) 
   const [messages, setMessages] = useMessagesDeRefus(modele.infoFinImpossible?.n);
   const [confirmation, setConfirmation] = useState<ConfirmationEnAttente | undefined>(undefined);
   const terminer = async (): Promise<void> => {
-    setMessages(messagesDe((await surTerminer?.()) ?? { type: 'FAITE' }));
+    setMessages(messagesDeIssue((await surTerminer?.()) ?? { type: 'FAITE' }));
   };
   const rouvrir = async (): Promise<void> => {
     const issue = (await surRouvrir?.()) ?? { type: 'FAITE' };
     if (issue.type === 'CONFIRMATION_REQUISE') {
       setConfirmation({ modele: issue.confirmation, confirmer: issue.confirmer });
     } else {
-      setMessages(messagesDe(issue));
+      setMessages(messagesDeIssue(issue));
     }
   };
   const fermer = (): void => {
@@ -57,7 +55,7 @@ const useActionFin = ({ modele, surTerminer, surRouvrir }: ProprietesActionFin) 
   };
   const confirmer = async (): Promise<void> => {
     const issue = await confirmation?.confirmer();
-    setMessages(issue === undefined ? [] : messagesDe(issue));
+    setMessages(issue === undefined ? [] : messagesDeIssue(issue));
     fermer();
   };
   return { bouton, messages, confirmation, terminer, rouvrir, fermer, confirmer };

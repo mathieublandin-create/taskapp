@@ -75,19 +75,23 @@ describe('Magasin des tâches — fin et réouverture (ST-US-003 §4.2, §4.5)',
   it('UT-COMP-US-003-01 terminer retire la ligne du filtre « À faire » et offre l’annulation ; annuler rouvre la tâche ; sans fin à annuler, rien ne change', async () => {
     const banc = creerBancObjectifs();
     const id = await creerTache(banc, 'Rédiger');
-    const magasin = creerMagasinTaches(banc.services);
+    const planificateur = new PlanificateurManuel();
+    const magasin = creerMagasinTaches({ ...banc.services, planificateur });
     const { actions } = magasin.getState();
     await actions.afficherListe();
 
     expect((await actions.terminer(id)).type).toBe('FAITE');
 
     expect(magasin.getState().finAnnulable).toBe(id);
-    expect(intitulesDeLaListe(magasin)).toEqual([]);
+    planificateur.echeance();
+    await waitFor(() => {
+      expect(intitulesDeLaListe(magasin)).toEqual([]);
+    });
     expect((await actions.annulerFin()).type).toBe('FAITE');
     expect(magasin.getState().finAnnulable).toBeUndefined();
     expect(intitulesDeLaListe(magasin)).toEqual(['Rédiger']);
     expect((await actions.annulerFin()).type).toBe('FAITE');
-    actions.oublierFin();
+    actions.oublierFin(id);
     expect(magasin.getState().finAnnulable).toBeUndefined();
   });
 
@@ -246,6 +250,42 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
     expect(
       valeurDe(await banc.services.consulterDetailTache.executer(id)).tache.cycleDeVie.etat,
     ).toBe('A_FAIRE');
+  });
+
+  it('UT-COMP-US-003-13 la case d’une tâche parente qui a des sous-tâches à faire annonce ERR-035 (role alert), reste décochée et garde le focus', async () => {
+    const banc = creerBancObjectifs();
+    const parente = await creerTache(banc, 'Chapitre 1');
+    await creerSousTache(banc, parente, 'Section A');
+    await creerSousTache(banc, parente, 'Section B');
+    const magasin = creerMagasinTaches(banc.services);
+    render(<EspaceTaches magasin={magasin} />);
+    const caseTerminer = await screen.findByRole<HTMLInputElement>('checkbox', {
+      name: 'Terminer « Chapitre 1 »',
+    });
+
+    await userEvent.click(caseTerminer);
+
+    const alerte = await screen.findByRole('alert');
+    expect(alerte.textContent).toContain('Il reste 2 sous-tâches à terminer ou abandonner.');
+    expect(caseTerminer.checked).toBe(false);
+    expect(document.activeElement).toBe(caseTerminer);
+  });
+
+  it('UT-COMP-US-003-14 deux fins successives : un toast par fin, et la fermeture du premier laisse la seconde annulable', async () => {
+    const banc = creerBancObjectifs();
+    const premiere = await creerTache(banc, 'Rédiger');
+    const seconde = await creerTache(banc, 'Relire');
+    const magasin = creerMagasinTaches(banc.services);
+    const { actions } = magasin.getState();
+    await actions.afficherListe();
+
+    await actions.terminer(premiere);
+    await actions.terminer(seconde);
+    actions.oublierFin(premiere);
+
+    expect(magasin.getState().finAnnulable).toBe(seconde);
+    actions.oublierFin(seconde);
+    expect(magasin.getState().finAnnulable).toBeUndefined();
   });
 
   it('UT-COMP-US-003-07 une tâche terminée n’a pas de case ; une liste sans action « terminer » n’en affiche pas', async () => {
