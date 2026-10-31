@@ -48,7 +48,9 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     expect(await screen.findByRole('form', { name: 'Nouvel objectif' })).toBeTruthy();
     expect(registreSaisie.saisieEnCours()).toBe(false);
     await saisir('Intitulé', '  Publier le guide  ');
-    expect(registreSaisie.saisieEnCours()).toBe(true);
+    await waitFor(() => {
+      expect(registreSaisie.saisieEnCours()).toBe(true);
+    });
     await saisir('Description (facultative)', 'Version 1');
     await saisir('Délai (facultatif)', '2026-12-15');
     await cliquerBoutonIon('Créer l’objectif');
@@ -91,7 +93,9 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     afficher(banc);
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
     await saisir('Intitulé', 'Abandonné');
-    expect(registreSaisie.saisieEnCours()).toBe(true);
+    await waitFor(() => {
+      expect(registreSaisie.saisieEnCours()).toBe(true);
+    });
 
     await cliquerBoutonIon('Annuler');
 
