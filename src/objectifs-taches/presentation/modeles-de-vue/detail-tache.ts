@@ -8,7 +8,7 @@ import { formaterDate } from '../../../commun/presentation/format/date';
 import { mentionHeureParis } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
 import { libelle } from '../../../commun/presentation/messages/libelle';
-import { construireLigneTache, type LigneTache } from './ligne-tache';
+import { construireLigneTache, nomAccessibleCaseTerminer, type LigneTache } from './ligne-tache';
 import { comparerOrdreReference } from './ordre-reference';
 
 // ST-US-002 §4.5 ; ST-US-024 §4.5 ; ST-US-003 §4.5 ; ST-US-025 §4.5.
@@ -119,9 +119,6 @@ const verrouObjectifs = (tache: ResumeTache): Pick<ModeleVueDetailTache['objecti
         },
       }
     : {};
-
-// TODO(DT-019) : « Terminer « {intitulé} » » n'a pas de code au catalogue (guide §6.6) ; Q-ANT-E12-R6-1.
-const nomAccessibleCaseTerminer = (intitule: string): string => `Terminer « ${intitule} »`;
 
 const construireLigneSousTache = (
   resume: ResumeTache,

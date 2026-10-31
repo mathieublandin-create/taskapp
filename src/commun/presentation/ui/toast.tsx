@@ -10,6 +10,8 @@ export type ProprietesToast = {
   readonly code: CodeCatalogue;
   /** Appelée par le bouton d'action, s'il existe au catalogue. */
   readonly surAction?: () => void;
+  /** Appelée quand le toast disparaît (délai écoulé, bouton d'action ou geste). */
+  readonly surFermeture?: () => void;
 };
 
 const VARIANTE_AVEC_ACTION = 'avec-action';
@@ -17,7 +19,7 @@ const DUREE_SANS_ACTION_MS = 4000;
 const DUREE_AVEC_ACTION_MS = 6000;
 const PERSISTANT = 0;
 
-export const Toast = ({ code, surAction }: ProprietesToast) => {
+export const Toast = ({ code, surAction, surFermeture }: ProprietesToast) => {
   const avecAction = surAction !== undefined && aUnePartie(code, 'action');
   const variables =
     avecAction && aUneVariante(code, VARIANTE_AVEC_ACTION)
@@ -32,6 +34,7 @@ export const Toast = ({ code, surAction }: ProprietesToast) => {
       duration={alerte ? PERSISTANT : duree}
       position="bottom"
       htmlAttributes={{ role: alerte ? 'alert' : 'status', 'data-etat': code }}
+      {...(surFermeture === undefined ? {} : { onDidDismiss: surFermeture })}
       buttons={avecAction ? [{ text: libelle(code, {}, 'action'), handler: surAction }] : []}
     />
   );

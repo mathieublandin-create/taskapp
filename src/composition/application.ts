@@ -450,13 +450,14 @@ const objectifsDe = (
     const ouvert = espace();
     if (ouvert === undefined) return undefined;
     if (memorise?.service !== ouvert.service) {
-      const { generateur, horloge } = a;
+      const { generateur, horloge, planificateur } = a;
       memorise = {
         service: ouvert.service,
         objectifs: assemblerObjectifsTaches({
           service: ouvert.service,
           generateur,
           horloge,
+          planificateur,
           observer: (rappel) => ouvert.depot.observer(rappel),
         }),
       };

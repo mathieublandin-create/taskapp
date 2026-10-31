@@ -1,7 +1,9 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { Horloge } from '../../../../commun/application/ports/horloge';
+import type { Annulation, Planificateur } from '../../../../commun/application/ports/planificateur';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import type { Resultat } from '../../../../commun/domaine/resultat';
+import { EcartTemps } from '../../../../commun/domaine/temps/ecart-temps';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import type { ErreurDepotLocal } from '../../../../synchronisation';
 import type {
@@ -15,7 +17,9 @@ import type {
   RenommerTache,
 } from '../../../application/cas-usage/modifier-tache';
 import type { DetacherTache, RattacherTache } from '../../../application/cas-usage/rattacher-tache';
+import type { RouvrirTache } from '../../../application/cas-usage/rouvrir-tache';
 import type { SupprimerTache } from '../../../application/cas-usage/supprimer-tache';
+import type { TerminerTache } from '../../../application/cas-usage/terminer-tache';
 import type { RefusMetier } from '../../../domaine/refus';
 import type { ConsulterDetailTache } from '../../../application/requetes/consulter-detail-tache';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
@@ -56,11 +60,15 @@ export type ServicesTaches = {
   readonly rattacherTache: RattacherTache;
   readonly detacherTache: DetacherTache;
   readonly supprimerTache: SupprimerTache;
+  readonly terminerTache: TerminerTache;
+  readonly rouvrirTache: RouvrirTache;
   readonly consulterTaches: ConsulterTaches;
   readonly consulterDetailTache: ConsulterDetailTache;
   readonly consulterObjectifs: ConsulterObjectifs;
   /** Changements du dépôt local (DT-009) : le magasin recalcule ses modèles de vue quel que soit l'écrivain. */
   readonly observer?: (rappel: () => void) => () => void;
+  /** Maintien de la ligne d'une tâche terminée ; sans lui, elle quitte la liste « À faire » aussitôt. */
+  readonly planificateur?: Planificateur;
 };
 
 /** Issue d'une saisie : faite, refusée avec des messages sous les champs, ou enregistrement impossible (ERR-014). */
@@ -91,6 +99,9 @@ export type IssueSaisie =
       readonly confirmer: () => Promise<IssueTache>;
     };
 
+/** Durée pendant laquelle une tâche qui vient d'être terminée reste dans la liste « À faire » (ST-US-003 §4.5). */
+const DUREE_LIGNE_TERMINEE = EcartTemps.depuisMillisecondes(3000);
+
 export type EcranTaches =
   { readonly type: 'LISTE' } | { readonly type: 'DETAIL'; readonly id: IdTache };
 
@@ -108,6 +119,10 @@ export type EtatMagasinTaches = {
   readonly objectifs: ReadonlyArray<ObjectifProposable>;
   /** Confirmation de suppression en attente (CNF-SUPPR-TACHE). */
   readonly confirmation?: ModeleVueConfirmation | undefined;
+  /** Tâches terminées il y a moins de 3 s : leur ligne reste affichée, case cochée, dans le filtre « À faire ». */
+  readonly termineesRecentes: ReadonlyArray<IdTache>;
+  /** Dernière tâche terminée, que le toast TST-TERMINEE permet de rouvrir (« Annuler »). */
+  readonly finAnnulable?: IdTache | undefined;
   /** Vrai après un échec d'écriture ou de lecture locale : toast ERR-014. */
   readonly erreurEnregistrement: boolean;
   readonly actions: ActionsMagasinTaches;
@@ -130,6 +145,14 @@ export type ActionsMagasinTaches = {
   readonly demanderSuppression: (id: IdTache) => Promise<void>;
   readonly confirmerSuppression: () => Promise<void>;
   readonly annulerSuppression: () => void;
+  /** Termine la tâche ; un refus (ERR-035) est rendu en issue, l'état reste inchangé. */
+  readonly terminer: (id: IdTache) => Promise<IssueTache>;
+  /** « Annuler » du toast TST-TERMINEE : rouvre la dernière tâche terminée. */
+  readonly annulerFin: () => Promise<IssueTache>;
+  /** Le toast TST-TERMINEE est fermé : la fin n'est plus annulable. */
+  readonly oublierFin: () => void;
+  /** Rouvre la tâche ; `CONFIRMATION_REQUISE` (CNF-ROUVRIR-SOUS-TACHE) tant que l'utilisateur n'a pas confirmé. */
+  readonly rouvrir: (id: IdTache) => Promise<IssueSaisie>;
   /** Commence à observer le dépôt local (DT-009) et rend la fonction qui cesse de l'observer (démontage). */
   readonly observerDepot: () => () => void;
 };
@@ -147,6 +170,13 @@ class ActionsTaches implements ActionsMagasinTaches {
     private readonly lire: Lire,
   ) {}
 
+  #annulerMinuterie: Annulation | undefined;
+
+  readonly #arreterMinuterie = (): void => {
+    this.#annulerMinuterie?.();
+    this.#annulerMinuterie = undefined;
+  };
+
   readonly #chargerListe = async (): Promise<void> => {
     const lecture = await this.services.consulterTaches.executer();
     if (!lecture.ok) {
@@ -154,7 +184,9 @@ class ActionsTaches implements ActionsMagasinTaches {
       return;
     }
     const { filtreEtat, filtreObjectif } = this.lire();
+    this.#arreterMinuterie();
     this.ecrire({
+      termineesRecentes: [],
       liste: construireListeTaches(
         lecture.valeur,
         { etat: filtreEtat, objectif: filtreObjectif },
@@ -183,7 +215,9 @@ class ActionsTaches implements ActionsMagasinTaches {
 
   readonly #rafraichir = async (): Promise<void> => {
     await this.chargerObjectifs();
-    const { ecran } = this.lire();
+    const { ecran, termineesRecentes } = this.lire();
+    // La ligne d'une tâche tout juste terminée reste 3 s : la minuterie recalcule ensuite la liste.
+    if (ecran.type === 'LISTE' && termineesRecentes.length > 0) return;
     await (ecran.type === 'LISTE' ? this.#chargerListe() : this.#chargerDetail(ecran.id));
   };
 
@@ -325,6 +359,72 @@ class ActionsTaches implements ActionsMagasinTaches {
     this.ecrire({ confirmation: undefined });
   };
 
+  readonly #relacherLigneTerminee = async (): Promise<void> => {
+    this.#arreterMinuterie();
+    this.ecrire({ termineesRecentes: [] });
+    await this.#rafraichir();
+  };
+
+  /** La liste « À faire » garde la ligne 3 s ; sinon (détail, autre filtre) les modèles de vue sont recalculés. */
+  readonly #apresFin = async (id: IdTache): Promise<void> => {
+    const { ecran, filtreEtat, termineesRecentes } = this.lire();
+    this.ecrire({ finAnnulable: id });
+    const { planificateur } = this.services;
+    if (
+      ecran.type !== 'LISTE' ||
+      filtreEtat !== FILTRE_ETAT_PAR_DEFAUT ||
+      planificateur === undefined
+    ) {
+      await this.#rafraichir();
+      return;
+    }
+    this.#arreterMinuterie();
+    this.ecrire({ termineesRecentes: [...termineesRecentes, id] });
+    this.#annulerMinuterie = planificateur.apres(DUREE_LIGNE_TERMINEE, () => {
+      void this.#relacherLigneTerminee();
+    });
+  };
+
+  readonly terminer = this.#effacee(async (id: IdTache): Promise<IssueTache> => {
+    const issue = issueDe(await this.services.terminerTache.executer({ tacheId: id }));
+    if (issue.type === 'FAITE') await this.#apresFin(id);
+    else await this.#apres(issue);
+    // Refus sans message : l'action n'était plus proposée (modifiée ailleurs), l'écran se met à jour.
+    if (issue.type === 'REFUSEE' && issue.messages.length === 0) await this.#rafraichir();
+    return issue;
+  });
+
+  readonly annulerFin = this.#effacee(async (): Promise<IssueTache> => {
+    const { finAnnulable } = this.lire();
+    this.ecrire({ finAnnulable: undefined });
+    if (finAnnulable === undefined) return { type: 'FAITE' };
+    this.#arreterMinuterie();
+    this.ecrire({ termineesRecentes: [] });
+    return this.#apres(
+      issueDe(await this.services.rouvrirTache.executer({ tacheId: finAnnulable })),
+    );
+  });
+
+  readonly oublierFin = (): void => {
+    this.ecrire({ finAnnulable: undefined });
+  };
+
+  /** `evaluer` d'abord (conventions.md §8.6) : la réouverture d'une sous-tâche sous une tâche terminée se confirme. */
+  readonly rouvrir = this.#effacee(async (id: IdTache): Promise<IssueSaisie> => {
+    this.ecrire({ finAnnulable: undefined });
+    const evaluation = await this.services.rouvrirTache.evaluer({ tacheId: id });
+    if (!evaluation.ok) return this.#apres(issueDe(evaluation));
+    const executer = async (): Promise<IssueTache> =>
+      this.#apres(issueDe(await this.services.rouvrirTache.executer({ tacheId: id })));
+    return evaluation.valeur.type === 'CONFIRMATION_REQUISE'
+      ? {
+          type: 'CONFIRMATION_REQUISE',
+          confirmation: construireConfirmation(evaluation.valeur.confirmation),
+          confirmer: executer,
+        }
+      : executer();
+  });
+
   /** DT-009 : une écriture d'un autre écrivain (fusion distante, autre onglet) rafraîchit l'écran courant. */
   readonly observerDepot = (): (() => void) =>
     this.services.observer?.(() => {
@@ -338,6 +438,7 @@ export const creerMagasinTaches = (services: ServicesTaches): MagasinTaches =>
     filtreEtat: FILTRE_ETAT_PAR_DEFAUT,
     filtreObjectif: { type: 'TOUS' },
     objectifs: [],
+    termineesRecentes: [],
     erreurEnregistrement: false,
     actions: new ActionsTaches(services, set, get),
   }));

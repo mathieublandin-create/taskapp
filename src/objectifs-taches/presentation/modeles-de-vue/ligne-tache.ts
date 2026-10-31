@@ -46,6 +46,8 @@ export type LigneTache = {
     readonly nomAccessible: string;
   };
   readonly nomAccessible: string;
+  /** Case « Terminer » (ST-US-003 §4.5) : présente ssi la tâche est à faire. */
+  readonly caseTerminer?: { readonly nomAccessible: string };
 };
 
 const CODES_ETAT = {
@@ -78,6 +80,14 @@ const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTach
     },
   };
 };
+
+// TODO(DT-019) : « Terminer « {intitulé} » » n'a pas de code au catalogue (guide §6.6) ; Q-ANT-E12-R6-1.
+export const nomAccessibleCaseTerminer = (intitule: string): string => `Terminer « ${intitule} »`;
+
+const modeleCaseTerminer = (resume: ResumeTache): Pick<LigneTache, 'caseTerminer'> =>
+  resume.cycleDeVie.etat === 'A_FAIRE'
+    ? { caseTerminer: { nomAccessible: nomAccessibleCaseTerminer(resume.intitule) } }
+    : {};
 
 const enMinuscules = (texte: string): string => texte.charAt(0).toLowerCase() + texte.slice(1);
 
@@ -140,6 +150,7 @@ export const construireLigneTache = (
     ...modeleCompteur(resume),
     ...modeleIncoherence(resume),
     ...modeleAttente(resume),
+    ...modeleCaseTerminer(resume),
     nomAccessible: nomAccessible(resume, aujourdhui),
   };
 };

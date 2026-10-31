@@ -641,6 +641,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/action-fin.tsx": {
+      "debut": 7,
+      "fin": 7
+    },
     "src/objectifs-taches/presentation/ui/composants/champ-detail.tsx": {
       "debut": 5,
       "fin": 5

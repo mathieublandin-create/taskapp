@@ -45,10 +45,19 @@ const PageListe = ({
     objectifs={etat.objectifs}
     surCreer={surCreer}
     surOuvrir={(id) => void etat.actions.ouvrirDetail(id)}
+    surTerminer={(id) => void etat.actions.terminer(id)}
+    retenues={etat.termineesRecentes}
     surFiltrerEtat={(filtre) => void etat.actions.filtrerEtat(filtre)}
     surFiltrerObjectif={(filtre) => void etat.actions.filtrerObjectif(filtre)}
   />
 );
+
+/** Fin et réouverture de la tâche du détail, et case « Terminer » de ses sous-tâches. */
+const commandesDeFin = (actions: ActionsMagasinTaches, id: IdTache) => ({
+  surTerminer: () => actions.terminer(id),
+  surTerminerSousTache: (sousTacheId: IdTache) => void actions.terminer(sousTacheId),
+  surRouvrir: () => actions.rouvrir(id),
+});
 
 const PageDetail = ({
   etat,
@@ -76,6 +85,7 @@ const PageDetail = ({
       surSupprimer={() => void actions.demanderSuppression(id)}
       surOuvrirSousTache={(sousTacheId) => void actions.ouvrirDetail(sousTacheId)}
       surAjouterSousTache={surAjouterSousTache}
+      {...commandesDeFin(actions, id)}
     />
   );
 };
@@ -121,6 +131,15 @@ const ConfirmationSuppression = ({
     rouge
     surConfirmer={() => void actions.confirmerSuppression()}
     surAnnuler={actions.annulerSuppression}
+  />
+);
+
+/** TST-TERMINEE : « Annuler » rouvre la tâche qui vient d'être terminée (Q-US-003-1 a). */
+const ToastFin = ({ actions }: { readonly actions: ActionsMagasinTaches }) => (
+  <Toast
+    code="TST-TERMINEE"
+    surAction={() => void actions.annulerFin()}
+    surFermeture={actions.oublierFin}
   />
 );
 
@@ -210,6 +229,7 @@ export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
       {confirmation === undefined ? null : (
         <ConfirmationSuppression confirmation={confirmation} actions={actions} />
       )}
+      {etat.finAnnulable === undefined ? null : <ToastFin actions={actions} />}
       {etat.erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null}
     </>
   );

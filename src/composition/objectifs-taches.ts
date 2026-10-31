@@ -1,5 +1,6 @@
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
+import type { Planificateur } from '../commun/application/ports/planificateur';
 import {
   ConsulterDetailObjectif,
   ConsulterDetailTache,
@@ -59,6 +60,8 @@ export type ObjectifsTaches = {
   readonly consulterHistorique: ConsulterHistorique;
   /** Changements du dépôt local, quel qu'en soit l'écrivain (DT-009) ; obligatoire à l'assemblage (RC-R3-11). */
   readonly observer: (rappel: () => void) => () => void;
+  /** Maintien de 3 s de la ligne d'une tâche terminée (ST-US-003 §4.5) ; sans lui, la ligne quitte la liste aussitôt. */
+  readonly planificateur?: Planificateur;
 };
 
 type Dependances = {
@@ -66,6 +69,7 @@ type Dependances = {
   readonly generateur: GenerateurIdentifiants;
   readonly horloge: Horloge;
   readonly observer: (rappel: () => void) => () => void;
+  readonly planificateur?: Planificateur;
 };
 
 /** Cas d'usage et requêtes des tâches (ST-US-002 §3 n° 20). */
@@ -101,4 +105,5 @@ export const assemblerObjectifsTaches = (d: Dependances): ObjectifsTaches => ({
   consulterSelecteurParent: new ConsulterSelecteurParent(d.service, d.horloge),
   consulterHistorique: new ConsulterHistorique(d.service),
   observer: d.observer,
+  ...(d.planificateur === undefined ? {} : { planificateur: d.planificateur }),
 });

@@ -69,5 +69,7 @@ export const LIBELLES_TACHES = {
   tacheParente: 'Sous-tâche de «\u00a0{parent}\u00a0»',
   ajouterSousTache: 'Ajouter une sous-tâche',
   saisieSousTacheTitre: 'Nouvelle sous-tâche',
+  terminerTache: 'Terminer la tâche',
+  rouvrirTache: 'Rouvrir la tâche',
   deTacheParente: 'de «\u00a0{parent}\u00a0»',
 } as const;

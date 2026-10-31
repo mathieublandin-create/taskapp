@@ -12,16 +12,18 @@ import { useState } from 'react';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { libelle } from '../../../../commun/presentation/messages/libelle';
+import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { ActionTache } from '../../../domaine/types-actions';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { ActionFin } from '../composants/action-fin';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
 import { MessagesRefus } from '../composants/messages-refus';
 import { PucesObjectif } from '../composants/puces-objectif';
 import { SectionSousTaches } from '../composants/section-sous-taches';
 import { SelecteurDuree } from '../composants/selecteur-duree';
-import type { IssueTache, ObjectifProposable } from '../etat/magasin-taches';
+import type { IssueSaisie, IssueTache, ObjectifProposable } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
 // Écran ECR-007 (B, C, E) : intitulé, état, alertes de délai, champs modifiables (délai, estimation, objectifs) ou
@@ -39,6 +41,10 @@ export type ProprietesDetailTache = {
   /** ECR-007 A : ouvre le détail d'une sous-tâche ; saisie d'une nouvelle sous-tâche (proposée par `actions`). */
   readonly surOuvrirSousTache: (id: IdTache) => void;
   readonly surAjouterSousTache: () => void;
+  /** ECR-007 A, G : fin et réouverture ; sans elles, ni bouton ni case « Terminer » active. */
+  readonly surTerminer?: () => Promise<IssueTache>;
+  readonly surTerminerSousTache?: (id: IdTache) => void;
+  readonly surRouvrir?: () => Promise<IssueSaisie>;
 };
 
 type Edition = 'DELAI' | 'ESTIMATION' | 'OBJECTIFS' | 'INTITULE' | undefined;
@@ -309,7 +315,12 @@ const ChampObjectifs = ({ modele, proprietes, editeur }: ProprietesChamp) => {
 const EnTete = ({ modele }: { readonly modele: ModeleVueDetailTache }) => (
   <>
     <h1>{modele.intitule}</h1>
-    <IonChip data-code={modele.etat.code}>{libelle(modele.etat.code, { date: '' }).trim()}</IonChip>
+    <IonChip data-code={modele.etat.code}>
+      {modele.dateFin?.libelle ?? libelle(modele.etat.code, { date: '' }).trim()}
+    </IonChip>
+    {modele.dateFin?.mentionHeureParis === undefined ? null : (
+      <NoteHeureParis mention={modele.dateFin.mentionHeureParis} />
+    )}
     {modele.enRetard === undefined ? null : (
       <strong data-code={modele.enRetard.code}>{modele.enRetard.libelle}</strong>
     )}
@@ -329,18 +340,22 @@ const EnTete = ({ modele }: { readonly modele: ModeleVueDetailTache }) => (
 const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => (
   <>
     {modele.sousTaches === undefined ? null : (
-      <SectionSousTaches section={modele.sousTaches} surOuvrir={proprietes.surOuvrirSousTache} />
+      <SectionSousTaches
+        section={modele.sousTaches}
+        surOuvrir={proprietes.surOuvrirSousTache}
+        surTerminer={proprietes.surTerminerSousTache}
+      />
     )}
     {modele.actions.includes('CREER_SOUS_TACHE') ? (
       <button type="button" onClick={proprietes.surAjouterSousTache}>
         {LIBELLES_TACHES.ajouterSousTache}
       </button>
     ) : null}
-    {modele.infoFinImpossible === undefined ? null : (
-      <IonNote role="status" data-code={modele.infoFinImpossible.code}>
-        {modele.infoFinImpossible.libelle}
-      </IonNote>
-    )}
+    <ActionFin
+      modele={modele}
+      surTerminer={proprietes.surTerminer}
+      surRouvrir={proprietes.surRouvrir}
+    />
   </>
 );
 
