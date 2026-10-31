@@ -144,8 +144,15 @@ Then(
     const local = await etatMetierDansEspace(this, appareil, compte);
     assert.ok(local !== undefined, `Aucune donnée locale sur le ${nomAppareil}`);
     const sansAttente = <T extends { readonly enAttente: boolean }>(m: ReadonlyMap<string, T>) =>
-      [...m.entries()].map(([id, v]) => [id, { ...v, enAttente: false }] as const);
+      [...m.entries()]
+        .map(([id, v]) => [id, { ...v, enAttente: false }] as const)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
     const distant = await etatMetierDuDrive(drive);
+    assert.ok(
+      local.objectifs.size + local.taches.size > 0 ||
+        distant.objectifs.size + distant.taches.size > 0,
+      `Les états local et distant du ${nomAppareil} sont tous deux vides : comparaison sans valeur`,
+    );
     assert.deepEqual(sansAttente(local.objectifs), sansAttente(distant.objectifs));
     assert.deepEqual(sansAttente(local.taches), sansAttente(distant.taches));
   },
