@@ -49,6 +49,13 @@ Les cinq agents les plus coûteux :
 | OPT-12 | **État des lieux par script** (ajout du 2026-10-30) : `docs/etat-des-lieux-avancement.json` + `docs/outils/maj-etat-des-lieux.py` ; plus de HTML édité à la main ni de pourcentage calculé à la main ; mises à jour aux seuls changements d'étape et fusions. | 5 à 10 % | Positif : fin des erreurs d'arrondi |
 | OPT-13 | **Gestes mécaniques à Friday haiku** (ajout du 2026-10-30) : push, ouverture de PR, relevé de CI. | 5 % | Neutre |
 | OPT-14 | **Messages courts** (ajout du 2026-10-30) : 3 à 5 lignes pour le commanditaire, 5 lignes pour les comptes rendus d'agents. | 5 % | Neutre |
+| OPT-15 | **Rang découpé par couche** (ajout du 2026-10-31) : un agent neuf par tranche d'un rang (domaine et application, modèles de vue, UI, étapes Cucumber), selon le plan §15 de la ST ; les tests rouges d'Anthony cadrent chaque tranche. Constat : un seul Benjamin a coûté 664 k au rang 5 (252 appels). | élevé | Neutre à positif |
+| OPT-16 | **PR en brouillon jusqu'à l'E13 approuvée et la CI verte** (ajout du 2026-10-31) : un brouillon ne peut pas être fusionné. Évite une fusion avant verdict (cas de la PR #13, environ 400 k de reprise). | évite les reprises | Positif |
+| OPT-17 | **Pas de commit de travail en cours qui réveille la session** (ajout du 2026-10-31) : le hook d'arrêt relance un tour complet de la session principale (une vingtaine de fois dans la session du 2026-10-30/31). Réglage à la charge du commanditaire (hook `stop-hook-git-check.sh`), ou chaque agent pousse sa branche de travail. | moyen à élevé | Neutre |
+| OPT-18 | **E13 « bis » sur sonnet quand les remarques sont mécaniques** (ajout du 2026-10-31) ; opus si une remarque majeure touche la conception ou la synchronisation. | environ 40 % des 2es tours | Neutre si la règle est respectée |
+| OPT-19 | **Auto-contrôle de Benjamin avant l'E13** (ajout du 2026-10-31) : relecture de `checklist-revue-code.md` sur son diff ; règles de lint pour les défauts récurrents (promesses jetées avec `void`, transtypages hors constructeur). | moins de tours de correction | Positif |
+| OPT-20 | **Numéros de dette et de décision attribués à la fusion, pas en parallèle** (ajout du 2026-10-31), et pas de travaux parallèles sur les mêmes fichiers d'étapes Cucumber (cas des 5 scénarios ambigus d'ANO-001 et du rang 5). | petit | Positif |
+| OPT-21 | **`pnpm cucumber` à blanc en fin d'E10** (ajout du 2026-10-31) : Anthony vérifie que les scénarios rattachés au rang sont cohérents avec la ST et les décisions avant l'E12 (cas d'US-018 S09 et d'US-031 S07, incohérents avec DEC-034). | évite les reprises | Positif |
 
 **Gain global estimé : 40 à 55 %** de tokens pour le même travail. OPT-1 et OPT-2 représentent l'essentiel du gain.
 
