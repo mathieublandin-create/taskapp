@@ -48,6 +48,10 @@ export {
   type ModeleVueDetailTache,
 } from './presentation/modeles-de-vue/detail-tache';
 export {
+  construireFormulaireSousTache,
+  type ModeleVueFormulaireSousTache,
+} from './presentation/modeles-de-vue/formulaire-sous-tache';
+export {
   construireFormulaireTache,
   type ModeleVueFormulaireTache,
 } from './presentation/modeles-de-vue/formulaire-tache';

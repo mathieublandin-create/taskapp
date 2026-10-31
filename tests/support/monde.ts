@@ -8,6 +8,8 @@ import type { Instant } from '@src/commun/domaine/temps/instant';
 import type {
   FiltreEtat,
   ModeleVueDetailObjectif,
+  ModeleVueDetailTache,
+  ModeleVueFormulaireSousTache,
   ModeleVueFormulaireTache,
   ModeleVueListeObjectifs,
   ModeleVueListeTaches,
@@ -15,6 +17,7 @@ import type {
 import type { NomAppareil } from './banc/appareil-simule';
 import { BancSynchro } from './banc/banc-synchro';
 import type { CommandeEnAttente } from './commandes-en-attente';
+import type { SaisieSousTacheEnCours } from './construction-taches';
 import { References } from './references';
 
 export class MondeDoneJuan extends World {
@@ -27,7 +30,12 @@ export class MondeDoneJuan extends World {
   readonly dernierDetailObjectif = new Map<NomAppareil, ModeleVueDetailObjectif>();
   /** ST-US-002 §12 n° 5, 22 à 27 : dernier formulaire de saisie, dernière liste des tâches et son filtre d'état. */
   readonly dernierFormulaireTache = new Map<NomAppareil, ModeleVueFormulaireTache>();
+  /** ST-US-024 §12 n° 3, 4 : dernier formulaire de sous-tâche, et saisie en cours (US-018 S13). */
+  readonly dernierFormulaireSousTache = new Map<NomAppareil, ModeleVueFormulaireSousTache>();
+  readonly saisieSousTacheEnCours = new Map<NomAppareil, SaisieSousTacheEnCours>();
   readonly derniereListeTaches = new Map<NomAppareil, ModeleVueListeTaches>();
+  /** Dernier détail de tâche consulté (ST-US-024 §12 n° 6 à 8). */
+  readonly dernierDetailTache = new Map<NomAppareil, ModeleVueDetailTache>();
   readonly filtreEtatTaches = new Map<NomAppareil, FiltreEtat>();
   /** Instant simulé de la dernière action : « au même instant exact, » y revient (conventions.md §11.7). */
   instantDerniereAction: Instant | undefined;

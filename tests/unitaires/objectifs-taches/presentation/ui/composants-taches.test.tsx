@@ -21,7 +21,12 @@ import type { IssueTache } from '@src/objectifs-taches/presentation/ui/etat/maga
 import { construireFormulaireTache } from '@src/objectifs-taches/presentation/modeles-de-vue/formulaire-tache';
 import { construireLigneTache } from '@src/objectifs-taches/presentation/modeles-de-vue/ligne-tache';
 import { resumeTache } from '@tests/support/fabriques/resumes';
-import { apresFermeture, cliquerBoutonIon, nettoyerDocument } from '@tests/support/ui-objectifs';
+import {
+  apresFermeture,
+  cliquerBoutonIon,
+  nettoyerDocument,
+  renseigner,
+} from '@tests/support/ui-objectifs';
 import { date, idObjectif, idTache } from '@tests/support/valeurs';
 
 afterEach(nettoyerDocument);
@@ -174,25 +179,6 @@ describe('Ligne, champs, filtres et puces', () => {
     expect(surBasculer).toHaveBeenCalledWith(O1);
   });
 });
-
-/**
- * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
- * touche par touche concourt avec le rendu contrôlé du champ et n'apporte rien à ce qui est vérifié ici.
- */
-const renseigner = async (libelle: RegExp | string, texte: string): Promise<void> => {
-  const champ = await waitFor(() => {
-    const trouve = Array.from(document.querySelectorAll<HTMLIonInputElement>('ion-input')).find(
-      (e) => (typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? '')),
-    );
-    if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
-    return trouve;
-  });
-  champ.value = texte;
-  champ.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
-  await waitFor(() => {
-    expect(champ.value).toBe(texte);
-  });
-};
 
 describe('SaisieRapide (QuickAdd)', () => {
   const REFUS: IssueTache = {

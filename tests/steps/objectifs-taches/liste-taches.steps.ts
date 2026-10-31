@@ -111,6 +111,24 @@ etapeAssertion(
   },
 );
 
+// ST-US-024 §12 n° 9 : `LigneTache.compteurSousTaches` du dernier modèle de liste.
+etapeAssertion(
+  new RegExp(
+    `^dans la liste des tâches, la tâche ${TEXTE} indique (\\d+) sous-tâches?(?:\\(s\\))? terminées?(?:\\(s\\))? sur (\\d+) sous-tâches?(?:\\(s\\))? non abandonnées?(?:\\(s\\))?$`,
+  ),
+  ({ monde, appareil }, intitule, terminees, nonAbandonnees) => {
+    const ligne = derniereListe(monde, appareil).lignes.find((l) => l.intitule === intitule);
+    assert.ok(ligne, `La tâche « ${String(intitule)} » est absente de la liste`);
+    assert.deepEqual(
+      ligne.compteurSousTaches && {
+        terminees: ligne.compteurSousTaches.terminees,
+        nonAbandonnees: ligne.compteurSousTaches.nonAbandonnees,
+      },
+      { terminees: Number(terminees), nonAbandonnees: Number(nonAbandonnees) },
+    );
+  },
+);
+
 // ST-US-024 §12 n° 11 : liste fermée des actions nommées ; « terminer », « rouvrir » (rang 7), « abandonner »,
 // « reprendre » (rang 8) s'y ajoutent avec leurs rangs.
 const ACTIONS_TACHE: Readonly<Record<string, ActionTache>> = {

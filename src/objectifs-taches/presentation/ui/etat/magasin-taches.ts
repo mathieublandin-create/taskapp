@@ -1,7 +1,13 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { Horloge } from '../../../../commun/application/ports/horloge';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
+import type { Resultat } from '../../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
+import type { ErreurDepotLocal } from '../../../../synchronisation';
+import type {
+  CreerSousTache,
+  EntreeCreerSousTache,
+} from '../../../application/cas-usage/creer-sous-tache';
 import type { CreerTache } from '../../../application/cas-usage/creer-tache';
 import type {
   ModifierDelaiTache,
@@ -10,6 +16,7 @@ import type {
 } from '../../../application/cas-usage/modifier-tache';
 import type { DetacherTache, RattacherTache } from '../../../application/cas-usage/rattacher-tache';
 import type { SupprimerTache } from '../../../application/cas-usage/supprimer-tache';
+import type { RefusMetier } from '../../../domaine/refus';
 import type { ConsulterDetailTache } from '../../../application/requetes/consulter-detail-tache';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
 import type { ConsulterTaches } from '../../../application/requetes/consulter-taches';
@@ -28,6 +35,10 @@ import {
   type FiltreObjectif,
   type ModeleVueListeTaches,
 } from '../../modeles-de-vue/liste-taches';
+import {
+  construireFormulaireSousTache,
+  type ModeleVueFormulaireSousTache,
+} from '../../modeles-de-vue/formulaire-sous-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { estRefusMetier, issueDe } from './issues';
 
@@ -38,6 +49,7 @@ import { estRefusMetier, issueDe } from './issues';
 export type ServicesTaches = {
   readonly horloge: Horloge;
   readonly creerTache: CreerTache;
+  readonly creerSousTache: CreerSousTache;
   readonly renommerTache: RenommerTache;
   readonly modifierDelaiTache: ModifierDelaiTache;
   readonly modifierEstimationTache: ModifierEstimationTache;
@@ -64,6 +76,21 @@ export type SaisieTacheUi = {
   readonly objectifIds: ReadonlyArray<IdObjectif>;
 };
 
+/** Saisie d'une sous-tâche : les objectifs sont ceux de la tâche parente (RG-023). */
+export type SaisieSousTacheUi = Omit<SaisieTacheUi, 'objectifIds'>;
+
+/**
+ * Issue d'une saisie qui peut demander une confirmation (CNF-AJOUT-SOUS-TACHE-TERMINEE) : `confirmer` exécute alors la
+ * commande évaluée, sans que l'écran connaisse la règle.
+ */
+export type IssueSaisie =
+  | IssueTache
+  | {
+      readonly type: 'CONFIRMATION_REQUISE';
+      readonly confirmation: ModeleVueConfirmation;
+      readonly confirmer: () => Promise<IssueTache>;
+    };
+
 export type EcranTaches =
   { readonly type: 'LISTE' } | { readonly type: 'DETAIL'; readonly id: IdTache };
 
@@ -75,6 +102,8 @@ export type EtatMagasinTaches = {
   readonly filtreObjectif: FiltreObjectif;
   readonly liste?: ModeleVueListeTaches;
   readonly detail?: ModeleVueDetailTache | undefined;
+  /** Saisie d'une sous-tâche de la tâche du détail (ECR-007 I) ; absent si la tâche ne peut pas en recevoir. */
+  readonly formulaireSousTache?: ModeleVueFormulaireSousTache | undefined;
   /** Tous les objectifs actifs : puces de rattachement de la saisie et filtre de la liste. */
   readonly objectifs: ReadonlyArray<ObjectifProposable>;
   /** Confirmation de suppression en attente (CNF-SUPPR-TACHE). */
@@ -92,6 +121,7 @@ export type ActionsMagasinTaches = {
   /** Charge les objectifs proposés à la saisie. */
   readonly chargerObjectifs: () => Promise<void>;
   readonly creer: (saisie: SaisieTacheUi) => Promise<IssueTache>;
+  readonly creerSousTache: (parenteId: IdTache, saisie: SaisieSousTacheUi) => Promise<IssueSaisie>;
   readonly renommer: (id: IdTache, intitule: string) => Promise<IssueTache>;
   readonly modifierDelai: (id: IdTache, delai: DateCalendaire) => Promise<IssueTache>;
   readonly modifierEstimation: (id: IdTache, minutes: number) => Promise<IssueTache>;
@@ -137,8 +167,12 @@ class ActionsTaches implements ActionsMagasinTaches {
   readonly #chargerDetail = async (id: IdTache): Promise<void> => {
     const lecture = await this.services.consulterDetailTache.executer(id);
     if (lecture.ok) {
+      const detail = construireDetailTache(lecture.valeur, { horloge: this.services.horloge });
       this.ecrire({
-        detail: construireDetailTache(lecture.valeur, { horloge: this.services.horloge }),
+        detail,
+        formulaireSousTache: detail.actions.includes('CREER_SOUS_TACHE')
+          ? construireFormulaireSousTache(lecture.valeur)
+          : undefined,
       });
     } else if (estRefusMetier(lecture.erreur)) {
       await this.afficherListe();
@@ -194,17 +228,53 @@ class ActionsTaches implements ActionsMagasinTaches {
   };
 
   readonly ouvrirDetail = async (id: IdTache): Promise<void> => {
-    this.ecrire({ ecran: { type: 'DETAIL', id }, detail: undefined, erreurEnregistrement: false });
+    this.ecrire({
+      ecran: { type: 'DETAIL', id },
+      detail: undefined,
+      formulaireSousTache: undefined,
+      erreurEnregistrement: false,
+    });
     await this.chargerObjectifs();
     await this.#chargerDetail(id);
   };
 
-  readonly creer = this.#effacee(async (saisie: SaisieTacheUi): Promise<IssueTache> => {
-    const creation = await this.services.creerTache.executer(saisie);
+  /** Issue d'une création : faite avec l'identifiant créé, ou refusée ; les modèles de vue sont recalculés. */
+  readonly #issueDeCreation = async (
+    creation: Resultat<IdTache, RefusMetier | ErreurDepotLocal>,
+  ): Promise<IssueTache> => {
     const issue = issueDe(creation);
     await this.#apres(issue);
     return creation.ok ? { type: 'FAITE', id: creation.valeur } : issue;
-  });
+  };
+
+  readonly creer = this.#effacee(async (saisie: SaisieTacheUi): Promise<IssueTache> =>
+    this.#issueDeCreation(await this.services.creerTache.executer(saisie)),
+  );
+
+  /** `evaluer` d'abord (conventions.md §8.6) : une tâche parente terminée demande confirmation avant l'écriture. */
+  readonly creerSousTache = this.#effacee(
+    async (parenteId: IdTache, saisie: SaisieSousTacheUi): Promise<IssueSaisie> => {
+      const entree: EntreeCreerSousTache = {
+        tacheParenteId: parenteId,
+        intitule: saisie.intitule,
+        ...(saisie.delai === undefined ? {} : { delai: saisie.delai }),
+        ...(saisie.estimationMinutes === undefined
+          ? {}
+          : { estimationMinutes: saisie.estimationMinutes }),
+      };
+      const evaluation = await this.services.creerSousTache.evaluer(entree);
+      if (!evaluation.ok) return this.#apres(issueDe(evaluation));
+      const executer = async (): Promise<IssueTache> =>
+        this.#issueDeCreation(await this.services.creerSousTache.executer(entree));
+      return evaluation.valeur.type === 'CONFIRMATION_REQUISE'
+        ? {
+            type: 'CONFIRMATION_REQUISE',
+            confirmation: construireConfirmation(evaluation.valeur.confirmation),
+            confirmer: executer,
+          }
+        : executer();
+    },
+  );
 
   readonly renommer = this.#effacee(async (id: IdTache, intitule: string) =>
     this.#apres(issueDe(await this.services.renommerTache.executer({ tacheId: id, intitule }))),

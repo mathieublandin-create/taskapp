@@ -88,6 +88,12 @@ export const creerTache = async ({ monde, appareil }: ContexteEtape, saisie: Sai
 
 export type SaisieSousTacheTest = Omit<SaisieTacheTest, 'objectifs'>;
 
+/** Formulaire de sous-tâche ouvert, rempli par étapes successives (US-018 S13). */
+export type SaisieSousTacheEnCours = {
+  readonly parente: string;
+  readonly saisie: SaisieSousTacheTest;
+};
+
 const saisieDeSousTache = (saisie: SaisieSousTacheTest) => ({
   intitule: saisie.intitule,
   ...(saisie.delai === undefined ? {} : { delai: date(saisie.delai) }),

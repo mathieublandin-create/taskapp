@@ -5,7 +5,11 @@
  */
 import assert from 'node:assert/strict';
 import type { DataTable } from '@cucumber/cucumber';
-import { construireConfirmation, construireFormulaireTache } from '@src/objectifs-taches';
+import {
+  construireConfirmation,
+  construireFormulaireTache,
+  type ModeleVueDetailTache,
+} from '@src/objectifs-taches';
 import {
   convertirDuree,
   FRAGMENT_DATE,
@@ -31,6 +35,7 @@ import {
 import {
   detailTacheDe,
   existeUneTacheIntitulee,
+  formulaireSousTacheDe,
   listeIntitules,
   minutes,
   memoriserTache,
@@ -205,6 +210,136 @@ etapeAssertion(/^aucune estimation n'est présélectionnée$/, (contexte) => {
   assert.equal(dernierFormulaire(contexte).estimationPreselectionnee, undefined);
 });
 
+// ---------------------------------------------------------------- Saisie d'une sous-tâche (ST-US-024 §12 n° 3, 4)
+
+/** `construireFormulaireSousTache` mémorisé ; la saisie en cours part vide (US-018 S13). */
+etapeAction(
+  new RegExp(`^l'utilisateur commence la saisie d'une sous-tâche de la tâche ${TEXTE}$`),
+  async ({ monde, appareil }, parente) => {
+    const formulaire = await formulaireSousTacheDe(monde, appareil, String(parente));
+    monde.dernierFormulaireSousTache.set(appareil.nom, formulaire);
+    monde.dernierFormulaireTache.set(appareil.nom, formulaire);
+    monde.saisieSousTacheEnCours.set(appareil.nom, {
+      parente: String(parente),
+      saisie: { intitule: '' },
+    });
+  },
+);
+
+const saisieEnCours = ({ monde, appareil }: ContexteEtape) => {
+  const saisie = monde.saisieSousTacheEnCours.get(appareil.nom);
+  assert.ok(
+    saisie,
+    "Aucune saisie commencée : « l'utilisateur commence la saisie d'une sous-tâche de la tâche »",
+  );
+  return saisie;
+};
+
+etapeAction(
+  new RegExp(
+    `^l'utilisateur saisit l'intitulé ${TEXTE}, le délai ${DATE} et l'estimation ${DUREE}$`,
+  ),
+  (contexte, intitule, delai, estimation) => {
+    const { parente } = saisieEnCours(contexte);
+    contexte.monde.saisieSousTacheEnCours.set(contexte.appareil.nom, {
+      parente,
+      saisie: {
+        intitule: String(intitule),
+        delai: String(delai),
+        estimationMinutes: minutes(estimation),
+      },
+    });
+  },
+);
+
+/** « Ajouter » : la saisie en cours est soumise comme une création de sous-tâche. */
+etapeAction(
+  /^l'utilisateur termine la saisie$/,
+  (contexte) => {
+    const { parente, saisie } = saisieEnCours(contexte);
+    contexte.monde.saisieSousTacheEnCours.delete(contexte.appareil.nom);
+    return demanderSousTache(contexte, parente, saisie);
+  },
+  {
+    appareilImplicite: (monde) =>
+      monde.saisieSousTacheEnCours.size === 1
+        ? [...monde.saisieSousTacheEnCours.keys()][0]
+        : undefined,
+  },
+);
+
+etapeAssertion(
+  new RegExp(
+    `^l'utilisateur est informé que l'estimation de ${DUREE} de la tâche ${TEXTE} sera remplacée par la somme de ses sous-tâches$`,
+  ),
+  ({ monde, appareil }, estimation, intitule) => {
+    const formulaire = monde.dernierFormulaireSousTache.get(appareil.nom);
+    assert.ok(formulaire, "Aucune saisie d'une sous-tâche commencée");
+    assert.equal(formulaire.tacheParente.intitule, String(intitule));
+    assert.equal(formulaire.information?.code, 'ALR-012');
+    assert.equal(formulaire.information.duree.minutes, minutes(estimation));
+  },
+);
+
+// ---------------------------------------------------------------- Détail d'une tâche (ST-US-024 §12 n° 6 à 8)
+
+etapeAction(
+  new RegExp(`^l'utilisateur consulte le détail de la tâche ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) => {
+    monde.dernierDetailTache.set(
+      appareil.nom,
+      await detailTacheDe(monde, appareil, String(intitule)),
+    );
+  },
+);
+
+const dernierDetail = ({ monde, appareil }: ContexteEtape) => {
+  const detail = monde.dernierDetailTache.get(appareil.nom);
+  assert.ok(detail, "Aucun détail consulté : « l'utilisateur consulte le détail de la tâche »");
+  return detail;
+};
+
+type LigneSousTache = NonNullable<ModeleVueDetailTache['sousTaches']>['lignes'][number];
+
+const COLONNES_SOUS_TACHE: Readonly<Record<string, (ligne: LigneSousTache) => string>> = {
+  délai: (l) => l.delai,
+  estimation: (l) => l.estimation.libelle,
+  état: (l) => NOMS_ETAT[l.etat.code] ?? l.etat.code,
+  'en retard': (l) => (l.enRetard === undefined ? 'non' : 'oui'),
+};
+
+/** Ordre non vérifié (ST-US-024 §12 n° 7) : chaque ligne attendue est retrouvée par son intitulé. */
+etapeAssertion(
+  /^le détail présente les sous-tâches :$/,
+  (contexte, tableau) => {
+    const lignes = dernierDetail(contexte).sousTaches?.lignes ?? [];
+    const attendues = (tableau as DataTable).hashes();
+    assert.equal(lignes.length, attendues.length, 'Nombre de sous-tâches présentées');
+    for (const attendu of attendues) {
+      const ligne = lignes.find((l) => l.intitule === attendu['intitulé']);
+      assert.ok(ligne, `Sous-tâche « ${String(attendu['intitulé'])} » absente du détail`);
+      for (const [colonne, valeur] of Object.entries(attendu)) {
+        if (colonne === 'intitulé') continue;
+        const extrait = COLONNES_SOUS_TACHE[colonne];
+        assert.ok(extrait, `Colonne inconnue : ${colonne}`);
+        assert.equal(extrait(ligne), valeur, `${ligne.intitule}, colonne ${colonne}`);
+      }
+    }
+  },
+  { tableau: true },
+);
+
+etapeAssertion(
+  /^le détail indique (\d+) sous-tâches?(?:\(s\))? terminées?(?:\(s\))? sur (\d+) sous-tâches?(?:\(s\))? non abandonnées?(?:\(s\))?$/,
+  (contexte, terminees, nonAbandonnees) => {
+    const compteur = dernierDetail(contexte).sousTaches?.compteur;
+    assert.deepEqual(
+      compteur && { terminees: compteur.terminees, nonAbandonnees: compteur.nonAbandonnees },
+      { terminees: Number(terminees), nonAbandonnees: Number(nonAbandonnees) },
+    );
+  },
+);
+
 // ---------------------------------------------------------------- Existence et valeurs (n° 7 à 13)
 
 const COLONNES_TACHE: Readonly<
@@ -308,6 +443,18 @@ etapeAssertion(
   new RegExp(`^la tâche ${TEXTE} porte une alerte de délai qui nomme l'objectif ${TEXTE}$`),
   async (contexte, intitule, objectif) => {
     assert.deepEqual(await intitulesDesAlertes(contexte, String(intitule)), [String(objectif)]);
+  },
+);
+
+/** ALR-006 : la tâche parente nommée est celle du délai dépassé (ST-US-024 §12 n° 10). */
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} porte une alerte de délai qui nomme la tâche parente ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, parente) => {
+    const alertes = (await resumeTacheDe(monde, appareil, String(intitule))).alertes;
+    assert.deepEqual(
+      alertes.flatMap((alerte) => (alerte.type === 'TACHE_PARENTE' ? [alerte.tache.intitule] : [])),
+      [String(parente)],
+    );
   },
 );
 

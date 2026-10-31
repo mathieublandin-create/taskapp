@@ -67,4 +67,7 @@ export const LIBELLES_TACHES = {
   menu: { RENOMMER: 'Renommer la tâche', SUPPRIMER: 'Supprimer la tâche…' },
   renommage: 'Renommer la tâche',
   tacheParente: 'Sous-tâche de «\u00a0{parent}\u00a0»',
+  ajouterSousTache: 'Ajouter une sous-tâche',
+  saisieSousTacheTitre: 'Nouvelle sous-tâche',
+  deTacheParente: 'de «\u00a0{parent}\u00a0»',
 } as const;

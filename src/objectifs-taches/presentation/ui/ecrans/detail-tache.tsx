@@ -9,7 +9,7 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { useState } from 'react';
-import type { IdObjectif } from '../../../../commun/domaine/identifiants';
+import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { libelle } from '../../../../commun/presentation/messages/libelle';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
@@ -19,6 +19,7 @@ import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
 import { MessagesRefus } from '../composants/messages-refus';
 import { PucesObjectif } from '../composants/puces-objectif';
+import { SectionSousTaches } from '../composants/section-sous-taches';
 import { SelecteurDuree } from '../composants/selecteur-duree';
 import type { IssueTache, ObjectifProposable } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
@@ -35,6 +36,9 @@ export type ProprietesDetailTache = {
   readonly surModifierEstimation: (minutes: number) => Promise<IssueTache>;
   readonly surBasculerObjectif: (id: IdObjectif) => void;
   readonly surSupprimer: () => void;
+  /** ECR-007 A : ouvre le détail d'une sous-tâche ; saisie d'une nouvelle sous-tâche (proposée par `actions`). */
+  readonly surOuvrirSousTache: (id: IdTache) => void;
+  readonly surAjouterSousTache: () => void;
 };
 
 type Edition = 'DELAI' | 'ESTIMATION' | 'OBJECTIFS' | 'INTITULE' | undefined;
@@ -309,11 +313,34 @@ const EnTete = ({ modele }: { readonly modele: ModeleVueDetailTache }) => (
     {modele.enRetard === undefined ? null : (
       <strong data-code={modele.enRetard.code}>{modele.enRetard.libelle}</strong>
     )}
+    {modele.tacheParente === undefined ? null : (
+      <p className="tache-parente">
+        {LIBELLES_TACHES.tacheParente.replace('{parent}', modele.tacheParente.intitule)}
+      </p>
+    )}
     {modele.delai.alertes.map((alerte) => (
       <IonNote key={alerte.code} color="warning" role="status" data-code={alerte.code}>
         {alerte.libelle}
       </IonNote>
     ))}
+  </>
+);
+
+const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => (
+  <>
+    {modele.sousTaches === undefined ? null : (
+      <SectionSousTaches section={modele.sousTaches} surOuvrir={proprietes.surOuvrirSousTache} />
+    )}
+    {modele.actions.includes('CREER_SOUS_TACHE') ? (
+      <button type="button" onClick={proprietes.surAjouterSousTache}>
+        {LIBELLES_TACHES.ajouterSousTache}
+      </button>
+    ) : null}
+    {modele.infoFinImpossible === undefined ? null : (
+      <IonNote role="status" data-code={modele.infoFinImpossible.code}>
+        {modele.infoFinImpossible.libelle}
+      </IonNote>
+    )}
   </>
 );
 
@@ -332,6 +359,7 @@ const CorpsDetail = ({ modele, proprietes, editeur }: ProprietesChamp) => (
     <ChampDelai modele={modele} proprietes={proprietes} editeur={editeur} />
     <ChampEstimation modele={modele} proprietes={proprietes} editeur={editeur} />
     <ChampObjectifs modele={modele} proprietes={proprietes} editeur={editeur} />
+    <SousTaches modele={modele} proprietes={proprietes} />
   </IonContent>
 );
 
