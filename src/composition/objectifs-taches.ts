@@ -1,5 +1,6 @@
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
+import type { Planificateur } from '../commun/application/ports/planificateur';
 import {
   ConsulterDetailObjectif,
   ConsulterDetailTache,
@@ -22,8 +23,10 @@ import {
   RenommerObjectif,
   RenommerTache,
   RetirerDelaiObjectif,
+  RouvrirTache,
   SupprimerObjectif,
   SupprimerTache,
+  TerminerTache,
 } from '../objectifs-taches';
 import type { ServiceEtatLocal } from '../synchronisation';
 
@@ -47,6 +50,8 @@ export type ObjectifsTaches = {
   readonly rattacherTache: RattacherTache;
   readonly detacherTache: DetacherTache;
   readonly supprimerTache: SupprimerTache;
+  readonly terminerTache: TerminerTache;
+  readonly rouvrirTache: RouvrirTache;
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterTaches: ConsulterTaches;
   readonly consulterDetailTache: ConsulterDetailTache;
@@ -55,6 +60,8 @@ export type ObjectifsTaches = {
   readonly consulterHistorique: ConsulterHistorique;
   /** Changements du dépôt local, quel qu'en soit l'écrivain (DT-009) ; obligatoire à l'assemblage (RC-R3-11). */
   readonly observer: (rappel: () => void) => () => void;
+  /** Maintien de 3 s de la ligne d'une tâche terminée (ST-US-003 §4.5) ; obligatoire à l'assemblage (RC-US-003-4). */
+  readonly planificateur: Planificateur;
 };
 
 type Dependances = {
@@ -62,6 +69,7 @@ type Dependances = {
   readonly generateur: GenerateurIdentifiants;
   readonly horloge: Horloge;
   readonly observer: (rappel: () => void) => () => void;
+  readonly planificateur: Planificateur;
 };
 
 /** Cas d'usage et requêtes des tâches (ST-US-002 §3 n° 20). */
@@ -74,6 +82,8 @@ const assemblerTaches = (d: Dependances) => ({
   rattacherTache: new RattacherTache(d.service),
   detacherTache: new DetacherTache(d.service),
   supprimerTache: new SupprimerTache(d.service),
+  terminerTache: new TerminerTache(d.service),
+  rouvrirTache: new RouvrirTache(d.service),
   consulterTaches: new ConsulterTaches(d.service, d.horloge),
   consulterDetailTache: new ConsulterDetailTache(d.service, d.horloge),
 });
@@ -95,4 +105,5 @@ export const assemblerObjectifsTaches = (d: Dependances): ObjectifsTaches => ({
   consulterSelecteurParent: new ConsulterSelecteurParent(d.service, d.horloge),
   consulterHistorique: new ConsulterHistorique(d.service),
   observer: d.observer,
+  planificateur: d.planificateur,
 });

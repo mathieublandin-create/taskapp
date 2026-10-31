@@ -10,6 +10,8 @@ import type {
 } from '../../modeles-de-vue/liste-taches';
 import { FiltreEtatUi, FiltreObjectifUi } from '../composants/filtre-etat';
 import { LigneTacheUi } from '../composants/ligne-tache';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { MessagesRefus } from '../composants/messages-refus';
 import type { ObjectifProposable } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
@@ -20,6 +22,11 @@ export type ProprietesListeTaches = {
   readonly objectifs: ReadonlyArray<ObjectifProposable>;
   readonly surCreer: () => void;
   readonly surOuvrir: (id: IdTache) => void;
+  /** Case « Terminer » de chaque ligne ; `retenues` : lignes tout juste terminées, encore affichées. */
+  readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  readonly retenues?: ReadonlyArray<IdTache> | undefined;
+  /** Refus (ERR-035) du dernier geste « Terminer », annoncé sous les filtres (ST-US-003 §4.5). */
+  readonly refus?: ReadonlyArray<MessageRefus> | undefined;
   readonly surFiltrerEtat: (etat: FiltreEtat) => void;
   readonly surFiltrerObjectif: (filtre: FiltreObjectif) => void;
 };
@@ -73,10 +80,11 @@ const Filtres = ({
 const Lignes = ({
   lignes,
   surOuvrir,
+  surTerminer,
+  retenues = [],
 }: {
   readonly lignes: ModeleVueListeTaches['lignes'];
-  readonly surOuvrir: (id: IdTache) => void;
-}) => (
+} & Pick<ProprietesListeTaches, 'surOuvrir' | 'surTerminer' | 'retenues'>) => (
   <ul className="liste-taches">
     {lignes.map((ligne) => (
       <LigneTacheUi
@@ -85,31 +93,55 @@ const Lignes = ({
         surOuvrir={(l) => {
           surOuvrir(l.id);
         }}
+        surTerminer={surTerminer}
+        retenue={retenues.includes(ligne.id)}
       />
     ))}
   </ul>
 );
 
-export const ListeTaches = ({ modele, surCreer, surOuvrir, ...filtres }: ProprietesListeTaches) => {
+const EnTeteListe = () => (
+  <IonHeader>
+    <IonToolbar>
+      <IonTitle>{LIBELLES_TACHES.titreListe}</IonTitle>
+    </IonToolbar>
+  </IonHeader>
+);
+
+const BoutonCreer = ({ surCreer }: { readonly surCreer: () => void }) => (
+  <IonFab slot="fixed" vertical="bottom" horizontal="end">
+    <IonFabButton aria-label={LIBELLES_TACHES.ajouterTache} onClick={surCreer}>
+      +
+    </IonFabButton>
+  </IonFab>
+);
+
+export const ListeTaches = ({
+  modele,
+  surCreer,
+  surOuvrir,
+  surTerminer,
+  retenues,
+  refus = [],
+  ...filtres
+}: ProprietesListeTaches) => {
   useRaccourciCreation(surCreer);
   const { etatVide, mentionHeureParis } = modele;
   return (
     <>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>{LIBELLES_TACHES.titreListe}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <EnTeteListe />
       <IonContent>
         <Filtres modele={modele} {...filtres} />
+        <MessagesRefus messages={refus} />
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
         {etatVide === undefined ? null : <EtatVide code={etatVide.code} surAction={surCreer} />}
-        <Lignes lignes={modele.lignes} surOuvrir={surOuvrir} />
-        <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton aria-label={LIBELLES_TACHES.ajouterTache} onClick={surCreer}>
-            +
-          </IonFabButton>
-        </IonFab>
+        <Lignes
+          lignes={modele.lignes}
+          surOuvrir={surOuvrir}
+          surTerminer={surTerminer}
+          retenues={retenues}
+        />
+        <BoutonCreer surCreer={surCreer} />
       </IonContent>
     </>
   );

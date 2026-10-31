@@ -12,6 +12,7 @@ import { ACTIONS_OBJECTIF } from '@src/objectifs-taches/domaine/actions';
 import * as interfaceObjectifs from '@src/objectifs-taches';
 import { construireConfirmation } from '@src/objectifs-taches';
 import { FRAGMENT_DATE } from '../../support/conversions';
+import { lObjectifAUnNombreDeTaches } from '../../support/construction-taches';
 import {
   detailObjectifDe,
   ligneObjectifDe,
@@ -643,3 +644,32 @@ etapeAssertion(/^l'objectif "([^"]*)" n'existe pas$/, async ({ appareil }, intit
     `Un objectif « ${String(intitule)} » existe`,
   );
 });
+
+// ---------------------------------------------------------------- Sous-objectif de contexte (ST-US-003 §12 n° 9)
+
+/** Glossaire §1 (Q-US-003-2) : contenu du « Sous-objectif de <objectif> » selon l'état attendu ; `absent` : aucun. */
+const TACHES_DU_SOUS_OBJECTIF: Readonly<
+  Record<
+    string,
+    { readonly aFaire: number; readonly terminees: number; readonly abandonnees: number }
+  >
+> = {
+  atteint: { aFaire: 0, terminees: 1, abandonnees: 0 },
+  'en cours': { aFaire: 1, terminees: 0, abandonnees: 0 },
+  'à décliner en tâches': { aFaire: 0, terminees: 0, abandonnees: 0 },
+};
+
+etapeContexte(
+  new RegExp(
+    `^l'objectif ${TEXTE} a un sous-objectif (absent|atteint|en cours|à décliner en tâches)$`,
+  ),
+  async (contexte, objectif, etat) => {
+    const taches = TACHES_DU_SOUS_OBJECTIF[String(etat)];
+    if (taches === undefined) return;
+    const intitule = `Sous-objectif de ${String(objectif)}`;
+    const resultat = await creerSousObjectif(contexte, { intitule, parent: String(objectif) });
+    assert.ok(resultat.ok, `Création de « ${intitule} » refusée : ${JSON.stringify(resultat)}`);
+    await lObjectifAUnNombreDeTaches(contexte, intitule, taches);
+  },
+  SMARTPHONE_PAR_DEFAUT,
+);

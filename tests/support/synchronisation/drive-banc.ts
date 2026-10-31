@@ -63,14 +63,14 @@ export const driveDeLAppareil = (
 export const identifiantsDe = (etat: EtatMetier): ReadonlySet<string> =>
   new Set<string>([...etat.objectifs.keys(), ...etat.taches.keys()]);
 
-/** Données d'un compte sur un appareil du banc : son espace local, lu sans le créer ; vide s'il n'existe pas. */
-const identifiantsDansEspace = async (
+/** État métier d'un compte sur un appareil du banc : son espace local, lu sans le créer ; undefined s'il n'existe pas. */
+export const etatMetierDansEspace = async (
   monde: MondeDoneJuan,
   appareil: AppareilSimule,
   nomCompte: string,
-): Promise<ReadonlySet<string>> => {
+): Promise<EtatMetier | undefined> => {
   const nomBase = await nomEspaceDuCompte(monde, nomCompte);
-  if (!(await espaceExiste(appareil, nomBase))) return new Set();
+  if (!(await espaceExiste(appareil, nomBase))) return undefined;
   const espace = await DepotLocalDexie.ouvrirEspace({
     nomBase,
     fabrique: appareil.fabrique,
@@ -80,10 +80,20 @@ const identifiantsDansEspace = async (
   try {
     const etat = await espace.valeur.lire();
     assert.ok(etat.ok, `Espace du compte ${nomCompte} illisible`);
-    return identifiantsDe(projeterEtatMetier(etat.valeur));
+    return projeterEtatMetier(etat.valeur);
   } finally {
     espace.valeur.fermer();
   }
+};
+
+/** Identifiants des données d'un compte sur un appareil du banc ; vide si l'espace n'existe pas. */
+const identifiantsDansEspace = async (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+  nomCompte: string,
+): Promise<ReadonlySet<string>> => {
+  const etat = await etatMetierDansEspace(monde, appareil, nomCompte);
+  return etat === undefined ? new Set() : identifiantsDe(etat);
 };
 
 /** Toutes les données connues d'un compte : son Drive et ses espaces sur les appareils du banc. */

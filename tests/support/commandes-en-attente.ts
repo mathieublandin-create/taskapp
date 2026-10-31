@@ -5,8 +5,12 @@
  */
 import type { Resultat } from '@src/commun/domaine/resultat';
 
+/** Nature de la commande en attente, qui détermine le code de la confirmation de réouverture (ST-US-003 §12 n° 11). */
+export type NatureCommande = 'AJOUT_SOUS_TACHE' | 'REOUVERTURE';
+
 export type CommandeEnAttente = {
   readonly description: string;
+  readonly nature?: NatureCommande;
   /** Confirmation affichée (code `CNF-…` et nombre annoncé), vérifiée par les étapes « une confirmation … ». */
   readonly confirmation?: {
     readonly code: string;

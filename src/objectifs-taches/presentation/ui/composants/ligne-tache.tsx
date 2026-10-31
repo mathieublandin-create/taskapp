@@ -1,3 +1,4 @@
+import type { IdTache } from '../../../../commun/domaine/identifiants';
 import type { LigneTache } from '../../modeles-de-vue/ligne-tache';
 
 // TaskRow (guide §4.2) : intitulé, métadonnées (délai, estimation, objectifs, sous-tâches) et mentions « en retard » et
@@ -7,6 +8,10 @@ export type ProprietesLigneTache = {
   readonly ligne: LigneTache;
   readonly niveau?: 'TACHE' | 'SOUS_TACHE';
   readonly surOuvrir: (ligne: LigneTache) => void;
+  /** Sans cette propriété, la case « Terminer » n'est pas affichée (écran qui ne sait pas terminer). */
+  readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  /** Tâche tout juste terminée, dont la ligne reste affichée quelques secondes : case cochée et inactive. */
+  readonly retenue?: boolean;
 };
 
 const MAX_PUCES_OBJECTIF = 1;
@@ -60,28 +65,58 @@ const PointAttente = ({
   </>
 );
 
-export const LigneTacheUi = ({ ligne, niveau = 'TACHE', surOuvrir }: ProprietesLigneTache) => {
+const CaseTerminerLigne = ({
+  ligne,
+  retenue,
+  surTerminer,
+}: {
+  readonly ligne: LigneTache;
+  readonly retenue: boolean;
+  readonly surTerminer: ProprietesLigneTache['surTerminer'];
+}) =>
+  ligne.caseTerminer === undefined || surTerminer === undefined ? null : (
+    <input
+      type="checkbox"
+      aria-label={ligne.caseTerminer.nomAccessible}
+      checked={retenue}
+      disabled={retenue}
+      onChange={() => {
+        surTerminer(ligne.id);
+      }}
+    />
+  );
+
+const BoutonLigne = ({ ligne, surOuvrir }: Pick<ProprietesLigneTache, 'ligne' | 'surOuvrir'>) => {
   const idAttente = `attente-${ligne.id}`;
   return (
-    <li className="ligne-tache" data-niveau={niveau}>
-      <button
-        type="button"
-        aria-label={ligne.nomAccessible}
-        {...(ligne.attente === undefined ? {} : { 'aria-describedby': idAttente })}
-        data-etat={ligne.etat.code}
-        onClick={() => {
-          surOuvrir(ligne);
-        }}
-      >
-        <span className="ligne-tache-texte" aria-hidden="true">
-          <span className="ligne-tache-intitule">{ligne.intitule}</span>
-          <MetaLigne ligne={ligne} />
-          <Alertes alertes={ligne.alertes} />
-        </span>
-        {ligne.attente === undefined ? null : (
-          <PointAttente attente={ligne.attente} id={idAttente} />
-        )}
-      </button>
-    </li>
+    <button
+      type="button"
+      aria-label={ligne.nomAccessible}
+      {...(ligne.attente === undefined ? {} : { 'aria-describedby': idAttente })}
+      data-etat={ligne.etat.code}
+      onClick={() => {
+        surOuvrir(ligne);
+      }}
+    >
+      <span className="ligne-tache-texte" aria-hidden="true">
+        <span className="ligne-tache-intitule">{ligne.intitule}</span>
+        <MetaLigne ligne={ligne} />
+        <Alertes alertes={ligne.alertes} />
+      </span>
+      {ligne.attente === undefined ? null : <PointAttente attente={ligne.attente} id={idAttente} />}
+    </button>
   );
 };
+
+export const LigneTacheUi = ({
+  ligne,
+  niveau = 'TACHE',
+  surOuvrir,
+  surTerminer,
+  retenue = false,
+}: ProprietesLigneTache) => (
+  <li className="ligne-tache" data-niveau={niveau}>
+    <CaseTerminerLigne ligne={ligne} retenue={retenue} surTerminer={surTerminer} />
+    <BoutonLigne ligne={ligne} surOuvrir={surOuvrir} />
+  </li>
+);

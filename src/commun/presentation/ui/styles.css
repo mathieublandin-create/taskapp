@@ -96,6 +96,24 @@
   text-align: start;
 }
 
+.ligne-tache {
+  display: flex;
+  align-items: center;
+}
+
+.ligne-tache > button {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Case « Terminer » : cible de 44 px (guide §4.2, WCAG 2.5.8). */
+.ligne-tache > input[type='checkbox'] {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+}
+
 .ligne-objectif[data-niveau='SOUS_OBJECTIF'] button,
 .ligne-tache[data-niveau='SOUS_TACHE'] button {
   padding-inline-start: 44px;

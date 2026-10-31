@@ -37,6 +37,7 @@ import {
   existeUneTacheIntitulee,
   formulaireSousTacheDe,
   listeIntitules,
+  listeTachesDe,
   minutes,
   memoriserTache,
   nombreDeTaches,
@@ -133,6 +134,7 @@ const demanderSousTache = async (
   const modele = construireConfirmation(evaluation.valeur.confirmation);
   monde.commandesEnAttente.set(appareil.nom, {
     description: `Ajouter la sous-tâche « ${saisie.intitule} » à la tâche « ${parente} »`,
+    nature: 'AJOUT_SOUS_TACHE',
     confirmation: { code: modele.code, element: parente },
     executer: () => creerSousTache(contexte, parente, saisie),
   });
@@ -589,6 +591,114 @@ etapeAction(
 etapeAction(
   new RegExp(`^l'utilisateur demande la suppression de la tâche ${TEXTE}$`),
   (contexte, intitule) => demanderSuppression(contexte, String(intitule)),
+);
+
+// ---------------------------------------------------------------- Fin et réouverture (ST-US-003 §12 n° 1 à 3, 6)
+
+/** Un refus n'échoue pas l'étape : il devient le résultat de l'appareil (« l'action est refusée avec le motif »). */
+etapeAction(
+  new RegExp(`^l'utilisateur termine la tâche ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) =>
+    (await objectifsDe(appareil)).terminerTache.executer({
+      tacheId: await resoudreTache(monde, appareil, String(intitule)),
+    }),
+);
+
+/**
+ * `RouvrirTache.evaluer` : `CONFIRMATION_REQUISE` met la commande en attente (« l'utilisateur confirme »),
+ * `SANS_CONFIRMATION` l'exécute, un refus est le résultat de l'appareil.
+ */
+const demanderReouverture = async ({ monde, appareil }: ContexteEtape, intitule: string) => {
+  const objectifs = await objectifsDe(appareil);
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const evaluation = await objectifs.rouvrirTache.evaluer({ tacheId });
+  if (!evaluation.ok) return evaluation;
+  if (evaluation.valeur.type === 'SANS_CONFIRMATION')
+    return objectifs.rouvrirTache.executer({ tacheId });
+  const { confirmation } = evaluation.valeur;
+  monde.commandesEnAttente.set(appareil.nom, {
+    description: `Rouvrir la tâche « ${intitule} »`,
+    nature: 'REOUVERTURE',
+    confirmation: {
+      code: construireConfirmation(confirmation).code,
+      element: confirmation.intitule,
+    },
+    executer: () => objectifs.rouvrirTache.executer({ tacheId }),
+  });
+  return evaluation;
+};
+
+etapeAction(new RegExp(`^l'utilisateur rouvre la tâche ${TEXTE}$`), (contexte, intitule) =>
+  demanderReouverture(contexte, String(intitule)),
+);
+
+/** L'évaluation doit demander une confirmation (CNF-ROUVRIR-SOUS-TACHE) ; la commande en attente est oubliée. */
+etapeAction(
+  new RegExp(`^l'utilisateur rouvre la tâche ${TEXTE} et renonce$`),
+  async (contexte, intitule) => {
+    const evaluation = await demanderReouverture(contexte, String(intitule));
+    assert.ok(
+      contexte.monde.commandesEnAttente.delete(contexte.appareil.nom),
+      `Aucune confirmation demandée pour « ${String(intitule)} »`,
+    );
+    return evaluation;
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^l'état de la tâche ${TEXTE} est ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, etat) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+  },
+);
+
+// ---------------------------------------------------------------- Date de fin (ST-US-003 §12 n° 4, 5, 7, 8)
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} est ${TEXTE} avec la date de fin ${DATE}$`),
+  async ({ monde, appareil }, intitule, etat, dateFin) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+    assert.equal(detail.dateFin?.date, date(String(dateFin)));
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} n'a pas de date de fin$`),
+  async ({ monde, appareil }, intitule) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(detail.dateFin, undefined);
+  },
+);
+
+etapeAssertion(
+  new RegExp(
+    `^la date de fin de la tâche ${TEXTE} (est|n'est pas) accompagnée de la mention ${TEXTE}$`,
+  ),
+  async ({ monde, appareil }, intitule, accompagnee, code) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.ok(detail.dateFin, `La tâche « ${String(intitule)} » n'a pas de date de fin`);
+    assert.equal(detail.dateFin.mentionHeureParis?.code === String(code), accompagnee === 'est');
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^le délai de la tâche ${TEXTE} n'est jamais accompagné de la mention ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.ok(!('mentionHeureParis' in detail.delai), 'Le délai du détail porte la mention');
+    const liste = await listeTachesDe(appareil, {
+      etat: 'TERMINEE',
+      objectif: { type: 'TOUS' },
+    });
+    const ligne = liste.lignes.find((l) => l.intitule === String(intitule));
+    assert.ok(
+      ligne,
+      `La tâche « ${String(intitule)} » est absente de la liste des tâches terminées`,
+    );
+    assert.ok(!('mentionHeureParis' in ligne.delai), 'Le délai de la ligne porte la mention');
+  },
 );
 
 // ---------------------------------------------------------------- Détail d'un objectif (n° 20, 21)

@@ -5,8 +5,10 @@ import { connecter } from '../../support/compte/etapes-compte';
 import { convertirAppareil, FRAGMENT_APPAREIL, FRAGMENT_DATE } from '../../support/conversions';
 import type { MondeDoneJuan } from '../../support/monde';
 import { ecart } from '../../support/valeurs';
+import { FILTRES_ETAT } from '../../support/taches';
 import { creerObjectifEnregistre } from '../../support/synchronisation/echanges';
 import {
+  etatMetierDansEspace,
   etatMetierDuDrive,
   identifiantsDe,
   identifiantsDuCompte,
@@ -102,6 +104,57 @@ Then(
   new RegExp(`^le Drive du compte ${TEXTE} contient la tâche ${TEXTE}( exactement une fois)?$`),
   async function (this: MondeDoneJuan, compte: string, intitule: string, _exactement?: string) {
     await verifierTacheUniqueDuDrive(this, compte, intitule);
+  },
+);
+
+Then(
+  new RegExp(`^le Drive du compte ${TEXTE} contient la tâche ${TEXTE} à l'état ${TEXTE}$`),
+  async function (this: MondeDoneJuan, compte: string, intitule: string, etat: string) {
+    const attendu = FILTRES_ETAT[etat];
+    assert.ok(attendu !== undefined, `État de tâche inconnu : « ${etat} »`);
+    const trouvees = await tachesDuDrive(this.banc.google.drive(compte), intitule);
+    assert.equal(
+      trouvees.length,
+      1,
+      `Drive du compte ${compte} : ${String(trouvees.length)} tâche(s) « ${intitule} »`,
+    );
+    assert.equal(trouvees[0]?.cycleDeVie.etat, attendu);
+  },
+);
+
+Then(
+  new RegExp(`^le Drive du compte ${TEXTE} ne contient pas encore la tâche ${TEXTE}$`),
+  async function (this: MondeDoneJuan, compte: string, intitule: string) {
+    assert.deepEqual(await tachesDuDrive(this.banc.google.drive(compte), intitule), []);
+  },
+);
+
+/** ST-US-017 §12.1 n° 20 : l'état métier de l'appareil est égal à la projection du Drive (hors marque d'attente). */
+Then(
+  new RegExp(`^sur le (${FRAGMENT_APPAREIL}), les données sont identiques à celles enregistrées$`),
+  async function (this: MondeDoneJuan, nomAppareil: string) {
+    const appareil = this.banc.appareil(convertirAppareil(nomAppareil));
+    const drive = driveDeLAppareil(this, appareil);
+    const identite = appareil.fournisseur.identiteDuJetonEnMemoire();
+    const compte = identite === undefined ? undefined : this.banc.google.nomDe(identite);
+    assert.ok(
+      drive !== undefined && compte !== undefined,
+      `Le ${nomAppareil} n'est connecté à aucun compte`,
+    );
+    const local = await etatMetierDansEspace(this, appareil, compte);
+    assert.ok(local !== undefined, `Aucune donnée locale sur le ${nomAppareil}`);
+    const sansAttente = <T extends { readonly enAttente: boolean }>(m: ReadonlyMap<string, T>) =>
+      [...m.entries()]
+        .map(([id, v]) => [id, { ...v, enAttente: false }] as const)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    const distant = await etatMetierDuDrive(drive);
+    assert.ok(
+      local.objectifs.size + local.taches.size > 0 ||
+        distant.objectifs.size + distant.taches.size > 0,
+      `Les états local et distant du ${nomAppareil} sont tous deux vides : comparaison sans valeur`,
+    );
+    assert.deepEqual(sansAttente(local.objectifs), sansAttente(distant.objectifs));
+    assert.deepEqual(sansAttente(local.taches), sansAttente(distant.taches));
   },
 );
 

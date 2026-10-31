@@ -11,6 +11,8 @@ export {
   RenommerTache,
 } from './application/cas-usage/modifier-tache';
 export { DetacherTache, RattacherTache } from './application/cas-usage/rattacher-tache';
+export { RouvrirTache } from './application/cas-usage/rouvrir-tache';
+export { TerminerTache } from './application/cas-usage/terminer-tache';
 export { SupprimerTache } from './application/cas-usage/supprimer-tache';
 export {
   ModifierDelaiObjectif,

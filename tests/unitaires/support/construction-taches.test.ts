@@ -75,7 +75,7 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     ).rejects.toThrow(/Estimation absente/);
   });
 
-  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; les capacités des rangs 7 et 8 ne sont pas encore livrées', async () => {
+  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; l’état « terminée » est appliqué (rang 7), pas encore « abandonnée » (rang 8)', async () => {
     const { monde, appareil } = await contexte();
     const incoherent = tableau(
       ['Chapitre 1', 'terminée', '2026-11-30', '', '', ''],
@@ -95,12 +95,11 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     const parente = await resumeTacheDe(monde, appareil, 'Chapitre 1');
     expect(parente.sousTaches).toEqual({ terminees: 0, nonAbandonnees: 1 });
     expect(parente.estimationInitiale).toBe(30);
-    await expect(
-      lesTachesSuivantes(
-        { monde, appareil },
-        tableau(['Plan', 'terminée', '2026-11-10', '1 h', '', '']),
-      ),
-    ).rejects.toThrow(/capacité livrée au rang 7/);
+    await lesTachesSuivantes(
+      { monde, appareil },
+      tableau(['Plan', 'terminée', '2026-11-10', '1 h', '', '']),
+    );
+    expect((await resumeTacheDe(monde, appareil, 'Plan')).cycleDeVie.etat).toBe('TERMINEE');
     await expect(
       lesTachesSuivantes(
         { monde, appareil },
@@ -122,10 +121,10 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     await expect(
       lObjectifAUnNombreDeTaches({ monde, appareil }, 'Santé', {
         aFaire: 0,
-        terminees: 1,
-        abandonnees: 0,
+        terminees: 0,
+        abandonnees: 1,
       }),
-    ).rejects.toThrow(/rang 7/);
+    ).rejects.toThrow(/rang 8/);
 
     const { taches } = valeurDe(await consulterTaches.executer());
     expect(taches.map((t) => [t.intitule, t.estimation])).toEqual(
@@ -134,5 +133,24 @@ describe('Construction des tableaux de contexte (H-7)', () => {
         ['Santé — tâche 2', 60],
       ]),
     );
+  });
+
+  it('UT-COMP-US-002-35 lObjectifAUnNombreDeTaches — termine les tâches qui suivent celles à faire', async () => {
+    const { monde, appareil } = await contexte();
+    valeurDe(await (await objectifsDe(appareil)).creerObjectif.executer({ intitule: 'Sport' }));
+
+    await lObjectifAUnNombreDeTaches({ monde, appareil }, 'Sport', {
+      aFaire: 1,
+      terminees: 2,
+      abandonnees: 0,
+    });
+
+    const etats = await Promise.all(
+      [1, 2, 3].map(
+        async (n) =>
+          (await resumeTacheDe(monde, appareil, `Sport — tâche ${String(n)}`)).cycleDeVie.etat,
+      ),
+    );
+    expect(etats).toEqual(['A_FAIRE', 'TERMINEE', 'TERMINEE']);
   });
 });

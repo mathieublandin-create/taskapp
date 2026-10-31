@@ -3,6 +3,7 @@ import { useStore } from 'zustand';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { BoiteConfirmation } from '../../../../commun/presentation/ui/boite-confirmation';
 import { Toast } from '../../../../commun/presentation/ui/toast';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import type { ModeleVueConfirmation } from '../../modeles-de-vue/confirmation';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { ModeleVueListeTaches } from '../../modeles-de-vue/liste-taches';
@@ -13,6 +14,7 @@ import type {
   EtatMagasinTaches,
   MagasinTaches,
 } from '../etat/magasin-taches';
+import { messagesDeIssue } from '../etat/issues';
 import { DetailTache } from './detail-tache';
 import { ListeTaches } from './liste-taches';
 
@@ -31,6 +33,16 @@ const basculerRattachement = (
     : actions.rattacher(id, objectifId));
 };
 
+/** Refus de la case « Terminer » d'une ligne : effacé au geste suivant, alimenté par l'issue de la commande. */
+const useRefusDeLaListe = (actions: ActionsMagasinTaches) => {
+  const [refus, setRefus] = useState<ReadonlyArray<MessageRefus>>([]);
+  const terminer = async (id: IdTache): Promise<void> => {
+    setRefus([]);
+    setRefus(messagesDeIssue(await actions.terminer(id)));
+  };
+  return { refus, terminer };
+};
+
 const PageListe = ({
   etat,
   liste,
@@ -39,16 +51,29 @@ const PageListe = ({
   readonly etat: EtatMagasinTaches;
   readonly liste: ModeleVueListeTaches;
   readonly surCreer: () => void;
-}) => (
-  <ListeTaches
-    modele={liste}
-    objectifs={etat.objectifs}
-    surCreer={surCreer}
-    surOuvrir={(id) => void etat.actions.ouvrirDetail(id)}
-    surFiltrerEtat={(filtre) => void etat.actions.filtrerEtat(filtre)}
-    surFiltrerObjectif={(filtre) => void etat.actions.filtrerObjectif(filtre)}
-  />
-);
+}) => {
+  const { refus, terminer } = useRefusDeLaListe(etat.actions);
+  return (
+    <ListeTaches
+      modele={liste}
+      objectifs={etat.objectifs}
+      surCreer={surCreer}
+      surOuvrir={(id) => void etat.actions.ouvrirDetail(id)}
+      surTerminer={(id) => void terminer(id)}
+      retenues={etat.termineesRecentes}
+      refus={refus}
+      surFiltrerEtat={(filtre) => void etat.actions.filtrerEtat(filtre)}
+      surFiltrerObjectif={(filtre) => void etat.actions.filtrerObjectif(filtre)}
+    />
+  );
+};
+
+/** Fin et réouverture de la tâche du détail, et case « Terminer » de ses sous-tâches. */
+const commandesDeFin = (actions: ActionsMagasinTaches, id: IdTache) => ({
+  surTerminer: () => actions.terminer(id),
+  surTerminerSousTache: (sousTacheId: IdTache) => void actions.terminer(sousTacheId),
+  surRouvrir: () => actions.rouvrir(id),
+});
 
 const PageDetail = ({
   etat,
@@ -76,6 +101,7 @@ const PageDetail = ({
       surSupprimer={() => void actions.demanderSuppression(id)}
       surOuvrirSousTache={(sousTacheId) => void actions.ouvrirDetail(sousTacheId)}
       surAjouterSousTache={surAjouterSousTache}
+      {...commandesDeFin(actions, id)}
     />
   );
 };
@@ -121,6 +147,23 @@ const ConfirmationSuppression = ({
     rouge
     surConfirmer={() => void actions.confirmerSuppression()}
     surAnnuler={actions.annulerSuppression}
+  />
+);
+
+/** TST-TERMINEE : « Annuler » rouvre la tâche qui vient d'être terminée (Q-US-003-1 a). */
+const ToastFin = ({
+  id,
+  actions,
+}: {
+  readonly id: IdTache;
+  readonly actions: ActionsMagasinTaches;
+}) => (
+  <Toast
+    code="TST-TERMINEE"
+    surAction={() => void actions.annulerFin()}
+    surFermeture={() => {
+      actions.oublierFin(id);
+    }}
   />
 );
 
@@ -209,6 +252,9 @@ export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
       />
       {confirmation === undefined ? null : (
         <ConfirmationSuppression confirmation={confirmation} actions={actions} />
+      )}
+      {etat.finAnnulable === undefined ? null : (
+        <ToastFin key={etat.finAnnulable} id={etat.finAnnulable} actions={actions} />
       )}
       {etat.erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null}
     </>

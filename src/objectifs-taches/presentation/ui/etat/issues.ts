@@ -25,3 +25,7 @@ export const issueDe = (r: Resultat<unknown, RefusMetier | ErreurDepotLocal>): I
     ? { type: 'REFUSEE', messages: messagesDeRefus(r.erreur) }
     : { type: 'ENREGISTREMENT_IMPOSSIBLE' };
 };
+
+/** Messages d'une issue : ceux du refus, aucun pour les autres issues. */
+export const messagesDeIssue = (issue: IssueCommande): ReadonlyArray<MessageRefus> =>
+  issue.type === 'REFUSEE' ? issue.messages : [];
