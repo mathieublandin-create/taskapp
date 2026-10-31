@@ -1,6 +1,6 @@
 import type { GenerateurIdentifiants } from '../../../commun/application/ports/generateur-identifiants';
 import { IdTache } from '../../../commun/domaine/identifiants';
-import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
+import type { Resultat } from '../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import type { ErreurDepotLocal, ServiceEtatLocal } from '../../../synchronisation';
 import type { Evaluation } from '../../domaine/confirmation';
@@ -9,8 +9,7 @@ import {
   evaluerCreationSousTache,
 } from '../../domaine/decisions/creer-sous-tache';
 import type { RefusMetier } from '../../domaine/refus';
-import { construireVueMetier } from '../../domaine/vue-metier';
-import { avecVue } from '../requetes/lecture-courante';
+import { avecVue, evaluerSurEtat } from '../requetes/lecture-courante';
 
 export type EntreeCreerSousTache = {
   readonly tacheParenteId: IdTache;
@@ -27,16 +26,11 @@ export class CreerSousTache {
   ) {}
 
   /** N'écrit rien (conventions.md §8.6). */
-  async evaluer(
+  evaluer(
     entree: EntreeCreerSousTache,
   ): Promise<Resultat<Evaluation, RefusMetier | ErreurDepotLocal>> {
-    const etat = await this.service.lire();
-    if (!etat.ok) return etat;
     const { tacheParenteId, ...saisie } = entree;
-    const evaluation = evaluerCreationSousTache({ tacheParenteId, saisie })(
-      construireVueMetier(etat.valeur),
-    );
-    return evaluation.ok ? succes(evaluation.valeur) : echec(evaluation.erreur);
+    return evaluerSurEtat(this.service, evaluerCreationSousTache({ tacheParenteId, saisie }));
   }
 
   executer(
