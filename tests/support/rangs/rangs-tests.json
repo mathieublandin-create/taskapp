@@ -86,6 +86,10 @@
       "rang": 5
     },
     {
+      "motif": "UT-US-024-2[12]\\b",
+      "rang": 9
+    },
+    {
       "motif": "UT-US-024-\\d+",
       "rang": 6
     },
