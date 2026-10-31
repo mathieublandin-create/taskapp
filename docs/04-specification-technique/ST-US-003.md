@@ -12,7 +12,7 @@
 | Maquettes | ECR-007 (A, G, H), ECR-002 L4, ECR-003, ECR-008 ; guide v0.2.8 §4.21, §5.5, §6.6.6, §6.6.10 |
 | Q-US traitées | Q-US-003-1, Q-US-003-2, Q-US-002-1, Q-US-001-2, Q-US-025-2 (E8, DEC-030) |
 | Prérequis | ST-US-024 (rang 6) |
-| Version | 0.2 |
+| Version | 0.3 |
 | Statut | **Prête pour E10** |
 | Auteur | Anthony |
 | Branche Git | `us/US-003-terminer-rouvrir` |
@@ -22,6 +22,7 @@
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-31 | Anthony | E13 du rang 6 (`docs/ceremonies/revue-code-LOT-001-rang6.md`, décision 5) : la case « Terminer » des lignes de sous-tâches (`section-sous-taches.tsx`, créée au rang 6, désactivée) est activée au rang 7 par `surTerminer` (§3 n° 7). |
+| 0.3 | 2026-10-31 | Anthony | E13 du rang 7 (`docs/ceremonies/revue-code-LOT-001-rang7.md`) : refus `ERR-035` de la case « Terminer » d'une ligne de la liste (§4.5, RC-US-003-2) ; code exact vérifié par l'étape n° 11 selon la nature de la commande en attente (§12, RC-US-003-1) ; test de performance du §14 reporté en DT-023. |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Fin d'une tâche (registre `cycleDeVie` : `TERMINEE`, date de fin = jour de Paris, instant de fin), refus `ERR-035` pour une tâche parente qui a des sous-tâches à faire, réouverture (avec confirmation `CNF-ROUVRIR-SOUS-TACHE` et réouverture de la tâche parente pour une sous-tâche d'une tâche terminée ; non proposée pour une sous-tâche d'une tâche abandonnée, DEC-030), actions proposées, date de fin et mention `MEN-HEURE-PARIS` dans le détail, journal (`FIN`, `REOUVERTURE`). L'atteinte d'un objectif est déjà calculée (ST-US-001 §6.2) : cette US la rend observable par les fins et réouvertures.
@@ -102,7 +103,7 @@ readonly dateFin?: { readonly date: DateCalendaire; readonly libelle: string;   
 ```
 | Écran | Maquette | Codes | Actions → cas d'usage |
 |---|---|---|---|
-| Liste « Tâches » | ECR-002 L1, L4 | case « Terminer » (`checkbox`, nom « Terminer X ») ; `ETA-TACHE-TERMINEE` ; en liste, « Terminée » sans date | case → `TerminerTache` ; toast `TST-TERMINEE` « Annuler » → `RouvrirTache.executer` (Q-US-003-1 a : fin puis réouverture au journal) ; la ligne reste 3 s puis quitte le filtre « À faire » |
+| Liste « Tâches » | ECR-002 L1, L4 | case « Terminer » (`checkbox`, nom « Terminer X ») ; `ETA-TACHE-TERMINEE` ; en liste, « Terminée » sans date | case → `TerminerTache` ; refus avec messages (`ERR-035`, tâche parente dont des sous-tâches sont à faire) : la case reste décochée et le focus y reste ; les messages sont affichés sous les filtres par `MessagesRefus` (`role="alert"`), conservés dans l'état local de `PageListe` (même forme que `ActionFin`) et effacés au geste « Terminer » suivant (v0.3) ; toast `TST-TERMINEE` « Annuler » → `RouvrirTache.executer` (Q-US-003-1 a : fin puis réouverture au journal) ; la ligne reste 3 s puis quitte le filtre « À faire » |
 | Détail d'une tâche | ECR-007 A, G | « Terminée le … » + `MEN-HEURE-PARIS` ; `ALR-013` / `ERR-035` ; `CNF-ROUVRIR-SOUS-TACHE` | « Terminer la tâche » (refus annoncé `role="alert"` si sous-tâches restantes) ; « Rouvrir la tâche » → `RouvrirTache.evaluer`, boîte si demandée, puis `executer` |
 
 ## 5. Modèle de données et migrations
@@ -170,7 +171,7 @@ Recalcul de l'atteinte en moins de 100 ms pour 5 000 tâches (impacts architectu
 | 8 | `le délai de la tâche {string} n'est jamais accompagné de la mention {string}` | Alors | idem | Nouveau | 7 | Aucun `MEN-HEURE-PARIS` dans `delai` du détail ni dans la ligne de la liste |
 | 9 | `l'objectif {string} a un sous-objectif absent` ; `… atteint` ; `… en cours` ; `… à décliner en tâches` | Étant donné | `objectifs.steps.ts` | Nouveau | 7 | Glossaire §1 : sous-objectif « Sous-objectif de <objectif> », sans délai, avec respectivement rien, 1 tâche terminée, 1 tâche à faire, aucune tâche |
 | 10 | `l'action {string} n'est pas proposée pour la tâche {string}` (« terminer », « rouvrir ») ; `l'action {string} est proposée …` | Alors | `liste-taches.steps.ts` | Réutilisé (ST-US-024), étendu | 7 | `TERMINER`, `ROUVRIR` |
-| 11 | `une confirmation est demandée, qui annonce la réouverture de la tâche {string}` | Alors | `refus.steps.ts` | Réutilisé (ST-US-024), étendu | 7 | `CNF-ROUVRIR-SOUS-TACHE` |
+| 11 | `une confirmation est demandée, qui annonce la réouverture de la tâche {string}` | Alors | `refus.steps.ts` | Réutilisé (ST-US-024), étendu | 7 | `CNF-ROUVRIR-SOUS-TACHE` ; v0.3 : une seule phrase pour US-024 S17 et US-003 S13, mais **code exact** : la commande en attente porte sa nature (`AJOUT_SOUS_TACHE` → `CNF-AJOUT-SOUS-TACHE-TERMINEE`, `REOUVERTURE` → `CNF-ROUVRIR-SOUS-TACHE`) et l'étape compare `{ code, element }` en égalité stricte au code de cette nature |
 | 12 | `les tâches suivantes :` (état « terminée », colonne « date de fin ») ; `l'objectif {string} a … {int} tâche(s) terminée(s) …` | Étant donné | `construction-taches.ts` | Réutilisés, étendus | 7 | `TerminerTache.executer` (ST-US-002 §12.1) |
 | 13 | `l'action est refusée avec le motif {string}` ; `l'état de l'objectif {string} est {string}` ; `l'historique …` ; `l'utilisateur filtre …` ; `la liste des tâches contient exactement …` | — | — | Réutilisés (ST-US-001, 002, 023) | 2 à 5 | — |
 | 14 | `l'utilisateur confirme` | Quand | `confirmations.steps.ts` | Réutilisé (socle) | 0 | — |
@@ -201,7 +202,7 @@ Recalcul de l'atteinte en moins de 100 ms pour 5 000 tâches (impacts architectu
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-003`.
 
 ## 14. Tests attendus de Benjamin
-Composants : case « Terminer » (`checkbox`, cible 44 px, annonce `role="status"`), toast `TST-TERMINEE` et « Annuler », bouton « Terminer la tâche » en `aria-disabled` avec `ALR-013` ; performance indicative de `ConsulterObjectifs` (5 000 tâches).
+Composants : case « Terminer » (`checkbox`, cible 44 px, annonce `role="status"`), toast `TST-TERMINEE` et « Annuler », bouton « Terminer la tâche » en `aria-disabled` avec `ALR-013` ; performance indicative de `ConsulterObjectifs` (5 000 tâches) : reportée en DT-023 (v0.3).
 
 ## 15. Plan de réalisation
 1. Domaine (UT 01 à 10). 2. Cas d'usage (UT 11, 14, 15). 3. Modèles de vue (UT 12, 13, 16). 4. Étapes du §12 ; scénarios du rang 7, dont les scénarios différés d'US-001 (S12, S17), d'US-002 (S11, S20, S21), d'US-023 (S13, S14), d'US-024 (S07, S17, S19). 5. Écrans ; DoD.
