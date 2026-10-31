@@ -50,28 +50,48 @@ const CaseTerminer = ({
     />
   ) : null;
 
+/** Étiquette d'une sous-tâche d'une tâche parente abandonnée (ECR-007 F) : lue avec la ligne, jamais la couleur seule. */
+const Etiquette = ({
+  etiquette,
+  id,
+}: {
+  readonly etiquette: NonNullable<LigneSousTache['etiquette']>;
+  readonly id: string;
+}) => (
+  <span id={id} className="ligne-tache-etiquette" data-code={etiquette.code}>
+    {etiquette.libelle}
+  </span>
+);
+
 const LigneSousTacheUi = ({
   ligne,
   surOuvrir,
   surTerminer,
-}: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => (
-  <li className="ligne-tache" data-niveau="SOUS_TACHE">
-    <CaseTerminer ligne={ligne} surTerminer={surTerminer} />
-    <button
-      type="button"
-      aria-label={ligne.nomAccessible}
-      data-etat={ligne.etat.code}
-      onClick={() => {
-        surOuvrir(ligne.id);
-      }}
-    >
-      <span className="ligne-tache-intitule" aria-hidden="true">
-        {ligne.intitule}
-      </span>
-      <MetaLigne ligne={ligne} />
-    </button>
-  </li>
-);
+}: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => {
+  const idEtiquette = `etiquette-${ligne.id}`;
+  return (
+    <li className="ligne-tache" data-niveau="SOUS_TACHE">
+      <CaseTerminer ligne={ligne} surTerminer={surTerminer} />
+      <button
+        type="button"
+        aria-label={ligne.nomAccessible}
+        {...(ligne.etiquette === undefined ? {} : { 'aria-describedby': idEtiquette })}
+        data-etat={ligne.etat.code}
+        onClick={() => {
+          surOuvrir(ligne.id);
+        }}
+      >
+        <span className="ligne-tache-intitule" aria-hidden="true">
+          {ligne.intitule}
+        </span>
+        <MetaLigne ligne={ligne} />
+      </button>
+      {ligne.etiquette === undefined ? null : (
+        <Etiquette etiquette={ligne.etiquette} id={idEtiquette} />
+      )}
+    </li>
+  );
+};
 
 export const SectionSousTaches = ({
   section,

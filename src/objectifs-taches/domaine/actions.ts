@@ -1,4 +1,6 @@
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
+import { abandonnable } from './decisions/abandonner-tache';
+import { reprenable } from './decisions/reprendre-tache';
 import { reouvrable } from './decisions/rouvrir-tache';
 import type { ActionObjectif, ActionTache } from './types-actions';
 import { sousTachesDe, type VueMetier } from './vue-metier';
@@ -35,7 +37,7 @@ export const actionsObjectif = (vue: VueMetier, id: IdObjectif): ReadonlyArray<A
 
 /**
  * ST-US-002 §6.5 : `MODIFIER_ESTIMATION` sauf avec sous-tâches (champ verrouillé), `RATTACHER`, `DETACHER` et `CREER_SOUS_TACHE`
- * sauf pour une sous-tâche (objectifs verrouillés, un seul niveau, ST-US-024 §6.5). `TERMINER` et `ROUVRIR` : ST-US-003 §6.3. Abandon et reprise : ST-US-025.
+ * sauf pour une sous-tâche (objectifs verrouillés, un seul niveau, ST-US-024 §6.5). `TERMINER` et `ROUVRIR` : ST-US-003 §6.3. `ABANDONNER` et `REPRENDRE` : ST-US-025 §6.3.
  */
 export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionTache> => {
   const tache = vue.taches.get(id);
@@ -49,6 +51,8 @@ export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionT
       : []),
     ...(tache.cycleDeVie.etat === 'A_FAIRE' ? (['TERMINER'] as const) : []),
     ...(reouvrable(vue, id) ? (['ROUVRIR'] as const) : []),
+    ...(abandonnable(vue, id) ? (['ABANDONNER'] as const) : []),
+    ...(reprenable(vue, id) ? (['REPRENDRE'] as const) : []),
     'SUPPRIMER',
   ];
 };

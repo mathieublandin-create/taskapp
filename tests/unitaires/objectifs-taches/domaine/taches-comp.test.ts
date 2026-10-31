@@ -52,6 +52,7 @@ describe('Tâches — compléments du domaine (US-002)', () => {
       'DETACHER',
       'CREER_SOUS_TACHE',
       'TERMINER',
+      'ABANDONNER',
       'SUPPRIMER',
     ]);
     expect(actionsTache(vue(), PARENTE)).not.toContain('MODIFIER_ESTIMATION');
@@ -60,6 +61,7 @@ describe('Tâches — compléments du domaine (US-002)', () => {
       'MODIFIER_DELAI',
       'MODIFIER_ESTIMATION',
       'TERMINER',
+      'ABANDONNER',
       'SUPPRIMER',
     ]);
     expect(actionsTache(vue(), INCONNUE)).toEqual([]);

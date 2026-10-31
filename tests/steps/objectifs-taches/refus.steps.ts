@@ -89,3 +89,34 @@ Then(
     );
   },
 );
+
+// ST-US-025 §12 n° 3c : le code est celui de la commande en attente ; la tâche annoncée est la tâche parente pour
+// CNF-REPRENDRE-SOUS-TACHE (`element` de la commande), la sous-tâche pour les deux autres codes. Préfixe d'appareil admis.
+etapeAssertion(
+  /^une confirmation "([^"]*)" est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
+  ({ monde, appareil }, code, tache) => {
+    const confirmation = monde.commandesEnAttente.get(appareil.nom)?.confirmation;
+    assert.deepEqual(
+      { code: confirmation?.code, element: confirmation?.element },
+      { code: String(code), element: String(tache) },
+    );
+  },
+);
+
+// ST-US-025 §12 n° 4 et 5 : CNF-ABANDON-TACHE (sans sous-tâche) ou CNF-ABANDON-TACHE-CASCADE (avec `n`).
+Then(
+  /^une confirmation est demandée, qui rappelle que la tâche pourra être reprise$/,
+  function (this: MondeDoneJuan) {
+    assert.match(String(confirmationAffichee(this)?.code), /^CNF-ABANDON-TACHE(-CASCADE)?$/);
+  },
+);
+
+Then(
+  /^une confirmation est demandée, qui annonce (\d+) sous-tâches?(?:\(s\))? abandonnées?(?:\(s\))? avec la tâche$/,
+  function (this: MondeDoneJuan, n: string) {
+    assert.deepEqual(confirmationAffichee(this), {
+      code: 'CNF-ABANDON-TACHE-CASCADE',
+      n: Number(n),
+    });
+  },
+);
