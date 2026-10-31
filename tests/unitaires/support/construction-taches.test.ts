@@ -75,7 +75,7 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     ).rejects.toThrow(/Estimation absente/);
   });
 
-  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; les les capacités des rangs 7 et 8 ne sont pas encore livrées', async () => {
+  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; les capacités des rangs 7 et 8 ne sont pas encore livrées', async () => {
     const { monde, appareil } = await contexte();
     const incoherent = tableau(
       ['Chapitre 1', 'terminée', '2026-11-30', '', '', ''],

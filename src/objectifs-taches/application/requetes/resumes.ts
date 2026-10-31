@@ -54,7 +54,7 @@ export type ResumeTache = {
   readonly alertes: ReadonlyArray<AlerteDelaiTache>;
   /** Présent si la tâche a au moins une sous-tâche. */
   readonly sousTaches?: { readonly terminees: number; readonly nonAbandonnees: number };
-  readonly incoherence?: Incoherence; // RG-049, dérivée
+  readonly incoherence?: Incoherence; // RG-049, dérivée ; renseignée au rang 9 seulement (ST-US-024 §15)
   readonly creeLe: Instant;
   readonly enAttente: boolean;
 };

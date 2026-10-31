@@ -134,12 +134,13 @@ describe('SaisieRapide — variante sous-tâche (ECR-007 I)', () => {
     surValider: () => Promise<IssueSaisie>,
     banc: BancObjectifs,
     parente: IdTache,
+    surFermee = vi.fn(),
   ) => {
     const proprietes = {
       formulaire: construireFormulaireSousTache(await detailDe(banc, parente)),
       objectifs: [],
       surValider,
-      surFermee: vi.fn(),
+      surFermee,
       registre: { declarer: vi.fn() },
     };
     const rendu = render(<SaisieRapide ouverte {...proprietes} />);
@@ -173,13 +174,11 @@ describe('SaisieRapide — variante sous-tâche (ECR-007 I)', () => {
     await fermer();
   });
 
-  it('UT-COMP-US-024-06 la confirmation s’affiche sans perdre la saisie : « Annuler » la ferme, « Rouvrir et ajouter » exécute la commande puis vide la feuille', async () => {
+  const afficherAvecConfirmation = async (confirmer: () => Promise<IssueTache>) => {
     const banc = creerBancObjectifs();
     const parente = await creerTache(banc, 'Chapitre 1');
     await terminerLaTache(banc, parente);
-    const confirmer = vi.fn((): Promise<IssueTache> => Promise.resolve({ type: 'FAITE' }));
-    const magasin = creerMagasinTaches(banc.services);
-    await magasin.getState().actions.ouvrirDetail(parente);
+    const surFermee = vi.fn();
     const surValider = (): Promise<IssueSaisie> =>
       Promise.resolve({
         type: 'CONFIRMATION_REQUISE',
@@ -191,7 +190,13 @@ describe('SaisieRapide — variante sous-tâche (ECR-007 I)', () => {
         },
         confirmer,
       });
-    const fermer = await afficher(surValider, banc, parente);
+    const fermer = await afficher(surValider, banc, parente, surFermee);
+    return { fermer, surFermee };
+  };
+
+  it('UT-COMP-US-024-06 la confirmation s’affiche sans perdre la saisie : « Annuler » la ferme, « Rouvrir et ajouter » exécute la commande puis vide la feuille', async () => {
+    const confirmer = vi.fn((): Promise<IssueTache> => Promise.resolve({ type: 'FAITE' }));
+    const { fermer } = await afficherAvecConfirmation(confirmer);
 
     await renseigner('Intitulé', 'Section A');
     await cliquerBoutonIon('Ajouter');
@@ -214,6 +219,27 @@ describe('SaisieRapide — variante sous-tâche (ECR-007 I)', () => {
     });
     expect(confirmer).toHaveBeenCalledTimes(1);
     expect(document.querySelector<HTMLIonInputElement>('ion-input')?.value).toBe('');
+    await fermer();
+  });
+
+  it('UT-COMP-US-024-10 Échap sur la confirmation l’annule seule : la feuille reste ouverte avec la saisie, le focus revient à « Ajouter » (RC-US-024-1)', async () => {
+    const confirmer = vi.fn((): Promise<IssueTache> => Promise.resolve({ type: 'FAITE' }));
+    const { fermer, surFermee } = await afficherAvecConfirmation(confirmer);
+    await renseigner('Intitulé', 'Section A');
+    await cliquerBoutonIon('Ajouter');
+    await screen.findByRole('alertdialog');
+    expect(document.querySelector<HTMLIonModalElement>('ion-modal')?.backdropDismiss).toBe(false);
+
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+    expect(surFermee).not.toHaveBeenCalled();
+    expect(confirmer).not.toHaveBeenCalled();
+    expect(document.querySelector<HTMLIonInputElement>('ion-input')?.value).toBe('Section A');
+    expect(document.querySelector<HTMLIonModalElement>('ion-modal')?.backdropDismiss).toBe(true);
+    expect(document.activeElement?.textContent).toContain('Ajouter');
     await fermer();
   });
 });
@@ -239,6 +265,7 @@ describe('SectionSousTaches (ECR-007 A, guide §5.8 e)', () => {
     const section = screen.getByRole('region', { name: /Sous-tâches/u });
     expect(within(section).getByRole('heading').textContent).toBe('Sous-tâches 1 / 2');
     expect(within(section).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(section).getAllByText('20 nov.')).toHaveLength(2);
     const caseTerminer = within(section).getByRole('checkbox', {
       name: 'Terminer « Section B »',
     });

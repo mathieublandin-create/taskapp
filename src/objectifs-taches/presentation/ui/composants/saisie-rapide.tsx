@@ -344,7 +344,13 @@ const MessagesHorsChamp = ({ messages }: { readonly messages: ReadonlyArray<Mess
   />
 );
 
-const ConfirmationAjout = ({ saisie }: { readonly saisie: Saisie }) => {
+const ConfirmationAjout = ({
+  saisie,
+  surAnnuler,
+}: {
+  readonly saisie: Saisie;
+  readonly surAnnuler: () => void;
+}) => {
   const modele = saisie.confirmation?.modele;
   return modele === undefined ? null : (
     <BoiteConfirmation
@@ -354,7 +360,7 @@ const ConfirmationAjout = ({ saisie }: { readonly saisie: Saisie }) => {
       actionLibelle={modele.actionLibelle}
       rouge={false}
       surConfirmer={() => void saisie.confirmer()}
-      surAnnuler={saisie.annulerConfirmation}
+      surAnnuler={surAnnuler}
     />
   );
 };
@@ -378,9 +384,11 @@ const useDeclarationSaisie = (
 const Boutons = ({
   saisie,
   surFermer,
+  refAjouter,
 }: {
   readonly saisie: Saisie;
   readonly surFermer: () => void;
+  readonly refAjouter: RefObject<HTMLIonButtonElement | null>;
 }) => (
   <>
     {saisie.ajoutee ? (
@@ -388,7 +396,12 @@ const Boutons = ({
         {libelle('TST-AJOUTEE')}
       </IonNote>
     ) : null}
-    <IonButton expand="block" disabled={saisie.enCours} onClick={() => void saisie.ajouter()}>
+    <IonButton
+      ref={refAjouter}
+      expand="block"
+      disabled={saisie.enCours}
+      onClick={() => void saisie.ajouter()}
+    >
       {LIBELLES_TACHES.ajouter}
     </IonButton>
     <IonButton expand="block" fill="clear" onClick={surFermer}>
@@ -397,42 +410,100 @@ const Boutons = ({
   </>
 );
 
+/**
+ * Tant qu'une confirmation est affichée, la feuille ne se ferme pas (Échap, fond) ; annuler la confirmation laisse la
+ * feuille ouverte avec la saisie et rend le focus à « Ajouter » (guide §6.6.7).
+ */
+const useConfirmationDeLaFeuille = (
+  saisie: Saisie,
+  surConfirmationAffichee: (affichee: boolean) => void,
+) => {
+  const refAjouter = useRef<HTMLIonButtonElement>(null);
+  const affichee = saisie.confirmation !== undefined;
+  useEffect(() => {
+    surConfirmationAffichee(affichee);
+  }, [surConfirmationAffichee, affichee]);
+  const annulerConfirmation = (): void => {
+    saisie.annulerConfirmation();
+    refAjouter.current?.focus();
+  };
+  return { refAjouter, annulerConfirmation };
+};
+
+const FormulaireSaisieRapide = ({
+  saisie,
+  formulaire,
+  objectifs,
+  surFermer,
+  refAjouter,
+}: {
+  readonly saisie: Saisie;
+  readonly formulaire: FormulaireSaisie;
+  readonly objectifs: ProprietesSaisieRapide['objectifs'];
+  readonly surFermer: () => void;
+  readonly refAjouter: RefObject<HTMLIonButtonElement | null>;
+}) => (
+  <form
+    className="saisie-rapide-contenu"
+    aria-label={titreDe(formulaire)}
+    onSubmit={(e) => {
+      e.preventDefault();
+    }}
+  >
+    <EnTeteSaisie formulaire={formulaire} />
+    <Champs saisie={saisie} formulaire={formulaire} objectifs={objectifs} />
+    <MessagesHorsChamp messages={saisie.messages} />
+    <Boutons saisie={saisie} surFermer={surFermer} refAjouter={refAjouter} />
+  </form>
+);
+
 const CorpsSaisie = ({
   formulaire,
   objectifs,
   surValider,
   surFermer,
   registre = registreSaisie,
-}: Omit<ProprietesSaisieRapide, 'ouverte' | 'surFermee'> & { readonly surFermer: () => void }) => {
+  surConfirmationAffichee,
+}: Omit<ProprietesSaisieRapide, 'ouverte' | 'surFermee'> & {
+  readonly surFermer: () => void;
+  readonly surConfirmationAffichee: (affichee: boolean) => void;
+}) => {
   const saisie = useSaisie(formulaire, surValider);
+  const { refAjouter, annulerConfirmation } = useConfirmationDeLaFeuille(
+    saisie,
+    surConfirmationAffichee,
+  );
   useDeclarationSaisie(registre, estModifie(saisie.valeurs, formulaire));
   return (
     <>
-      <form
-        className="saisie-rapide-contenu"
-        aria-label={titreDe(formulaire)}
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
-      >
-        <EnTeteSaisie formulaire={formulaire} />
-        <Champs saisie={saisie} formulaire={formulaire} objectifs={objectifs} />
-        <MessagesHorsChamp messages={saisie.messages} />
-        <Boutons saisie={saisie} surFermer={surFermer} />
-      </form>
-      <ConfirmationAjout saisie={saisie} />
+      <FormulaireSaisieRapide
+        saisie={saisie}
+        formulaire={formulaire}
+        objectifs={objectifs}
+        surFermer={surFermer}
+        refAjouter={refAjouter}
+      />
+      <ConfirmationAjout saisie={saisie} surAnnuler={annulerConfirmation} />
     </>
   );
 };
 
-export const SaisieRapide = ({ ouverte, surFermee, ...corps }: ProprietesSaisieRapide) => (
-  <IonModal
-    isOpen={ouverte}
-    className="saisie-rapide"
-    initialBreakpoint={1}
-    breakpoints={[0, 1]}
-    onDidDismiss={surFermee}
-  >
-    <CorpsSaisie {...corps} surFermer={surFermee} />
-  </IonModal>
-);
+export const SaisieRapide = ({ ouverte, surFermee, ...corps }: ProprietesSaisieRapide) => {
+  const [confirmationAffichee, setConfirmationAffichee] = useState(false);
+  return (
+    <IonModal
+      isOpen={ouverte}
+      className="saisie-rapide"
+      initialBreakpoint={1}
+      breakpoints={[0, 1]}
+      backdropDismiss={!confirmationAffichee}
+      onDidDismiss={surFermee}
+    >
+      <CorpsSaisie
+        {...corps}
+        surFermer={surFermee}
+        surConfirmationAffichee={setConfirmationAffichee}
+      />
+    </IonModal>
+  );
+};

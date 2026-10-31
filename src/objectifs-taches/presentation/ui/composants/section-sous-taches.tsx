@@ -18,7 +18,7 @@ const CODE_ETAT_A_FAIRE: LigneSousTache['etat']['code'] = 'ETA-TACHE-A-FAIRE';
 
 const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
   <span className="ligne-tache-meta" aria-hidden="true">
-    <span>{ligne.delai}</span>
+    <span>{ligne.delai.libelle}</span>
     <span>{ligne.estimation.libelle}</span>
     {ligne.enRetard === undefined ? null : (
       <strong data-code={ligne.enRetard.code}>{ligne.enRetard.libelle}</strong>

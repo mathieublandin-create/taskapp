@@ -15,7 +15,7 @@ type MentionHeureParis = { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: s
 export type LigneSousTache = {
   readonly id: IdTache;
   readonly intitule: string;
-  readonly delai: DateCalendaire;
+  readonly delai: LigneTache['delai'];
   readonly estimation: { readonly minutes: number; readonly libelle: string };
   readonly etat: LigneTache['etat'];
   readonly enRetard?: LigneTache['enRetard'];
@@ -129,7 +129,7 @@ const construireLigneSousTache = (
   return {
     id: ligne.id,
     intitule: ligne.intitule,
-    delai: ligne.delai.date,
+    delai: ligne.delai,
     estimation: { minutes: ligne.estimation.minutes, libelle: ligne.estimation.libelle },
     etat: ligne.etat,
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),

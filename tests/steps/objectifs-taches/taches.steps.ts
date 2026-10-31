@@ -302,7 +302,7 @@ const dernierDetail = ({ monde, appareil }: ContexteEtape) => {
 type LigneSousTache = NonNullable<ModeleVueDetailTache['sousTaches']>['lignes'][number];
 
 const COLONNES_SOUS_TACHE: Readonly<Record<string, (ligne: LigneSousTache) => string>> = {
-  délai: (l) => l.delai,
+  délai: (l) => l.delai.date,
   estimation: (l) => l.estimation.libelle,
   état: (l) => NOMS_ETAT[l.etat.code] ?? l.etat.code,
   'en retard': (l) => (l.enRetard === undefined ? 'non' : 'oui'),

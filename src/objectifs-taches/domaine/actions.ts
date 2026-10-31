@@ -43,8 +43,9 @@ export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionT
     'RENOMMER',
     'MODIFIER_DELAI',
     ...(sousTachesDe(vue, id).length === 0 ? (['MODIFIER_ESTIMATION'] as const) : []),
-    ...(tache.tacheParenteId === undefined ? (['RATTACHER', 'DETACHER'] as const) : []),
-    ...(tache.tacheParenteId === undefined ? (['CREER_SOUS_TACHE'] as const) : []),
+    ...(tache.tacheParenteId === undefined
+      ? (['RATTACHER', 'DETACHER', 'CREER_SOUS_TACHE'] as const)
+      : []),
     'SUPPRIMER',
   ];
 };
