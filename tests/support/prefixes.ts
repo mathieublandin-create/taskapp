@@ -7,6 +7,7 @@
 import { Given, Then, When } from '@cucumber/cucumber';
 import type { Resultat } from '@src/commun/domaine/resultat';
 import type { AppareilSimule, NomAppareil } from './banc/appareil-simule';
+import type { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import { convertirAppareil, convertirEcart } from './conversions';
 import { motifAction, motifAssertion, motifContexte } from './motifs-prefixes';
 import type { MondeDoneJuan } from './monde';
@@ -19,6 +20,15 @@ export type CorpsEtape = (
 
 const texteOuUndefined = (valeur: unknown): string | undefined =>
   typeof valeur === 'string' ? valeur : undefined;
+
+/**
+ * Écart du préfixe « {ecart} plus tard, » : le groupe a le motif du type de paramètre `{ecart}`, que cucumber-js
+ * convertit lui-même en `EcartTemps` ; le texte brut reste accepté.
+ */
+const ecartDuPrefixe = (valeur: unknown): EcartTemps | undefined => {
+  if (typeof valeur === 'number') return valeur as EcartTemps;
+  return typeof valeur === 'string' ? convertirEcart(valeur) : undefined;
+};
 
 /** Appareil désigné par le préfixe ; sans préfixe, l'unique appareil du banc, sinon l'appareil implicite ou une erreur. */
 export const appareilDuPrefixe = (
@@ -61,6 +71,8 @@ const avecArite = <F extends (...arguments_: Array<never>) => unknown>(
 export type OptionsAction = {
   /** Appareil visé quand l'étape n'a pas de préfixe et que le banc en compte deux (H-5, conventions.md §11.6). */
   readonly appareilImplicite?: (monde: MondeDoneJuan) => NomAppareil | undefined;
+  /** L'étape reçoit un tableau de données (DataTable) en dernier argument. */
+  readonly tableau?: boolean;
 };
 
 /**
@@ -85,6 +97,7 @@ export const etapeContexte = (
         );
         await corps({ monde: this, appareil }, ...reste);
       },
+      options.tableau ?? false,
     ),
   );
 };
@@ -115,8 +128,8 @@ export const etapeAction = (
           texteOuUndefined(prefixe),
           options.appareilImplicite,
         );
-        const ecartTexte = texteOuUndefined(ecart);
-        if (ecartTexte !== undefined) await this.banc.avancerTemps(convertirEcart(ecartTexte));
+        const ecartAvance = ecartDuPrefixe(ecart);
+        if (ecartAvance !== undefined) await this.banc.avancerTemps(ecartAvance);
         if (texteOuUndefined(exact) !== undefined) {
           if (this.instantDerniereAction === undefined)
             throw new Error('Aucune action précédente à rejouer');
@@ -126,6 +139,7 @@ export const etapeAction = (
         const resultat = await corps({ monde: this, appareil }, ...reste);
         if (estResultat(resultat)) this.resultats.set(appareil.nom, resultat);
       },
+      options.tableau ?? false,
     ),
   );
 };

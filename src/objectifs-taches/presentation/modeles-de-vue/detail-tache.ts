@@ -1,10 +1,12 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '../../../commun/application/ports/horloge';
 import type { IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
+import type { ResumeTache } from '../../application/requetes/resumes';
 import type { DetailTache } from '../../application/requetes/consulter-detail-tache';
 import type { ActionTache } from '../../domaine/actions';
-import type { LigneTache } from './ligne-tache';
+import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
+import { libelle } from '../../../commun/presentation/messages/libelle';
+import { construireLigneTache, type LigneTache } from './ligne-tache';
 
 // ST-US-002 §4.5 ; ST-US-024 §4.5 ; ST-US-003 §4.5 ; ST-US-025 §4.5.
 type MentionHeureParis = { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string };
@@ -91,7 +93,52 @@ export type ModeleVueDetailTache = {
   };
 };
 
+const verrouEstimation = (
+  tache: ResumeTache,
+): Pick<ModeleVueDetailTache['estimation'], 'verrou'> =>
+  tache.estimationCalculee
+    ? {
+        verrou: {
+          code: 'MEN-ESTIMATION-CALCULEE',
+          libelle: libelle('MEN-ESTIMATION-CALCULEE'),
+        },
+      }
+    : {};
+
+const verrouObjectifs = (tache: ResumeTache): Pick<ModeleVueDetailTache['objectifs'], 'verrou'> =>
+  tache.objectifsHerites
+    ? {
+        verrou: {
+          code: 'MEN-OBJECTIFS-HERITES',
+          libelle: libelle('MEN-OBJECTIFS-HERITES'),
+        },
+      }
+    : {};
+
+/**
+ * Rang 5 (ST-US-002) : champs d'édition, verrous et actions. Sous-tâches, ALR-013 : ST-US-024 ; dateFin,
+ * dateAbandon : ST-US-003 et 025 ; incohérence : rang 9.
+ */
 export const construireDetailTache = (
-  _donnees: DetailTache,
-  _dependances: { readonly horloge: Horloge },
-): ModeleVueDetailTache => nonImplemente('construireDetailTache');
+  donnees: DetailTache,
+  dependances: { readonly horloge: Horloge },
+): ModeleVueDetailTache => {
+  const { tache } = donnees;
+  const ligne = construireLigneTache(tache, jourDeReference(dependances.horloge.maintenant()));
+  return {
+    id: tache.id,
+    intitule: tache.intitule,
+    etat: ligne.etat,
+    delai: { ...ligne.delai, alertes: ligne.alertes },
+    estimation: {
+      minutes: ligne.estimation.minutes,
+      libelle: ligne.estimation.libelle,
+      ...verrouEstimation(tache),
+    },
+    estimationInitiale: { minutes: tache.estimationInitiale },
+    objectifs: { intitules: ligne.objectifs, ...verrouObjectifs(tache) },
+    ...(tache.tacheParente === undefined ? {} : { tacheParente: tache.tacheParente }),
+    ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
+    actions: donnees.actions,
+  };
+};

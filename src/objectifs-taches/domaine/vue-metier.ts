@@ -140,6 +140,14 @@ export const objectifActif = (vue: VueMetier, id: IdObjectif): Resultat<Objectif
     : succes(objectif);
 };
 
+/** ElementIntrouvable si la tâche est absente, supprimée ou sous une tâche parente supprimée. */
+export const tacheActive = (vue: VueMetier, id: IdTache): Resultat<Tache, RefusMetier> => {
+  const tache = vue.taches.get(id);
+  return tache === undefined
+    ? echec({ type: 'ElementIntrouvable', element: { type: 'TACHE', id } })
+    : succes(tache);
+};
+
 const retrouver = <K, V>(
   ids: ReadonlyArray<K> | undefined,
   source: ReadonlyMap<K, V>,
@@ -157,3 +165,7 @@ export const tachesDirectesDe = (vue: VueMetier, id: IdObjectif): ReadonlyArray<
 
 export const sousTachesDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Tache> =>
   retrouver(vue.sousTachesPar.get(id), vue.taches);
+
+/** Objectifs rattachés directement à la tâche, dans l'ordre de rattachement (RG-001). */
+export const objectifsDirectsDe = (vue: VueMetier, id: IdTache): ReadonlyArray<Objectif> =>
+  retrouver(vue.objectifsDirectsPar.get(id), vue.objectifs);

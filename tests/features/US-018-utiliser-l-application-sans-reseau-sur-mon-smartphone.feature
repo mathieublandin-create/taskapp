@@ -198,6 +198,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors sur le smartphone, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le smartphone
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
     Exemples:
@@ -218,6 +220,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Alors sur le smartphone, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
     Et sur le smartphone, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le smartphone
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
   @US-018 @RG-021 @LOT-001

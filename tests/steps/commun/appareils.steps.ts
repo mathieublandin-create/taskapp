@@ -2,7 +2,6 @@
  * Étapes des appareils du banc (glossaire d'étapes §1 et §2 ; ST-socle-ecriture.md §12 n° 4 ; ST-US-022 §12.1
  * n° 3 à 6).
  */
-import assert from 'node:assert/strict';
 import { Given, When } from '@cucumber/cucumber';
 import type { NomAppareil } from '../../support/banc/appareil-simule';
 import { convertirAppareil, convertirFuseau } from '../../support/conversions';
@@ -11,8 +10,8 @@ import type { MondeDoneJuan } from '../../support/monde';
 Given(
   "(que )l'application n'a jamais été utilisée sur le {appareil}",
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    const appareil = this.banc.appareil(nomAppareil);
-    assert.equal(appareil.estOuverte(), false, `Le ${appareil.nom} a déjà été utilisé`);
+    // ST-US-022 §12.1 n° 3 : appareil neuf, qui remplace celui du Contexte.
+    this.banc.remplacerAppareil(nomAppareil);
   },
 );
 
@@ -99,9 +98,24 @@ Given(
   },
 );
 
+// ST-US-018 §12.1 n° 5 : abandon de l'instance ; « éteint puis rallumé » repart en plus d'une nouvelle horloge monotone.
+When(
+  "l'application est arrêtée brutalement sur le {appareil}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).arreterBrutalement();
+  },
+);
+
 When(
   "l'utilisateur ramène l'application au premier plan sur le {appareil}",
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     this.banc.appareil(nomAppareil).revenirAuPremierPlan();
+  },
+);
+
+When(
+  'le {appareil} est éteint puis rallumé',
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    this.banc.appareil(nomAppareil).redemarrer();
   },
 );

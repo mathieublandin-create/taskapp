@@ -2,18 +2,27 @@ import type { GenerateurIdentifiants } from '../commun/application/ports/generat
 import type { Horloge } from '../commun/application/ports/horloge';
 import {
   ConsulterDetailObjectif,
+  ConsulterDetailTache,
   ConsulterHistorique,
   ConsulterObjectifs,
   ConsulterSelecteurParent,
+  ConsulterTaches,
   CreerObjectif,
   CreerSousObjectif,
+  CreerTache,
+  DetacherTache,
   ModifierDelaiObjectif,
+  ModifierDelaiTache,
   ModifierDescriptionObjectif,
+  ModifierEstimationTache,
   PlacerObjectif,
+  RattacherTache,
   RendreObjectifPrincipal,
   RenommerObjectif,
+  RenommerTache,
   RetirerDelaiObjectif,
   SupprimerObjectif,
+  SupprimerTache,
 } from '../objectifs-taches';
 import type { ServiceEtatLocal } from '../synchronisation';
 
@@ -29,7 +38,16 @@ export type ObjectifsTaches = {
   readonly modifierDelaiObjectif: ModifierDelaiObjectif;
   readonly retirerDelaiObjectif: RetirerDelaiObjectif;
   readonly supprimerObjectif: SupprimerObjectif;
+  readonly creerTache: CreerTache;
+  readonly renommerTache: RenommerTache;
+  readonly modifierDelaiTache: ModifierDelaiTache;
+  readonly modifierEstimationTache: ModifierEstimationTache;
+  readonly rattacherTache: RattacherTache;
+  readonly detacherTache: DetacherTache;
+  readonly supprimerTache: SupprimerTache;
   readonly consulterObjectifs: ConsulterObjectifs;
+  readonly consulterTaches: ConsulterTaches;
+  readonly consulterDetailTache: ConsulterDetailTache;
   readonly consulterDetailObjectif: ConsulterDetailObjectif;
   readonly consulterSelecteurParent: ConsulterSelecteurParent;
   readonly consulterHistorique: ConsulterHistorique;
@@ -37,12 +55,27 @@ export type ObjectifsTaches = {
   readonly observer: (rappel: () => void) => () => void;
 };
 
-export const assemblerObjectifsTaches = (d: {
+type Dependances = {
   readonly service: ServiceEtatLocal;
   readonly generateur: GenerateurIdentifiants;
   readonly horloge: Horloge;
   readonly observer: (rappel: () => void) => () => void;
-}): ObjectifsTaches => ({
+};
+
+/** Cas d'usage et requêtes des tâches (ST-US-002 §3 n° 20). */
+const assemblerTaches = (d: Dependances) => ({
+  creerTache: new CreerTache(d.service, d.generateur),
+  renommerTache: new RenommerTache(d.service),
+  modifierDelaiTache: new ModifierDelaiTache(d.service),
+  modifierEstimationTache: new ModifierEstimationTache(d.service),
+  rattacherTache: new RattacherTache(d.service),
+  detacherTache: new DetacherTache(d.service),
+  supprimerTache: new SupprimerTache(d.service),
+  consulterTaches: new ConsulterTaches(d.service, d.horloge),
+  consulterDetailTache: new ConsulterDetailTache(d.service, d.horloge),
+});
+
+export const assemblerObjectifsTaches = (d: Dependances): ObjectifsTaches => ({
   horloge: d.horloge,
   creerObjectif: new CreerObjectif(d.service, d.generateur),
   creerSousObjectif: new CreerSousObjectif(d.service, d.generateur),
@@ -53,6 +86,7 @@ export const assemblerObjectifsTaches = (d: {
   modifierDelaiObjectif: new ModifierDelaiObjectif(d.service),
   retirerDelaiObjectif: new RetirerDelaiObjectif(d.service),
   supprimerObjectif: new SupprimerObjectif(d.service),
+  ...assemblerTaches(d),
   consulterObjectifs: new ConsulterObjectifs(d.service, d.horloge),
   consulterDetailObjectif: new ConsulterDetailObjectif(d.service, d.horloge),
   consulterSelecteurParent: new ConsulterSelecteurParent(d.service, d.horloge),

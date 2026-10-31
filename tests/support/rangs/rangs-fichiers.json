@@ -641,13 +641,25 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/champ-detail.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/composants/feuille-objectif.tsx": {
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/filtre-etat.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/composants/ligne-objectif.tsx": {
       "debut": 2,
       "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/ligne-tache.tsx": {
+      "debut": 5,
+      "fin": 5
     },
     "src/objectifs-taches/presentation/ui/composants/menu-objectif.tsx": {
       "debut": 2,
@@ -657,6 +669,22 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/puces-objectif.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/saisie-rapide.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/sections-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/selecteur-duree.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/composants/selecteur-parent.tsx": {
       "debut": 4,
       "fin": 4
@@ -665,17 +693,33 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/ecrans/detail-tache.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/ecrans/espace-objectifs.tsx": {
       "debut": 2,
       "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espace-taches.tsx": {
+      "debut": 5,
+      "fin": 5
     },
     "src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx": {
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/ecrans/liste-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches.ts": {
       "debut": 2,
       "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/etat/magasin-taches.ts": {
+      "debut": 5,
+      "fin": 5
     },
     "src/objectifs-taches/presentation/ui/libelles-ui.ts": {
       "debut": 2,

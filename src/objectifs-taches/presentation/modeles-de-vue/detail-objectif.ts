@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '../../../commun/application/ports/horloge';
 import { ErreurProgrammation } from '../../../commun/domaine/erreur-programmation';
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
@@ -10,11 +9,11 @@ import {
 } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { DetailObjectif } from '../../application/requetes/consulter-detail-objectif';
-import type { ResumeObjectif } from '../../application/requetes/resumes';
+import type { ResumeObjectif, ResumeTache } from '../../application/requetes/resumes';
 import type { ActionObjectif } from '../../domaine/actions';
 import { construireLigneObjectif, type LigneObjectif, type ModeleVueDelai } from './ligne-objectif';
-import { comparerOrdreReference } from './ordre-reference';
-import type { LigneTache } from './ligne-tache';
+import { construireLigneTache, type LigneTache } from './ligne-tache';
+import { comparerOrdreReference, comparerParFinDecroissante } from './ordre-reference';
 
 // ST-US-001 §4.5 ; ST-US-023 §4.5 ; ST-US-002 §4.5, §6.6 (guide v0.2.10 §5.8 d).
 export type LigneDetailObjectif = LigneTache & { readonly niveau: 'TACHE' | 'SOUS_TACHE' };
@@ -64,17 +63,6 @@ export type ModeleVueDetailObjectif = {
   readonly mentionHeureParis?: MentionHeureParis;
 };
 
-const section = <C extends CodeSectionTaches>(
-  code: C,
-  replieeParDefaut: boolean,
-): SectionTaches<C> => ({
-  code,
-  n: 0,
-  libelle: libelle(code, { n: 0 }),
-  replieeParDefaut,
-  lignes: [],
-});
-
 const niveauDe = (objectif: ResumeObjectif): ModeleVueDetailObjectif['niveau'] => {
   if (objectif.parentId === undefined) return { type: 'PRINCIPAL' };
   if (objectif.parentIntitule === undefined) {
@@ -86,11 +74,60 @@ const niveauDe = (objectif: ResumeObjectif): ModeleVueDetailObjectif['niveau'] =
   };
 };
 
-const sectionsDeTaches = (): ModeleVueDetailObjectif['taches'] => ({
-  aFaire: section('SEC-TACHES-A-FAIRE', false),
-  terminees: section('SEC-TACHES-TERMINEES', true),
-  abandonnees: section('SEC-TACHES-ABANDONNEES', true),
-});
+const section = <C extends CodeSectionTaches>(
+  code: C,
+  replieeParDefaut: boolean,
+  taches: ReadonlyArray<LigneDetailObjectif>,
+): SectionTaches<C> => {
+  const n = taches.filter((ligne) => ligne.niveau === 'TACHE').length;
+  return { code, n, libelle: libelle(code, { n }), replieeParDefaut, lignes: taches };
+};
+
+const ligneDetail = (
+  resume: ResumeTache,
+  niveau: LigneDetailObjectif['niveau'],
+  aujourdhui: DateCalendaire,
+): LigneDetailObjectif => ({ ...construireLigneTache(resume, aujourdhui), niveau });
+
+/**
+ * Sous une tâche à faire, ses sous-tâches non supprimées suivent sa ligne, tous états, dans l'ordre de référence ;
+ * sous une tâche terminée ou abandonnée, aucune ligne de sous-tâche (Q-US-002-4 a).
+ */
+const lignesDeSection = (
+  taches: ReadonlyArray<ResumeTache>,
+  sousTachesPar: DetailObjectif['sousTachesPar'],
+  aujourdhui: DateCalendaire,
+): ReadonlyArray<LigneDetailObjectif> =>
+  taches.flatMap((tache) => [
+    ligneDetail(tache, 'TACHE', aujourdhui),
+    ...(tache.cycleDeVie.etat === 'A_FAIRE' ? [...(sousTachesPar.get(tache.id) ?? [])] : [])
+      .sort(comparerOrdreReference)
+      .map((sousTache) => ligneDetail(sousTache, 'SOUS_TACHE', aujourdhui)),
+  ]);
+
+const sectionsDeTaches = (
+  donnees: DetailObjectif,
+  aujourdhui: DateCalendaire,
+): ModeleVueDetailObjectif['taches'] => {
+  const dans = (
+    etat: ResumeTache['cycleDeVie']['etat'],
+    comparer: (a: ResumeTache, b: ResumeTache) => number,
+  ) =>
+    lignesDeSection(
+      donnees.taches.filter((tache) => tache.cycleDeVie.etat === etat).sort(comparer),
+      donnees.sousTachesPar,
+      aujourdhui,
+    );
+  return {
+    aFaire: section('SEC-TACHES-A-FAIRE', false, dans('A_FAIRE', comparerOrdreReference)),
+    terminees: section('SEC-TACHES-TERMINEES', true, dans('TERMINEE', comparerParFinDecroissante)),
+    abandonnees: section(
+      'SEC-TACHES-ABANDONNEES',
+      true,
+      dans('ABANDONNEE', comparerParFinDecroissante),
+    ),
+  };
+};
 
 const sectionSousObjectifs = (
   sousObjectifs: ReadonlyArray<ResumeObjectif>,
@@ -110,9 +147,6 @@ export const construireDetailObjectif = (
   const aujourdhui = jourDeReference(dependances.horloge.maintenant());
   const { objectif } = donnees;
   const ligne = construireLigneObjectif(objectif, aujourdhui);
-  if (donnees.taches.length > 0) {
-    return nonImplemente('construireDetailObjectif (sections de tâches, ST-US-002)');
-  }
   return {
     id: objectif.id,
     intitule: objectif.intitule,
@@ -126,8 +160,10 @@ export const construireDetailObjectif = (
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     ...(ligne.alerteDelai === undefined ? {} : { alerteDelai: ligne.alerteDelai }),
     sousObjectifs: sectionSousObjectifs(donnees.sousObjectifs, aujourdhui),
-    taches: sectionsDeTaches(),
-    etatVide: { code: 'EVD-OBJECTIF-SANS-TACHE' },
+    taches: sectionsDeTaches(donnees, aujourdhui),
+    ...(donnees.taches.length === 0
+      ? { etatVide: { code: 'EVD-OBJECTIF-SANS-TACHE' as const } }
+      : {}),
     actions: donnees.actions,
     ...mentionHeureParis(dependances.horloge),
   };

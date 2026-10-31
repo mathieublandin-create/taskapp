@@ -43,6 +43,22 @@ export const objectifsDuDrive = async (drive: FauxDrive, intitule: string) =>
     (o) => !o.supprime && o.intitule === intitule,
   );
 
+/** Tâches non supprimées du Drive qui portent cet intitulé. */
+export const tachesDuDrive = async (drive: FauxDrive, intitule: string) =>
+  [...(await etatMetierDuDrive(drive)).taches.values()].filter(
+    (t) => !t.supprime && t.intitule === intitule,
+  );
+
+/** Drive du compte auquel l'appareil est connecté ; undefined sans accès connu. */
+export const driveDeLAppareil = (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+): FauxDrive | undefined => {
+  const identite = appareil.fournisseur.identiteDuJetonEnMemoire();
+  const nom = identite === undefined ? undefined : monde.banc.google.nomDe(identite);
+  return nom === undefined ? undefined : monde.banc.google.drive(nom);
+};
+
 /** Identifiants des objectifs et des tâches d'un état métier. */
 export const identifiantsDe = (etat: EtatMetier): ReadonlySet<string> =>
   new Set<string>([...etat.objectifs.keys(), ...etat.taches.keys()]);

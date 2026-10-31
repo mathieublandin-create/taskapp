@@ -55,9 +55,11 @@ Given(
 Given(
   "(que )l'utilisateur utilise le compte {string} sur le smartphone et sur le PC, tous deux à jour",
   async function (this: MondeDoneJuan, nomCompte: string) {
+    const depart = this.banc.temps.maintenant();
     await connecter(this, this.banc.appareil('smartphone'), nomCompte);
     await connecter(this, this.banc.appareil('pc'), nomCompte);
     await this.banc.synchroniserJusquAuRepos();
+    this.banc.temps.positionner(depart); // un état établi, pas une chronologie (H-5)
   },
 );
 

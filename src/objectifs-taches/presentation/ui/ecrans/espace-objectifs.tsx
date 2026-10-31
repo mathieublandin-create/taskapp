@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from 'zustand';
+import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { ErreurProgrammation } from '../../../../commun/domaine/erreur-programmation';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { BoiteConfirmation } from '../../../../commun/presentation/ui/boite-confirmation';
@@ -19,13 +20,25 @@ import type {
   SaisieObjectif,
   SelecteurParentOuvert,
 } from '../etat/magasin-objectifs-taches';
+import { SaisieRapide } from '../composants/saisie-rapide';
 import { SelecteurParent } from '../composants/selecteur-parent';
-import { DetailObjectif } from './detail-objectif';
+import type { MagasinTaches } from '../etat/magasin-taches';
+import { construireFormulaireTache } from '../../modeles-de-vue/formulaire-tache';
+import { DetailObjectif, type ProprietesDetailObjectif } from './detail-objectif';
 import { ListeObjectifs } from './liste-objectifs';
 
 // Espace des objectifs : navigation liste ↔ détail, feuilles de saisie, menu « … », confirmation de suppression et
 // toast d'erreur d'enregistrement (ERR-014), au-dessus du magasin Zustand (ST-US-001 §4.5).
-export type ProprietesEspaceObjectifs = { readonly magasin: MagasinObjectifs };
+export type ProprietesEspaceObjectifs = {
+  readonly magasin: MagasinObjectifs;
+  /** Tâches (US-002) : ouverture d'une tâche et saisie rapide depuis le détail d'un objectif (objectif pré-rempli). */
+  readonly taches?: LiaisonTaches;
+};
+
+export type LiaisonTaches = {
+  readonly magasin: MagasinTaches;
+  readonly surOuvrirTache: (id: IdTache) => void;
+};
 
 const FEUILLE_PAR_ACTION: Readonly<
   Record<Exclude<ActionMenuObjectif, 'SUPPRIMER' | 'RETIRER_DELAI' | 'PLACER'>, ModeFeuille>
@@ -77,6 +90,8 @@ const valeursInitiales = (
 type Geste = {
   readonly feuille: { readonly mode: ModeFeuille; readonly ouverte: boolean };
   readonly menuOuvert: boolean;
+  readonly saisieTacheOuverte: boolean;
+  readonly basculerSaisieTache: (ouverte: boolean) => void;
   readonly ouvrirFeuille: (mode: ModeFeuille) => void;
   readonly fermerFeuille: () => void;
   readonly ouvrirMenu: () => void;
@@ -86,9 +101,12 @@ type Geste = {
 const useGeste = (): Geste => {
   const [feuille, setFeuille] = useState<Geste['feuille']>({ mode: 'CREATION', ouverte: false });
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const [saisieTacheOuverte, setSaisieTacheOuverte] = useState(false);
   return {
     feuille,
     menuOuvert,
+    saisieTacheOuverte,
+    basculerSaisieTache: setSaisieTacheOuverte,
     ouvrirFeuille: (mode) => {
       setFeuille({ mode, ouverte: true });
     },
@@ -110,9 +128,24 @@ type ProprietesPage = {
   readonly detail: ModeleVueDetailObjectif | undefined;
   readonly actions: ActionsMagasinObjectifs;
   readonly geste: Geste;
+  readonly taches: LiaisonTaches | undefined;
 };
 
-const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
+/** Props de tâches du détail : absentes sans liaison (écrans et tests d'objectifs seuls). */
+const liaisonTaches = (
+  taches: LiaisonTaches | undefined,
+  geste: Geste,
+): Pick<ProprietesDetailObjectif, 'surOuvrirTache' | 'surAjouterTache'> =>
+  taches === undefined
+    ? {}
+    : {
+        surOuvrirTache: taches.surOuvrirTache,
+        surAjouterTache: () => {
+          geste.basculerSaisieTache(true);
+        },
+      };
+
+const Page = ({ ecran, liste, detail, actions, geste, taches }: ProprietesPage) => {
   if (ecran.type === 'LISTE' && liste !== undefined) {
     return (
       <ListeObjectifs
@@ -134,6 +167,7 @@ const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
         surAjouterSousObjectif={() => {
           geste.ouvrirFeuille('CREATION_SOUS_OBJECTIF');
         }}
+        {...liaisonTaches(taches, geste)}
       />
     );
   }
@@ -141,7 +175,11 @@ const Page = ({ ecran, liste, detail, actions, geste }: ProprietesPage) => {
 };
 
 /** Gestes du menu « … » et validation des feuilles, sur l'objectif ouvert. */
-const useGestesSaisie = ({ ecran, actions, geste }: Omit<ProprietesPage, 'liste' | 'detail'>) => ({
+const useGestesSaisie = ({
+  ecran,
+  actions,
+  geste,
+}: Pick<ProprietesPage, 'ecran' | 'actions' | 'geste'>) => ({
   surActionMenu: (action: ActionMenuObjectif): void => {
     if (ecran.type !== 'DETAIL') return;
     if (action === 'SUPPRIMER') void actions.demanderSuppression(ecran.id);
@@ -194,7 +232,7 @@ const Saisies = ({
   actions,
   geste,
   selecteurParent,
-}: Omit<ProprietesPage, 'liste'> & {
+}: Omit<ProprietesPage, 'liste' | 'taches'> & {
   readonly selecteurParent: SelecteurParentOuvert | undefined;
 }) => {
   const { feuille } = geste;
@@ -215,7 +253,34 @@ const Saisies = ({
   );
 };
 
-export const EspaceObjectifs = ({ magasin }: ProprietesEspaceObjectifs) => {
+/** Saisie rapide d'une tâche depuis le détail d'un objectif : l'objectif est pré-rempli (guide §4.3). */
+const SaisieTacheDeLObjectif = ({
+  magasin,
+  objectifId,
+  geste,
+}: {
+  readonly magasin: MagasinTaches;
+  readonly objectifId: IdObjectif;
+  readonly geste: Geste;
+}) => {
+  const { actions, objectifs } = useStore(magasin);
+  useEffect(() => {
+    if (geste.saisieTacheOuverte) void actions.chargerObjectifs();
+  }, [actions, geste.saisieTacheOuverte]);
+  return (
+    <SaisieRapide
+      ouverte={geste.saisieTacheOuverte}
+      formulaire={construireFormulaireTache({ objectifPreRempli: objectifId })}
+      objectifs={objectifs}
+      surValider={actions.creer}
+      surFermee={() => {
+        geste.basculerSaisieTache(false);
+      }}
+    />
+  );
+};
+
+export const EspaceObjectifs = ({ magasin, taches }: ProprietesEspaceObjectifs) => {
   const { actions } = magasin.getState();
   const etat = useStore(magasin);
   const geste = useGeste();
@@ -225,8 +290,11 @@ export const EspaceObjectifs = ({ magasin }: ProprietesEspaceObjectifs) => {
   const { ecran, liste, detail, confirmation, selecteurParent } = etat;
   return (
     <>
-      <Page {...{ ecran, liste, detail, actions, geste }} />
+      <Page {...{ ecran, liste, detail, actions, geste, taches }} />
       <Saisies {...{ ecran, detail, actions, geste, selecteurParent }} />
+      {taches === undefined || ecran.type !== 'DETAIL' ? null : (
+        <SaisieTacheDeLObjectif magasin={taches.magasin} objectifId={ecran.id} geste={geste} />
+      )}
       {confirmation === undefined ? null : (
         <BoiteConfirmation
           code={confirmation.code}

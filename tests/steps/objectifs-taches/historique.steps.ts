@@ -9,16 +9,23 @@ import { construireVueMetier } from '@src/objectifs-taches/domaine/vue-metier';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { valeurDe } from '../../support/environnement';
 import { objectifsDe, resoudreObjectif } from '../../support/objectifs';
+import { resoudreTache } from '../../support/taches';
 import { etapeAssertion, type ContexteEtape } from '../../support/prefixes';
 import { rendreEntree, type EntreeRendue } from '../../support/rendu-historique';
+
+type Nature = 'OBJECTIF' | 'TACHE';
 
 const historiqueDe = async (
   { monde, appareil }: ContexteEtape,
   intitule: string,
+  nature: Nature = 'OBJECTIF',
 ): Promise<ReadonlyArray<EntreeRendue>> => {
-  const id = await resoudreObjectif(monde, appareil, intitule);
   const objectifs = await objectifsDe(appareil);
-  const journal = valeurDe(await objectifs.consulterHistorique.executer({ type: 'OBJECTIF', id }));
+  const element =
+    nature === 'OBJECTIF'
+      ? ({ type: 'OBJECTIF', id: await resoudreObjectif(monde, appareil, intitule) } as const)
+      : ({ type: 'TACHE', id: await resoudreTache(monde, appareil, intitule) } as const);
+  const journal = valeurDe(await objectifs.consulterHistorique.executer(element));
   const intitules = (await vueDe(appareil)).intitulesConnus;
   return journal.map((evenement) => rendreEntree(evenement, intitules));
 };
@@ -67,3 +74,30 @@ etapeAssertion(/^l'historique n'est affiché nulle part dans l'application$/, ()
     "Une vue d'historique est offerte à l'interface",
   );
 });
+
+// ST-US-002 §12 n° 29 : mêmes étapes pour une tâche (ST-US-001 §12 n° 27 à 29).
+etapeAssertion(
+  /^l'historique contient, pour la tâche "([^"]*)" :$/,
+  async (contexte, intitule, tableau) => {
+    assert.deepEqual(await historiqueDe(contexte, String(intitule), 'TACHE'), attendues(tableau));
+  },
+  { tableau: true },
+);
+
+etapeAssertion(
+  /^l'historique de la tâche "([^"]*)" se termine par :$/,
+  async (contexte, intitule, tableau) => {
+    const attendu = attendues(tableau);
+    const entrees = await historiqueDe(contexte, String(intitule), 'TACHE');
+    assert.deepEqual(entrees.slice(entrees.length - attendu.length), attendu);
+  },
+  { tableau: true },
+);
+
+etapeAssertion(
+  /^l'historique ne contient aucune entrée "([^"]*)" pour la tâche "([^"]*)"$/,
+  async (contexte, evenement, intitule) => {
+    const entrees = await historiqueDe(contexte, String(intitule), 'TACHE');
+    assert.equal(entrees.filter((e) => e.evenement === evenement).length, 0);
+  },
+);

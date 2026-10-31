@@ -25,6 +25,9 @@ const verifierRefus = ({ monde, appareil }: ContexteEtape, motif: unknown): void
 
 etapeAssertion(/^l'enregistrement est refusé avec le motif "([^"]*)"$/, verifierRefus);
 
+// ST-US-002 §12 n° 19 : comme l'enregistrement, pour la modification d'une tâche.
+etapeAssertion(/^la modification est refusée avec le motif "([^"]*)"$/, verifierRefus);
+
 // ST-US-023 §12 n° 14 : même logique, pour une action autre qu'un enregistrement.
 etapeAssertion(/^l'action est refusée avec le motif "([^"]*)"$/, verifierRefus);
 
@@ -51,5 +54,13 @@ Then(
       taches: Number(taches),
       sousObjectifs: Number(sousObjectifs),
     });
+  },
+);
+
+// ST-US-002 §12 n° 18 : CNF-SUPPR-TACHE et le nombre de sous-tâches annoncé (variable `n`).
+Then(
+  /^une confirmation est demandée, qui annonce (\d+) sous-tâches?(?:\(s\))? supprimées?(?:\(s\))? avec la tâche$/,
+  function (this: MondeDoneJuan, n: string) {
+    assert.deepEqual(confirmationAffichee(this), { code: 'CNF-SUPPR-TACHE', n: Number(n) });
   },
 );

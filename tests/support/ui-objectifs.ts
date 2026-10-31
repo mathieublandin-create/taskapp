@@ -4,19 +4,17 @@
  */
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { assemblerObjectifsTaches } from '@src/composition/objectifs-taches';
+import { assemblerObjectifsTaches, type ObjectifsTaches } from '@src/composition/objectifs-taches';
 import type { IdObjectif } from '@src/commun/domaine/identifiants';
 import { echec } from '@src/commun/domaine/resultat';
-import {
-  creerMagasinObjectifsTaches,
-  type ServicesObjectifs,
-} from '@src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
+import { creerMagasinObjectifsTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
 import type { ServiceEtatLocal } from '@src/synchronisation/application/service-etat-local';
 import { creerEnvironnement, valeurDe, type Environnement } from './environnement';
 
 export type BancObjectifs = {
   readonly env: Environnement;
-  readonly services: ServicesObjectifs;
+  /** Tous les cas d'usage et requêtes assemblés (objectifs et tâches). */
+  readonly services: ObjectifsTaches;
   readonly magasin: ReturnType<typeof creerMagasinObjectifsTaches>;
   /** Crée un objectif par le cas d'usage et rend son identifiant. */
   readonly creer: (intitule: string, delai?: string) => Promise<IdObjectif>;

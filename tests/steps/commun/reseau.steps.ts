@@ -18,10 +18,21 @@ Given(
 );
 
 // ST-US-017 §12.1 n° 5 : le réseau est rétabli, puis le cycle qu'il déclenche est attendu.
-When(
-  'le réseau revient sur le {appareil}',
+const retablirLeReseau = async function (
+  this: MondeDoneJuan,
+  nomAppareil: NomAppareil,
+): Promise<void> {
+  this.banc.appareil(nomAppareil).reseau.retablir();
+  await this.banc.attendreCycles();
+};
+
+When('le réseau revient sur le {appareil}', retablirLeReseau);
+When("le réseau revient sur le {appareil}, sans aucune action de l'utilisateur", retablirLeReseau);
+
+// ST-US-017 §12.1 n° 7 : l'intermittence est portée par `l'envoi au Drive est interrompu … fois` (drive.steps.ts).
+Given(
+  '(que )le réseau du {appareil} est intermittent',
   async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    this.banc.appareil(nomAppareil).reseau.retablir();
-    await this.banc.attendreCycles();
+    await this.banc.appareil(nomAppareil).assurerOuverte();
   },
 );
