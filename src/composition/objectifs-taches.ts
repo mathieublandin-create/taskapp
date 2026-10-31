@@ -22,8 +22,10 @@ import {
   RenommerObjectif,
   RenommerTache,
   RetirerDelaiObjectif,
+  RouvrirTache,
   SupprimerObjectif,
   SupprimerTache,
+  TerminerTache,
 } from '../objectifs-taches';
 import type { ServiceEtatLocal } from '../synchronisation';
 
@@ -47,6 +49,8 @@ export type ObjectifsTaches = {
   readonly rattacherTache: RattacherTache;
   readonly detacherTache: DetacherTache;
   readonly supprimerTache: SupprimerTache;
+  readonly terminerTache: TerminerTache;
+  readonly rouvrirTache: RouvrirTache;
   readonly consulterObjectifs: ConsulterObjectifs;
   readonly consulterTaches: ConsulterTaches;
   readonly consulterDetailTache: ConsulterDetailTache;
@@ -74,6 +78,8 @@ const assemblerTaches = (d: Dependances) => ({
   rattacherTache: new RattacherTache(d.service),
   detacherTache: new DetacherTache(d.service),
   supprimerTache: new SupprimerTache(d.service),
+  terminerTache: new TerminerTache(d.service),
+  rouvrirTache: new RouvrirTache(d.service),
   consulterTaches: new ConsulterTaches(d.service, d.horloge),
   consulterDetailTache: new ConsulterDetailTache(d.service, d.horloge),
 });
