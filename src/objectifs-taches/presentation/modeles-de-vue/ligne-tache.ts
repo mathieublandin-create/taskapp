@@ -6,6 +6,7 @@ import { libelle } from '../../../commun/presentation/messages/libelle';
 import { mentionAttenteSi } from '../../../synchronisation';
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { AlerteDelaiTache } from '../../domaine/alertes-delai';
+import { terminaison } from './ordre-reference';
 
 // ST-US-002 §4.5 ; ALR-006 : ST-US-024 ; MEN-INCOHERENCE : ST-US-024 (rang 9).
 export type AlerteLigneTache =
@@ -80,15 +81,9 @@ const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTach
 
 const enMinuscules = (texte: string): string => texte.charAt(0).toLowerCase() + texte.slice(1);
 
-/** Date de fin ou d'abandon, absente pour une tâche à faire. */
-const dateDeFin = ({ cycleDeVie }: ResumeTache): DateCalendaire | undefined => {
-  if (cycleDeVie.etat === 'TERMINEE') return cycleDeVie.dateFin;
-  return cycleDeVie.etat === 'ABANDONNEE' ? cycleDeVie.dateAbandon : undefined;
-};
-
 /** WCAG 4.1.2 : « {intitulé}, {état en toutes lettres}, délai {date} », suivi de « , en retard ». */
 const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string => {
-  const fin = dateDeFin(resume);
+  const fin = terminaison(resume)?.date;
   const etat = libelle(CODES_ETAT[resume.cycleDeVie.etat], {
     date: fin === undefined ? '' : formaterDate(fin, aujourdhui),
   });

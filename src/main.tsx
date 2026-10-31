@@ -73,7 +73,7 @@ const NavigationEspaces = ({
   readonly onglet: Onglet;
   readonly surChoisir: (onglet: Onglet) => void;
 }) => (
-  <nav aria-label="Espaces">
+  <nav aria-label={LIBELLES_TACHES.navigationEspaces}>
     {ONGLETS.map(([valeur, texte]) => (
       <button
         key={valeur}

@@ -32,10 +32,10 @@ const comparerSansDelai = (a: ElementOrdonnable, b: ElementOrdonnable): number =
 export const comparerOrdreReference = (a: ElementOrdonnable, b: ElementOrdonnable): number =>
   comparerDelais(a.delai, b.delai) || comparerSansDelai(a, b);
 
-type Terminaison = { readonly date: DateCalendaire; readonly instant: Instant };
+export type Terminaison = { readonly date: DateCalendaire; readonly instant: Instant };
 
 /** Date et instant de fin (tâche terminée) ou d'abandon (tâche abandonnée) ; une tâche à faire n'en a pas. */
-const terminaison = ({ cycleDeVie }: ResumeTache): Terminaison | undefined => {
+export const terminaison = ({ cycleDeVie }: ResumeTache): Terminaison | undefined => {
   if (cycleDeVie.etat === 'TERMINEE')
     return { date: cycleDeVie.dateFin, instant: cycleDeVie.instantFin };
   if (cycleDeVie.etat === 'ABANDONNEE') {
