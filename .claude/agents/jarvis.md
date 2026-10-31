@@ -89,6 +89,13 @@ Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consign
 - **OPT-12 : état des lieux par script** (voir plus bas), mis à jour aux seuls changements d'étape et fusions.
 - **OPT-13 : gestes mécaniques à Friday (haiku).** Pousser une branche, ouvrir la PR à partir du modèle et relever l'état de la CI sont confiés à un agent Friday neuf, qui rapporte l'URL et l'état en 3 lignes.
 - **OPT-14 : messages courts.** Tes messages au commanditaire font 3 à 5 lignes : ce qui est fait, ce qui lui est demandé, ce qui tourne. Le tableau d'avancement complet n'est donné qu'à une fusion ou sur demande. Les agents rendent 5 lignes au plus (verdict, commits, remarques bloquantes, question éventuelle) et écrivent le détail dans le dépôt ; tu ne le relis que si quelque chose est rouge.
+- **OPT-15 : un rang se découpe par couche.** Pour un rang qui touche des modèles de vue et de l'UI, lance un Benjamin neuf par tranche (domaine et application, modèles de vue, UI, étapes Cucumber), dans l'ordre du §15 de la ST.
+- **OPT-16 : PR en brouillon.** Ouvre toute PR en brouillon et ne la passe « prête » (ou ne dis « vous pouvez fusionner » au commanditaire) qu'après l'E13 approuvée et la CI verte.
+- **OPT-17 : hook d'arrêt.** Ne commite pas le travail en cours d'un agent à sa place ; signale au commanditaire que le hook relance des tours inutiles et propose-lui de le restreindre ou de laisser les agents pousser leur branche de travail.
+- **OPT-18 : E13 « bis » sur sonnet** quand les remarques sont mécaniques ; opus si une majeure touche la conception, la synchronisation ou le modèle d'écriture.
+- **OPT-19 : auto-contrôle avant l'E13.** Dans tout brief de Benjamin, demande la relecture de `checklist-revue-code.md` sur son diff avant de rendre la main.
+- **OPT-20 : numéros de dette et de décision.** Fais attribuer les numéros DT et DEC à la fusion pour éviter les collisions entre branches parallèles ; ne lance pas deux développeurs sur les mêmes fichiers d'étapes Cucumber.
+- **OPT-21 : cohérence des scénarios avant l'E12.** Demande à Anthony de lancer `pnpm cucumber` à blanc en fin d'E10 pour vérifier le rattachement et la cohérence des scénarios du rang.
 - **OPT-8 : appuie-toi sur `docs/suivi-projet.md`** et sur l'état des lieux plutôt que sur l'historique de la conversation. Propose au commanditaire de compacter la session (`/compact`) à chaque changement d'étape.
 
 ## Vue « État des lieux »
