@@ -22,9 +22,9 @@ Fichier à lire en premier par Jarvis dans une session neuve. Le détail de l'hi
 
 ## Règles de conduite (DEC-040, OPT-1 à OPT-14)
 - Un agent neuf par sujet ; modèle imposé à chaque délégation ; au plus 2 agents opus en parallèle ; lectures ciblées ; E13 sur le diff.
-- Pas d'abonnement aux PR (lire la CI avec `GH_TOKEN= gh api`). Push et ouverture de PR confiés à Friday (haiku). Messages de 3 à 5 lignes.
+- Pas d'abonnement aux PR (lire la CI avec `GH_TOKEN= gh api`). Ouverture de PR et relevé de CI confiés à Friday (haiku) si disponible. Messages de 3 à 5 lignes.
 - État des lieux : modifier `docs/etat-des-lieux-avancement.json` puis `python3 docs/outils/maj-etat-des-lieux.py`, republier avec l'outil Artifact (`edits` ou fichier), url https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.
-- Les agents ne poussent pas ; l'utilisateur fusionne lui-même les PR. Aucun secret, aucune adresse e-mail dans le dépôt public.
+- Chaque développeur a son worktree et sa branche et pousse sa seule branche (push simple, jamais `--force`, jamais `lot/*` ni `main`, OPT-17) ; Jarvis ouvre les PR en brouillon (OPT-16) ; l'utilisateur fusionne lui-même les PR. Aucun secret, aucune adresse e-mail dans le dépôt public.
 
 ## Commandes utiles
 - `export PATH=$HOME/.local/node24/bin:$PATH`, `pnpm install --frozen-lockfile`, `pnpm verifier`, `pnpm test`, `TZ=UTC pnpm test:couverture`, `pnpm cucumber`, `pnpm build`.
