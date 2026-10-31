@@ -127,7 +127,11 @@ describe('Détail d’une tâche — refus affichés et objectifs homonymes (RC-
     await userEvent.type(screen.getByLabelText('Renommer la tâche'), 'Relire');
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
     await screen.findByRole('heading', { level: 1, name: 'Relire' });
-    expect(screen.queryByLabelText('Renommer la tâche')).toBeNull();
+    // Le titre peut être rafraîchi par l'observation du dépôt (DT-009) avant que l'issue de la commande ne ferme
+    // l'éditeur : la fermeture s'attend, elle ne se constate pas dans la foulée (E13 2e tour, instabilité).
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Renommer la tâche')).toBeNull();
+    });
     expect(document.querySelector('[data-message]')).toBeNull();
   });
 
