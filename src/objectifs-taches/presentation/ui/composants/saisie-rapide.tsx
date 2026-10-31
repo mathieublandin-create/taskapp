@@ -9,9 +9,14 @@ import {
   type RegistreSaisie,
 } from '../../../../commun/presentation/saisie/registre-saisie';
 import type { ModeleVueFormulaireTache } from '../../modeles-de-vue/formulaire-tache';
-import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import {
+  champDuMessage,
+  type ChampSaisie,
+  type MessageRefus,
+} from '../../modeles-de-vue/messages-de-refus';
 import type { IssueTache, ObjectifProposable, SaisieTacheUi } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
+import { MessagesRefus } from './messages-refus';
 import { PucesObjectif } from './puces-objectif';
 import { SelecteurDuree } from './selecteur-duree';
 
@@ -36,13 +41,6 @@ type Valeurs = {
 };
 
 const IDENTIFIANT_SAISIE = 'saisie-rapide-tache';
-const CHAMP_DE_MESSAGE: Readonly<Record<string, 'intitule' | 'delai' | 'estimation'>> = {
-  'ERR-020': 'intitule',
-  'ERR-021': 'delai',
-  'ERR-022': 'estimation',
-  'ERR-023': 'estimation',
-};
-
 const depart = (formulaire: ModeleVueFormulaireTache): Valeurs => ({
   intitule: '',
   delai: '',
@@ -66,20 +64,15 @@ const estModifie = (valeurs: Valeurs, formulaire: ModeleVueFormulaireTache): boo
   valeurs.estimation !== undefined ||
   valeurs.objectifIds.join() !== formulaire.objectifsPreRemplis.join();
 
-const MessagesDuChamp = ({
-  messages,
-  champ,
-}: {
-  readonly messages: ReadonlyArray<MessageRefus>;
-  readonly champ: 'intitule' | 'delai' | 'estimation';
-}) =>
-  messages
-    .filter((message) => CHAMP_DE_MESSAGE[message.code] === champ)
-    .map((message) => (
-      <IonNote key={message.code} color="danger" role="alert" data-message={message.code}>
-        {libelle(message.code, message.variables)}
-      </IonNote>
-    ));
+const messagesDuChamp = (
+  messages: ReadonlyArray<MessageRefus>,
+  champ: ChampSaisie,
+): ReadonlyArray<MessageRefus> =>
+  messages.filter((message) => champDuMessage(message.code) === champ);
+
+/** Ionic pose `aria-invalid` sur l'élément natif d'un champ marqué invalide et touché. */
+const marqueErreur = (erreurs: ReadonlyArray<MessageRefus>): { readonly className?: string } =>
+  erreurs.length > 0 ? { className: 'ion-invalid ion-touched' } : {};
 
 type Foyers = {
   readonly intitule: RefObject<HTMLIonInputElement | null>;
@@ -89,7 +82,7 @@ type Foyers = {
 
 /** Focus sur le champ du premier message (ordre intitulé, délai, estimation). */
 const focaliserPremier = async (messages: ReadonlyArray<MessageRefus>, foyers: Foyers) => {
-  const champ = messages.map((m) => CHAMP_DE_MESSAGE[m.code]).find((c) => c !== undefined);
+  const champ = messages.map((m) => champDuMessage(m.code)).find((c) => c !== undefined);
   if (champ === 'intitule') await foyers.intitule.current?.setFocus();
   else if (champ === 'delai') await foyers.delai.current?.setFocus();
   else foyers.estimation.current?.focus();
@@ -164,55 +157,66 @@ const useSaisie = (
 
 type Saisie = ReturnType<typeof useSaisie>;
 
-const ChampIntitule = ({ valeurs, messages, refIntitule, modifier, ajouter }: Saisie) => (
-  <>
-    <IonInput
-      ref={refIntitule}
-      label={LIBELLES_TACHES.champIntitule}
-      labelPlacement="stacked"
-      placeholder={LIBELLES_TACHES.exempleIntitule}
-      value={valeurs.intitule}
-      onIonInput={(e) => {
-        modifier({ intitule: e.detail.value ?? '' });
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') void ajouter();
-      }}
-    />
-    <MessagesDuChamp messages={messages} champ="intitule" />
-  </>
-);
+const ChampIntitule = ({ valeurs, messages, refIntitule, modifier, ajouter }: Saisie) => {
+  const erreurs = messagesDuChamp(messages, 'intitule');
+  return (
+    <>
+      <IonInput
+        ref={refIntitule}
+        label={LIBELLES_TACHES.champIntitule}
+        labelPlacement="stacked"
+        placeholder={LIBELLES_TACHES.exempleIntitule}
+        value={valeurs.intitule}
+        onIonInput={(e) => {
+          modifier({ intitule: e.detail.value ?? '' });
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void ajouter();
+        }}
+        {...marqueErreur(erreurs)}
+      />
+      <MessagesRefus messages={erreurs} />
+    </>
+  );
+};
 
-const ChampDelaiObligatoire = ({ valeurs, messages, refDelai, modifier }: Saisie) => (
-  <>
-    <IonInput
-      ref={refDelai}
-      type="date"
-      label={`${LIBELLES_TACHES.champDelai} ${libelle('MEN-OBLIGATOIRE')}`}
-      labelPlacement="stacked"
-      value={valeurs.delai}
-      onIonInput={(e) => {
-        modifier({ delai: e.detail.value ?? '' });
-      }}
-    />
-    <MessagesDuChamp messages={messages} champ="delai" />
-  </>
-);
+const ChampDelaiObligatoire = ({ valeurs, messages, refDelai, modifier }: Saisie) => {
+  const erreurs = messagesDuChamp(messages, 'delai');
+  return (
+    <>
+      <IonInput
+        ref={refDelai}
+        type="date"
+        label={`${LIBELLES_TACHES.champDelai} ${libelle('MEN-OBLIGATOIRE')}`}
+        labelPlacement="stacked"
+        value={valeurs.delai}
+        onIonInput={(e) => {
+          modifier({ delai: e.detail.value ?? '' });
+        }}
+        {...marqueErreur(erreurs)}
+      />
+      <MessagesRefus messages={erreurs} />
+    </>
+  );
+};
 
-const ChampEstimationObligatoire = ({ valeurs, messages, refEstimation, modifier }: Saisie) => (
-  <>
-    <div ref={refEstimation}>
+const ChampEstimationObligatoire = ({ valeurs, messages, refEstimation, modifier }: Saisie) => {
+  const erreurs = messagesDuChamp(messages, 'estimation');
+  return (
+    <>
       <SelecteurDuree
+        ref={refEstimation}
         nom={`${LIBELLES_TACHES.champEstimation} ${libelle('MEN-OBLIGATOIRE')}`}
         valeur={valeurs.estimation}
+        invalide={erreurs.length > 0}
         surChanger={(minutes) => {
           modifier({ estimation: minutes });
         }}
       />
-    </div>
-    <MessagesDuChamp messages={messages} champ="estimation" />
-  </>
-);
+      <MessagesRefus messages={erreurs} />
+    </>
+  );
+};
 
 const Champs = ({
   saisie,

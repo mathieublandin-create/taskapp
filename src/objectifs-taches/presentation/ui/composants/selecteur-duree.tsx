@@ -1,7 +1,6 @@
-import type { KeyboardEvent } from 'react';
-import { PAS_DUREE_MINUTES } from '../../../../commun/domaine/duree';
+import type { KeyboardEvent, Ref } from 'react';
+import { Duree, PAS_DUREE_MINUTES } from '../../../../commun/domaine/duree';
 import { formaterDuree } from '../../../../commun/presentation/format/duree';
-import type { Duree } from '../../../../commun/domaine/duree';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
 // DurationStepper (guide §4.4) : pas de 30 min, minimum 30 min pour une estimation, « — » tant que rien n'est saisi
@@ -13,6 +12,8 @@ export type ProprietesSelecteurDuree = {
   readonly surChanger: (minutes: number) => void;
   readonly identifiant?: string;
   readonly invalide?: boolean;
+  /** Élément `spinbutton`, pour lui donner le focus. */
+  readonly ref?: Ref<HTMLDivElement> | undefined;
 };
 
 const MINIMUM_MINUTES = PAS_DUREE_MINUTES;
@@ -55,8 +56,11 @@ const BoutonPas = ({
   </button>
 );
 
-const texteDe = (valeur: number | undefined): string =>
-  valeur === undefined ? LIBELLES_TACHES.valeurNonSaisie : formaterDuree(valeur as Duree);
+/** Une valeur qui n'est pas une durée valide (RG-028) s'affiche comme « non saisi » plutôt que d'être transtypée. */
+const texteDe = (valeur: number | undefined): string => {
+  const duree = valeur === undefined ? undefined : Duree.calculee(valeur);
+  return duree?.ok === true ? formaterDuree(duree.valeur) : LIBELLES_TACHES.valeurNonSaisie;
+};
 
 const valeurEnLettres = (valeur: number | undefined): string =>
   valeur === undefined ? LIBELLES_TACHES.stepper.nonSaisi : enToutesLettres(valeur);
@@ -68,12 +72,14 @@ const ChampDuree = ({
   identifiant,
   invalide,
   surTouche,
-}: Pick<ProprietesSelecteurDuree, 'nom' | 'valeur'> & {
+  ref,
+}: Pick<ProprietesSelecteurDuree, 'nom' | 'valeur' | 'ref'> & {
   readonly identifiant: string | undefined;
   readonly invalide: boolean;
   readonly surTouche: (evenement: KeyboardEvent) => void;
 }) => (
   <div
+    ref={ref}
     id={identifiant}
     role="spinbutton"
     tabIndex={0}
@@ -108,6 +114,7 @@ export const SelecteurDuree = ({
   surChanger,
   identifiant,
   invalide = false,
+  ref,
 }: ProprietesSelecteurDuree) => {
   const { changer, surTouche } = useGestes(valeur, surChanger);
   return (
@@ -119,7 +126,7 @@ export const SelecteurDuree = ({
           changer(-PAS_DUREE_MINUTES);
         }}
       />
-      <ChampDuree {...{ nom, valeur, invalide, surTouche, identifiant }} />
+      <ChampDuree {...{ nom, valeur, invalide, surTouche, identifiant, ref }} />
       <BoutonPas
         nom={LIBELLES_TACHES.stepper.plus}
         symbole="+"
