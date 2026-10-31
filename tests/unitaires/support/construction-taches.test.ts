@@ -14,6 +14,7 @@ import {
 } from '@tests/support/construction-taches';
 import type { MondeDoneJuan } from '@tests/support/monde';
 import { objectifsDe } from '@tests/support/objectifs';
+import { resumeTacheDe } from '@tests/support/taches';
 import { References } from '@tests/support/references';
 import { valeurDe } from '@tests/support/environnement';
 
@@ -74,7 +75,7 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     ).rejects.toThrow(/Estimation absente/);
   });
 
-  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; les capacités des rangs suivants ne sont pas encore livrées', async () => {
+  it('UT-COMP-US-002-33 lesTachesSuivantes (c) — une sous-tâche à faire sous une tâche parente terminée est une incohérence ; les capacités des rangs 7 et 8 ne sont pas encore livrées', async () => {
     const { monde, appareil } = await contexte();
     const incoherent = tableau(
       ['Chapitre 1', 'terminée', '2026-11-30', '', '', ''],
@@ -84,15 +85,16 @@ describe('Construction des tableaux de contexte (H-7)', () => {
     await expect(lesTachesSuivantes({ monde, appareil }, incoherent)).rejects.toThrow(
       /Incohérence/,
     );
-    await expect(
-      lesTachesSuivantes(
-        { monde, appareil },
-        tableau(
-          ['Chapitre 1', 'à faire', '2026-11-30', '', '', ''],
-          ['Section A', 'à faire', '2026-11-20', '1 h', '', 'Chapitre 1'],
-        ),
+    await lesTachesSuivantes(
+      { monde, appareil },
+      tableau(
+        ['Chapitre 1', 'à faire', '2026-11-30', '', '', ''],
+        ['Section A', 'à faire', '2026-11-20', '1 h', '', 'Chapitre 1'],
       ),
-    ).rejects.toThrow(/capacité livrée au rang 6/);
+    );
+    const parente = await resumeTacheDe(monde, appareil, 'Chapitre 1');
+    expect(parente.sousTaches).toEqual({ terminees: 0, nonAbandonnees: 1 });
+    expect(parente.estimationInitiale).toBe(30);
     await expect(
       lesTachesSuivantes(
         { monde, appareil },

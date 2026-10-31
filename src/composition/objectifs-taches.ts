@@ -9,6 +9,7 @@ import {
   ConsulterTaches,
   CreerObjectif,
   CreerSousObjectif,
+  CreerSousTache,
   CreerTache,
   DetacherTache,
   ModifierDelaiObjectif,
@@ -39,6 +40,7 @@ export type ObjectifsTaches = {
   readonly retirerDelaiObjectif: RetirerDelaiObjectif;
   readonly supprimerObjectif: SupprimerObjectif;
   readonly creerTache: CreerTache;
+  readonly creerSousTache: CreerSousTache;
   readonly renommerTache: RenommerTache;
   readonly modifierDelaiTache: ModifierDelaiTache;
   readonly modifierEstimationTache: ModifierEstimationTache;
@@ -65,6 +67,7 @@ type Dependances = {
 /** Cas d'usage et requêtes des tâches (ST-US-002 §3 n° 20). */
 const assemblerTaches = (d: Dependances) => ({
   creerTache: new CreerTache(d.service, d.generateur),
+  creerSousTache: new CreerSousTache(d.service, d.generateur),
   renommerTache: new RenommerTache(d.service),
   modifierDelaiTache: new ModifierDelaiTache(d.service),
   modifierEstimationTache: new ModifierEstimationTache(d.service),

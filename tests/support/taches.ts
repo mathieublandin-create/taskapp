@@ -7,12 +7,14 @@ import type { IdTache } from '@src/commun/domaine/identifiants';
 import { jourDeReference } from '@src/commun/domaine/temps/jour-de-reference';
 import {
   construireDetailTache,
+  construireFormulaireSousTache,
   construireLigneTache,
   construireListeTaches,
   type LigneTache,
   type FiltreEtat,
   type FiltreObjectif,
   type ModeleVueDetailTache,
+  type ModeleVueFormulaireSousTache,
   type ModeleVueListeTaches,
   type ResumeTache,
 } from '@src/objectifs-taches';
@@ -95,6 +97,18 @@ export const detailTacheDe = async (
   const id = await resoudreTache(monde, appareil, intitule);
   const detail = valeurDe(await (await objectifsDe(appareil)).consulterDetailTache.executer(id));
   return construireDetailTache(detail, { horloge: appareil.horloge });
+};
+
+/** Formulaire de saisie d'une sous-tâche, construit comme l'interface (ECR-007 I). */
+export const formulaireSousTacheDe = async (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+  parente: string,
+): Promise<ModeleVueFormulaireSousTache> => {
+  const id = await resoudreTache(monde, appareil, parente);
+  return construireFormulaireSousTache(
+    valeurDe(await (await objectifsDe(appareil)).consulterDetailTache.executer(id)),
+  );
 };
 
 export const listeTachesDe = async (

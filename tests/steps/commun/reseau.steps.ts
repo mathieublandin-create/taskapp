@@ -1,4 +1,5 @@
 /** Étapes du réseau (glossaire d'étapes §1, §3 ; ST-US-022 §12.1 n° 17, 18). */
+import assert from 'node:assert/strict';
 import { Given, When } from '@cucumber/cucumber';
 import type { NomAppareil } from '../../support/banc/appareil-simule';
 import type { MondeDoneJuan } from '../../support/monde';
@@ -14,6 +15,18 @@ Given(
   '(que )le réseau du {appareil} est coupé pendant la connexion',
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     this.banc.appareil(nomAppareil).fournisseur.couperLaProchaineConnexion();
+  },
+);
+
+// ST-US-018 §12.1 n° 6 : la coupure survient entre `saisit…` et `termine la saisie`.
+When(
+  'le réseau est coupé sur le {appareil} pendant la saisie',
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    assert.ok(
+      this.saisieSousTacheEnCours.has(nomAppareil),
+      `Aucune saisie en cours sur le ${nomAppareil}`,
+    );
+    this.banc.appareil(nomAppareil).reseau.couper();
   },
 );
 

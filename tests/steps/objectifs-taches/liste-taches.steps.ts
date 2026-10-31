@@ -4,11 +4,12 @@
  */
 import assert from 'node:assert/strict';
 import type { DataTable } from '@cucumber/cucumber';
-import { FILTRE_ETAT_PAR_DEFAUT, type LigneTache } from '@src/objectifs-taches';
+import { FILTRE_ETAT_PAR_DEFAUT, type ActionTache, type LigneTache } from '@src/objectifs-taches';
 import { FRAGMENT_INTITULES } from '../../support/conversions';
 import { etapeAction, etapeAssertion } from '../../support/prefixes';
 import {
   derniereListe,
+  detailTacheDe,
   FILTRES_ETAT,
   listeIntitules,
   listeTachesDe,
@@ -108,4 +109,55 @@ etapeAssertion(
     }
     assert.equal(ids.has(id), forme === 'figure');
   },
+);
+
+// ST-US-024 §12 n° 9 : `LigneTache.compteurSousTaches` du dernier modèle de liste.
+etapeAssertion(
+  new RegExp(
+    `^dans la liste des tâches, la tâche ${TEXTE} indique (\\d+) sous-tâches?(?:\\(s\\))? terminées?(?:\\(s\\))? sur (\\d+) sous-tâches?(?:\\(s\\))? non abandonnées?(?:\\(s\\))?$`,
+  ),
+  ({ monde, appareil }, intitule, terminees, nonAbandonnees) => {
+    const ligne = derniereListe(monde, appareil).lignes.find((l) => l.intitule === intitule);
+    assert.ok(ligne, `La tâche « ${String(intitule)} » est absente de la liste`);
+    assert.deepEqual(
+      ligne.compteurSousTaches && {
+        terminees: ligne.compteurSousTaches.terminees,
+        nonAbandonnees: ligne.compteurSousTaches.nonAbandonnees,
+      },
+      { terminees: Number(terminees), nonAbandonnees: Number(nonAbandonnees) },
+    );
+  },
+);
+
+// ST-US-024 §12 n° 11 : liste fermée des actions nommées ; « terminer », « rouvrir » (rang 7), « abandonner »,
+// « reprendre » (rang 8) s'y ajoutent avec leurs rangs.
+const ACTIONS_TACHE: Readonly<Record<string, ActionTache>> = {
+  'créer une sous-tâche': 'CREER_SOUS_TACHE',
+};
+
+const verifierAction =
+  (proposee: boolean) =>
+  async (
+    { monde, appareil }: Parameters<Parameters<typeof etapeAssertion>[1]>[0],
+    action: unknown,
+    intitule: unknown,
+  ) => {
+    const attendue = ACTIONS_TACHE[String(action)];
+    assert.ok(attendue, `Action inconnue : ${String(action)}`);
+    const { actions } = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(
+      actions.includes(attendue),
+      proposee,
+      `${attendue} : proposée = ${String(!proposee)}`,
+    );
+  };
+
+etapeAssertion(
+  new RegExp(`^l'action ${TEXTE} n'est pas proposée pour la tâche ${TEXTE}$`),
+  verifierAction(false),
+);
+
+etapeAssertion(
+  new RegExp(`^l'action ${TEXTE} est proposée pour la tâche ${TEXTE}$`),
+  verifierAction(true),
 );

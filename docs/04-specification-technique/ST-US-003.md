@@ -12,7 +12,7 @@
 | Maquettes | ECR-007 (A, G, H), ECR-002 L4, ECR-003, ECR-008 ; guide v0.2.8 §4.21, §5.5, §6.6.6, §6.6.10 |
 | Q-US traitées | Q-US-003-1, Q-US-003-2, Q-US-002-1, Q-US-001-2, Q-US-025-2 (E8, DEC-030) |
 | Prérequis | ST-US-024 (rang 6) |
-| Version | 0.1 |
+| Version | 0.2 |
 | Statut | **Prête pour E10** |
 | Auteur | Anthony |
 | Branche Git | `us/US-003-terminer-rouvrir` |
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.2 | 2026-10-31 | Anthony | E13 du rang 6 (`docs/ceremonies/revue-code-LOT-001-rang6.md`, décision 5) : la case « Terminer » des lignes de sous-tâches (`section-sous-taches.tsx`, créée au rang 6, désactivée) est activée au rang 7 par `surTerminer` (§3 n° 7). |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Fin d'une tâche (registre `cycleDeVie` : `TERMINEE`, date de fin = jour de Paris, instant de fin), refus `ERR-035` pour une tâche parente qui a des sous-tâches à faire, réouverture (avec confirmation `CNF-ROUVRIR-SOUS-TACHE` et réouverture de la tâche parente pour une sous-tâche d'une tâche terminée ; non proposée pour une sous-tâche d'une tâche abandonnée, DEC-030), actions proposées, date de fin et mention `MEN-HEURE-PARIS` dans le détail, journal (`FIN`, `REOUVERTURE`). L'atteinte d'un objectif est déjà calculée (ST-US-001 §6.2) : cette US la rend observable par les fins et réouvertures.
@@ -65,7 +66,7 @@
 | 4 | `src/objectifs-taches/domaine/refus.ts`, `confirmation.ts`, `actions.ts` | Domaine | Modifier | `SousTachesRestantes` ; `REOUVERTURE_SOUS_TACHE` ; `TERMINER`, `ROUVRIR` |
 | 5 | `src/objectifs-taches/application/cas-usage/terminer-tache.ts`, `rouvrir-tache.ts` | Application | Créer | `TerminerTache`, `RouvrirTache` (`evaluer`, `executer`) |
 | 6 | `src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts`, `ligne-tache.ts`, `confirmation.ts`, `messages-de-refus.ts` | Modèle de vue | Modifier | Date de fin et `MEN-HEURE-PARIS` ; `ETA-TACHE-TERMINEE` ; `CNF-ROUVRIR-SOUS-TACHE` ; `ERR-035` |
-| 7 | `src/objectifs-taches/presentation/ui/composants/ligne-tache.tsx` (case « Terminer », `checkbox`), `ecrans/detail-tache.tsx` (bouton « Terminer la tâche », `aria-disabled` si sous-tâches restantes, « Rouvrir la tâche »), toast `TST-TERMINEE` avec « Annuler » | UI | Modifier | ECR-007 A, G ; ECR-002 L4 |
+| 7 | `src/objectifs-taches/presentation/ui/composants/ligne-tache.tsx` (case « Terminer », `checkbox`), `ecrans/detail-tache.tsx` (bouton « Terminer la tâche », `aria-disabled` si sous-tâches restantes, « Rouvrir la tâche » ; v0.2 : propriété `surTerminer` de `SectionSousTaches` branchée sur `TerminerTache`), `composants/section-sous-taches.tsx` (case « Terminer » des lignes de sous-tâches, livrée désactivée au rang 6 faute de `surTerminer`), toast `TST-TERMINEE` avec « Annuler » | UI | Modifier | ECR-007 A, G ; ECR-002 L4 |
 | 8 | `src/composition/web.ts`, `src/objectifs-taches/index.ts` | Composition | Modifier | Enregistrement |
 | 9 | `tests/steps/objectifs-taches/taches.steps.ts`, `objectifs.steps.ts`, `refus.steps.ts` ; `tests/support/construction-taches.ts` | Test | Modifier | §12 ; état « terminée » et colonne « date de fin » des tableaux |
 

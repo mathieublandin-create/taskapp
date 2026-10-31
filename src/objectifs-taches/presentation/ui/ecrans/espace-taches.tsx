@@ -54,10 +54,12 @@ const PageDetail = ({
   etat,
   id,
   detail,
+  surAjouterSousTache,
 }: {
   readonly etat: EtatMagasinTaches;
   readonly id: IdTache;
   readonly detail: ModeleVueDetailTache;
+  readonly surAjouterSousTache: () => void;
 }) => {
   const { actions } = etat;
   return (
@@ -72,6 +74,8 @@ const PageDetail = ({
         basculerRattachement(actions, id, detail.objectifs.ids, objectifId);
       }}
       surSupprimer={() => void actions.demanderSuppression(id)}
+      surOuvrirSousTache={(sousTacheId) => void actions.ouvrirDetail(sousTacheId)}
+      surAjouterSousTache={surAjouterSousTache}
     />
   );
 };
@@ -79,16 +83,25 @@ const PageDetail = ({
 const Page = ({
   etat,
   surCreer,
+  surAjouterSousTache,
 }: {
   readonly etat: EtatMagasinTaches;
   readonly surCreer: () => void;
+  readonly surAjouterSousTache: () => void;
 }) => {
   const { ecran, liste, detail } = etat;
   if (ecran.type === 'LISTE' && liste !== undefined) {
     return <PageListe etat={etat} liste={liste} surCreer={surCreer} />;
   }
   if (ecran.type === 'DETAIL' && detail !== undefined) {
-    return <PageDetail etat={etat} id={ecran.id} detail={detail} />;
+    return (
+      <PageDetail
+        etat={etat}
+        id={ecran.id}
+        detail={detail}
+        surAjouterSousTache={surAjouterSousTache}
+      />
+    );
   }
   return null;
 };
@@ -129,10 +142,54 @@ const SaisieDeLEspace = ({
   />
 );
 
+/** Saisie d'une sous-tâche de la tâche du détail (ECR-007 I) : variante de la saisie rapide, sans objectifs à choisir. */
+const SaisieSousTacheDeLEspace = ({
+  etat,
+  ouverte,
+  surFermee,
+}: {
+  readonly etat: EtatMagasinTaches;
+  readonly ouverte: boolean;
+  readonly surFermee: () => void;
+}) => {
+  const { ecran, formulaireSousTache } = etat;
+  return ecran.type === 'DETAIL' && formulaireSousTache !== undefined ? (
+    <SaisieRapide
+      ouverte={ouverte}
+      formulaire={formulaireSousTache}
+      objectifs={[]}
+      surValider={(saisie) => etat.actions.creerSousTache(ecran.id, saisie)}
+      surFermee={surFermee}
+    />
+  ) : null;
+};
+
+/** Les deux feuilles de saisie (tâche, sous-tâche) et leur ouverture, au-dessus de la page courante. */
+const useFeuillesSaisie = () => {
+  const [tache, setTache] = useState(false);
+  const [sousTache, setSousTache] = useState(false);
+  return {
+    tache,
+    sousTache,
+    ouvrirTache: () => {
+      setTache(true);
+    },
+    fermerTache: () => {
+      setTache(false);
+    },
+    ouvrirSousTache: () => {
+      setSousTache(true);
+    },
+    fermerSousTache: () => {
+      setSousTache(false);
+    },
+  };
+};
+
 export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
   const etat = useStore(magasin);
   const { actions, confirmation } = etat;
-  const [saisieOuverte, setSaisieOuverte] = useState(false);
+  const feuilles = useFeuillesSaisie();
   useEffect(() => {
     // Une tâche ouverte depuis le détail d'un objectif est déjà chargée : seule la liste se charge à l'ouverture.
     if (magasin.getState().ecran.type === 'LISTE') void actions.afficherListe();
@@ -141,16 +198,14 @@ export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
     <>
       <Page
         etat={etat}
-        surCreer={() => {
-          setSaisieOuverte(true);
-        }}
+        surCreer={feuilles.ouvrirTache}
+        surAjouterSousTache={feuilles.ouvrirSousTache}
       />
-      <SaisieDeLEspace
+      <SaisieDeLEspace etat={etat} ouverte={feuilles.tache} surFermee={feuilles.fermerTache} />
+      <SaisieSousTacheDeLEspace
         etat={etat}
-        ouverte={saisieOuverte}
-        surFermee={() => {
-          setSaisieOuverte(false);
-        }}
+        ouverte={feuilles.sousTache}
+        surFermee={feuilles.fermerSousTache}
       />
       {confirmation === undefined ? null : (
         <ConfirmationSuppression confirmation={confirmation} actions={actions} />

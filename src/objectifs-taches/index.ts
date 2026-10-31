@@ -3,6 +3,7 @@
 // (US-001 CA-8) : l'état est calculé.
 export { CreerObjectif } from './application/cas-usage/creer-objectif';
 export { CreerSousObjectif } from './application/cas-usage/creer-sous-objectif';
+export { CreerSousTache } from './application/cas-usage/creer-sous-tache';
 export { CreerTache } from './application/cas-usage/creer-tache';
 export {
   ModifierDelaiTache,
@@ -46,6 +47,10 @@ export {
   construireDetailTache,
   type ModeleVueDetailTache,
 } from './presentation/modeles-de-vue/detail-tache';
+export {
+  construireFormulaireSousTache,
+  type ModeleVueFormulaireSousTache,
+} from './presentation/modeles-de-vue/formulaire-sous-tache';
 export {
   construireFormulaireTache,
   type ModeleVueFormulaireTache,

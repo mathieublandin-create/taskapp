@@ -558,8 +558,8 @@
       "fin": 4
     },
     "src/objectifs-taches/domaine/incoherence.ts": {
-      "debut": 6,
-      "fin": 6
+      "debut": 9,
+      "fin": 9
     },
     "src/objectifs-taches/domaine/intitule.ts": {
       "debut": 2,
@@ -665,13 +665,13 @@
       "debut": 2,
       "fin": 2
     },
-    "src/objectifs-taches/presentation/ui/composants/progression-objectif.tsx": {
-      "debut": 2,
-      "fin": 2
-    },
     "src/objectifs-taches/presentation/ui/composants/messages-refus.tsx": {
       "debut": 5,
       "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/progression-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
     },
     "src/objectifs-taches/presentation/ui/composants/puces-objectif.tsx": {
       "debut": 5,
@@ -680,6 +680,10 @@
     "src/objectifs-taches/presentation/ui/composants/saisie-rapide.tsx": {
       "debut": 5,
       "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/section-sous-taches.tsx": {
+      "debut": 6,
+      "fin": 6
     },
     "src/objectifs-taches/presentation/ui/composants/sections-taches.tsx": {
       "debut": 5,

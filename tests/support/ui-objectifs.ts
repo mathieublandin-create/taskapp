@@ -4,6 +4,7 @@
  */
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { expect } from 'vitest';
 import { assemblerObjectifsTaches, type ObjectifsTaches } from '@src/composition/objectifs-taches';
 import type { IdObjectif } from '@src/commun/domaine/identifiants';
 import { echec } from '@src/commun/domaine/resultat';
@@ -117,6 +118,25 @@ export const saisir = async (libelle: RegExp | string, texte: string): Promise<v
   const natif = await champ(libelle);
   await userEvent.clear(natif);
   if (texte !== '') await userEvent.type(natif, texte);
+};
+
+/**
+ * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
+ * touche par touche concourt avec le rendu contrôlé du champ et n'apporte rien à ce qui est vérifié ici.
+ */
+export const renseigner = async (libelle: RegExp | string, texte: string): Promise<void> => {
+  const champ = await waitFor(() => {
+    const trouve = Array.from(document.querySelectorAll<HTMLIonInputElement>('ion-input')).find(
+      (e) => (typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? '')),
+    );
+    if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
+    return trouve;
+  });
+  champ.value = texte;
+  champ.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
+  await waitFor(() => {
+    expect(champ.value).toBe(texte);
+  });
 };
 
 /** Bouton d'une feuille d'actions ou d'une alerte Ionic (boutons natifs, hors DOM fantôme). */
