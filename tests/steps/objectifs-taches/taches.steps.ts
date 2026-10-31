@@ -650,6 +650,51 @@ etapeAssertion(
   },
 );
 
+// ---------------------------------------------------------------- Date de fin (ST-US-003 §12 n° 4, 5, 7, 8)
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} est ${TEXTE} avec la date de fin ${DATE}$`),
+  async ({ monde, appareil }, intitule, etat, dateFin) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+    assert.equal(detail.dateFin?.date, date(String(dateFin)));
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} n'a pas de date de fin$`),
+  async ({ monde, appareil }, intitule) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(detail.dateFin, undefined);
+  },
+);
+
+etapeAssertion(
+  new RegExp(
+    `^la date de fin de la tâche ${TEXTE} (est|n'est pas) accompagnée de la mention ${TEXTE}$`,
+  ),
+  async ({ monde, appareil }, intitule, accompagnee, code) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.ok(detail.dateFin, `La tâche « ${String(intitule)} » n'a pas de date de fin`);
+    assert.equal(detail.dateFin.mentionHeureParis?.code === String(code), accompagnee === 'est');
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^le délai de la tâche ${TEXTE} n'est jamais accompagné de la mention ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.ok(!('mentionHeureParis' in detail.delai), 'Le délai du détail porte la mention');
+    const ligne = monde.derniereListeTaches
+      .get(appareil.nom)
+      ?.lignes.find((l) => l.intitule === String(intitule));
+    assert.ok(
+      !ligne || !('mentionHeureParis' in ligne.delai),
+      'Le délai de la ligne porte la mention',
+    );
+  },
+);
+
 // ---------------------------------------------------------------- Détail d'un objectif (n° 20, 21)
 
 const lignesTachesDuDetail = (

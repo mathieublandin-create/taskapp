@@ -4,6 +4,8 @@ import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendai
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { DetailTache } from '../../application/requetes/consulter-detail-tache';
 import type { ActionTache } from '../../domaine/actions';
+import { formaterDate } from '../../../commun/presentation/format/date';
+import { mentionHeureParis } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import { construireLigneTache, type LigneTache } from './ligne-tache';
@@ -162,6 +164,31 @@ const sectionSousTaches = (
   };
 };
 
+/** « Terminée le {date} » (ETA-TACHE-TERMINEE) ; MEN-HEURE-PARIS si l'appareil n'est pas à Paris (RG-054). */
+const dateFinDe = (
+  tache: ResumeTache,
+  aujourdhui: DateCalendaire,
+  horloge: Horloge,
+): Pick<ModeleVueDetailTache, 'dateFin'> => {
+  const { cycleDeVie } = tache;
+  if (cycleDeVie.etat !== 'TERMINEE') return {};
+  return {
+    dateFin: {
+      date: cycleDeVie.dateFin,
+      libelle: libelle('ETA-TACHE-TERMINEE', {
+        date: formaterDate(cycleDeVie.dateFin, aujourdhui),
+      }),
+      ...mentionHeureParis(horloge),
+    },
+  };
+};
+
+const objectifsDe = (tache: ResumeTache, ligne: LigneTache): ModeleVueDetailTache['objectifs'] => ({
+  intitules: ligne.objectifs,
+  ids: tache.objectifs.map((objectif) => objectif.id),
+  ...verrouObjectifs(tache),
+});
+
 const infoFinImpossible = (n: number): Pick<ModeleVueDetailTache, 'infoFinImpossible'> =>
   n === 0 ? {} : { infoFinImpossible: { code: 'ALR-013', n, libelle: libelle('ALR-013', { n }) } };
 
@@ -187,15 +214,12 @@ export const construireDetailTache = (
       ...verrouEstimation(tache),
     },
     estimationInitiale: { minutes: tache.estimationInitiale },
-    objectifs: {
-      intitules: ligne.objectifs,
-      ids: tache.objectifs.map((objectif) => objectif.id),
-      ...verrouObjectifs(tache),
-    },
+    objectifs: objectifsDe(tache, ligne),
     ...(tache.tacheParente === undefined ? {} : { tacheParente: tache.tacheParente }),
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     actions: donnees.actions,
     ...sectionSousTaches(donnees, aujourdhui),
     ...infoFinImpossible(donnees.sousTachesAFaire),
+    ...dateFinDe(tache, aujourdhui, dependances.horloge),
   };
 };
