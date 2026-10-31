@@ -82,6 +82,11 @@
       "allowedVersions": {
         "eslint-plugin-jsx-a11y>eslint": "10"
       }
+    },
+    "overrides": {
+      "glob@11": "14.0.3",
+      "minimatch@10": "11.0.1",
+      "minimatch@5": "11.0.1"
     }
   }
 }
