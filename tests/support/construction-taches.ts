@@ -1,12 +1,10 @@
 /**
  * Construction des contextes de tâches (ST-US-002 §12.1, H-7, glossaire d'étapes §1) : « les tâches suivantes : » et
  * « l'objectif … a n tâches à faire, … ». Chaque tâche est créée par les cas d'usage de l'appareil ; tout refus fait
- * échouer l'étape. Les capacités des rangs suivants (abandonner, rang 8) lèvent une ErreurProgrammation
- * tant qu'elles ne sont pas livrées : la sélection des scénarios par rang garantit qu'elles ne sont pas appelées.
+ * échouer l'étape.
  */
 import assert from 'node:assert/strict';
 import type { DataTable } from '@cucumber/cucumber';
-import { ErreurProgrammation } from '@src/commun/domaine/erreur-programmation';
 import { DateCalendaire } from '@src/commun/domaine/temps/date-calendaire';
 import { jourDeReference } from '@src/commun/domaine/temps/jour-de-reference';
 import { instantDepuisHeureMurale } from './temps';
@@ -137,9 +135,6 @@ export const creerSousTache = async (
   return resultat;
 };
 
-const capaciteNonLivree = (rang: number): ErreurProgrammation =>
-  new ErreurProgrammation(`capacité livrée au rang ${String(rang)}`);
-
 /** Étape 0 de H-7 : une tâche parente terminée ou abandonnée ne peut avoir de sous-tâche à faire. */
 const verifierCoherence = (lignes: ReadonlyArray<LigneContexte>): void => {
   for (const ligne of lignes.filter((l) => l.tacheParente !== '')) {
@@ -188,19 +183,38 @@ const terminerParIntitule = async (
   assert.ok(resultat.ok, `Fin de « ${intitule} » refusée : ${JSON.stringify(resultat)}`);
 };
 
-/** Colonne `date de fin` : la tâche est terminée ce jour-là (midi à Paris), puis le temps simulé est rendu. */
-const terminerLe = async (contexte: ContexteEtape, ligne: LigneContexte): Promise<void> => {
+/** `AbandonnerTache.executer` (la confirmation est établie dès l'origine, Q-ERG-13) ; l'étape échoue si refusé. */
+const abandonnerParIntitule = async (
+  { monde, appareil }: ContexteEtape,
+  intitule: string,
+): Promise<void> => {
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const resultat = await (await objectifsDe(appareil)).abandonnerTache.executer({ tacheId });
+  assert.ok(resultat.ok, `Abandon de « ${intitule} » refusé : ${JSON.stringify(resultat)}`);
+};
+
+/** Exécute `action` à midi (Paris) du jour donné, puis rend le temps simulé ; sans jour, à l'instant courant. */
+const executerLe = async (
+  contexte: ContexteEtape,
+  jour: string,
+  action: () => Promise<void>,
+): Promise<void> => {
   const { temps } = contexte.monde.banc;
   const depart = temps.maintenant();
-  if (ligne.dateFin !== '') {
-    temps.positionner(instantDepuisHeureMurale(ligne.dateFin, MIDI, PARIS));
-  }
+  if (jour !== '') temps.positionner(instantDepuisHeureMurale(jour, MIDI, PARIS));
   try {
-    await terminerParIntitule(contexte, ligne.intitule);
+    await action();
   } finally {
     temps.positionner(depart);
   }
 };
+
+/** Colonnes `date de fin` et `date d'abandon` : la tâche change d'état ce jour-là (midi à Paris). */
+const terminerLe = (contexte: ContexteEtape, ligne: LigneContexte): Promise<void> =>
+  executerLe(contexte, ligne.dateFin, () => terminerParIntitule(contexte, ligne.intitule));
+
+const abandonnerLe = (contexte: ContexteEtape, ligne: LigneContexte): Promise<void> =>
+  executerLe(contexte, ligne.dateAbandon, () => abandonnerParIntitule(contexte, ligne.intitule));
 
 /** Glossaire §1 (b) : les sous-tâches d'abord, puis les tâches parentes. */
 const sousTachesDAbord = (lignes: ReadonlyArray<LigneContexte>): ReadonlyArray<LigneContexte> => [
@@ -208,7 +222,7 @@ const sousTachesDAbord = (lignes: ReadonlyArray<LigneContexte>): ReadonlyArray<L
   ...lignes.filter((ligne) => ligne.tacheParente === ''),
 ];
 
-/** « les tâches suivantes : » — création dans l'ordre du tableau, puis états (rangs 7 et 8). */
+/** « les tâches suivantes : » — création dans l'ordre du tableau, puis états (terminée : rang 7 ; abandonnée : rang 8). */
 export const lesTachesSuivantes = async (
   contexte: ContexteEtape,
   lignes: ReadonlyArray<LigneContexte>,
@@ -217,7 +231,7 @@ export const lesTachesSuivantes = async (
   for (const ligne of lignes) await creerLigne(contexte, ligne, lignes);
   for (const ligne of sousTachesDAbord(lignes)) {
     if (ligne.etat === 'terminée') await terminerLe(contexte, ligne);
-    if (ligne.etat === 'abandonnée') throw capaciteNonLivree(8);
+    if (ligne.etat === 'abandonnée') await abandonnerLe(contexte, ligne);
   }
   await etablirDansLeDrive(contexte);
 };
@@ -245,6 +259,9 @@ export const lObjectifAUnNombreDeTaches = async (
   for (let numero = nombres.aFaire + 1; numero <= nombres.aFaire + nombres.terminees; numero += 1) {
     await terminerParIntitule(contexte, `${objectif} — tâche ${String(numero)}`);
   }
-  if (nombres.abandonnees > 0) throw capaciteNonLivree(8);
+  const premiereAbandonnee = nombres.aFaire + nombres.terminees + 1;
+  for (let numero = premiereAbandonnee; numero <= total; numero += 1) {
+    await abandonnerParIntitule(contexte, `${objectif} — tâche ${String(numero)}`);
+  }
   await etablirDansLeDrive(contexte);
 };

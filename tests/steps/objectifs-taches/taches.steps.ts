@@ -645,11 +645,104 @@ etapeAction(
   },
 );
 
+// ---------------------------------------------------------------- Abandon et reprise (ST-US-025 §12 n° 1 à 3b)
+
+/** `AbandonnerTache.evaluer` (toujours `CONFIRMATION_REQUISE`, Q-ERG-13) : la commande en attente l'exécute à la confirmation. */
+const demanderAbandon = async ({ monde, appareil }: ContexteEtape, intitule: string) => {
+  const objectifs = await objectifsDe(appareil);
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const evaluation = await objectifs.abandonnerTache.evaluer({ tacheId });
+  if (!evaluation.ok) return evaluation;
+  assert.equal(evaluation.valeur.type, 'CONFIRMATION_REQUISE', 'CNF-ABANDON-TACHE attendue');
+  const modele = construireConfirmation(evaluation.valeur.confirmation);
+  monde.commandesEnAttente.set(appareil.nom, {
+    description: `Abandonner la tâche « ${intitule} »`,
+    confirmation: {
+      code: modele.code,
+      ...(modele.variables['n'] === undefined ? {} : { n: Number(modele.variables['n']) }),
+    },
+    executer: () => objectifs.abandonnerTache.executer({ tacheId }),
+  });
+  return evaluation;
+};
+
+etapeAction(
+  new RegExp(`^l'utilisateur abandonne la tâche ${TEXTE} et (confirme|renonce)$`),
+  async (contexte, intitule, choix) => {
+    const evaluation = await demanderAbandon(contexte, String(intitule));
+    const commande = contexte.monde.commandesEnAttente.get(contexte.appareil.nom);
+    contexte.monde.commandesEnAttente.delete(contexte.appareil.nom);
+    return choix === 'confirme' ? (commande?.executer() ?? evaluation) : evaluation;
+  },
+);
+
+etapeAction(
+  new RegExp(`^l'utilisateur demande l'abandon de la tâche ${TEXTE}$`),
+  (contexte, intitule) => demanderAbandon(contexte, String(intitule)),
+);
+
+/**
+ * `ReprendreTache.evaluer` : `SANS_CONFIRMATION` exécute la reprise, `CONFIRMATION_REQUISE` (CNF-REPRENDRE-SOUS-TACHE)
+ * met la commande en attente (« l'utilisateur confirme »), un refus est le résultat de l'appareil. La tâche
+ * annoncée est la tâche parente, rouverte avec la sous-tâche.
+ */
+const demanderReprise = async ({ monde, appareil }: ContexteEtape, intitule: string) => {
+  const objectifs = await objectifsDe(appareil);
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const evaluation = await objectifs.reprendreTache.evaluer({ tacheId });
+  if (!evaluation.ok) return evaluation;
+  if (evaluation.valeur.type === 'SANS_CONFIRMATION')
+    return objectifs.reprendreTache.executer({ tacheId });
+  const modele = construireConfirmation(evaluation.valeur.confirmation);
+  monde.commandesEnAttente.set(appareil.nom, {
+    description: `Reprendre la tâche « ${intitule} »`,
+    confirmation: { code: modele.code, element: String(modele.variables['tacheParente']) },
+    executer: () => objectifs.reprendreTache.executer({ tacheId }),
+  });
+  return evaluation;
+};
+
+etapeAction(new RegExp(`^l'utilisateur reprend la tâche ${TEXTE}$`), (contexte, intitule) =>
+  demanderReprise(contexte, String(intitule)),
+);
+
+/** L'évaluation doit demander CNF-REPRENDRE-SOUS-TACHE ; la commande en attente est oubliée, rien n'est écrit. */
+etapeAction(
+  new RegExp(`^l'utilisateur reprend la tâche ${TEXTE} et renonce$`),
+  async (contexte, intitule) => {
+    const evaluation = await demanderReprise(contexte, String(intitule));
+    assert.ok(
+      contexte.monde.commandesEnAttente.delete(contexte.appareil.nom),
+      `Aucune confirmation demandée pour « ${String(intitule)} »`,
+    );
+    return evaluation;
+  },
+);
+
 etapeAssertion(
   new RegExp(`^l'état de la tâche ${TEXTE} est ${TEXTE}$`),
   async ({ monde, appareil }, intitule, etat) => {
     const detail = await detailTacheDe(monde, appareil, String(intitule));
     assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+  },
+);
+
+// ---------------------------------------------------------------- Date d'abandon (ST-US-025 §12 n° 6, 7)
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} est ${TEXTE} avec la date d'abandon ${DATE}$`),
+  async ({ monde, appareil }, intitule, etat, dateAbandon) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+    assert.equal(detail.dateAbandon?.date, date(String(dateAbandon)));
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} n'a pas de date d'abandon$`),
+  async ({ monde, appareil }, intitule) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(detail.dateAbandon, undefined);
   },
 );
 
