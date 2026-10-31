@@ -1,9 +1,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { Horloge } from '../../../../commun/application/ports/horloge';
 import type { IdObjectif } from '../../../../commun/domaine/identifiants';
-import type { Resultat } from '../../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
-import type { ErreurDepotLocal } from '../../../../synchronisation';
 import type { CreerObjectif } from '../../../application/cas-usage/creer-objectif';
 import type { CreerSousObjectif } from '../../../application/cas-usage/creer-sous-objectif';
 import type {
@@ -20,7 +18,6 @@ import type { SupprimerObjectif } from '../../../application/cas-usage/supprimer
 import type { ConsulterDetailObjectif } from '../../../application/requetes/consulter-detail-objectif';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
 import type { ConsulterSelecteurParent } from '../../../application/requetes/consulter-selecteur-parent';
-import type { RefusMetier } from '../../../domaine/refus';
 import {
   construireConfirmation,
   type ModeleVueConfirmation,
@@ -33,7 +30,8 @@ import {
   construireListeObjectifs,
   type ModeleVueListeObjectifs,
 } from '../../modeles-de-vue/liste-objectifs';
-import { messagesDeRefus, type MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { estRefusMetier, issueDe } from './issues';
 import {
   construireSelecteurParent,
   type ModeleVueSelecteurParent,
@@ -125,24 +123,6 @@ export type ActionsMagasinObjectifs = {
 };
 
 export type MagasinObjectifs = StoreApi<EtatMagasinObjectifs>;
-
-const TYPES_ERREUR_DEPOT: ReadonlyArray<ErreurDepotLocal['type']> = [
-  'EspaceLocalNonOuvert',
-  'EcritureLocaleImpossible',
-  'DonneesLocalesIllisibles',
-];
-
-const estRefusMetier = (erreur: RefusMetier | ErreurDepotLocal): erreur is RefusMetier =>
-  !(TYPES_ERREUR_DEPOT as ReadonlyArray<string>).includes(erreur.type);
-
-const ENREGISTREMENT_IMPOSSIBLE: IssueSaisie = { type: 'ENREGISTREMENT_IMPOSSIBLE' };
-
-const issueDe = (r: Resultat<unknown, RefusMetier | ErreurDepotLocal>): IssueSaisie => {
-  if (r.ok) return { type: 'FAITE' };
-  return estRefusMetier(r.erreur)
-    ? { type: 'REFUSEE', messages: messagesDeRefus(r.erreur) }
-    : ENREGISTREMENT_IMPOSSIBLE;
-};
 
 type Ecrire = MagasinObjectifs['setState'];
 type Lire = MagasinObjectifs['getState'];

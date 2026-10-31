@@ -20,12 +20,6 @@ import { ListeTaches } from './liste-taches';
 // d'erreur d'enregistrement (ERR-014), au-dessus du magasin Zustand (ST-US-002 §4.5).
 export type ProprietesEspaceTaches = { readonly magasin: MagasinTaches };
 
-/** Identifiants des objectifs auxquels la tâche ouverte est rattachée (puces de rattachement). */
-const rattachesDe = (etat: EtatMagasinTaches): ReadonlyArray<IdObjectif> => {
-  const intitules = etat.detail?.objectifs.intitules ?? [];
-  return etat.objectifs.filter((o) => intitules.includes(o.intitule)).map((o) => o.id);
-};
-
 const basculerRattachement = (
   actions: ActionsMagasinTaches,
   id: IdTache,
@@ -66,18 +60,16 @@ const PageDetail = ({
   readonly detail: ModeleVueDetailTache;
 }) => {
   const { actions } = etat;
-  const rattaches = rattachesDe(etat);
   return (
     <DetailTache
       modele={detail}
       objectifs={etat.objectifs}
-      rattaches={rattaches}
       surRetour={() => void actions.afficherListe()}
-      surRenommer={(intitule) => void actions.renommer(id, intitule)}
-      surModifierDelai={(delai) => void actions.modifierDelai(id, delai)}
-      surModifierEstimation={(minutes) => void actions.modifierEstimation(id, minutes)}
+      surRenommer={(intitule) => actions.renommer(id, intitule)}
+      surModifierDelai={(delai) => actions.modifierDelai(id, delai)}
+      surModifierEstimation={(minutes) => actions.modifierEstimation(id, minutes)}
       surBasculerObjectif={(objectifId) => {
-        basculerRattachement(actions, id, rattaches, objectifId);
+        basculerRattachement(actions, id, detail.objectifs.ids, objectifId);
       }}
       surSupprimer={() => void actions.demanderSuppression(id)}
     />

@@ -1,5 +1,5 @@
 import type { Horloge } from '../../../commun/application/ports/horloge';
-import type { IdTache } from '../../../commun/domaine/identifiants';
+import type { IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { DetailTache } from '../../application/requetes/consulter-detail-tache';
@@ -54,6 +54,8 @@ export type ModeleVueDetailTache = {
   readonly estimationInitiale: { readonly minutes: number };
   readonly objectifs: {
     readonly intitules: ReadonlyArray<string>;
+    /** Identifiants des mêmes objectifs, dans le même ordre que `intitules` (rattachement sans ambiguïté d'homonymes). */
+    readonly ids: ReadonlyArray<IdObjectif>;
     readonly verrou?: { readonly code: 'MEN-OBJECTIFS-HERITES'; readonly libelle: string };
   };
   readonly tacheParente?: { readonly id: IdTache; readonly intitule: string };
@@ -136,7 +138,11 @@ export const construireDetailTache = (
       ...verrouEstimation(tache),
     },
     estimationInitiale: { minutes: tache.estimationInitiale },
-    objectifs: { intitules: ligne.objectifs, ...verrouObjectifs(tache) },
+    objectifs: {
+      intitules: ligne.objectifs,
+      ids: tache.objectifs.map((objectif) => objectif.id),
+      ...verrouObjectifs(tache),
+    },
     ...(tache.tacheParente === undefined ? {} : { tacheParente: tache.tacheParente }),
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     actions: donnees.actions,

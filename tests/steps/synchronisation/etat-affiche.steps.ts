@@ -262,13 +262,6 @@ etapeAssertion(/^aucun objectif et aucune tâche n'existent$/, async ({ appareil
   assert.equal(await nombreDeTaches(appareil), 0);
 });
 
-etapeAssertion(/^l'objectif "([^"]*)" n'existe pas$/, async ({ appareil }, intitule) => {
-  assert.ok(
-    !(await resumesDe(appareil)).some((o) => o.intitule === intitule),
-    `Un objectif « ${String(intitule)} » existe`,
-  );
-});
-
 /** EVD-BIENVENUE propose de créer un premier objectif ou d'ajouter une première tâche (guide §6.6.5). */
 etapeAssertion(
   /^l'application propose de créer un premier objectif et d'ajouter une première tâche$/,
