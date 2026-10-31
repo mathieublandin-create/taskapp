@@ -64,3 +64,14 @@ Then(
     assert.deepEqual(confirmationAffichee(this), { code: 'CNF-SUPPR-TACHE', n: Number(n) });
   },
 );
+
+// ST-US-024 §12 n° 12 : CNF-AJOUT-SOUS-TACHE-TERMINEE (rang 6) ; CNF-ROUVRIR-SOUS-TACHE s'y ajoute au rang 7.
+Then(
+  /^une confirmation est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
+  function (this: MondeDoneJuan, tache: string) {
+    assert.deepEqual(confirmationAffichee(this), {
+      code: 'CNF-AJOUT-SOUS-TACHE-TERMINEE',
+      element: tache,
+    });
+  },
+);

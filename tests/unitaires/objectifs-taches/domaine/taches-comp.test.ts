@@ -43,13 +43,14 @@ const introuvable = (id: typeof T) =>
   echec({ type: 'ElementIntrouvable', element: { type: 'TACHE', id } });
 
 describe('Tâches — compléments du domaine (US-002)', () => {
-  it('UT-COMP-US-002-01 actionsTache — retire l’estimation d’une tâche qui a des sous-tâches, le rattachement d’une sous-tâche ; aucune action pour une tâche inconnue', () => {
+  it('UT-COMP-US-002-01 actionsTache — retire l’estimation d’une tâche qui a des sous-tâches, le rattachement et la création de sous-tâche d’une sous-tâche ; aucune action pour une tâche inconnue', () => {
     expect(actionsTache(vue(), T)).toEqual([
       'RENOMMER',
       'MODIFIER_DELAI',
       'MODIFIER_ESTIMATION',
       'RATTACHER',
       'DETACHER',
+      'CREER_SOUS_TACHE',
       'SUPPRIMER',
     ]);
     expect(actionsTache(vue(), PARENTE)).not.toContain('MODIFIER_ESTIMATION');

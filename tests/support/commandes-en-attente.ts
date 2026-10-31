@@ -14,6 +14,8 @@ export type CommandeEnAttente = {
     /** CNF-SUPPR-OBJECTIF : tâches détachées et sous-objectifs promus. */
     readonly taches?: number;
     readonly sousObjectifs?: number;
+    /** CNF-AJOUT-SOUS-TACHE-TERMINEE, CNF-ROUVRIR-SOUS-TACHE : intitulé de l'élément annoncé. */
+    readonly element?: string;
   };
   executer(): Promise<Resultat<unknown, unknown>>;
 };

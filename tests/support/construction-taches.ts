@@ -1,7 +1,7 @@
 /**
  * Construction des contextes de tâches (ST-US-002 §12.1, H-7, glossaire d'étapes §1) : « les tâches suivantes : » et
  * « l'objectif … a n tâches à faire, … ». Chaque tâche est créée par les cas d'usage de l'appareil ; tout refus fait
- * échouer l'étape. Les capacités des rangs suivants (sous-tâche, terminer, abandonner) lèvent une ErreurProgrammation
+ * échouer l'étape. Les capacités des rangs suivants (terminer, abandonner) lèvent une ErreurProgrammation
  * tant qu'elles ne sont pas livrées : la sélection des scénarios par rang garantit qu'elles ne sont pas appelées.
  */
 import assert from 'node:assert/strict';
@@ -10,7 +10,7 @@ import { ErreurProgrammation } from '@src/commun/domaine/erreur-programmation';
 import { DateCalendaire } from '@src/commun/domaine/temps/date-calendaire';
 import { jourDeReference } from '@src/commun/domaine/temps/jour-de-reference';
 import { convertirDuree } from './conversions';
-import { memoriserTache } from './taches';
+import { memoriserTache, resoudreTache } from './taches';
 import { objectifsDe, resoudreObjectif } from './objectifs';
 import type { ContexteEtape } from './prefixes';
 import { etablirDansLeDrive } from './synchronisation/echanges';
@@ -86,6 +86,49 @@ export const creerTache = async ({ monde, appareil }: ContexteEtape, saisie: Sai
   return resultat;
 };
 
+export type SaisieSousTacheTest = Omit<SaisieTacheTest, 'objectifs'>;
+
+const saisieDeSousTache = (saisie: SaisieSousTacheTest) => ({
+  intitule: saisie.intitule,
+  ...(saisie.delai === undefined ? {} : { delai: date(saisie.delai) }),
+  ...(saisie.estimationMinutes === undefined
+    ? {}
+    : { estimationMinutes: saisie.estimationMinutes }),
+});
+
+/** Entrée de `CreerSousTache` : un champ vide est absent (le cas d'usage le refuse). */
+const entreeSousTache = async (
+  { monde, appareil }: ContexteEtape,
+  parente: string,
+  saisie: SaisieSousTacheTest,
+) => ({
+  tacheParenteId: await resoudreTache(monde, appareil, parente),
+  ...saisieDeSousTache(saisie),
+});
+
+/** `CreerSousTache.evaluer` : l'évaluation d'une commande avec confirmation (conventions.md §8.6). */
+export const evaluerSousTache = async (
+  contexte: ContexteEtape,
+  parente: string,
+  saisie: SaisieSousTacheTest,
+) =>
+  (await objectifsDe(contexte.appareil)).creerSousTache.evaluer(
+    await entreeSousTache(contexte, parente, saisie),
+  );
+
+/** `CreerSousTache.executer`, qui mémorise la sous-tâche créée. */
+export const creerSousTache = async (
+  contexte: ContexteEtape,
+  parente: string,
+  saisie: SaisieSousTacheTest,
+) => {
+  const resultat = await (
+    await objectifsDe(contexte.appareil)
+  ).creerSousTache.executer(await entreeSousTache(contexte, parente, saisie));
+  if (resultat.ok) memoriserTache(contexte.monde, saisie.intitule.trim(), resultat.valeur);
+  return resultat;
+};
+
 const capaciteNonLivree = (rang: number): ErreurProgrammation =>
   new ErreurProgrammation(`capacité livrée au rang ${String(rang)}`);
 
@@ -115,13 +158,15 @@ const creerLigne = async (
   ligne: LigneContexte,
   lignes: ReadonlyArray<LigneContexte>,
 ): Promise<void> => {
-  if (ligne.tacheParente !== '') throw capaciteNonLivree(6);
-  const resultat = await creerTache(contexte, {
+  const saisie = {
     intitule: ligne.intitule,
     delai: ligne.delai,
     estimationMinutes: estimationDe(ligne, lignes),
-    objectifs: ligne.objectifs,
-  });
+  };
+  const resultat =
+    ligne.tacheParente === ''
+      ? await creerTache(contexte, { ...saisie, objectifs: ligne.objectifs })
+      : await creerSousTache(contexte, ligne.tacheParente, saisie);
   assert.ok(resultat.ok, `Création de « ${ligne.intitule} » refusée : ${JSON.stringify(resultat)}`);
 };
 

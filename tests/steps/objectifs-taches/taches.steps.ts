@@ -13,7 +13,9 @@ import {
   FRAGMENT_INTITULES,
 } from '../../support/conversions';
 import {
+  creerSousTache,
   creerTache,
+  evaluerSousTache,
   lesTachesSuivantes,
   lireLignesContexte,
   lObjectifAUnNombreDeTaches,
@@ -94,6 +96,74 @@ etapeAction(
     return dernier;
   },
   { tableau: true },
+);
+
+// ---------------------------------------------------------------- Sous-tâches (ST-US-024 §12 n° 1, 2)
+
+const saisieSousTache = (ligne: Record<string, string>) => {
+  const delai = cellule(ligne, 'délai');
+  const estimation = cellule(ligne, 'estimation');
+  return {
+    intitule: cellule(ligne, 'intitulé'),
+    ...(delai === '' ? {} : { delai }),
+    ...(estimation === '' ? {} : { estimationMinutes: convertirDuree(estimation) }),
+  };
+};
+
+/**
+ * `CreerSousTache.evaluer` : `CONFIRMATION_REQUISE` met la commande en attente (« l'utilisateur confirme »),
+ * `SANS_CONFIRMATION` l'exécute, un refus est le résultat de l'appareil.
+ */
+const demanderSousTache = async (
+  contexte: ContexteEtape,
+  parente: string,
+  saisie: ReturnType<typeof saisieSousTache>,
+) => {
+  const { monde, appareil } = contexte;
+  const evaluation = await evaluerSousTache(contexte, parente, saisie);
+  if (!evaluation.ok) return evaluation;
+  if (evaluation.valeur.type === 'SANS_CONFIRMATION') {
+    return creerSousTache(contexte, parente, saisie);
+  }
+  const modele = construireConfirmation(evaluation.valeur.confirmation);
+  monde.commandesEnAttente.set(appareil.nom, {
+    description: `Ajouter la sous-tâche « ${saisie.intitule} » à la tâche « ${parente} »`,
+    confirmation: { code: modele.code, element: parente },
+    executer: () => creerSousTache(contexte, parente, saisie),
+  });
+  return evaluation;
+};
+
+etapeAction(
+  new RegExp(`^l'utilisateur crée une sous-tâche de la tâche ${TEXTE} :$`),
+  async (contexte, parente, tableau) => {
+    let dernier;
+    for (const ligne of (tableau as DataTable).hashes()) {
+      dernier = await demanderSousTache(contexte, String(parente), saisieSousTache(ligne));
+    }
+    return dernier;
+  },
+  { tableau: true },
+);
+
+etapeAction(
+  new RegExp(
+    `^l'utilisateur crée une sous-tâche ${TEXTE} de la tâche ${TEXTE}, de délai ${DATE}, estimée à ${DUREE}$`,
+  ),
+  (contexte, intitule, parente, delai, estimation) =>
+    demanderSousTache(contexte, String(parente), {
+      intitule: String(intitule),
+      delai: String(delai),
+      estimationMinutes: minutes(estimation),
+    }),
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} n'a aucune sous-tâche$`),
+  async ({ monde, appareil }, intitule) => {
+    const resume = await resumeTacheDe(monde, appareil, String(intitule));
+    assert.equal(resume.sousTaches, undefined);
+  },
 );
 
 const INTITULES_INVALIDES: Readonly<Record<string, string>> = {

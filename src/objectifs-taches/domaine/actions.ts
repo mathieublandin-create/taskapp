@@ -33,8 +33,8 @@ export const actionsObjectif = (vue: VueMetier, id: IdObjectif): ReadonlyArray<A
 };
 
 /**
- * ST-US-002 §6.5 : `MODIFIER_ESTIMATION` sauf avec sous-tâches (champ verrouillé), `RATTACHER` et `DETACHER` sauf pour une
- * sous-tâche (objectifs verrouillés). Les actions de cycle de vie et `CREER_SOUS_TACHE` : ST-US-024, 003, 025.
+ * ST-US-002 §6.5 : `MODIFIER_ESTIMATION` sauf avec sous-tâches (champ verrouillé), `RATTACHER`, `DETACHER` et `CREER_SOUS_TACHE`
+ * sauf pour une sous-tâche (objectifs verrouillés, un seul niveau, ST-US-024 §6.5). Cycle de vie : ST-US-003, 025.
  */
 export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionTache> => {
   const tache = vue.taches.get(id);
@@ -44,6 +44,7 @@ export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionT
     'MODIFIER_DELAI',
     ...(sousTachesDe(vue, id).length === 0 ? (['MODIFIER_ESTIMATION'] as const) : []),
     ...(tache.tacheParenteId === undefined ? (['RATTACHER', 'DETACHER'] as const) : []),
+    ...(tache.tacheParenteId === undefined ? (['CREER_SOUS_TACHE'] as const) : []),
     'SUPPRIMER',
   ];
 };
