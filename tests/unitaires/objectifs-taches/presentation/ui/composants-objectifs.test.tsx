@@ -71,12 +71,18 @@ describe('FeuilleObjectif (ECR-008 B, ECR-003 C)', () => {
     });
 
     await saisir('Intitulé', 'Guide 2');
-    expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
+    await waitFor(() => {
+      expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
+    });
     await saisir('Intitulé', 'Guide');
-    expect(declarer).toHaveBeenLastCalledWith('feuille-test', false);
+    await waitFor(() => {
+      expect(declarer).toHaveBeenLastCalledWith('feuille-test', false);
+    });
 
     await saisir('Intitulé', 'Autre');
-    expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
+    await waitFor(() => {
+      expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
+    });
     await feuille.fermer();
     await waitFor(() => {
       expect(declarer).toHaveBeenLastCalledWith('feuille-test', false);
