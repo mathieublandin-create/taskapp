@@ -1,7 +1,7 @@
 /**
  * Construction des contextes de tâches (ST-US-002 §12.1, H-7, glossaire d'étapes §1) : « les tâches suivantes : » et
  * « l'objectif … a n tâches à faire, … ». Chaque tâche est créée par les cas d'usage de l'appareil ; tout refus fait
- * échouer l'étape. Les capacités des rangs suivants (terminer, abandonner) lèvent une ErreurProgrammation
+ * échouer l'étape. Les capacités des rangs suivants (abandonner, rang 8) lèvent une ErreurProgrammation
  * tant qu'elles ne sont pas livrées : la sélection des scénarios par rang garantit qu'elles ne sont pas appelées.
  */
 import assert from 'node:assert/strict';
@@ -9,16 +9,18 @@ import type { DataTable } from '@cucumber/cucumber';
 import { ErreurProgrammation } from '@src/commun/domaine/erreur-programmation';
 import { DateCalendaire } from '@src/commun/domaine/temps/date-calendaire';
 import { jourDeReference } from '@src/commun/domaine/temps/jour-de-reference';
+import { instantDepuisHeureMurale } from './temps';
 import { convertirDuree } from './conversions';
 import { memoriserTache, resoudreTache } from './taches';
 import { objectifsDe, resoudreObjectif } from './objectifs';
 import type { ContexteEtape } from './prefixes';
 import { etablirDansLeDrive } from './synchronisation/echanges';
-import { date } from './valeurs';
+import { date, PARIS } from './valeurs';
 
 const ESTIMATION_TECHNIQUE_MINUTES = 30; // tâche parente sans estimation (H-7)
 const ESTIMATION_PAR_DEFAUT_MINUTES = 60;
 const DELAI_PAR_DEFAUT_JOURS = 7;
+const MIDI = { heures: 12, minutes: 0 };
 
 export type EtatContexte = 'à faire' | 'terminée' | 'abandonnée';
 
@@ -176,6 +178,36 @@ const creerLigne = async (
   assert.ok(resultat.ok, `Création de « ${ligne.intitule} » refusée : ${JSON.stringify(resultat)}`);
 };
 
+/** `TerminerTache.executer` ; l'étape échoue si la fin est refusée. */
+const terminerParIntitule = async (
+  { monde, appareil }: ContexteEtape,
+  intitule: string,
+): Promise<void> => {
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const resultat = await (await objectifsDe(appareil)).terminerTache.executer({ tacheId });
+  assert.ok(resultat.ok, `Fin de « ${intitule} » refusée : ${JSON.stringify(resultat)}`);
+};
+
+/** Colonne `date de fin` : la tâche est terminée ce jour-là (midi à Paris), puis le temps simulé est rendu. */
+const terminerLe = async (contexte: ContexteEtape, ligne: LigneContexte): Promise<void> => {
+  const { temps } = contexte.monde.banc;
+  const depart = temps.maintenant();
+  if (ligne.dateFin !== '') {
+    temps.positionner(instantDepuisHeureMurale(ligne.dateFin, MIDI, PARIS));
+  }
+  try {
+    await terminerParIntitule(contexte, ligne.intitule);
+  } finally {
+    temps.positionner(depart);
+  }
+};
+
+/** Glossaire §1 (b) : les sous-tâches d'abord, puis les tâches parentes. */
+const sousTachesDAbord = (lignes: ReadonlyArray<LigneContexte>): ReadonlyArray<LigneContexte> => [
+  ...lignes.filter((ligne) => ligne.tacheParente !== ''),
+  ...lignes.filter((ligne) => ligne.tacheParente === ''),
+];
+
 /** « les tâches suivantes : » — création dans l'ordre du tableau, puis états (rangs 7 et 8). */
 export const lesTachesSuivantes = async (
   contexte: ContexteEtape,
@@ -183,8 +215,8 @@ export const lesTachesSuivantes = async (
 ): Promise<void> => {
   verifierCoherence(lignes);
   for (const ligne of lignes) await creerLigne(contexte, ligne, lignes);
-  for (const ligne of lignes) {
-    if (ligne.etat === 'terminée') throw capaciteNonLivree(7);
+  for (const ligne of sousTachesDAbord(lignes)) {
+    if (ligne.etat === 'terminée') await terminerLe(contexte, ligne);
     if (ligne.etat === 'abandonnée') throw capaciteNonLivree(8);
   }
   await etablirDansLeDrive(contexte);
@@ -210,7 +242,9 @@ export const lObjectifAUnNombreDeTaches = async (
     });
     assert.ok(resultat.ok, `Création refusée : ${JSON.stringify(resultat)}`);
   }
-  if (nombres.terminees > 0) throw capaciteNonLivree(7);
+  for (let numero = nombres.aFaire + 1; numero <= nombres.aFaire + nombres.terminees; numero += 1) {
+    await terminerParIntitule(contexte, `${objectif} — tâche ${String(numero)}`);
+  }
   if (nombres.abandonnees > 0) throw capaciteNonLivree(8);
   await etablirDansLeDrive(contexte);
 };

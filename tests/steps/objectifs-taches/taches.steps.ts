@@ -591,6 +591,65 @@ etapeAction(
   (contexte, intitule) => demanderSuppression(contexte, String(intitule)),
 );
 
+// ---------------------------------------------------------------- Fin et réouverture (ST-US-003 §12 n° 1 à 3, 6)
+
+/** Un refus n'échoue pas l'étape : il devient le résultat de l'appareil (« l'action est refusée avec le motif »). */
+etapeAction(
+  new RegExp(`^l'utilisateur termine la tâche ${TEXTE}$`),
+  async ({ monde, appareil }, intitule) =>
+    (await objectifsDe(appareil)).terminerTache.executer({
+      tacheId: await resoudreTache(monde, appareil, String(intitule)),
+    }),
+);
+
+/**
+ * `RouvrirTache.evaluer` : `CONFIRMATION_REQUISE` met la commande en attente (« l'utilisateur confirme »),
+ * `SANS_CONFIRMATION` l'exécute, un refus est le résultat de l'appareil.
+ */
+const demanderReouverture = async ({ monde, appareil }: ContexteEtape, intitule: string) => {
+  const objectifs = await objectifsDe(appareil);
+  const tacheId = await resoudreTache(monde, appareil, intitule);
+  const evaluation = await objectifs.rouvrirTache.evaluer({ tacheId });
+  if (!evaluation.ok) return evaluation;
+  if (evaluation.valeur.type === 'SANS_CONFIRMATION')
+    return objectifs.rouvrirTache.executer({ tacheId });
+  const { confirmation } = evaluation.valeur;
+  monde.commandesEnAttente.set(appareil.nom, {
+    description: `Rouvrir la tâche « ${intitule} »`,
+    confirmation: {
+      code: construireConfirmation(confirmation).code,
+      element: confirmation.intitule,
+    },
+    executer: () => objectifs.rouvrirTache.executer({ tacheId }),
+  });
+  return evaluation;
+};
+
+etapeAction(new RegExp(`^l'utilisateur rouvre la tâche ${TEXTE}$`), (contexte, intitule) =>
+  demanderReouverture(contexte, String(intitule)),
+);
+
+/** L'évaluation doit demander une confirmation (CNF-ROUVRIR-SOUS-TACHE) ; la commande en attente est oubliée. */
+etapeAction(
+  new RegExp(`^l'utilisateur rouvre la tâche ${TEXTE} et renonce$`),
+  async (contexte, intitule) => {
+    const evaluation = await demanderReouverture(contexte, String(intitule));
+    assert.ok(
+      contexte.monde.commandesEnAttente.delete(contexte.appareil.nom),
+      `Aucune confirmation demandée pour « ${String(intitule)} »`,
+    );
+    return evaluation;
+  },
+);
+
+etapeAssertion(
+  new RegExp(`^l'état de la tâche ${TEXTE} est ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, etat) => {
+    const detail = await detailTacheDe(monde, appareil, String(intitule));
+    assert.equal(NOMS_ETAT[detail.etat.code], String(etat));
+  },
+);
+
 // ---------------------------------------------------------------- Détail d'un objectif (n° 20, 21)
 
 const lignesTachesDuDetail = (

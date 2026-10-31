@@ -65,13 +65,21 @@ Then(
   },
 );
 
-// ST-US-024 §12 n° 12 : CNF-AJOUT-SOUS-TACHE-TERMINEE (rang 6) ; CNF-ROUVRIR-SOUS-TACHE s'y ajoute au rang 7.
+// ST-US-024 §12 n° 12 et ST-US-003 §12 n° 11 : CNF-AJOUT-SOUS-TACHE-TERMINEE (ajout d'une sous-tâche) ou
+// CNF-ROUVRIR-SOUS-TACHE (réouverture d'une sous-tâche), qui annoncent l'une et l'autre la réouverture de la tâche.
+const CODES_REOUVERTURE_PARENTE: ReadonlyArray<string> = [
+  'CNF-AJOUT-SOUS-TACHE-TERMINEE',
+  'CNF-ROUVRIR-SOUS-TACHE',
+];
+
 Then(
   /^une confirmation est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
   function (this: MondeDoneJuan, tache: string) {
-    assert.deepEqual(confirmationAffichee(this), {
-      code: 'CNF-AJOUT-SOUS-TACHE-TERMINEE',
-      element: tache,
-    });
+    const confirmation = confirmationAffichee(this);
+    assert.ok(
+      confirmation && CODES_REOUVERTURE_PARENTE.includes(confirmation.code),
+      `Confirmation inattendue : ${JSON.stringify(confirmation)}`,
+    );
+    assert.equal(confirmation.element, tache);
   },
 );

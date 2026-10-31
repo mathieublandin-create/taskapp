@@ -129,10 +129,12 @@ etapeAssertion(
   },
 );
 
-// ST-US-024 §12 n° 11 : liste fermée des actions nommées ; « terminer », « rouvrir » (rang 7), « abandonner »,
-// « reprendre » (rang 8) s'y ajoutent avec leurs rangs.
+// ST-US-024 §12 n° 11, ST-US-003 §12 n° 10 : liste fermée des actions nommées ; « abandonner » et « reprendre »
+// (rang 8) s'y ajoutent avec leur rang.
 const ACTIONS_TACHE: Readonly<Record<string, ActionTache>> = {
   'créer une sous-tâche': 'CREER_SOUS_TACHE',
+  terminer: 'TERMINER',
+  rouvrir: 'ROUVRIR',
 };
 
 const verifierAction =
