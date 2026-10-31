@@ -9,7 +9,6 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { useRef, useState, type RefObject } from 'react';
-import { assertNever } from '../../../../commun/domaine/assert-never';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { libelle } from '../../../../commun/presentation/messages/libelle';
@@ -412,28 +411,6 @@ const useAbandon = (surAbandonner: ProprietesDetailTache['surAbandonner']) => {
   };
 };
 
-type GestesMenu = {
-  readonly supprimer: () => void;
-  readonly abandonner: () => void;
-  readonly renommer: () => void;
-};
-
-const executerActionMenu = (action: ActionMenu, gestes: GestesMenu): void => {
-  switch (action) {
-    case 'SUPPRIMER':
-      gestes.supprimer();
-      break;
-    case 'ABANDONNER':
-      gestes.abandonner();
-      break;
-    case 'RENOMMER':
-      gestes.renommer();
-      break;
-    default:
-      assertNever(action);
-  }
-};
-
 /**
  * Ouverture du menu « … » ; l'action choisie s'exécute à la fermeture de la feuille : Ionic rend alors le focus au
  * bouton « … », et une boîte ouverte plus tôt perdrait celui de « Annuler » (guide §6.6.7).
@@ -445,10 +422,10 @@ const useMenuDetail = (
 ) => {
   const [ouvert, setOuvert] = useState(false);
   const choix = useRef<ActionMenu | undefined>(undefined);
-  const gestes: GestesMenu = {
-    supprimer: proprietes.surSupprimer,
-    abandonner: abandon.demander,
-    renommer: () => {
+  const gestes: Readonly<Record<ActionMenu, () => void>> = {
+    SUPPRIMER: proprietes.surSupprimer,
+    ABANDONNER: abandon.demander,
+    RENOMMER: () => {
       editeur.editer('INTITULE');
     },
   };
@@ -461,7 +438,7 @@ const useMenuDetail = (
       setOuvert(false);
       const action = choix.current;
       choix.current = undefined;
-      if (action !== undefined) executerActionMenu(action, gestes);
+      if (action !== undefined) gestes[action]();
     },
     choisir: (action: ActionMenu) => {
       choix.current = action;

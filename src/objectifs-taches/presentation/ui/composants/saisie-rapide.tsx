@@ -307,8 +307,7 @@ const ChampEstimationObligatoire = ({ valeurs, messages, refEstimation, modifier
   );
 };
 
-const estSousTache = (formulaire: FormulaireSaisie): formulaire is ModeleVueFormulaireSousTache =>
-  formulaire.variante === 'SOUS_TACHE';
+const estSousTache = (formulaire: FormulaireSaisie) => formulaire.variante === 'SOUS_TACHE';
 
 const titreDe = (formulaire: FormulaireSaisie): string =>
   estSousTache(formulaire) ? LIBELLES_TACHES.saisieSousTacheTitre : LIBELLES_TACHES.saisieTitre;

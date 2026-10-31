@@ -6,7 +6,12 @@ import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 
 // Messages d'un refus affichés sous leur champ : texte et rôle `alert`, jamais la couleur seule (guide §4.3). Un
 // message dont le code a une action au catalogue (ERR-032 : « Reprendre la tâche ») la propose si l'écran sait la faire.
-export type ActionsDeMessages = Readonly<Partial<Record<CodeCatalogue, () => void>>>;
+export const CODES_AVEC_ACTION = ['ERR-032'] as const;
+export type CodeAvecAction = (typeof CODES_AVEC_ACTION)[number];
+export type ActionsDeMessages = Readonly<Partial<Record<CodeAvecAction, () => void>>>;
+
+const estCodeAvecAction = (code: CodeCatalogue): code is CodeAvecAction =>
+  (CODES_AVEC_ACTION as ReadonlyArray<CodeCatalogue>).includes(code);
 
 const ActionDuMessage = ({
   message,
@@ -33,6 +38,9 @@ export const MessagesRefus = ({
       <IonNote color="danger" role="alert" data-message={message.code}>
         {libelle(message.code, message.variables)}
       </IonNote>
-      <ActionDuMessage message={message} surAction={actions[message.code]} />
+      <ActionDuMessage
+        message={message}
+        surAction={estCodeAvecAction(message.code) ? actions[message.code] : undefined}
+      />
     </Fragment>
   ));

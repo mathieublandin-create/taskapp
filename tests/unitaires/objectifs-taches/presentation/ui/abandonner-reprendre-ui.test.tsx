@@ -9,12 +9,22 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IdTache } from '@src/commun/domaine/identifiants';
 import { construireDetailTache, construireFormulaireSousTache } from '@src/objectifs-taches';
+import {
+  CODES_AVEC_ACTION,
+  MessagesRefus,
+} from '@src/objectifs-taches/presentation/ui/composants/messages-refus';
+import { SaisieRapide } from '@src/objectifs-taches/presentation/ui/composants/saisie-rapide';
+import { aUnePartie } from '@src/commun/presentation/messages/libelle';
 import { DetailTache } from '@src/objectifs-taches/presentation/ui/ecrans/detail-tache';
 import { EspaceTaches } from '@src/objectifs-taches/presentation/ui/ecrans/espace-taches';
-import { creerMagasinTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-taches';
+import {
+  creerMagasinTaches,
+  type IssueSaisie,
+} from '@src/objectifs-taches/presentation/ui/etat/magasin-taches';
 import { valeurDe } from '@tests/support/environnement';
 import {
   choixDuMenu,
+  apresFermeture,
   cliquerBoutonIon,
   creerBancObjectifs,
   nettoyerDocument,
@@ -353,5 +363,78 @@ describe('Modèles de vue — phrase de la tâche parente (DT-021 point 2)', () 
     expect(formulaire.variante).toBe('SOUS_TACHE');
     expect(formulaire.libelleTacheParente).toBe('de « Prix en $& euros »');
     expect(modele.libelleTacheParente).toBe('Sous-tâche de « Prix en $& euros »');
+  });
+});
+
+describe('Couverture des cas limites de l’interface d’abandon (RC-US-025-1, RC-US-025-4)', () => {
+  it('UT-COMP-US-025-13 « Reprendre la tâche » refusée (tâche reprise ou modifiée ailleurs) : la saisie est conservée, rien n’est ajouté', async () => {
+    const banc = creerBancObjectifs();
+    const parente = await creerTache(banc, 'Chapitre 1');
+    const surValider = vi.fn((): Promise<IssueSaisie> =>
+      Promise.resolve({ type: 'REFUSEE', messages: [{ code: 'ERR-032', variables: {} }] }),
+    );
+    const surReprendre = vi.fn((): Promise<IssueSaisie> =>
+      Promise.resolve({ type: 'REFUSEE', messages: [] }),
+    );
+    const proprietes = {
+      formulaire: construireFormulaireSousTache(
+        valeurDe(await banc.services.consulterDetailTache.executer(parente)),
+      ),
+      objectifs: [],
+      surValider,
+      surReprendre,
+      surFermee: vi.fn(),
+      registre: { declarer: vi.fn() },
+    };
+    const rendu = render(<SaisieRapide ouverte {...proprietes} />);
+    await screen.findByRole('form', { name: 'Nouvelle sous-tâche' });
+    await renseigner('Intitulé', 'Section A');
+    await cliquerBoutonIon('Ajouter');
+    await screen.findByRole('alert');
+
+    const action = document.querySelector<HTMLElement>('[data-action="ERR-032"]');
+    if (action === null) throw new Error('Action « Reprendre la tâche » absente');
+    await userEvent.click(action);
+
+    await waitFor(() => {
+      expect(surReprendre).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
+    expect(document.querySelector<HTMLIonInputElement>('ion-input')?.value).toBe('Section A');
+    expect(screen.queryByText('Ajoutée à Tâches')).toBeNull();
+    expect(surValider).toHaveBeenCalledTimes(1);
+    const fermee = apresFermeture('Modal');
+    rendu.rerender(<SaisieRapide ouverte={false} {...proprietes} />);
+    await fermee;
+  });
+
+  it('UT-COMP-US-025-14 menu « … » fermé sans choix (« Annuler » de la feuille) : ni suppression, ni abandon, aucune boîte ; le détail est inchangé', async () => {
+    const banc = creerBancObjectifs();
+    const id = await creerTache(banc, 'Rédiger');
+    const magasin = await afficherDetail(banc, id);
+
+    await ouvrir('ActionSheet', () => userEvent.click(screen.getByText('…')));
+    const fermee = apresFermeture('ActionSheet');
+    await userEvent.click(await screen.findByRole('button', { name: 'Annuler' }));
+    await fermee;
+
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1, name: 'Rédiger' })).toBeTruthy();
+    expect(etatDe(magasin)).toBe('ETA-TACHE-A-FAIRE');
+  });
+
+  it('UT-COMP-US-025-15 chaque code qui propose une action a bien une action au catalogue ; un code sans action n’en rend pas', () => {
+    for (const code of CODES_AVEC_ACTION) expect(aUnePartie(code, 'action')).toBe(true);
+
+    render(
+      <MessagesRefus
+        messages={[{ code: 'ERR-020', variables: {} }]}
+        actions={{ 'ERR-032': vi.fn() }}
+      />,
+    );
+
+    expect(document.querySelector('[data-action]')).toBeNull();
   });
 });

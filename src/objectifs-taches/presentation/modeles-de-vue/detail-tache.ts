@@ -129,6 +129,14 @@ const etiquetteDe = (
   code: EtiquetteSousTache['code'],
 ): { readonly etiquette: EtiquetteSousTache } => ({ etiquette: { code, libelle: libelle(code) } });
 
+/** Étiquette des états autres qu'« abandonnée » : la table est exhaustive à la compilation. */
+const ETIQUETTE_HORS_ABANDON: Readonly<
+  Record<
+    Exclude<ResumeTache['cycleDeVie']['etat'], 'ABANDONNEE'>,
+    EtiquetteSousTache['code'] | undefined
+  >
+> = { TERMINEE: 'ETA-SOUS-TACHE-TERMINEE-AVANT', A_FAIRE: undefined };
+
 /** Étiquette d'une sous-tâche d'une tâche parente abandonnée (ST-US-025 §6.4) ; aucune si elle est à faire. */
 const etiquetteSousTache = (
   sousTache: ResumeTache,
@@ -143,7 +151,8 @@ const etiquetteSousTache = (
         : 'ETA-SOUS-TACHE-ABANDONNEE-AVANT',
     );
   }
-  return cycleDeVie.etat === 'TERMINEE' ? etiquetteDe('ETA-SOUS-TACHE-TERMINEE-AVANT') : {};
+  const code = ETIQUETTE_HORS_ABANDON[cycleDeVie.etat];
+  return code === undefined ? {} : etiquetteDe(code);
 };
 
 const construireLigneSousTache = (

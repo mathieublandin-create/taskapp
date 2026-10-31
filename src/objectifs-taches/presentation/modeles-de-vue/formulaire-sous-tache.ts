@@ -6,7 +6,7 @@ import { construireFormulaireTache, type ModeleVueFormulaireTache } from './form
 import { phraseDeTacheParente } from './phrases-tache-parente';
 
 // ST-US-024 §4.5 (ECR-007 I).
-export type ModeleVueFormulaireSousTache = ModeleVueFormulaireTache & {
+export type ModeleVueFormulaireSousTache = Omit<ModeleVueFormulaireTache, 'variante'> & {
   readonly variante: 'SOUS_TACHE';
   readonly tacheParente: { readonly id: IdTache; readonly intitule: string };
   /** « de « {tâche parente} » », composé ici pour que le composant n'assemble aucun texte. */

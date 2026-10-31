@@ -2,8 +2,8 @@ import type { IdObjectif } from '../../../commun/domaine/identifiants';
 
 // ST-US-002 §4.5 (CA-2, Q-ERG-03).
 export type ModeleVueFormulaireTache = {
-  /** Variante sous-tâche (`'SOUS_TACHE'`) ; absente de la saisie d'une tâche (DT-021 point 2). */
-  readonly variante?: 'SOUS_TACHE';
+  /** Jamais renseignée pour une tâche : seule la variante sous-tâche porte `'SOUS_TACHE'` (DT-021 point 2). */
+  readonly variante?: never;
   readonly delaiPreselectionne: undefined;
   readonly estimationPreselectionnee: undefined;
   readonly objectifsPreRemplis: ReadonlyArray<IdObjectif>; // objectif du détail d'où l'on vient, sinon vide
