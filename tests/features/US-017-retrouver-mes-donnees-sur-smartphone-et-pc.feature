@@ -12,6 +12,7 @@
 # Ils sont retirés, et la version précédente de ce fichier rétablie, si la condition de DEC-034 échoue (M-RED, M-PERSIST).
 # Les délais d'une heure et d'une minute (CA-2, CA-3) se vérifient en faisant avancer l'horloge contrôlée du banc à deux appareils
 # (conventions §9.11, PT-04) : aucun scénario n'attend en temps réel (E7, ANT-3).
+# E10 du rang 9 (Pepper, 2026-10-31, Q-ST017-PEP-2 a) : S10b (même valeur des deux côtés) et S10c (suppressions concurrentes) ajoutés, sans changement de règle.
 # E7 : S12b (horodatages identiques), S13 scindé en S13a/S13b (seuil de 24 h, CA-13), S17 scindé en S17a/S17b, S30b (RG-058 : aucune écriture, dépôt après mise à jour).
 
 Fonctionnalité: Retrouver mes données sur smartphone et sur PC
@@ -244,8 +245,41 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | élément | information | valeur non retenue | valeur conservée |
       | B       | intitulé    | A                  | B                |
 
+  @US-017 @RG-036 @RG-056 @LOT-001
+  Scénario: S10b — La même valeur saisie sur les deux appareils n'est pas une valeur écartée
+    # E10 du rang 9, Q-ST017-PEP-2 a (2026-10-31) : les deux modifications donnent la même valeur, rien n'est perdu (RG-036, glossaire « Valeur écartée »).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "A"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "A" existe avec le délai 2026-11-30
+    Et sur les deux appareils, la liste des modifications non retenues est vide
+    Et sur les deux appareils, l'indicateur de synchronisation ne signale aucune information à lire
+
+  @US-017 @RG-036 @RG-047 @RG-056 @LOT-001
+  Scénario: S10c — Le même élément supprimé sur les deux appareils : rien n'est signalé, pas même une modification faite avant l'une des deux suppressions
+    # E10 du rang 9, Q-ST017-PEP-2 a (2026-10-31) : deux suppressions concurrentes ne se signalent pas l'une l'autre ;
+    # le renommage, fait sur le PC avant d'y supprimer la tâche, a été remplacé en connaissance de cause (RG-036) : il n'est pas écarté par la suppression du smartphone (RG-047).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et sur le PC, l'utilisateur supprime la tâche "A" et confirme
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur supprime la tâche "Plan" et confirme
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "A" n'existe plus
+    Et sur les deux appareils, la tâche "Plan" n'existe plus
+    Et sur les deux appareils, la liste des modifications non retenues est vide
+    Et sur les deux appareils, l'indicateur de synchronisation ne signale aucune information à lire
+
   @US-017 @RG-036 @LOT-001
-  Scénario: S11 — Une valeur remplacée en connaissance de cause n'est pas signalée
+  Scénario: S11 —Une valeur remplacée en connaissance de cause n'est pas signalée
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
