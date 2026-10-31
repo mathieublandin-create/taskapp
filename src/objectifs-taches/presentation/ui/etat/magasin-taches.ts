@@ -1,9 +1,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { Horloge } from '../../../../commun/application/ports/horloge';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
-import type { Resultat } from '../../../../commun/domaine/resultat';
 import type { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
-import type { ErreurDepotLocal } from '../../../../synchronisation';
 import type { CreerTache } from '../../../application/cas-usage/creer-tache';
 import type {
   ModifierDelaiTache,
@@ -15,7 +13,6 @@ import type { SupprimerTache } from '../../../application/cas-usage/supprimer-ta
 import type { ConsulterDetailTache } from '../../../application/requetes/consulter-detail-tache';
 import type { ConsulterObjectifs } from '../../../application/requetes/consulter-objectifs';
 import type { ConsulterTaches } from '../../../application/requetes/consulter-taches';
-import type { RefusMetier } from '../../../domaine/refus';
 import {
   construireConfirmation,
   type ModeleVueConfirmation,
@@ -31,7 +28,8 @@ import {
   type FiltreObjectif,
   type ModeleVueListeTaches,
 } from '../../modeles-de-vue/liste-taches';
-import { messagesDeRefus, type MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
+import { estRefusMetier, issueDe } from './issues';
 
 // Magasin Zustand des tâches (ST-US-002 §4.5) : modèles de vue courants, recalculés après chaque commande. Il ne
 // porte que de l'état d'écran (filtres, écran ouvert, confirmation) ; toute règle métier reste dans les cas d'usage.
@@ -107,24 +105,6 @@ export type ActionsMagasinTaches = {
 };
 
 export type MagasinTaches = StoreApi<EtatMagasinTaches>;
-
-const TYPES_ERREUR_DEPOT: ReadonlyArray<ErreurDepotLocal['type']> = [
-  'EspaceLocalNonOuvert',
-  'EcritureLocaleImpossible',
-  'DonneesLocalesIllisibles',
-];
-
-const estRefusMetier = (erreur: RefusMetier | ErreurDepotLocal): erreur is RefusMetier =>
-  !(TYPES_ERREUR_DEPOT as ReadonlyArray<string>).includes(erreur.type);
-
-const ENREGISTREMENT_IMPOSSIBLE: IssueTache = { type: 'ENREGISTREMENT_IMPOSSIBLE' };
-
-const issueDe = (r: Resultat<unknown, RefusMetier | ErreurDepotLocal>): IssueTache => {
-  if (r.ok) return { type: 'FAITE' };
-  return estRefusMetier(r.erreur)
-    ? { type: 'REFUSEE', messages: messagesDeRefus(r.erreur) }
-    : ENREGISTREMENT_IMPOSSIBLE;
-};
 
 type Ecrire = MagasinTaches['setState'];
 type Lire = MagasinTaches['getState'];

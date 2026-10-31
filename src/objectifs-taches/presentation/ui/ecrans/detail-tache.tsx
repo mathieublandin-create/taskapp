@@ -15,10 +15,12 @@ import { libelle } from '../../../../commun/presentation/messages/libelle';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { ActionTache } from '../../../domaine/types-actions';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
+import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
+import { MessagesRefus } from '../composants/messages-refus';
 import { PucesObjectif } from '../composants/puces-objectif';
 import { SelecteurDuree } from '../composants/selecteur-duree';
-import type { ObjectifProposable } from '../etat/magasin-taches';
+import type { IssueTache, ObjectifProposable } from '../etat/magasin-taches';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
 // Écran ECR-007 (B, C, E) : intitulé, état, alertes de délai, champs modifiables (délai, estimation, objectifs) ou
@@ -26,12 +28,11 @@ import { LIBELLES_TACHES } from '../libelles-ui';
 export type ProprietesDetailTache = {
   readonly modele: ModeleVueDetailTache;
   readonly objectifs: ReadonlyArray<ObjectifProposable>;
-  /** Objectifs actuels de la tâche (identifiants), pour les puces de rattachement. */
-  readonly rattaches: ReadonlyArray<IdObjectif>;
   readonly surRetour: () => void;
-  readonly surRenommer: (intitule: string) => void;
-  readonly surModifierDelai: (delai: DateCalendaire) => void;
-  readonly surModifierEstimation: (minutes: number) => void;
+  /** Les commandes rendent leur issue : l'éditeur reste ouvert et affiche le refus, sauf si elle est faite. */
+  readonly surRenommer: (intitule: string) => Promise<IssueTache>;
+  readonly surModifierDelai: (delai: DateCalendaire) => Promise<IssueTache>;
+  readonly surModifierEstimation: (minutes: number) => Promise<IssueTache>;
   readonly surBasculerObjectif: (id: IdObjectif) => void;
   readonly surSupprimer: () => void;
 };
@@ -71,11 +72,19 @@ const Menu = ({
   />
 );
 
+const BoutonEnregistrer = ({ surClic }: { readonly surClic: () => void }) => (
+  <button type="button" onClick={surClic}>
+    {LIBELLES_TACHES.enregistrer}
+  </button>
+);
+
 const EditeurDelai = ({
   valeur,
+  messages,
   surValider,
 }: {
   readonly valeur: string;
+  readonly messages: ReadonlyArray<MessageRefus>;
   readonly surValider: (delai: DateCalendaire) => void;
 }) => {
   const [texte, setTexte] = useState(valeur);
@@ -90,23 +99,23 @@ const EditeurDelai = ({
           setTexte(e.target.value);
         }}
       />
-      <button
-        type="button"
-        onClick={() => {
+      <BoutonEnregistrer
+        surClic={() => {
           if (delai.ok) surValider(delai.valeur);
         }}
-      >
-        {LIBELLES_TACHES.enregistrer}
-      </button>
+      />
+      <MessagesRefus messages={messages} />
     </>
   );
 };
 
 const EditeurIntitule = ({
   valeur,
+  messages,
   surValider,
 }: {
   readonly valeur: string;
+  readonly messages: ReadonlyArray<MessageRefus>;
   readonly surValider: (intitule: string) => void;
 }) => {
   const [texte, setTexte] = useState(valeur);
@@ -119,23 +128,23 @@ const EditeurIntitule = ({
           setTexte(e.target.value);
         }}
       />
-      <button
-        type="button"
-        onClick={() => {
+      <BoutonEnregistrer
+        surClic={() => {
           surValider(texte);
         }}
-      >
-        {LIBELLES_TACHES.enregistrer}
-      </button>
+      />
+      <MessagesRefus messages={messages} />
     </>
   );
 };
 
 const EditeurEstimation = ({
   depart,
+  messages,
   surValider,
 }: {
   readonly depart: number;
+  readonly messages: ReadonlyArray<MessageRefus>;
   readonly surValider: (minutes: number) => void;
 }) => {
   const [minutes, setMinutes] = useState<number | undefined>(depart);
@@ -146,14 +155,12 @@ const EditeurEstimation = ({
         valeur={minutes}
         surChanger={setMinutes}
       />
-      <button
-        type="button"
-        onClick={() => {
+      <BoutonEnregistrer
+        surClic={() => {
           if (minutes !== undefined) surValider(minutes);
         }}
-      >
-        {LIBELLES_TACHES.enregistrer}
-      </button>
+      />
+      <MessagesRefus messages={messages} />
     </>
   );
 };
@@ -179,11 +186,35 @@ const Barre = ({
   </IonHeader>
 );
 
+/** Éditeur ouvert et refus de sa dernière commande. */
+type EtatEditeur = {
+  readonly edition: Edition;
+  readonly messages: ReadonlyArray<MessageRefus>;
+  readonly editer: (edition: Edition) => void;
+  /** Applique l'issue d'une commande : l'éditeur se ferme si elle est faite, sinon il reste ouvert sur le refus. */
+  readonly appliquer: (issue: Promise<IssueTache>) => void;
+};
+
+const useEditeur = (): EtatEditeur => {
+  const [edition, setEdition] = useState<Edition>(undefined);
+  const [messages, setMessages] = useState<ReadonlyArray<MessageRefus>>([]);
+  const editer = (cible: Edition): void => {
+    setMessages([]);
+    setEdition(cible);
+  };
+  const appliquer = (commande: Promise<IssueTache>): void => {
+    void commande.then((issue) => {
+      if (issue.type === 'FAITE') editer(undefined);
+      else if (issue.type === 'REFUSEE') setMessages(issue.messages);
+    });
+  };
+  return { edition, messages, editer, appliquer };
+};
+
 type ProprietesChamp = {
   readonly modele: ModeleVueDetailTache;
-  readonly edition: Edition;
   readonly proprietes: ProprietesDetailTache;
-  readonly editer: (edition: Edition) => void;
+  readonly editeur: EtatEditeur;
 };
 
 /** Le bouton « Modifier » n'existe que si le modèle de vue offre l'action (jamais désactivé : le champ est verrouillé). */
@@ -199,37 +230,37 @@ const editerSi = (
       }
     : undefined;
 
-const ChampDelai = ({ modele, edition, proprietes, editer }: ProprietesChamp) => (
+const ChampDelai = ({ modele, proprietes, editeur }: ProprietesChamp) => (
   <ChampDetail
     nom={LIBELLES_TACHES.champDelai}
     valeur={modele.delai.libelle}
-    enEdition={edition === 'DELAI'}
-    surEditer={editerSi(modele, 'MODIFIER_DELAI', editer, 'DELAI')}
+    enEdition={editeur.edition === 'DELAI'}
+    surEditer={editerSi(modele, 'MODIFIER_DELAI', editeur.editer, 'DELAI')}
     editeur={
       <EditeurDelai
         valeur={modele.delai.date}
+        messages={editeur.messages}
         surValider={(delai) => {
-          proprietes.surModifierDelai(delai);
-          editer(undefined);
+          editeur.appliquer(proprietes.surModifierDelai(delai));
         }}
       />
     }
   />
 );
 
-const ChampEstimation = ({ modele, edition, proprietes, editer }: ProprietesChamp) =>
+const ChampEstimation = ({ modele, proprietes, editeur }: ProprietesChamp) =>
   modele.estimation.verrou === undefined ? (
     <ChampDetail
       nom={LIBELLES_TACHES.champEstimation}
       valeur={modele.estimation.libelle}
-      enEdition={edition === 'ESTIMATION'}
-      surEditer={editerSi(modele, 'MODIFIER_ESTIMATION', editer, 'ESTIMATION')}
+      enEdition={editeur.edition === 'ESTIMATION'}
+      surEditer={editerSi(modele, 'MODIFIER_ESTIMATION', editeur.editer, 'ESTIMATION')}
       editeur={
         <EditeurEstimation
           depart={modele.estimation.minutes}
+          messages={editeur.messages}
           surValider={(minutes) => {
-            proprietes.surModifierEstimation(minutes);
-            editer(undefined);
+            editeur.appliquer(proprietes.surModifierEstimation(minutes));
           }}
         />
       }
@@ -242,7 +273,7 @@ const ChampEstimation = ({ modele, edition, proprietes, editer }: ProprietesCham
     />
   );
 
-const ChampObjectifs = ({ modele, edition, proprietes, editer }: ProprietesChamp) => {
+const ChampObjectifs = ({ modele, proprietes, editeur }: ProprietesChamp) => {
   const valeur = modele.objectifs.intitules.join(', ') || LIBELLES_TACHES.aucunObjectif;
   if (modele.objectifs.verrou !== undefined) {
     return (
@@ -257,13 +288,13 @@ const ChampObjectifs = ({ modele, edition, proprietes, editer }: ProprietesChamp
     <ChampDetail
       nom={LIBELLES_TACHES.champObjectifs}
       valeur={valeur}
-      enEdition={edition === 'OBJECTIFS'}
-      surEditer={editerSi(modele, 'RATTACHER', editer, 'OBJECTIFS')}
+      enEdition={editeur.edition === 'OBJECTIFS'}
+      surEditer={editerSi(modele, 'RATTACHER', editeur.editer, 'OBJECTIFS')}
       editeur={
         <PucesObjectif
           nom={LIBELLES_TACHES.champObjectifs}
           objectifs={proprietes.objectifs}
-          selection={proprietes.rattaches}
+          selection={modele.objectifs.ids}
           surBasculer={proprietes.surBasculerObjectif}
         />
       }
@@ -286,38 +317,26 @@ const EnTete = ({ modele }: { readonly modele: ModeleVueDetailTache }) => (
   </>
 );
 
-const CorpsDetail = ({
-  proprietes,
-  edition,
-  editer,
-}: {
-  readonly proprietes: ProprietesDetailTache;
-  readonly edition: Edition;
-  readonly editer: (edition: Edition) => void;
-}) => {
-  const { modele } = proprietes;
-  const champ = { modele, edition, proprietes, editer };
-  return (
-    <IonContent>
-      <EnTete modele={modele} />
-      {edition === 'INTITULE' ? (
-        <EditeurIntitule
-          valeur={modele.intitule}
-          surValider={(intitule) => {
-            proprietes.surRenommer(intitule);
-            editer(undefined);
-          }}
-        />
-      ) : null}
-      <ChampDelai {...champ} />
-      <ChampEstimation {...champ} />
-      <ChampObjectifs {...champ} />
-    </IonContent>
-  );
-};
+const CorpsDetail = ({ modele, proprietes, editeur }: ProprietesChamp) => (
+  <IonContent>
+    <EnTete modele={modele} />
+    {editeur.edition === 'INTITULE' ? (
+      <EditeurIntitule
+        valeur={modele.intitule}
+        messages={editeur.messages}
+        surValider={(intitule) => {
+          editeur.appliquer(proprietes.surRenommer(intitule));
+        }}
+      />
+    ) : null}
+    <ChampDelai modele={modele} proprietes={proprietes} editeur={editeur} />
+    <ChampEstimation modele={modele} proprietes={proprietes} editeur={editeur} />
+    <ChampObjectifs modele={modele} proprietes={proprietes} editeur={editeur} />
+  </IonContent>
+);
 
 export const DetailTache = (proprietes: ProprietesDetailTache) => {
-  const [edition, setEdition] = useState<Edition>(undefined);
+  const editeur = useEditeur();
   const [menuOuvert, setMenuOuvert] = useState(false);
   return (
     <>
@@ -327,7 +346,7 @@ export const DetailTache = (proprietes: ProprietesDetailTache) => {
           setMenuOuvert(true);
         }}
       />
-      <CorpsDetail proprietes={proprietes} edition={edition} editer={setEdition} />
+      <CorpsDetail modele={proprietes.modele} proprietes={proprietes} editeur={editeur} />
       <Menu
         actions={proprietes.modele.actions}
         ouvert={menuOuvert}
@@ -336,7 +355,7 @@ export const DetailTache = (proprietes: ProprietesDetailTache) => {
         }}
         surAction={(action) => {
           if (action === 'SUPPRIMER') proprietes.surSupprimer();
-          else setEdition('INTITULE');
+          else editeur.editer('INTITULE');
         }}
       />
     </>

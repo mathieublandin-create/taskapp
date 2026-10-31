@@ -669,6 +669,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/messages-refus.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
     "src/objectifs-taches/presentation/ui/composants/puces-objectif.tsx": {
       "debut": 5,
       "fin": 5
@@ -710,6 +714,10 @@
       "fin": 2
     },
     "src/objectifs-taches/presentation/ui/ecrans/liste-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/etat/issues.ts": {
       "debut": 5,
       "fin": 5
     },

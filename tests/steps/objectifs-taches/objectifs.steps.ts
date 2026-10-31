@@ -636,3 +636,10 @@ etapeAssertion(
     for (const appareil of autres) assert.deepEqual(await hierarchieDe(appareil), reference);
   },
 );
+
+etapeAssertion(/^l'objectif "([^"]*)" n'existe pas$/, async ({ appareil }, intitule) => {
+  assert.ok(
+    !(await resumesDe(appareil)).some((o) => o.intitule === intitule),
+    `Un objectif « ${String(intitule)} » existe`,
+  );
+});

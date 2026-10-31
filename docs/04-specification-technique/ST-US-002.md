@@ -58,6 +58,7 @@
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (d) (guide v0.2.9 §5.8) : sections `SEC-TACHES-*`, sous-tâches sous leur tâche parente ; §4.5, §6.6, §12, UT-US-002-33 ; statut levé ; Q-US-002-4 posée |
 | 0.3 | 2026-10-22 | Anthony | E10 : réponse à Q-US-002-4 (option a) intégrée au §6.6 et à UT-US-002-35 ; précisions de signatures (§13) |
+| 0.4 | 2026-10-31 | Anthony | E13 du rang 5, action A-1 (`docs/ceremonies/revue-code-LOT-001-rang5.md`) : §4.5 `ModeleVueDetailTache.objectifs.ids` (RC-US-002-3), `LigneTache.attente` (renvoi ST-US-017 n° 17) et `incoherence`, `champDuMessage` (RC-US-002-8), `IssueCommande` (RC-US-002-4), propriétés de `DetailTache` (commandes rendant `Promise<IssueTache>`, RC-US-002-2), `SelecteurDuree.ref` / `invalide` (RC-US-002-1) ; §3 : n° 23 à 25. |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Saisie d'une tâche avec contrôles cumulables (`ERR-020` à `ERR-023`), rattachement n-n par `LienTacheObjectif` (H-1), modification de l'intitulé, du délai, de l'estimation (`ERR-033` pour une tâche parente) et des objectifs (`ERR-034` pour une sous-tâche), suppression avec confirmation, alertes de délai (`ALR-005`, RG-024), retard (RG-045), estimation en vigueur, liste « Tâches » avec filtres et tri du guide §5.7, détail d'une tâche, tâches dans le détail d'un objectif, journal RG-050. Livre aussi l'étape de contexte « les tâches suivantes : » (H-7), étendue aux rangs 6 à 8.
@@ -120,6 +121,9 @@
 | 20 | `src/composition/web.ts`, `src/objectifs-taches/index.ts` | Composition | Modifier | Enregistrement |
 | 21 | `tests/steps/objectifs-taches/taches.steps.ts`, `liste-taches.steps.ts`, `refus.steps.ts`, `historique.steps.ts` | Test | Créer / Modifier | Étapes du §12 |
 | 22 | `tests/support/construction-taches.ts` | Test | Créer | Construction H-7 des tableaux de contexte (§12.1) |
+| 23 | `src/objectifs-taches/presentation/ui/ecrans/espace-taches.tsx` ; `ui/etat/magasin-taches.ts` ; `ui/libelles-ui.ts` ; `src/composition/objectifs-taches.ts` (composition, complète le n° 20) | UI / Composition | Créer / Modifier | Espace « Tâches » (liste, détail, saisie rapide, confirmation, ERR-014) au-dessus du magasin Zustand ; libellés sans code au catalogue (DT-006) |
+| 24 | `src/objectifs-taches/presentation/ui/etat/issues.ts` | UI | Créer (E13, RC-US-002-4) | `IssueCommande`, `estRefusMetier`, `issueDe`, communs aux magasins des objectifs et des tâches |
+| 25 | `src/objectifs-taches/presentation/ui/composants/messages-refus.tsx` | UI | Créer (E13, RC-US-002-1, 2) | `MessagesRefus` : messages d'un refus sous leur champ (`role="alert"`, `data-message`), saisie rapide et éditeurs du détail |
 
 ## 4. Interfaces et signatures
 ### 4.1 Domaine
@@ -215,6 +219,8 @@ export type LigneTache = {
   readonly alertes: ReadonlyArray<{ readonly code: 'ALR-005'; readonly objectifs: ReadonlyArray<string>; readonly libelle: string }
                                | { readonly code: 'ALR-006'; readonly tache: string; readonly libelle: string }>;
   readonly compteurSousTaches?: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string }; // « 1/3 »
+  readonly incoherence?: { readonly code: 'MEN-INCOHERENCE' };                                   // ST-US-024
+  readonly attente?: { readonly code: 'MEN-ATTENTE'; readonly libelle: string; readonly nomAccessible: string }; // ST-US-017 n° 17 (mentionAttente)
   readonly nomAccessible: string;
 };
 export type ModeleVueListeTaches = {
@@ -231,13 +237,49 @@ export type ModeleVueDetailTache = {
   readonly delai: { readonly date: DateCalendaire; readonly libelle: string; readonly alertes: LigneTache['alertes'] }; // jamais de MEN-HEURE-PARIS sur un délai
   readonly estimation: { readonly minutes: number; readonly libelle: string; readonly verrou?: { readonly code: 'MEN-ESTIMATION-CALCULEE'; readonly libelle: string } };
   readonly estimationInitiale: { readonly minutes: number };
-  readonly objectifs: { readonly intitules: ReadonlyArray<string>; readonly verrou?: { readonly code: 'MEN-OBJECTIFS-HERITES'; readonly libelle: string } };
+  readonly objectifs: {
+    readonly intitules: ReadonlyArray<string>;
+    readonly ids: ReadonlyArray<IdObjectif>;   // RC-US-002-3 : même ordre que intitules (ResumeTache.objectifs) ; seule source du rattachement
+    readonly verrou?: { readonly code: 'MEN-OBJECTIFS-HERITES'; readonly libelle: string };
+  };
   readonly tacheParente?: { readonly id: IdTache; readonly intitule: string };
   readonly enRetard?: LigneTache['enRetard'];
   readonly actions: ReadonlyArray<ActionTache>;
   // ST-US-024 : sousTaches, compteur, infoFinImpossible ; ST-US-003 / 025 : dateFin, dateAbandon et mention MEN-HEURE-PARIS
 };
 export const construireDetailTache = (donnees: DetailTache, dependances: { readonly horloge: Horloge }) => ModeleVueDetailTache;
+
+// messages-de-refus.ts (RC-US-002-8) : champ désigné par un message de saisie ; ordre de focus intitulé, délai, estimation
+export type ChampSaisie = 'intitule' | 'delai' | 'estimation';
+export const champDuMessage = (code: CodeCatalogue) => ChampSaisie | undefined;   // ERR-020 intitule, ERR-021 delai, ERR-022/023 estimation, sinon undefined
+
+// ui/etat/issues.ts (RC-US-002-4) : commun aux deux magasins ; IssueTache et IssueSaisie en sont des spécialisations (FAITE porte l'id créé)
+export type IssueCommande =
+  | { readonly type: 'FAITE' }
+  | { readonly type: 'REFUSEE'; readonly messages: ReadonlyArray<MessageRefus> }
+  | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' };
+export const estRefusMetier = (erreur: RefusMetier | ErreurDepotLocal) => erreur is RefusMetier;
+export const issueDe = (r: Resultat<unknown, RefusMetier | ErreurDepotLocal>) => IssueCommande;
+
+// ui/ecrans/detail-tache.tsx (RC-US-002-2, RC-US-002-3) : les objectifs rattachés se lisent dans modele.objectifs.ids
+export type ProprietesDetailTache = {
+  readonly modele: ModeleVueDetailTache;
+  readonly objectifs: ReadonlyArray<ObjectifProposable>;
+  readonly surRetour: () => void;
+  readonly surRenommer: (intitule: string) => Promise<IssueTache>;          // l'éditeur se ferme sur FAITE ;
+  readonly surModifierDelai: (delai: DateCalendaire) => Promise<IssueTache>; // sur REFUSEE il reste ouvert et affiche
+  readonly surModifierEstimation: (minutes: number) => Promise<IssueTache>;  // les messages (MessagesRefus) sous le champ ;
+  readonly surBasculerObjectif: (id: IdObjectif) => void;                    // ENREGISTREMENT_IMPOSSIBLE : ERR-014 de l'espace
+  readonly surSupprimer: () => void;
+};
+
+// ui/composants/selecteur-duree.tsx (RC-US-002-1) : ref sur l'élément role="spinbutton" (focus de la première erreur) ;
+// invalide → aria-invalid="true". Saisie rapide : les IonInput en erreur reçoivent la classe « ion-invalid ion-touched »,
+// qui fait poser aria-invalid="true" par Ionic sur l'input natif.
+export type ProprietesSelecteurDuree = {
+  readonly nom: string; readonly valeur: number | undefined; readonly surChanger: (minutes: number) => void;
+  readonly identifiant?: string; readonly invalide?: boolean; readonly ref?: Ref<HTMLDivElement> | undefined;
+};
 export type ModeleVueFormulaireTache = {
   readonly delaiPreselectionne: undefined; readonly estimationPreselectionnee: undefined;  // CA-2, Q-ERG-03
   readonly objectifsPreRemplis: ReadonlyArray<IdObjectif>;                              // objectif du détail d'où l'on vient, sinon vide
