@@ -5,3 +5,8 @@
 id = "GHSA-gcqx-w48m-w2h4"
 ignoreUntil = 2027-01-31T00:00:00Z
 reason = "deepmerge 4.3.1 : dépendance de développement uniquement (vite-plugin-pwa > workbox-build > @rollup/plugin-node-resolve), exécutée au build sur une configuration du dépôt, jamais livrée dans l'application. Aucune version corrigée publiée au 2026-10-28. Exception posée par Jarvis, à valider par Anthony en E13 (rang 0) ; suivie en DT."
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-01-31T00:00:00Z
+reason = "minimatch 3.1.5 : dépendance de développement uniquement (eslint-plugin-jsx-a11y, license-checker > read-installed > glob 7), jamais livrée dans l'application. Aucune version 3.x corrigée ; un override vers la version 11 casse l'import par défaut d'eslint-plugin-jsx-a11y. Les versions 5 et 10 de minimatch sont corrigées par pnpm.overrides. Exception décidée par le commanditaire le 2026-10-31, à valider par Anthony en E13 ; à lever dès qu'un de ces outils abandonne minimatch 3."
