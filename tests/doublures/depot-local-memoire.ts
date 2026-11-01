@@ -13,11 +13,15 @@ import {
   type PlanSynchronisation,
 } from '@src/synchronisation/domaine/meta-synchronisation';
 import type { PlanEcriture } from '@src/synchronisation/domaine/planifier-ecritures';
-import { SIGNALEMENTS_VIDES, type Signalements } from '@src/synchronisation/domaine/signalements';
+import {
+  SIGNALEMENTS_VIDES,
+  type AjoutsSignalements,
+  type Signalements,
+} from '@src/synchronisation/domaine/signalements';
 
 /**
  * Doublure en mémoire du port DepotLocal (ST-US-017 §12.3 ; condition de Starck sur Q-ST017-STA-1).
- * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 11). Plusieurs instances
+ * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 13). Plusieurs instances
  * partagent un même `StockageDepotEnMemoire` (deux onglets, ou un redémarrage). Chaque `appliquer` et chaque
  * `appliquerSynchronisation` est atomique : le calcul reçoit l'état (et la méta) du stockage, puis le plan et
  * la méta sont recopiés ensemble, ou rien si le calcul échoue ou lève. Les observateurs de toutes les
@@ -28,22 +32,46 @@ import { SIGNALEMENTS_VIDES, type Signalements } from '@src/synchronisation/doma
 export class StockageDepotEnMemoire {
   etat: EtatLocal;
   meta: MetaSynchronisation = META_INITIALE;
+  /** ST-US-017 v0.5 §4.6 : valeurs écartées et lectures (tables `valeursEcartees` et `lectures` de Dexie). */
+  signalements: Signalements = SIGNALEMENTS_VIDES;
   readonly observateurs = new Set<() => void>();
 
   constructor(readonly appareilId: IdAppareil) {
     this.etat = ETAT_LOCAL_VIDE(appareilId);
   }
 
-  /** Écrit le plan et la méta ensemble ; le plan vide ne change ni la version ni n'avertit. */
-  valider(plan: PlanEcriture, meta: Partial<MetaSynchronisation>): void {
+  /**
+   * Écrit le plan, la méta et les signalements ensemble ; plan et signalements vides ne changent pas la version et
+   * n'avertissent pas.
+   */
+  valider(
+    plan: PlanEcriture,
+    meta: Partial<MetaSynchronisation>,
+    ajouts: AjoutsSignalements = AUCUN_AJOUT,
+  ): void {
     this.meta = { ...this.meta, ...meta };
-    if (planEstVide(plan)) return;
+    if (planEstVide(plan) && ajouts.valeursEcartees.length + ajouts.lectures.length === 0) return;
     this.etat = appliquerPlan(this.etat, plan);
+    this.signalements = {
+      valeursEcartees: remplacerParIdentifiant(
+        this.signalements.valeursEcartees,
+        ajouts.valeursEcartees,
+      ),
+      lectures: remplacerParIdentifiant(this.signalements.lectures, ajouts.lectures),
+    };
     this.observateurs.forEach((rappel) => {
       rappel();
     });
   }
 }
+
+const AUCUN_AJOUT: AjoutsSignalements = { valeursEcartees: [], lectures: [] };
+
+/** Ajout ou remplacement par identifiant (comme `bulkPut` sur une table de clé `id`). */
+const remplacerParIdentifiant = <K, T extends { readonly id: K }>(
+  connues: ReadonlyMap<K, T>,
+  ajouts: ReadonlyArray<T>,
+): ReadonlyMap<K, T> => new Map([...connues, ...ajouts.map((a) => [a.id, a] as const)]);
 
 const planEstVide = (plan: PlanEcriture): boolean =>
   plan.registresEcrits.length === 0 &&
@@ -108,9 +136,8 @@ export class DepotLocalEnMemoire implements DepotLocal {
     return Promise.resolve(succes(this.stockage.meta));
   }
 
-  /** Squelette inerte E10 du rang 9 (ST-US-017 v0.5 §13.4) : signalements à stocker (tranche B2, CT-DEPOT-12, 13). */
   lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
-    return Promise.resolve(succes(SIGNALEMENTS_VIDES));
+    return Promise.resolve(succes(this.stockage.signalements));
   }
 
   appliquerSynchronisation(
@@ -121,8 +148,12 @@ export class DepotLocalEnMemoire implements DepotLocal {
     ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     return Promise.resolve().then(() => {
-      const { plan, meta } = calcul(this.stockage.etat, this.stockage.meta, SIGNALEMENTS_VIDES);
-      this.stockage.valider(plan, meta);
+      const { plan, meta, signalements } = calcul(
+        this.stockage.etat,
+        this.stockage.meta,
+        this.stockage.signalements,
+      );
+      this.stockage.valider(plan, meta, signalements);
       return succes(undefined);
     });
   }

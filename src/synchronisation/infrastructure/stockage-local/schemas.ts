@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assertNever } from '../../../commun/domaine/assert-never';
 import { Duree } from '../../../commun/domaine/duree';
 import { IdAppareil, IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
@@ -26,6 +27,8 @@ import {
   type TypeElement,
   type ValeursParChamp,
 } from '../../domaine/information';
+import type { Lecture } from '../../domaine/lectures';
+import type { IdValeurEcartee, ValeurEcartee } from '../../domaine/valeurs-ecartees';
 
 // Lignes IndexedDB de DepotLocalDexie (ST-socle-ecriture.md §5.1) : encodage du domaine vers des valeurs
 // structurées, et relecture validée par Zod (conventions.md §6.2, « unknown aux frontières »).
@@ -143,8 +146,7 @@ const schemaDeValeur = (type: TypeElement, champ: string): z.ZodType | undefined
 
 const typeElement = z.enum(['OBJECTIF', 'TACHE', 'LIEN_TACHE_OBJECTIF']);
 
-const ligneRegistre = z.object({
-  cle: z.string(),
+const colonnesRegistre = z.object({
   type: typeElement,
   id: z.string(),
   champ: z.string(),
@@ -152,6 +154,8 @@ const ligneRegistre = z.object({
   hlc: hlcStocke,
   contexte: contexteStocke,
 });
+
+const ligneRegistre = colonnesRegistre.extend({ cle: z.string() });
 
 const ligneEnAttente = z.object({
   cle: z.string(),
@@ -300,14 +304,19 @@ const encoderValeur = (registre: RegistreQuelconque): unknown => {
   }
 };
 
-export const encoderRegistre = (registre: RegistreQuelconque): object => ({
-  cle: cleEnTexte(registre.cle),
+/** Colonnes d'un registre (sans la clé texte) : ligne de `registres`, ou registre d'une valeur écartée (§5.1 v0.5). */
+const encoderColonnesRegistre = (registre: RegistreQuelconque): object => ({
   type: registre.cle.type,
   id: registre.cle.id,
   champ: registre.cle.champ,
   valeur: encoderValeur(registre),
   hlc: encoderHlc(registre.ecriture.hlc),
   contexte: encoderContexte(registre.ecriture.contexte),
+});
+
+export const encoderRegistre = (registre: RegistreQuelconque): object => ({
+  cle: cleEnTexte(registre.cle),
+  ...encoderColonnesRegistre(registre),
 });
 
 export const encoderEnAttente = (entree: {
@@ -374,27 +383,35 @@ const assemblerRegistre = (
   contexte: ContexteCausal,
 ): RegistreQuelconque => ({ cle, ecriture: { valeur, hlc, contexte } }) as RegistreQuelconque;
 
+type Colonnes = { type: TypeElement; id: string; champ: string };
+
+/** Clé désignée par les colonnes `type`, `id`, `champ` (champ connu, identifiant bien formé) ; undefined sinon. */
+const lireCleDesColonnes = (colonnes: Colonnes): CleInformation | undefined => {
+  const id = lireIdElement(colonnes.type, colonnes.id);
+  if (id === undefined || schemaDeValeur(colonnes.type, colonnes.champ) === undefined) {
+    return undefined;
+  }
+  return { type: colonnes.type, id, champ: colonnes.champ } as CleInformation;
+};
+
 /** Clé relue, cohérente avec ses colonnes (`type/id/champ`) et désignant un champ connu ; undefined sinon. */
-const lireCle = (ligne: {
-  cle: string;
-  type: TypeElement;
-  id: string;
-  champ: string;
-}): CleInformation | undefined => {
-  const id = lireIdElement(ligne.type, ligne.id);
-  if (id === undefined || schemaDeValeur(ligne.type, ligne.champ) === undefined) return undefined;
-  if (ligne.cle !== `${ligne.type}/${ligne.id}/${ligne.champ}`) return undefined;
-  return { type: ligne.type, id, champ: ligne.champ } as CleInformation;
+const lireCle = (ligne: Colonnes & { cle: string }): CleInformation | undefined =>
+  ligne.cle === `${ligne.type}/${ligne.id}/${ligne.champ}` ? lireCleDesColonnes(ligne) : undefined;
+
+/** Registre relu de ses colonnes, la clé étant déjà lue ; undefined si la valeur est invalide. */
+const lireRegistreDesColonnes = (
+  cle: CleInformation | undefined,
+  colonnes: z.output<typeof colonnesRegistre>,
+): RegistreQuelconque | undefined => {
+  const valeur = schemaDeValeur(colonnes.type, colonnes.champ)?.safeParse(colonnes.valeur);
+  if (cle === undefined || valeur?.success !== true) return undefined;
+  return assemblerRegistre(cle, valeur.data, colonnes.hlc, colonnes.contexte);
 };
 
 /** Relit une ligne de la table `registres` ; undefined si elle est invalide. */
 export const decoderRegistre = (ligne: unknown): RegistreQuelconque | undefined => {
   const lue = ligneRegistre.safeParse(ligne);
-  if (!lue.success) return undefined;
-  const cle = lireCle(lue.data);
-  const valeur = schemaDeValeur(lue.data.type, lue.data.champ)?.safeParse(lue.data.valeur);
-  if (cle === undefined || valeur?.success !== true) return undefined;
-  return assemblerRegistre(cle, valeur.data, lue.data.hlc, lue.data.contexte);
+  return lue.success ? lireRegistreDesColonnes(lireCle(lue.data), lue.data) : undefined;
 };
 
 /** Relit une ligne de la table `journal` ; undefined si elle est invalide. */
@@ -416,6 +433,105 @@ export const decoderEnAttente = (
   const { premiereEcriture, derniereHlc } = lue.data;
   return { cle, entree: { premiereEcriture, derniereHlc } };
 };
+
+// --- Tables valeursEcartees et lectures (ST-US-017 v0.5 §5.1, base version 3) -------------------
+// Forme du fichier Drive (§5.2) sans table d'appareils : `appareil` des HLC en clair, comme dans `registres`.
+
+/** base32hex minuscule, 52 caractères (§6.6 n° 1). */
+const idValeurEcartee = z
+  .string()
+  .regex(/^[0-9a-v]{52}$/)
+  .transform((texte) => texte as IdValeurEcartee);
+
+const ligneAvecGagnante = <M extends 'CONFLIT' | 'PLACEMENT_ANNULE'>(motif: M) =>
+  z.object({
+    id: idValeurEcartee,
+    motif: z.literal(motif),
+    ecartee: colonnesRegistre,
+    gagnante: colonnesRegistre,
+  });
+
+const ligneValeurEcartee = z.discriminatedUnion('motif', [
+  ligneAvecGagnante('CONFLIT'),
+  ligneAvecGagnante('PLACEMENT_ANNULE'),
+  z.object({
+    id: idValeurEcartee,
+    motif: z.literal('SUPPRESSION'),
+    ecartee: colonnesRegistre,
+    gagnante: colonnesRegistre,
+    intituleElement: z.string().optional(),
+  }),
+  z.object({
+    id: idValeurEcartee,
+    motif: z.literal('DONNEES_EFFACEES'),
+    ecartee: colonnesRegistre,
+    generation: hlcStocke,
+  }),
+]);
+
+const ligneLecture = z.object({ id: idValeurEcartee, hlc: hlcStocke });
+
+export const encoderValeurEcartee = (valeur: ValeurEcartee): object => {
+  const commun = {
+    id: valeur.id,
+    motif: valeur.motif,
+    ecartee: encoderColonnesRegistre(valeur.ecartee),
+  };
+  switch (valeur.motif) {
+    case 'CONFLIT':
+    case 'PLACEMENT_ANNULE':
+      return { ...commun, gagnante: encoderColonnesRegistre(valeur.gagnante) };
+    case 'SUPPRESSION':
+      return {
+        ...commun,
+        gagnante: encoderColonnesRegistre(valeur.gagnante),
+        ...(valeur.intituleElement === undefined
+          ? {}
+          : { intituleElement: valeur.intituleElement }),
+      };
+    case 'DONNEES_EFFACEES':
+      return { ...commun, generation: encoderHlc(valeur.generation) };
+    default:
+      return assertNever(valeur);
+  }
+};
+
+export const encoderLecture = (lecture: Lecture): object => ({
+  id: lecture.id,
+  hlc: encoderHlc(lecture.hlc),
+});
+
+const lireRegistreSignale = (
+  colonnes: z.output<typeof colonnesRegistre>,
+): RegistreQuelconque | undefined =>
+  lireRegistreDesColonnes(lireCleDesColonnes(colonnes), colonnes);
+
+/** Relit une ligne de la table `valeursEcartees` ; undefined si elle est invalide (motif inconnu compris). */
+export const decoderValeurEcartee = (ligne: unknown): ValeurEcartee | undefined => {
+  const lue = ligneValeurEcartee.safeParse(ligne);
+  if (!lue.success) return undefined;
+  const v = lue.data;
+  const ecartee = lireRegistreSignale(v.ecartee);
+  if (ecartee === undefined) return undefined;
+  if (v.motif === 'DONNEES_EFFACEES') {
+    return { id: v.id, motif: v.motif, ecartee, generation: v.generation };
+  }
+  const gagnante = lireRegistreSignale(v.gagnante);
+  if (gagnante === undefined) return undefined;
+  if (v.motif !== 'SUPPRESSION') return { id: v.id, motif: v.motif, ecartee, gagnante };
+  const { intituleElement } = v;
+  return {
+    id: v.id,
+    motif: v.motif,
+    ecartee,
+    gagnante,
+    ...(intituleElement === undefined ? {} : { intituleElement }),
+  };
+};
+
+/** Relit une ligne de la table `lectures` ; undefined si elle est invalide. */
+export const decoderLecture = (ligne: unknown): Lecture | undefined =>
+  ligneLecture.safeParse(ligne).data;
 
 // --- Table meta ---------------------------------------------------------------------------------
 
