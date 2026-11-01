@@ -151,11 +151,11 @@
     },
     "src/composition/application.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 9
     },
     "src/composition/controleur-interface.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 9
     },
     "src/composition/objectifs-taches.ts": {
       "debut": 2,
@@ -383,7 +383,7 @@
     },
     "src/main.tsx": {
       "debut": 0,
-      "fin": 1
+      "fin": 9
     },
     "src/objectifs-taches/application/cas-usage/abandonner-tache.ts": {
       "debut": 8,
@@ -599,7 +599,7 @@
     },
     "src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts": {
       "debut": 6,
-      "fin": 8
+      "fin": 9
     },
     "src/objectifs-taches/presentation/modeles-de-vue/formulaire-sous-tache.ts": {
       "debut": 6,

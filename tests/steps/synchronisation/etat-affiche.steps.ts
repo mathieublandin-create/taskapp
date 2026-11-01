@@ -105,6 +105,21 @@ etapeAssertion(
   },
 );
 
+// ST-US-017 v0.5 §12.5 n° 7 : le décompte des informations à lire vaut dans tous les états (glossaire §6).
+etapeAssertion(
+  /^l'indicateur de synchronisation signale (\d+) informations? à lire$/,
+  async ({ appareil }, n) => {
+    assert.equal((await indicateurDe(appareil))?.aLire, Number(n));
+  },
+);
+
+etapeAssertion(
+  /^l'indicateur de synchronisation ne signale aucune information à lire$/,
+  async ({ appareil }) => {
+    assert.equal((await indicateurDe(appareil))?.aLire, undefined);
+  },
+);
+
 // ---------------------------------------------------------------- Bandeau (n° 40)
 
 etapeAssertion(

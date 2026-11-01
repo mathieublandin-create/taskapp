@@ -2,10 +2,13 @@
  * Étapes des appareils du banc (glossaire d'étapes §1 et §2 ; ST-socle-ecriture.md §12 n° 4 ; ST-US-022 §12.1
  * n° 3 à 6).
  */
+import assert from 'node:assert/strict';
 import { Given, When } from '@cucumber/cucumber';
 import type { NomAppareil } from '../../support/banc/appareil-simule';
 import { convertirAppareil, convertirFuseau } from '../../support/conversions';
+import { racineDe } from '../../support/compte/etapes-compte';
 import type { MondeDoneJuan } from '../../support/monde';
+import { etapeAssertion } from '../../support/prefixes';
 
 Given(
   "(que )l'application n'a jamais été utilisée sur le {appareil}",
@@ -119,3 +122,13 @@ When(
     this.banc.appareil(nomAppareil).redemarrer();
   },
 );
+
+// ST-US-017 v0.5 §12.5 n° 8 (sans écriture : S15 vérifie ensuite `SYN-INFO`) : l'application est affichée, sans
+// confirmation ni carte bloquante, et aucune saisie n'est refusée.
+etapeAssertion(/^toutes les fonctions restent utilisables$/, async ({ appareil }) => {
+  assert.equal((await racineDe(appareil)).ecran, 'APPLICATION');
+  const vue = await appareil.vueAffichee();
+  assert.equal(vue.confirmation, undefined, 'Une confirmation est ouverte');
+  assert.equal(vue.suppressionBloquee, undefined, 'Une carte bloquante est ouverte');
+  assert.notEqual(vue.toast, 'TST-SAISIE-A-TERMINER', 'Une saisie est refusée');
+});
