@@ -12,7 +12,7 @@
 | Maquettes | ECR-008 (A, C, D), ECR-003 (E) ; guide v0.2.8 §4.28, §6.6.8, §6.6.9 |
 | Q-US traitées | Q-US-023-1, Q-US-023-2 (E8) ; Q-US-001-1 (DEC-030) ; Q-US-001-6 (c) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-001 (rang 2), ST-US-017 incrément 1 (rang 3) |
-| Version | 0.3 |
+| Version | 0.4 |
 | Statut | **Prête pour E10** (Q-US-001-6 (c) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-023-sous-objectifs` |
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.4 | 2026-11-01 | Anthony | E13 de DT-015, DT-017, DT-019 (`docs/ceremonies/revue-code-LOT-001-catalogue-dt.md`, PR #27 ; guide v0.2.21 §6.6.4, §6.6.9, §6.6.13) : §4.2 `ConsulterSelecteurParent` rend `jour` et, par candidat, `autresSousObjectifs` (RC-CAT-2) ; §4.5 textes du sélecteur tirés des codes `SEL-PARENT-*` (DT-015 remboursée), `OptionParent.indications` (`SEL-PARENT-DELAI`, `SEL-PARENT-EFFECTIF`), carte `ALR-007` variante `detail` du détail d'un sous-objectif (`alerteDelai.carte`, action « Changer le délai », `surChangerDelai` obligatoire, RC-CAT-3) ; §13 tests ajoutés à l'E12 (UT-COMP-US-023-11 à 14) |
 | 0.3 | 2026-10-30 | Anthony | E13 du rang 4 (`docs/ceremonies/revue-code-LOT-001-rang4.md`) : §6.4, emplacement des actions dans l'écran ; §4.5, libellés du sélecteur sans code au catalogue (DT-015) ; §3 n° 14, `selecteur-parent.tsx` inscrit à `rangs-fichiers.json` (4 / 4) ; §14, UT-COMP-US-023-01 à 10 |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (guide v0.2.9 §5.8) : ordre de référence, sections `SEC-SOUS-OBJECTIFS` et `SEC-OBJ-ATTEINTS` ; §6.5, §6.6, §12, UT-US-023-21 ; statut levé |
 
@@ -104,7 +105,9 @@ export const actionsObjectif = (vue: VueMetier, id: IdObjectif): ReadonlyArray<A
 | `CreerSousObjectif.executer` | `{ parentId; intitule; description?; delai? }` | `IdObjectif` | `SaisieInvalide`, `ElementIntrouvable`, `ActionNonDisponible('CREER_SOUS_OBJECTIF')` | `CREER_OBJECTIF` avec `parentId` + `CREATION` `apres { parentId, delai? }` |
 | `PlacerObjectif.executer` | `{ objectifId; parentId }` | `void` | `ElementIntrouvable`, `PlacementSousLuiMeme`, `DeuxiemeNiveau` | `ECRIRE_OBJECTIF parent` + `CHANGEMENT_PARENT`, ou rien (sans effet) |
 | `RendreObjectifPrincipal.executer` | `{ objectifId }` | `void` | `ElementIntrouvable` | idem avec `parentId` absent |
-| `ConsulterSelecteurParent.executer` | `{ objectifId }` | `{ objectif: ResumeObjectif; candidats: ReadonlyArray<ResumeObjectif>; nombreSousObjectifs: number }` | `ElementIntrouvable` | Aucun |
+| `ConsulterSelecteurParent.executer` | `{ objectifId }` | `SelecteurParent` = `{ objectif: ResumeObjectif; candidats: ReadonlyArray<CandidatParent>; nombreSousObjectifs: number; jour: DateCalendaire }` (v0.4) | `ElementIntrouvable` | Aucun |
+
+**(v0.4)** `CandidatParent = ResumeObjectif & { readonly autresSousObjectifs: number }` : nombre de sous-objectifs du candidat (atteints compris) autres que l'objectif à placer, calculé par la requête avec `sousObjectifsDe` (guide §6.6.4, `SEL-PARENT-EFFECTIF`). Le nombre est porté par chaque candidat, et non par une table séparée : le modèle de vue n'a aucun repli à prévoir (RC-CAT-2). `jour` est le jour de Paris de la même lecture que les résumés ; il sert au format des délais des candidats (`SEL-PARENT-DELAI`).
 
 `ResumeObjectif` (ajouts) : `alerteDelai?: AlerteDelaiObjectif` ; `parentIntitule?: string`. `DetailObjectif.actions` = `actionsObjectif`.
 
@@ -115,25 +118,37 @@ Sans objet.
 ```ts
 // LigneObjectif (ajout)
 readonly alerteDelai?: { readonly code: 'ALR-007'; readonly parent: string; readonly libelle: string };   // « {date} · après « {parent} » »
-// selecteur-parent.ts — ECR-008 C, D ; guide §4.28
+// ModeleVueDetailObjectif (v0.4, guide §6.6.9, ECR-003 E) : la carte de la variante `detail`, entièrement tirée du catalogue
+readonly alerteDelai?: NonNullable<LigneObjectif['alerteDelai']> & {
+  readonly carte: { readonly titre: string; readonly texte: string; readonly action: string };
+};  // libelle('ALR-007', { variante: 'detail', date, parent, dateParent }, 'libelle' | 'texte' | 'action') ; dateParent = délai du parent formaté
+// detail-objectif.tsx : carte <section role="status" data-code="ALR-007" data-variante="detail"> sous l'en-tête, non fermable ;
+// bouton secondaire « Changer le délai » → `surChangerDelai: () => void` (propriété OBLIGATOIRE de ProprietesDetailObjectif, v0.4, RC-CAT-3),
+// liée par espace-objectifs.tsx à geste.ouvrirFeuille('DELAI') (même feuille que l'entrée MODIFIER_DELAI du menu « … »).
+// selecteur-parent.ts — ECR-008 C, D ; guide §4.28, §6.6.4 (codes SEL-PARENT-*, v0.4)
+export type IndicationCandidat = { readonly code: 'SEL-PARENT-DELAI' | 'SEL-PARENT-EFFECTIF'; readonly libelle: string };
 export type OptionParent = {
   readonly cible: { readonly type: 'AUCUN' } | { readonly type: 'OBJECTIF'; readonly id: IdObjectif };
-  readonly intitule: string;                           // « Aucun, objectif principal » pour AUCUN (constante nommée tant que le guide §6.6 n'a pas de code : DT-015)
+  readonly intitule: string;                           // libelle('SEL-PARENT-AUCUN') pour AUCUN (v0.4)
   readonly disponible: boolean; readonly raison?: MessageRefus;
+  readonly indications: ReadonlyArray<IndicationCandidat>;  // délai (si le candidat en a un) puis effectif (si autresSousObjectifs ≥ 1, n = autres + 1) ;
+                                                            // vide pour AUCUN et pour un candidat indisponible (la raison ERR-031 ou ERR-030 les remplace)
 };
+// selecteur-parent.tsx : indications sur une ligne, séparées par « · », liées à la radio par aria-describedby ;
+// légende du groupe et bouton : libelle('SEL-PARENT-MENU'), libelle('SEL-PARENT-VALIDER') ; entrée du menu « … » : libelle('SEL-PARENT-MENU').
 export type ModeleVueSelecteurParent = {
-  readonly titre: string;                              // « Placer « {élément} » sous… »
+  readonly titre: string;                              // libelle('SEL-PARENT-TITRE', { element }) (v0.4)
   readonly messageBloquant?: MessageRefus;             // ERR-030 variante objectif-a-des-sous-objectifs, affiché avant tout choix
   readonly options: ReadonlyArray<OptionParent>;       // AUCUN, puis les objectifs principaux (y compris l'objectif lui-même, indisponible, raison ERR-031)
 };
-export const construireSelecteurParent = (donnees: { readonly objectif: ResumeObjectif; readonly candidats: ReadonlyArray<ResumeObjectif>; readonly nombreSousObjectifs: number }) => ModeleVueSelecteurParent;
+export const construireSelecteurParent = (donnees: SelecteurParent) => ModeleVueSelecteurParent;   // v0.4
 ```
 | Écran | Maquette | Codes | Actions → cas d'usage | États |
 |---|---|---|---|---|
 | Liste | ECR-008 A | `ALR-007` sur la ligne ; sous-objectif en retrait, nom accessible « sous-objectif de … » | — | — |
 | Sélecteur de parent | ECR-008 C, D | `ERR-031` (option indisponible), `ERR-030` (boîte avec « Compris », `data-variante`) | option → `PlacerObjectif` ou `RendreObjectifPrincipal` | refus |
 | Détail d'un objectif principal | ECR-003 D | section « Sous-objectifs » + « Ajouter » | « Ajouter » → feuille de création avec parent → `CreerSousObjectif` | — |
-| Détail d'un sous-objectif | ECR-003 E | « Sous-objectif de « X » », carte d'alerte `ALR-007` ; **pas** d'action « Ajouter un sous-objectif » (absente, non désactivée) | « Modifier le délai » | vide `EVD-OBJECTIF-SANS-TACHE` |
+| Détail d'un sous-objectif | ECR-003 E | « Sous-objectif de « X » », carte d'alerte `ALR-007` variante `detail` (v0.4) ; **pas** d'action « Ajouter un sous-objectif » (absente, non désactivée) | « Changer le délai » (action de la carte, guide v0.2.21 §6.6.9) → feuille `DELAI` | vide `EVD-OBJECTIF-SANS-TACHE` |
 
 ## 5. Modèle de données et migrations
 Registre `parent` de l'objectif (`PlacementObjectif`, socle §4.1.3) : `parentId`, `origine`, `hlcOrigine`. Aucune migration. Contenu logique du Drive inchangé (**sous réserve R1**).
@@ -247,6 +262,8 @@ Contrôle de placement en O(nombre d'objectifs).
 | UT-US-023-19 | `…/application/creer-sous-objectif.test.ts` | `CreerSousObjectif` | sous-objectif lu avec parent effectif ; « à décliner en tâches » | CA-1 | NI |
 | UT-US-023-20 | `…/presentation/detail-objectif.test.ts` | `construireDetailObjectif` | sous-objectif : niveau avec parent nommé ; principal : lignes des sous-objectifs | CA-2 | NI |
 | UT-US-023-21 | `…/presentation/detail-objectif.test.ts`, `liste-objectifs.test.ts` | `construireDetailObjectif`, `construireListeObjectifs` | sous-objectifs dans `SEC-SOUS-OBJECTIFS` et sous leur parent dans la liste, triés par l'ordre de référence ; un sous-objectif atteint reste à sa place sous un parent en cours ; les sous-objectifs d'un principal atteint sont dans `SEC-OBJ-ATTEINTS` | Guide v0.2.9 §5.8 c (Q-US-001-6) | NI |
+
+**Tests ajoutés par Benjamin à l'E12 de DT-015 (v0.4, acceptés en E13, `revue-code-LOT-001-catalogue-dt.md`)** : UT-COMP-US-023-11 (`selecteur-parent.test.ts` : titre, option AUCUN, indications délai puis effectif), UT-COMP-US-023-12 (`ecrans-objectifs.test.tsx` : carte `ALR-007` variante `detail`, `role="status"`, action), UT-COMP-US-023-13 (`sous-objectifs-ui.test.tsx` : indications lues par `aria-describedby`), UT-COMP-US-023-14 (`sous-objectifs-ui.test.tsx` : « Changer le délai » ouvre la feuille du délai) ; UT-COMP-US-001-17 complété par la carte ; UT-COMP-US-001-49 reçoit `delaiParent` (donnée exigée par `{dateParent}`, assertions inchangées). Les entrées de `construireSelecteurParent` (UT-US-023-15, UT-COMP-US-023-01) suivent la signature v0.4 : adaptation de type, assertions inchangées.
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-023`.
 

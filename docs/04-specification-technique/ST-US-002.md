@@ -47,7 +47,7 @@
 | Maquettes | ECR-002 (L1 à L5), ECR-006 (guide §4.3), ECR-007 (A, B, C, E) ; guide v0.2.8 §5.7 |
 | Q-US traitées | Q-US-002-1, Q-US-002-2, Q-US-002-3, Q-US-001-2, Q-US-001-3, Q-US-024-1 (E8) ; Q-US-001-6 (d) (réponse de Steeve, guide v0.2.9 §5.8) ; Q-US-002-4 (réponse de Steeve, option a, guide v0.2.10 §5.8 d) |
 | Prérequis | ST-US-001 (rang 2), ST-US-023 (rang 4) |
-| Version | 0.1 |
+| Version | 0.5 |
 | Statut | **Prête pour E10** ; tests du §13 en phase rouge (E10) |
 | Auteur | Anthony |
 | Branche Git | `us/US-002-taches` |
@@ -59,6 +59,7 @@
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (d) (guide v0.2.9 §5.8) : sections `SEC-TACHES-*`, sous-tâches sous leur tâche parente ; §4.5, §6.6, §12, UT-US-002-33 ; statut levé ; Q-US-002-4 posée |
 | 0.3 | 2026-10-22 | Anthony | E10 : réponse à Q-US-002-4 (option a) intégrée au §6.6 et à UT-US-002-35 ; précisions de signatures (§13) |
 | 0.4 | 2026-10-31 | Anthony | E13 du rang 5, action A-1 (`docs/ceremonies/revue-code-LOT-001-rang5.md`) : §4.5 `ModeleVueDetailTache.objectifs.ids` (RC-US-002-3), `LigneTache.attente` (renvoi ST-US-017 n° 17) et `incoherence`, `champDuMessage` (RC-US-002-8), `IssueCommande` (RC-US-002-4), propriétés de `DetailTache` (commandes rendant `Promise<IssueTache>`, RC-US-002-2), `SelecteurDuree.ref` / `invalide` (RC-US-002-1) ; §3 : n° 23 à 25. |
+| 0.5 | 2026-11-01 | Anthony | E13 de DT-015, DT-017, DT-019 (`docs/ceremonies/revue-code-LOT-001-catalogue-dt.md`, PR #27 ; guide v0.2.21 §6.6.4, Q-ANT-E13-R5-1) : §4.5 règle de `LigneTache.nomAccessible` (`ETA-TACHE-LIGNE`, DT-017 remboursée), `LigneTache.objectifsAffiches` (RC-CAT-1), `caseTerminer` (`ETA-TACHE-CASE`) ; état sans date dans le nom ; §13 UT-COMP-US-002-42 adapté, UT-COMP-US-002-95 et 96 |
 
 ## 1. Résumé technique
 - **Ce que l'US change.** Saisie d'une tâche avec contrôles cumulables (`ERR-020` à `ERR-023`), rattachement n-n par `LienTacheObjectif` (H-1), modification de l'intitulé, du délai, de l'estimation (`ERR-033` pour une tâche parente) et des objectifs (`ERR-034` pour une sous-tâche), suppression avec confirmation, alertes de délai (`ALR-005`, RG-024), retard (RG-045), estimation en vigueur, liste « Tâches » avec filtres et tri du guide §5.7, détail d'une tâche, tâches dans le détail d'un objectif, journal RG-050. Livre aussi l'étape de contexte « les tâches suivantes : » (H-7), étendue aux rangs 6 à 8.
@@ -214,15 +215,27 @@ export type LigneTache = {
   readonly etat: { readonly code: 'ETA-TACHE-A-FAIRE' | 'ETA-TACHE-TERMINEE' | 'ETA-TACHE-ABANDONNEE' };
   readonly delai: { readonly date: DateCalendaire; readonly libelle: string };
   readonly estimation: { readonly minutes: number; readonly libelle: string; readonly calculee: boolean };
-  readonly objectifs: ReadonlyArray<string>;
+  readonly objectifs: ReadonlyArray<string>;                 // tous les objectifs (hérités compris) : sert au détail (ECR-007)
+  readonly objectifsAffiches: ReadonlyArray<string>;         // v0.5 (RC-CAT-1) : objectifs montrés sur la ligne (puce + « +n ») ;
+                                                             // [] pour une sous-tâche (objectifs hérités, non affichés, guide §6.6.4)
   readonly enRetard?: { readonly code: 'MEN-EN-RETARD'; readonly libelle: string };
   readonly alertes: ReadonlyArray<{ readonly code: 'ALR-005'; readonly objectifs: ReadonlyArray<string>; readonly libelle: string }
                                | { readonly code: 'ALR-006'; readonly tache: string; readonly libelle: string }>;
   readonly compteurSousTaches?: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string }; // « 1/3 »
   readonly incoherence?: { readonly code: 'MEN-INCOHERENCE' };                                   // ST-US-024
   readonly attente?: { readonly code: 'MEN-ATTENTE'; readonly libelle: string; readonly nomAccessible: string }; // ST-US-017 n° 17 (mentionAttente)
-  readonly nomAccessible: string;
+  readonly nomAccessible: string;   // v0.5 : ETA-TACHE-LIGNE (ci-dessous)
+  readonly caseTerminer?: { readonly nomAccessible: string };   // ETA-TACHE-CASE ; présente ssi la tâche est à faire (case « Rouvrir » de la liste « Terminées » : DT-030)
 };
+// v0.5 — nom accessible de la ligne (guide v0.2.21 §6.6.4, DT-017) :
+//   base = libelle('ETA-TACHE-LIGNE', { element, etat, date }, 'nomAccessible') ;
+//   etat = libelle(ETA-TACHE-A-FAIRE | -TERMINEE | -ABANDONNEE, {}, 'nomAccessible') (« à faire », « terminée », « abandonnée » : sans date) ;
+//   puis, jointes par « , », dans cet ordre et seulement si l'information est affichée sur la ligne, les parties
+//   libelle('ETA-TACHE-LIGNE', { variante, … }, 'nomAccessible') : retard ; alerte-objectif (ALR-005) ; alerte-tache (ALR-006) ;
+//   estimation { duree } (toujours affichée) ; objectif { objectif } si objectifsAffiches.length = 1, objectifs { n, objectif } si ≥ 2
+//   (objectif = objectifsAffiches[0], la puce) ; sous-taches { t, n } si compteurSousTaches ; incoherence si incoherence.
+//   La partie objectif et la puce dérivent de la même donnée (objectifsAffiches) : aucune divergence possible (RC-CAT-1).
+//   Une seule source : le texte visible de la ligne reste aria-hidden. MEN-INCOHERENCE visible sur la ligne : DT-031.
 export type ModeleVueListeTaches = {
   readonly filtreEtat: FiltreEtat; readonly filtreObjectif: FiltreObjectif;
   readonly sousTitre: { readonly code: 'MEN-TRI-DELAI'; readonly libelle: string };   // « Triées par délai » ou « Plus récentes d'abord »
@@ -503,6 +516,8 @@ Avant le rang qui livre une capacité (7 : terminer ; 8 : abandonner ; 6 : sous-
 | UT-US-002-33 | idem | `construireDetailObjectif` | sections `SEC-TACHES-A-FAIRE` (dépliée), `SEC-TACHES-TERMINEES` et `SEC-TACHES-ABANDONNEES` (repliées) avec n ; tris de chaque section ; sous-tâches d'une tâche parente à faire juste après elle, dans l'ordre de référence ; n ne compte pas les sous-tâches | Guide v0.2.9 §5.8 d (Q-US-001-6) | NI |
 | UT-US-002-35 | idem | `construireDetailObjectif` | sous une tâche parente terminée ou abandonnée : aucune ligne de sous-tâche, compteur « t / n » sur la ligne de la tâche parente | Q-US-002-4 a (guide v0.2.10 §5.8 d) | NI |
 | UT-US-002-34 | `…/application/consulter-detail-tache.test.ts` | `ConsulterDetailTache` | objectifs, alertes, `estimationCalculee` faux, actions d'édition | CA-8, CA-9 | NI |
+
+**v0.5 (E13 de DT-015, DT-017, DT-019)** : UT-COMP-US-002-42 attend désormais l'état sans date (« terminée », « abandonnée ») et la partie « estimation 1 h » : texte du guide v0.2.21 §6.6.4, non un affaiblissement (comparaisons de même force). Tests de Benjamin : UT-COMP-US-002-95 (toutes les parties, ordre, accords, sous-tâche sans partie objectif). À ajouter avec RC-CAT-1 : **UT-COMP-US-002-96** (`taches-comp.test.ts`) : pour une sous-tâche (`objectifsHerites: true`, 1 objectif), `objectifsAffiches` = [] et `objectifs` = [« Publier le guide »] ; pour une tâche à 2 objectifs, `objectifsAffiches` = les 2 intitulés ; et un test de composant de `LigneTacheUi` qui vérifie l'absence de `.ligne-tache-objectifs` pour une ligne de sous-tâche.
 
 Cas temporels : PT-16 (S16), UTC (S17), New York (S19). Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-002`.
 
