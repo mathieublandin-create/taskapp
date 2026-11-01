@@ -2,13 +2,20 @@ import type { IdObjectif } from '../../commun/domaine/identifiants';
 import type { Instant } from '../../commun/domaine/temps/instant';
 import { contexteDeNouvelleEcriture } from './contexte-causal';
 import { estRegistre, type Registre, type RegistreQuelconque } from './ecriture';
+import {
+  composerEntreeDeReparation,
+  estEntreeDeDeplacement,
+  placementJournal,
+  type EntreeDeDeplacement,
+} from './entree-reparation';
 import type { EtatLocal } from './etat-local';
 import type { EvenementJournal } from './evenement-journal';
 import { comparerHlc, hlcSuivant, type Hlc } from './hlc';
+import type { IdEvenement } from './identifiant-evenement';
 import type { PlacementObjectif } from './information';
 import { idValeurEcartee, type ValeurEcartee } from './valeurs-ecartees';
 
-// ST-US-017 v0.6 §6.6 n° 7 à 10 (n° 9 b à 9 d : entrée de journal, v0.6) ; RG-048 ; DAT §4.2 « hiérarchies »
+// ST-US-017 v0.6 §6.6 n° 7 à 10 (n° 9 b : entrée de journal, v0.6) ; RG-048 ; DAT v0.11.8 §4.2 « hiérarchies »
 // (réparation écrite et itérative, DEC-025).
 
 export type ReparationHierarchie = {
@@ -19,9 +26,15 @@ export type ReparationHierarchie = {
   /**
    * v0.6 (§6.6 n° 9 b, Q-ST017-PEP-2 b) : une entrée « changement parent » par annulation (`entreeDeReparation`),
    * dans l'ordre des annulations, sauf celles dont l'identifiant figure déjà dans `etat.journal` (idempotence).
-   * Tranche B1 : toujours vide ; tranche B1b : rempli (§15.1).
+   * N'entrent pas dans l'index des écritures en attente et ne changent pas `dernierHlc` (condition C4 de Starck).
    */
   readonly evenementsAjoutes: ReadonlyArray<EvenementJournal>;
+  /**
+   * Condition C2 de Starck (DAT v0.11.8 §4.2) : identifiants des entrées de réparation dont l'entrée du déplacement
+   * annulé est absente du journal (incohérence : repli `CREATION`, journée de Paris du HLC). Le domaine le signale ;
+   * le service qui intègre le journalise en « erreur ». Absent si aucune.
+   */
+  readonly deplacementsSansEntree?: ReadonlyArray<IdEvenement>;
   /** HLC de la dernière écriture de réparation ; absent si rien n'est écrit. */
   readonly dernierHlc?: Hlc;
 };
@@ -37,12 +50,16 @@ type Noeud = {
 type Placement = NonNullable<Noeud['parent']>;
 type Candidat = { readonly id: IdObjectif; readonly noeud: Noeud; readonly parent: Placement };
 
-/** Déplacement annulé : registre `parent` de l'état fusionné, HLC du déplacement annulé, valeur rétablie. */
+/**
+ * Déplacement annulé : registre `parent` de l'état fusionné, placement annulé (`hlcOrigine` = HLC du déplacement),
+ * valeur rétablie à ce pas, entrée du journal du déplacement (absente : incohérence, C2).
+ */
 type Annulation = {
   readonly id: IdObjectif;
-  readonly hlcAnnule: Hlc;
+  readonly annule: PlacementObjectif;
   readonly registre: RegistreParent;
   readonly retabli: PlacementObjectif;
+  readonly deplacement: EntreeDeDeplacement | undefined;
 };
 
 /** n° 7 : objectifs qui ont un registre `creation` et pas de registre `suppression`. */
@@ -89,7 +106,7 @@ const participants = (noeuds: ReadonlyMap<IdObjectif, Noeud>): ReadonlySet<IdObj
 const comparerIds = (a: IdObjectif, b: IdObjectif): number => (a < b ? -1 : 1);
 
 const dejaAnnule = (annulations: ReadonlyArray<Annulation>, id: IdObjectif, h: Hlc): boolean =>
-  annulations.some((a) => a.id === id && comparerHlc(a.hlcAnnule, h) === 0);
+  annulations.some((a) => a.id === id && comparerHlc(a.annule.hlcOrigine, h) === 0);
 
 /**
  * n° 8 : participant dont le placement courant vient d'un déplacement, de plus petit `hlcOrigine`, puis de plus petit
@@ -117,19 +134,16 @@ const candidat = (
 const texteHlc = (h: Hlc): string => `${String(h.physique)}|${String(h.compteur)}|${h.appareil}`;
 const cleJournal = (id: IdObjectif, h: Hlc): string => `${id}|${texteHlc(h)}`;
 
-/** `avant` des entrées CHANGEMENT_PARENT, par élément et HLC de l'entrée (celui du déplacement, RG-050). */
+/**
+ * Entrées CHANGEMENT_PARENT des cas d'usage, par élément et HLC de l'entrée (celui du déplacement, RG-050). Les entrées
+ * de réparation (même élément, même HLC) sont ignorées, quel que soit l'ordre du journal (n° 8, condition C1).
+ */
 const indexerJournal = (
   journal: Iterable<EvenementJournal>,
-): ReadonlyMap<string, PlacementObjectif> => {
-  const index = new Map<string, PlacementObjectif>();
+): ReadonlyMap<string, EntreeDeDeplacement> => {
+  const index = new Map<string, EntreeDeDeplacement>();
   for (const e of journal) {
-    if (e.type !== 'CHANGEMENT_PARENT') continue;
-    const { parentId, origine, hlcOrigine } = e.avant;
-    index.set(cleJournal(e.element.id, e.hlc), {
-      ...(parentId === undefined ? {} : { parentId }),
-      origine,
-      hlcOrigine,
-    });
+    if (estEntreeDeDeplacement(e)) index.set(cleJournal(e.element.id, e.hlc), e);
   }
   return index;
 };
@@ -137,17 +151,18 @@ const indexerJournal = (
 /** Annulations successives jusqu'à une hiérarchie valide (n° 8) ; une valeur rétablie peut être candidate à son tour. */
 const annuler = (
   noeuds: Map<IdObjectif, Noeud>,
-  journal: ReadonlyMap<string, PlacementObjectif>,
+  journal: ReadonlyMap<string, EntreeDeDeplacement>,
 ): ReadonlyArray<Annulation> => {
   const annulations: Array<Annulation> = [];
   for (let c = candidat(noeuds, annulations); c !== undefined; c = candidat(noeuds, annulations)) {
-    const hlcAnnule = c.parent.courant.hlcOrigine;
-    const retabli: PlacementObjectif = journal.get(cleJournal(c.id, hlcAnnule)) ?? {
-      origine: 'CREATION',
-      hlcOrigine: c.noeud.hlcCreation,
-    };
+    const annule = c.parent.courant;
+    const deplacement = journal.get(cleJournal(c.id, annule.hlcOrigine));
+    const retabli: PlacementObjectif =
+      deplacement === undefined
+        ? { origine: 'CREATION', hlcOrigine: c.noeud.hlcCreation }
+        : placementJournal(deplacement.avant);
     noeuds.set(c.id, { ...c.noeud, parent: { ...c.parent, courant: retabli } });
-    annulations.push({ id: c.id, hlcAnnule, registre: c.parent.registre, retabli });
+    annulations.push({ id: c.id, annule, registre: c.parent.registre, retabli, deplacement });
   }
   return annulations;
 };
@@ -170,6 +185,32 @@ const ecrire = (
 };
 
 /**
+ * n° 9 b : une entrée par annulation, décrivant ce pas ; déjà présente dans le journal : non réécrite. C2 : les
+ * annulations sans entrée du déplacement sont signalées (identifiant de leur entrée), même si celle-ci est connue.
+ */
+const journaliser = (
+  etat: EtatLocal,
+  annulations: ReadonlyArray<Annulation>,
+): Pick<ReparationHierarchie, 'evenementsAjoutes' | 'deplacementsSansEntree'> => {
+  const entrees = annulations.map((a) => ({
+    entree: composerEntreeDeReparation(
+      { objectif: a.id, annule: a.annule, retabli: a.retabli },
+      a.deplacement,
+    ),
+    sansDeplacement: a.deplacement === undefined,
+  }));
+  const deplacementsSansEntree = entrees.flatMap(({ entree, sansDeplacement }) =>
+    sansDeplacement ? [entree.id] : [],
+  );
+  return {
+    evenementsAjoutes: entrees
+      .map(({ entree }) => entree)
+      .filter((entree) => !etat.journal.has(entree.id)),
+    ...(deplacementsSansEntree.length === 0 ? {} : { deplacementsSansEntree }),
+  };
+};
+
+/**
  * Annule un par un, du plus ancien au plus récent, les déplacements qui participent à une violation (cycle ou
  * deuxième niveau), jusqu'à obtenir une hiérarchie valide ; rien si elle l'est déjà. Fonction pure de l'état fusionné.
  */
@@ -180,21 +221,23 @@ export const reparerHierarchie = (
   const annulations = annuler(lireHierarchie(etat), indexerJournal(etat.journal.values()));
   const registresEcrits = ecrire(etat, physiqueCorrigee, annulations);
   // n° 10 : une entrée par annulation ; `gagnante` = le registre de réparation de l'objectif (un seul par objectif).
-  const valeursEcartees = annulations.flatMap(({ id, hlcAnnule, registre }) =>
+  const valeursEcartees = annulations.flatMap(({ id, annule, registre }) =>
     registresEcrits
       .filter((ecrit) => ecrit.cle.id === id)
       .map((gagnante) => ({
-        id: idValeurEcartee(registre.cle, hlcAnnule),
+        id: idValeurEcartee(registre.cle, annule.hlcOrigine),
         motif: 'PLACEMENT_ANNULE' as const,
         ecartee: registre,
         gagnante,
       })),
   );
+  const { evenementsAjoutes, deplacementsSansEntree } = journaliser(etat, annulations);
   const dernierHlc = registresEcrits.at(-1)?.ecriture.hlc;
   return {
     registresEcrits,
     valeursEcartees,
-    evenementsAjoutes: [], // B1b : entrée de journal par placement annulé (ST-US-017 v0.6 §6.6 n° 9 b)
+    evenementsAjoutes,
+    ...(deplacementsSansEntree === undefined ? {} : { deplacementsSansEntree }),
     ...(dernierHlc === undefined ? {} : { dernierHlc }),
   };
 };

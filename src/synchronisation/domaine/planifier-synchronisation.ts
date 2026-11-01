@@ -14,24 +14,32 @@ import {
   type ValeurEcartee,
 } from './valeurs-ecartees';
 
-// ST-US-017 v0.5 §6.6 n° 11 : intégration d'un fichier reçu à l'incrément 2, dans la transaction du cycle.
+// ST-US-017 v0.6 §6.6 n° 11 : intégration d'un fichier reçu à l'incrément 2, dans la transaction du cycle.
 
-/** (d) Registres de la réparation appliqués à l'état fusionné ; ceux de la fusion qu'elle réécrit sont retirés. */
+/**
+ * (d) Registres de la réparation appliqués à l'état fusionné ; ceux de la fusion qu'elle réécrit sont retirés.
+ * Entrées de journal de la réparation après celles de la fusion (v0.6) ; ni l'index des écritures en attente ni
+ * `dernierHlc` ne dépendent d'elles (condition C4) : seul le HLC des registres de réparation compte.
+ */
 const appliquerReparation = (fusion: PlanEcriture, rep: ReparationHierarchie): PlanEcriture => {
   const reecrites = new Set(rep.registresEcrits.map((r) => cleEnTexte(r.cle)));
   const registres = new Map(fusion.etatApres.registres);
   for (const r of rep.registresEcrits) registres.set(cleEnTexte(r.cle), r);
+  const journal = new Map(fusion.etatApres.journal);
+  for (const e of rep.evenementsAjoutes) journal.set(e.id, e);
   return {
     ...fusion,
     etatApres: {
       ...fusion.etatApres,
       registres,
+      journal,
       ...(rep.dernierHlc === undefined ? {} : { dernierHlc: rep.dernierHlc }),
     },
     registresEcrits: [
       ...fusion.registresEcrits.filter((r) => !reecrites.has(cleEnTexte(r.cle))),
       ...rep.registresEcrits,
     ],
+    evenementsAjoutes: [...fusion.evenementsAjoutes, ...rep.evenementsAjoutes],
   };
 };
 
@@ -80,5 +88,8 @@ export const planifierSynchronisation = (
     plan,
     meta: apporte ? { fusionNonDeposee: true } : {},
     ...(signale ? { signalements: ajouts } : {}),
+    ...(rep.deplacementsSansEntree === undefined
+      ? {}
+      : { deplacementsSansEntree: rep.deplacementsSansEntree }),
   };
 };

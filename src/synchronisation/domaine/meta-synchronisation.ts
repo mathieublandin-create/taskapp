@@ -1,6 +1,7 @@
 import type { Marque } from '../../commun/domaine/marque';
 import type { Instant } from '../../commun/domaine/temps/instant';
 import type { Hlc } from './hlc';
+import type { IdEvenement } from './identifiant-evenement';
 import type { PlanEcriture } from './planifier-ecritures';
 import type { AjoutsSignalements } from './signalements';
 
@@ -26,4 +27,9 @@ export type PlanSynchronisation = {
   readonly meta: Partial<MetaSynchronisation>;
   /** ST-US-017 v0.5 §4.6 (incrément 2) : entrées écrites dans la même transaction ; absent ≡ vide. */
   readonly signalements?: AjoutsSignalements;
+  /**
+   * Condition C2 de Starck (DAT v0.11.8 §4.2) : entrées de réparation écrites sans entrée du déplacement annulé
+   * (`ReparationHierarchie.deplacementsSansEntree`), à journaliser en « erreur » par le service ; absent ≡ aucune.
+   */
+  readonly deplacementsSansEntree?: ReadonlyArray<IdEvenement>;
 };
