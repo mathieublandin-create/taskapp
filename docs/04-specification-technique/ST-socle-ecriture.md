@@ -49,7 +49,7 @@
 | Exigences couvertes | RG-036 (contexte causal, préparation), RG-046 et RG-047 (pierres tombales et leur contexte), RG-050 (journal métier), RG-057 (index des écritures en attente, préparation), ENF-06, ENF-T-02, ENF-T-07 ; DS-07, DS-08, DS-11, DS-19 |
 | DAT / ADR de référence | DAT v0.10.1 (§2.4, §4.1.5 bis, §4.2, §4.2.1, §6.1, §6.4) ; DAT v0.11 (§3.2, DS-07 : durabilité stricte) ; ADR-003, ADR-010, ADR-011, ADR-013 |
 | Hypothèses du contrôle d'explicitation appliquées | H-1 (§6.4), H-4 (§6.5), H-5 (§12) |
-| Version de la ST | 0.3.1 |
+| Version de la ST | 0.3.2 |
 | Statut | **Prête pour E10** ; tests UT-SOC-44 à 46 ajoutés en v0.2 (rouges) |
 | Auteur | Anthony |
 | Branche Git | `us/SOCLE-ecriture` créée depuis `lot/LOT-001-socle-objectifs-taches` |
@@ -60,6 +60,7 @@
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Alignement sur `conventions.md` v0.4 (DEC-034, ADR-013, DAT v0.11). `DepotLocalDexie` : base ouverte en durabilité stricte, écriture confirmée à l'événement `complete`, transaction avortée traduite en `EcritureLocaleImpossible` (§4.4, §6.8, §8) ; tests UT-SOC-44 à 46 et support `FabriqueIndexedDbEspionne` (§13). Rédaction : `DepotLocalSqlite` et horloge d'Android renvoyés au repli (§1, §3) ; réserve R1 limitée au repli (§5.3, §7, §16, §17). Aucun changement d'interface ni de type. |
 | 0.3.1 | 2026-10-28 | Anthony | E13 du rang 0 : §5.1, type d'événement inconnu dans le journal local (Q-BEN-E12-9) ; §12 n° 1, portée de la règle de l'heure inexistante (Q-BEN-E12-6). Aucun changement d'interface. |
+| 0.3.2 | 2026-11-01 | Anthony | E13 du rang 9, **Q-BRU-4** : §6.2, `estConnue` corrigée sur le DAT v0.11.9 §4.2.1 (condition J1 de Starck) : une écriture du même appareil n'est connue que si elle est antérieure ou égale (la v0.1 la disait toujours connue). UT-SOC-16 corrigé et complété (§13). Signature inchangée ; sans effet entre deux écritures d'une même information. |
 | 0.3 | 2026-10-28 | Anthony | E11 : RL-LOT-001-A2 (fichiers d'appareil à la racine du dossier, §5.3) ; RL-LOT-001-A1 et Q-ST022-STA-3 : ajouts à `DepotLocalDexie` spécifiés par ST-US-022 v0.3 §5.2 (`ouvrirEspace`, `appareil()`, `fermer()`, option `surFermetureImposee`, `versionchange` sans réouverture automatique) ; types du socle inchangés. |
 
 ### Conditions de Starck (texte qui fait foi, note de Jarvis) et leur traitement
@@ -543,9 +544,10 @@ contexteDeNouvelleEcriture(precedente, auteur):
   3. renvoyer retirerAppareil(c, auteur)          // un appareil connaît toujours ses propres écritures
 
 estConnue(gagnante, autre):
-  autre.hlc.appareil = gagnante.hlc.appareil
-  ou (gagnante.contexte[autre.hlc.appareil] existe et comparerHlc(gagnante.contexte[autre.hlc.appareil], autre.hlc) ≥ 0)
+  si autre.hlc.appareil = gagnante.hlc.appareil : comparerHlc(autre.hlc, gagnante.hlc) ≤ 0   // ses propres écritures antérieures
+  sinon : gagnante.contexte[autre.hlc.appareil] existe et comparerHlc(gagnante.contexte[autre.hlc.appareil], autre.hlc) ≥ 0
 ```
+**Correction (2026-11-01, E13 du rang 9, Q-BRU-4 ; DAT v0.11.9 §4.2.1, condition J1 de Starck)** : la v0.1 rendait vrai pour **toute** écriture du même appareil, même postérieure ; c'était faux au regard du DAT (« ses propres écritures **antérieures** »). Sans effet entre deux écritures d'une même information (la gagnante est la plus grande : une écriture du même appareil y est toujours antérieure) ; seul cas où la différence se voit : une pierre tombale et une écriture postérieure de son propre appareil qui vise l'élément (réparation RG-048). Une seule fonction `estConnue` (ST-US-017 v0.9 §6.6 n° 3 ; `estConnueCausalement` est retirée). UT-SOC-16 corrigé (antérieure ou égale : connue ; postérieure : non connue).
 `precedente` est la valeur gagnante courante de la même information dans l'état local. Exemple du DAT (chaîne) : le PC écrit A ; le smartphone, qui connaît A, écrit B (contexte {PC: A}) puis C sur B (contexte {PC: A}) : `estConnue(C, A)` est vrai (UT-SOC-15).
 
 ### 6.3 Traduction des modifications (`planifierEcritures`)
@@ -740,7 +742,7 @@ Scénarios `@ihm` : aucun. Scénarios `@recette` : aucun.
 | UT-SOC-13 | `tests/unitaires/synchronisation/domaine/contexte-causal.test.ts` | `contexteDeNouvelleEcriture` | création : contexte vide | DAT §4.2.1 | NI |
 | UT-SOC-14 | idem | `contexteDeNouvelleEcriture` | sur une écriture du PC, par le smartphone : contient l'HLC du PC, sans entrée du smartphone | DAT §4.2.1 | NI |
 | UT-SOC-15 | idem | `estConnue` | chaîne A (PC) → B → C (smartphone) : C connaît A | DAT §4.2.1 (exemple) | NI |
-| UT-SOC-16 | idem | `estConnue` | écritures concurrentes (US-017 S10) : B ne connaît pas A ; même appareil : toujours connue | RG-036 | NI |
+| UT-SOC-16 | idem | `estConnue` | écritures concurrentes (US-017 S10) : B ne connaît pas A ; même appareil : connue si antérieure ou égale, **non connue si postérieure** (corrigé le 2026-11-01, Q-BRU-4, DAT v0.11.9 §4.2.1) | RG-036 | NI |
 | UT-SOC-17 | `tests/unitaires/synchronisation/domaine/pierre-tombale.test.ts` | `contexteDePierreTombale` | couvre les écritures de tous les champs de l'élément, sans l'auteur | RG-047 | NI |
 | UT-SOC-18 | idem | `contexteDePierreTombale` | objectif : couvre un lien (t, E) et un placement d'un objectif sous E | DAT v0.10.1, H-1 | NI |
 | UT-SOC-19 | idem | `contexteDePierreTombale` | tâche : couvre la création de ses sous-tâches | RG-047 | NI |
