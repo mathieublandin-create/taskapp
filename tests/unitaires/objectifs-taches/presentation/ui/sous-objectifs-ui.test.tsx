@@ -184,6 +184,26 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
     });
     expect(screen.queryByText(/^Sous-objectif de/)).toBeNull();
   });
+
+  it('UT-COMP-US-023-14 la carte ALR-007 du détail d’un sous-objectif propose « Changer le délai », qui ouvre la feuille du délai', async () => {
+    const banc = creerBancObjectifs();
+    const parent = await banc.creer('Publier le guide', '2026-12-15');
+    valeurDe(
+      await banc.services.creerSousObjectif.executer({
+        parentId: parent,
+        intitule: 'Version imprimable',
+        delai: date('2027-01-15'),
+      }),
+    );
+    afficher(banc);
+    await ouvrirDetail(/^Publier le guide/, 'Publier le guide');
+    await userEvent.click(await ligne(/^Version imprimable/));
+    await screen.findByRole('heading', { level: 1, name: 'Version imprimable' });
+
+    await ouvrir('Modal', () => cliquerBoutonIon('Changer le délai'));
+
+    expect(await screen.findByText('Délai de l’objectif')).toBeTruthy();
+  });
 });
 
 describe('Magasin des objectifs — sous-objectifs (US-023 CA-5, CA-6)', () => {
