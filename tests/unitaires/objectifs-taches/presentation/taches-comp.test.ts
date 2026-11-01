@@ -129,6 +129,20 @@ describe('Tâches — compléments de la présentation (US-002)', () => {
     );
   });
 
+  it('UT-COMP-US-002-96 construireLigneTache — objectifsAffiches : vide pour une sous-tâche (objectifs hérités, non affichés), sinon tous les intitulés ; objectifs reste inchangé', () => {
+    const guide = { id: idObjectif(1), intitule: 'Publier le guide' };
+    const objectifs = [guide, { id: idObjectif(2), intitule: 'Écrire' }];
+    const sousTache = construireLigneTache(
+      resumeTache({ id: t(2), objectifs: [guide], objectifsHerites: true }),
+      AUJOURDHUI,
+    );
+    const tache = construireLigneTache(resumeTache({ id: t(3), objectifs }), AUJOURDHUI);
+
+    expect(sousTache.objectifsAffiches).toEqual([]);
+    expect(sousTache.objectifs).toEqual(['Publier le guide']);
+    expect(tache.objectifsAffiches).toEqual(['Publier le guide', 'Écrire']);
+  });
+
   it('UT-COMP-US-002-43 construireLigneTache — ALR-006, compteur de sous-tâches, estimation calculée et mention en attente', () => {
     const ligne = construireLigneTache(
       resumeTache({

@@ -3,7 +3,10 @@ import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendai
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { ResumeObjectif } from '../../application/requetes/resumes';
-import type { CandidatParent, SelecteurParent } from '../../application/requetes/consulter-selecteur-parent';
+import type {
+  CandidatParent,
+  SelecteurParent,
+} from '../../application/requetes/consulter-selecteur-parent';
 import type { MessageRefus } from './messages-de-refus';
 import { comparerOrdreReference } from './ordre-reference';
 

@@ -29,6 +29,8 @@ export type LigneTache = {
     readonly calculee: boolean;
   };
   readonly objectifs: ReadonlyArray<string>;
+  /** Objectifs montrés par la ligne (puce et nom accessible) : aucun pour une sous-tâche (guide §6.6.4). */
+  readonly objectifsAffiches: ReadonlyArray<string>;
   readonly enRetard?: { readonly code: 'MEN-EN-RETARD'; readonly libelle: string };
   readonly alertes: ReadonlyArray<AlerteLigneTache>;
   /** « 1/3 » : présent si la tâche a des sous-tâches. */
@@ -81,35 +83,40 @@ const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTach
 };
 
 /** ETA-TACHE-CASE : nom accessible de toute case ronde, « Rouvrir » pour une case pleine active (guide §6.6.4). */
-export const nomAccessibleCase = (intitule: string, rouvrir = false): string =>
+export const nomAccessibleCase = (intitule: string, action: 'TERMINER' | 'ROUVRIR'): string =>
   libelle(
     'ETA-TACHE-CASE',
-    { element: intitule, ...(rouvrir ? { variante: 'rouvrir' } : {}) },
+    { element: intitule, ...(action === 'ROUVRIR' ? { variante: 'rouvrir' } : {}) },
     'nomAccessible',
   );
 
 const modeleCaseTerminer = (resume: ResumeTache): Pick<LigneTache, 'caseTerminer'> =>
   resume.cycleDeVie.etat === 'A_FAIRE'
-    ? { caseTerminer: { nomAccessible: nomAccessibleCase(resume.intitule) } }
+    ? { caseTerminer: { nomAccessible: nomAccessibleCase(resume.intitule, 'TERMINER') } }
     : {};
 
 const partie = (variante: string, variables: VariablesLibelle = {}): string =>
   libelle('ETA-TACHE-LIGNE', { ...variables, variante }, 'nomAccessible');
 
-const partieObjectifs = (resume: ResumeTache): ReadonlyArray<string> => {
-  const [premier] = resume.objectifs;
-  // Une sous-tâche hérite de ses objectifs : la ligne ne les montre pas (guide §6.6.4).
-  if (premier === undefined || resume.objectifsHerites) return [];
-  const n = resume.objectifs.length;
+/** Une sous-tâche hérite de ses objectifs : la ligne ne les montre pas (guide §6.6.4). */
+const objectifsAffiches = (resume: ResumeTache): ReadonlyArray<string> =>
+  resume.objectifsHerites ? [] : resume.objectifs.map((objectif) => objectif.intitule);
+
+const partieObjectifs = (affiches: ReadonlyArray<string>): ReadonlyArray<string> => {
+  const [premier] = affiches;
+  if (premier === undefined) return [];
   return [
-    n === 1
-      ? partie('objectif', { objectif: premier.intitule })
-      : partie('objectifs', { n, objectif: premier.intitule }),
+    affiches.length === 1
+      ? partie('objectif', { objectif: premier })
+      : partie('objectifs', { n: affiches.length, objectif: premier }),
   ];
 };
 
 /** Parties facultatives du nom, dans l'ordre du guide : une par information affichée sur la ligne. */
-const partiesDuNom = (resume: ResumeTache): ReadonlyArray<string> => [
+const partiesDuNom = (
+  resume: ResumeTache,
+  affiches: ReadonlyArray<string>,
+): ReadonlyArray<string> => [
   ...(resume.enRetard ? [partie('retard')] : []),
   ...(resume.alertes.some((alerte) => alerte.type === 'OBJECTIFS')
     ? [partie('alerte-objectif')]
@@ -118,7 +125,7 @@ const partiesDuNom = (resume: ResumeTache): ReadonlyArray<string> => [
     ? [partie('alerte-tache')]
     : []),
   partie('estimation', { duree: formaterDuree(resume.estimation) }),
-  ...partieObjectifs(resume),
+  ...partieObjectifs(affiches),
   ...(resume.sousTaches === undefined
     ? []
     : [
@@ -131,7 +138,11 @@ const partiesDuNom = (resume: ResumeTache): ReadonlyArray<string> => [
 ];
 
 /** WCAG 4.1.2, 2.5.3 : « {intitulé}, {état}, délai {date} » puis une partie par information affichée (DT-017). */
-const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string => {
+const nomAccessible = (
+  resume: ResumeTache,
+  affiches: ReadonlyArray<string>,
+  aujourdhui: DateCalendaire,
+): string => {
   const base = libelle(
     'ETA-TACHE-LIGNE',
     {
@@ -141,7 +152,7 @@ const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string 
     },
     'nomAccessible',
   );
-  return [base, ...partiesDuNom(resume)].join(', ');
+  return [base, ...partiesDuNom(resume, affiches)].join(', ');
 };
 
 const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'enRetard'> =>
@@ -176,6 +187,7 @@ export const construireLigneTache = (
   aujourdhui: DateCalendaire,
 ): LigneTache => {
   const delai = formaterDate(resume.delai, aujourdhui);
+  const affiches = objectifsAffiches(resume);
   return {
     id: resume.id,
     intitule: resume.intitule,
@@ -187,12 +199,13 @@ export const construireLigneTache = (
       calculee: resume.estimationCalculee,
     },
     objectifs: resume.objectifs.map((objectif) => objectif.intitule),
+    objectifsAffiches: affiches,
     ...modeleEnRetard(resume, delai),
     alertes: resume.alertes.map((alerte) => modeleAlerte(alerte, delai)),
     ...modeleCompteur(resume),
     ...modeleIncoherence(resume),
     ...modeleAttente(resume),
     ...modeleCaseTerminer(resume),
-    nomAccessible: nomAccessible(resume, aujourdhui),
+    nomAccessible: nomAccessible(resume, affiches, aujourdhui),
   };
 };

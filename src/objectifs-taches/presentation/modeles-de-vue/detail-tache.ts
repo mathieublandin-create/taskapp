@@ -25,8 +25,8 @@ export type LigneSousTache = {
   readonly enRetard?: LigneTache['enRetard'];
   readonly alertes: LigneTache['alertes'];
   /**
-   * WCAG 4.1.2 (RL-LOT-001-S4, ST-US-024 §4.5) : « {intitulé}, {état en toutes lettres}, délai {date} »,
-   * suivi de « , en retard » si `enRetard` ; même forme que `LigneTache.nomAccessible`.
+   * WCAG 4.1.2 (RL-LOT-001-S4, ST-US-024 §4.5) : même gabarit que `LigneTache.nomAccessible`
+   * (code `ETA-TACHE-LIGNE`, guide §6.6.4).
    */
   readonly nomAccessible: string;
   /** Case « Terminer » de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). */
@@ -175,7 +175,10 @@ const construireLigneSousTache = (
     alertes: ligne.alertes,
     nomAccessible: ligne.nomAccessible,
     caseTerminer: {
-      nomAccessible: nomAccessibleCase(ligne.intitule, ligne.etat.code === 'ETA-TACHE-TERMINEE'),
+      nomAccessible: nomAccessibleCase(
+        ligne.intitule,
+        ligne.etat.code === 'ETA-TACHE-TERMINEE' ? 'ROUVRIR' : 'TERMINER',
+      ),
     },
     ...etiquetteSousTache(resume, parente),
   };
