@@ -1009,6 +1009,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/synchronisation/presentation/ui/ChoixRestauration.tsx": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx": {
       "debut": 9,
       "fin": 9
