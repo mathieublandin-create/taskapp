@@ -1,4 +1,3 @@
-import { assertNever } from '../../../commun/domaine/assert-never';
 import { ErreurProgrammation } from '../../../commun/domaine/erreur-programmation';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import {
@@ -15,13 +14,14 @@ import type {
   ValeurSignalee,
 } from '../../domaine/detail-valeurs-ecartees';
 import type { RefElementMetier } from '../../domaine/information';
+import type { IdValeurEcartee, MotifValeurEcartee } from '../../domaine/valeurs-ecartees';
 import { comparerLignesFeuille } from './ordre-feuille';
 
 // ECR-011, section « À lire » (guide §4.24, §6.6.2 `SYN-FEUILLE-A-LIRE`, §6.6.9 `ALR-008` à `ALR-011`, `ALR-014` ;
 // guide §5.8 f) ; ST-US-017 v0.5 §4.6, §6.6 n° 13 ; H-2, H-6.
 
 export type LigneModificationNonRetenue = {
-  readonly id: string;
+  readonly id: IdValeurEcartee;
   readonly code: 'ALR-009' | 'ALR-010' | 'ALR-011';
   /** `ALR-010` seulement : `tache` (élément supprimé : une tâche), `sous-tache` (création sous une tâche supprimée), `rattachement` (OBJECTIFS), `placement` (PARENT). */
   readonly variante?: 'tache' | 'sous-tache' | 'rattachement' | 'placement';
@@ -37,7 +37,7 @@ export type LigneModificationNonRetenue = {
 };
 
 export type LigneDonneeEffacee = {
-  readonly id: string;
+  readonly id: IdValeurEcartee;
   readonly element: string;
   readonly information: InformationSignalee;
   readonly valeurNonRetenue: ValeurSignalee;
@@ -48,12 +48,19 @@ export type ModeleVueModificationsNonRetenues = {
   /** Nombre de lignes `ALR-009` à `ALR-011` (= `aLire`, H-6). */
   readonly n: number;
   readonly libelle: string;
+  /** Libellé du bouton « Compris » d'une ligne (`ALR-009`, action). */
+  readonly libelleCompris: string;
   /** Non lues, ordre `comparerLignesFeuille` (instant = `ValeurEcarteeDetaillee.instant`, intitulé = élément, id). */
   readonly lignes: ReadonlyArray<LigneModificationNonRetenue>;
   /** `ALR-014` non lues, groupées sous la carte `ALR-008`, même ordre ; un seul « Compris » pour toutes (`ids`). */
   readonly donneesEffacees?: {
     readonly code: 'ALR-008';
-    readonly ids: ReadonlyArray<string>;
+    readonly titre: string;
+    /** Nom accessible du « Compris » unique de la carte. */
+    readonly nomAccessibleCompris: string;
+    /** Libellé de ce « Compris » (`ALR-008`, action). */
+    readonly action: string;
+    readonly ids: ReadonlyArray<IdValeurEcartee>;
     readonly lignes: ReadonlyArray<LigneDonneeEffacee>;
   };
 };
@@ -188,28 +195,26 @@ export const texteDonneesEffacees = (n: number, contexte: ContexteTextes): strin
 export const libelleModificationsEffacees = (n: number): string =>
   libelle('SEC-MODIFS-EFFACEES', n === 1 ? { n, variante: 'une' } : { n });
 
+const memeElement = (a: RefElementMetier | undefined, b: RefElementMetier): boolean =>
+  a?.type === b.type && a.id === b.id;
+
+/** `placement` : l'objectif supprimé est le parent visé ; s'il est l'élément déplacé lui-même, ligne générique (n° 13). */
 const varianteDe = (v: ValeurEcarteeDetaillee): LigneModificationNonRetenue['variante'] => {
   if (v.information === 'OBJECTIFS') return 'rattachement';
-  if (v.information === 'PARENT') return 'placement';
+  if (v.information === 'PARENT' && !memeElement(v.supprime, v.element)) return 'placement';
   if (v.information === 'CREATION' && v.valeurConservee.type === 'SUPPRIMEE_AVEC') {
     return 'sous-tache';
   }
   return v.supprime?.type === 'TACHE' ? 'tache' : undefined;
 };
 
-const codeDe = (v: ValeurEcarteeDetaillee): LigneModificationNonRetenue['code'] | undefined => {
-  switch (v.motif) {
-    case 'CONFLIT':
-      return 'ALR-009';
-    case 'SUPPRESSION':
-      return 'ALR-010';
-    case 'PLACEMENT_ANNULE':
-      return 'ALR-011';
-    case 'DONNEES_EFFACEES':
-      return undefined;
-    default:
-      return assertNever(v.motif);
-  }
+const CODES_MOTIF: Readonly<
+  Record<MotifValeurEcartee, LigneModificationNonRetenue['code'] | undefined>
+> = {
+  CONFLIT: 'ALR-009',
+  SUPPRESSION: 'ALR-010',
+  PLACEMENT_ANNULE: 'ALR-011',
+  DONNEES_EFFACEES: undefined,
 };
 
 const titreDe = (
@@ -248,13 +253,27 @@ const donneeEffaceeDe = (v: ValeurEcarteeDetaillee): LigneDonneeEffacee => ({
   valeurNonRetenue: v.valeurNonRetenue,
 });
 
+const carteDonneesEffacees = (
+  lignes: ReadonlyArray<LigneDonneeEffacee>,
+): NonNullable<ModeleVueModificationsNonRetenues['donneesEffacees']> => {
+  const titre = libelle('ALR-008');
+  return {
+    code: 'ALR-008',
+    titre,
+    nomAccessibleCompris: nomAccessibleCompris(titre),
+    action: libelle('ALR-008', {}, 'action'),
+    ids: lignes.map((e) => e.id),
+    lignes,
+  };
+};
+
 /** Section absente (undefined) s'il n'y a aucune entrée non lue. */
 export const construireModificationsNonRetenues = (
   valeurs: ReadonlyArray<ValeurEcarteeDetaillee>,
 ): ModeleVueModificationsNonRetenues | undefined => {
   const nonLues = valeurs.filter((v) => !v.lue).sort(comparerLignesFeuille);
   const lignes = nonLues.flatMap((v) => {
-    const code = codeDe(v);
+    const code = CODES_MOTIF[v.motif];
     return code === undefined ? [] : [ligneDe(v, code)];
   });
   const effacees = nonLues.filter((v) => v.motif === 'DONNEES_EFFACEES').map(donneeEffaceeDe);
@@ -263,10 +282,9 @@ export const construireModificationsNonRetenues = (
     code: 'SYN-FEUILLE-A-LIRE',
     n: lignes.length,
     libelle: libelle('SYN-FEUILLE-A-LIRE', { n: lignes.length }),
+    libelleCompris: libelle('ALR-009', {}, 'action'),
     lignes,
-    ...(effacees.length === 0
-      ? {}
-      : { donneesEffacees: { code: 'ALR-008', ids: effacees.map((e) => e.id), lignes: effacees } }),
+    ...(effacees.length === 0 ? {} : { donneesEffacees: carteDonneesEffacees(effacees) }),
   };
 };
 
@@ -291,9 +309,9 @@ export const nomAccessibleVoir = (ligne: LigneModificationNonRetenue): string | 
 
 /** Texte d'une ligne `ALR-010`, selon sa variante (guide §6.6.9). */
 const texteSuppression = (ligne: LigneModificationNonRetenue): string => {
-  const { variante, element } = ligne;
+  // Sans variante (objectif supprimé, placement de l'objectif supprimé) : même texte que la tâche.
+  const variante = ligne.variante ?? 'tache';
   switch (variante) {
-    case undefined:
     case 'tache':
       return libelle(
         'ALR-010',
@@ -306,11 +324,13 @@ const texteSuppression = (ligne: LigneModificationNonRetenue): string => {
     case 'placement':
       return libelle(
         'ALR-010',
-        { variante, element, objectif: intituleCite(ligne.valeurNonRetenue) },
+        {
+          variante,
+          element: ligne.element,
+          objectif: intituleCite(ligne.valeurNonRetenue),
+        },
         'texte',
       );
-    default:
-      return assertNever(variante);
   }
 };
 
@@ -337,8 +357,6 @@ export const texteLigne = (
         { element: ligne.element, parent: intituleCite(ligne.valeurNonRetenue) },
         'texte',
       );
-    default:
-      return assertNever(ligne.code);
   }
 };
 

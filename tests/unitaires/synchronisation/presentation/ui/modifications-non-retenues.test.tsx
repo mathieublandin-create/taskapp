@@ -2,9 +2,11 @@
  * Section « À lire » de la feuille ECR-011 : DiscardedItem (guide §4.24, §6.6.2, §6.6.9, §10 « Listes de modifications
  * non retenues » ; conventions.md §8.5 : data-etat, data-message, data-variante ; ST-US-017 v0.5 §6.6 n° 13). UT-US-017-59.
  */
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { IdValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
 import type { ModeleVueModificationsNonRetenues } from '@src/synchronisation/presentation/modeles-de-vue/modifications-non-retenues';
 import { ModificationsNonRetenues } from '@src/synchronisation/presentation/ui/ModificationsNonRetenues';
 import { date, idTache } from '@tests/support/valeurs';
@@ -12,13 +14,16 @@ import { date, idTache } from '@tests/support/valeurs';
 afterEach(cleanup);
 
 const T1 = idTache(1);
+/** Identifiants de signalement fixes, lisibles dans les assertions. */
+const idv = (texte: string) => texte as IdValeurEcartee;
 const VUE: ModeleVueModificationsNonRetenues = {
   code: 'SYN-FEUILLE-A-LIRE',
   n: 2,
   libelle: '2 informations à lire',
+  libelleCompris: 'Compris',
   lignes: [
     {
-      id: 'v1',
+      id: idv('v1'),
       code: 'ALR-009',
       element: 'Rédiger le plan',
       information: 'INTITULE',
@@ -28,7 +33,7 @@ const VUE: ModeleVueModificationsNonRetenues = {
       voir: { type: 'TACHE', id: T1 },
     },
     {
-      id: 'v2',
+      id: idv('v2'),
       code: 'ALR-010',
       variante: 'tache',
       element: 'Chapitre 1',
@@ -40,16 +45,19 @@ const VUE: ModeleVueModificationsNonRetenues = {
   ],
   donneesEffacees: {
     code: 'ALR-008',
-    ids: ['v8', 'v9'],
+    titre: 'Vos données ont été effacées',
+    nomAccessibleCompris: 'Compris : vos données ont été effacées',
+    action: 'Compris',
+    ids: [idv('v8'), idv('v9')],
     lignes: [
       {
-        id: 'v8',
+        id: idv('v8'),
         element: 'Annexe',
         information: 'DELAI',
         valeurNonRetenue: { type: 'DATE', date: date('2026-12-01') },
       },
       {
-        id: 'v9',
+        id: idv('v9'),
         element: 'Annexe',
         information: 'INTITULE',
         valeurNonRetenue: { type: 'TEXTE', texte: 'Annexe B' },
@@ -151,5 +159,101 @@ describe('ModificationsNonRetenues — textes et repli (Q-ST017-STE-2)', () => {
     expect(repli.getAttribute('aria-expanded')).toBe('true');
     expect(liste?.hasAttribute('hidden')).toBe(false);
     expect(repli.textContent).toBe('Voir les 2 modifications');
+  });
+});
+
+describe('ModificationsNonRetenues — placement de l’objectif supprimé (RC-US-017-3) et focus (RC-US-017-8)', () => {
+  const CONTEXTE = { appareil: 'PC', aujourdhui: date('2026-11-01') } as const;
+
+  it('UT-COMP-US-017-2-62 la ligne ALR-010 d’un objectif supprimé puis rendu principal se rend sans exception, avec le texte générique', () => {
+    const vue: ModeleVueModificationsNonRetenues = {
+      code: 'SYN-FEUILLE-A-LIRE',
+      n: 1,
+      libelle: '1 information à lire',
+      libelleCompris: 'Compris',
+      lignes: [
+        {
+          id: idv('v3'),
+          code: 'ALR-010',
+          element: 'Version imprimable',
+          information: 'PARENT',
+          valeurNonRetenue: { type: 'PRINCIPAL' },
+          valeurConservee: { type: 'OBJECTIF_SUPPRIME' },
+          titre: 'Objectif « Version imprimable » supprimé',
+        },
+      ],
+    };
+
+    const { container } = render(
+      <ModificationsNonRetenues
+        vue={vue}
+        contexte={CONTEXTE}
+        surCompris={vi.fn()}
+        surVoir={vi.fn()}
+      />,
+    );
+
+    const [ligne] = parMessage(container, 'ALR-010');
+    if (ligne === undefined) throw new Error('ligne ALR-010 absente');
+    expect(ligne.dataset['variante']).toBeUndefined();
+    expect(ligne.textContent).toContain(
+      'Votre modification de son placement n’a pas été conservée.',
+    );
+    expect(within(ligne).getAllByRole('button')).toHaveLength(1);
+  });
+
+  /** Retire de la vue les entrées marquées comme lues, comme le fait le contrôleur après l’écriture. */
+  const AvecRetrait = ({ echoue = false }: { readonly echoue?: boolean }) => {
+    const [lues, setLues] = useState<ReadonlyArray<string>>([]);
+    const { donneesEffacees, ...sansCarte } = VUE;
+    const vue: ModeleVueModificationsNonRetenues = {
+      ...sansCarte,
+      lignes: VUE.lignes.filter((l) => !lues.includes(l.id)),
+      ...(lues.includes(idv('v8')) || donneesEffacees === undefined ? {} : { donneesEffacees }),
+    };
+    return (
+      <ModificationsNonRetenues
+        vue={vue}
+        contexte={CONTEXTE}
+        surCompris={(ids) => {
+          if (!echoue) setLues([...lues, ...ids]);
+        }}
+        surVoir={vi.fn()}
+      />
+    );
+  };
+
+  const comprisDe = (nom: RegExp) => screen.getByRole('button', { name: nom });
+
+  it('UT-COMP-US-017-2-63 après « Compris », le focus va sur le « Compris » de l’entrée suivante, sinon de la précédente', async () => {
+    render(<AvecRetrait />);
+
+    await userEvent.click(comprisDe(/^Compris : intitulé de « Rédiger le plan »/));
+    await waitFor(() => {
+      expect(document.activeElement).toBe(comprisDe(/^Compris : tâche « Chapitre 1 »/));
+    });
+
+    await userEvent.click(comprisDe(/^Compris : tâche « Chapitre 1 »/));
+    await waitFor(() => {
+      expect(document.activeElement).toBe(comprisDe(/^Compris : vos données ont été effacées/));
+    });
+
+    await userEvent.click(comprisDe(/^Compris : vos données ont été effacées/));
+    expect(screen.queryAllByRole('button', { name: /^Compris/ })).toHaveLength(0);
+  });
+
+  it('UT-COMP-US-017-2-64 la dernière entrée retirée : le focus va sur la précédente ; une entrée qui reste (échec) garde le focus', async () => {
+    const { unmount } = render(<AvecRetrait />);
+    await userEvent.click(comprisDe(/^Compris : tâche « Chapitre 1 »/));
+    await userEvent.click(comprisDe(/^Compris : vos données ont été effacées/));
+    await waitFor(() => {
+      expect(document.activeElement).toBe(comprisDe(/^Compris : intitulé de « Rédiger le plan »/));
+    });
+    unmount();
+
+    render(<AvecRetrait echoue />);
+    const bouton = comprisDe(/^Compris : intitulé de « Rédiger le plan »/);
+    await userEvent.click(bouton);
+    expect(document.activeElement).toBe(bouton);
   });
 });
