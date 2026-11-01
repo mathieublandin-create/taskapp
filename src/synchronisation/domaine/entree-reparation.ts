@@ -1,9 +1,10 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif } from '../../commun/domaine/identifiants';
+import { jourDeReference } from '../../commun/domaine/temps/jour-de-reference';
 import type { EvenementJournal } from './evenement-journal';
-import type { Hlc } from './hlc';
-import type { IdEvenement } from './identifiant-evenement';
+import { comparerHlc, type Hlc } from './hlc';
+import { FORME_ID_EVENEMENT_REPARATION, type IdEvenement } from './identifiant-evenement';
 import type { PlacementObjectif } from './information';
+import { idValeurEcartee } from './valeurs-ecartees';
 
 // ST-US-017 v0.6 §6.6 n° 9 b à 9 d ; RG-048, RG-050 ; US-023 CA-11 et S18d ; glossaire d'étapes v1.12 §11 ;
 // DAT §6.1 « Entrées produites par la fusion » (identifiant déterministe, encodage base32hex sans « : »).
@@ -15,14 +16,27 @@ import type { PlacementObjectif } from './information';
  * Identique sur tous les appareils ; ne contient jamais « : » (aucune collision avec `${operation}:${rang}`).
  */
 export const idEvenementDeReparation = (objectif: IdObjectif, hlcAnnule: Hlc): IdEvenement =>
-  nonImplemente(`idEvenementDeReparation (${objectif}, ${String(hlcAnnule.compteur)})`);
+  String(
+    idValeurEcartee({ type: 'OBJECTIF', id: objectif, champ: 'parent' }, hlcAnnule),
+  ) as IdEvenement;
 
 /**
  * Vrai si et seulement si `id` a la forme d'un identifiant d'entrée de réparation : `FORME_ID_EVENEMENT_REPARATION`
  * (`/^[0-9a-v]{52}$/`), constante exportée par `identifiant-evenement.ts` en tranche B1b (§3.4 I2-24).
  */
 export const estIdEvenementDeReparation = (id: IdEvenement): boolean =>
-  nonImplemente(`estIdEvenementDeReparation (${id})`);
+  FORME_ID_EVENEMENT_REPARATION.test(id);
+
+/** Entrée « changement parent » d'un cas d'usage (identifiant `${operation}:${rang}`), seule source d'une valeur rétablie. */
+export type EntreeDeDeplacement = Extract<EvenementJournal, { type: 'CHANGEMENT_PARENT' }>;
+
+/**
+ * Vrai pour une entrée `CHANGEMENT_PARENT` écrite par un cas d'usage ; faux pour une entrée de réparation, qui porte
+ * le même élément et le même HLC que le déplacement qu'elle annule (§6.6 n° 8 ; condition C1 de Starck : le journal
+ * ne sert qu'à retrouver l'entrée du déplacement, jamais à déduire un placement).
+ */
+export const estEntreeDeDeplacement = (e: EvenementJournal): e is EntreeDeDeplacement =>
+  e.type === 'CHANGEMENT_PARENT' && !estIdEvenementDeReparation(e.id);
 
 /** Ce que la boucle de réparation sait d'une annulation (§6.6 n° 8). */
 export type Annulation = {
@@ -43,4 +57,45 @@ export const entreeDeReparation = (
   journal: ReadonlyMap<IdEvenement, EvenementJournal>,
   annulation: Annulation,
 ): EvenementJournal =>
-  nonImplemente(`entreeDeReparation (${String(journal.size)}, ${annulation.objectif})`);
+  composerEntreeDeReparation(
+    annulation,
+    [...journal.values()].find(
+      (e) =>
+        estEntreeDeDeplacement(e) &&
+        e.element.id === annulation.objectif &&
+        comparerHlc(e.hlc, annulation.annule.hlcOrigine) === 0,
+    ),
+  );
+
+/** Placement réduit aux champs du journal (`parentId` omis pour un principal) ; aussi la valeur rétablie (n° 8). */
+export const placementJournal = ({
+  parentId,
+  origine,
+  hlcOrigine,
+}: PlacementObjectif): PlacementObjectif => ({
+  ...(parentId === undefined ? {} : { parentId }),
+  origine,
+  hlcOrigine,
+});
+
+/**
+ * Entrée de l'annulation, `deplacement` étant l'entrée du déplacement annulé déjà trouvée (`undefined` si elle est
+ * absente : `instant` = physique du HLC annulé, `jour` = journée de Paris de cet instant). Utilisée par la boucle de
+ * réparation, qui dispose d'un index du journal ; `entreeDeReparation` en est la forme exposée.
+ */
+export const composerEntreeDeReparation = (
+  { objectif, annule, retabli }: Annulation,
+  deplacement: EvenementJournal | undefined,
+): EvenementJournal => {
+  const instant = deplacement?.instant ?? annule.hlcOrigine.physique;
+  return {
+    id: idEvenementDeReparation(objectif, annule.hlcOrigine),
+    type: 'CHANGEMENT_PARENT',
+    element: { type: 'OBJECTIF', id: objectif },
+    avant: placementJournal(annule),
+    apres: placementJournal(retabli),
+    hlc: annule.hlcOrigine,
+    instant,
+    jour: deplacement?.jour ?? jourDeReference(instant),
+  };
+};
