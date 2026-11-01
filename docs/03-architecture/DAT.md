@@ -1,6 +1,6 @@
 # Dossier d'architecture technique (DAT)
 
-> **Version 0.11.7 (brouillon), 2026-10-31.** Auteur : Starck, architecte logiciel.
+> **Version 0.11.8 (brouillon), 2026-11-01.** Auteur : Starck, architecte logiciel.
 > Socle d'architecture initial, préparé hors cycle de lot, à la demande du commanditaire.
 > **PWA unique sous condition (v0.11, DEC-034, ADR-013).** La cible est désormais **une seule PWA** sur le PC, sur Android (Chrome, application installée) et, pour EPI-001, sur iPhone. Tout ce qui relève de Capacitor, du module natif d'authentification, de SQLite, de l'APK et de sa signature est marqué **« repli si la condition échoue »** : ce n'est plus la cible, mais cela redevient applicable, avec ADR-012, si la mesure M-RED ou M-PERSIST échoue sur Chrome Android. Le §4.1.7 décrit la connexion par redirection.
 > **Statut avant E9 (ANT-12)** : le DAT et les ADR-001 à ADR-013 sont au statut **Proposé** (ADR-012 : remplacé sous condition par ADR-013) et le restent jusqu'à E17 (passage à « Accepté » à la clôture du lot qui les met en œuvre). « Proposé » ne signifie pas « provisoire » : ils sont **stables et exploitables par Anthony pour E9**. Les changements attendus avant E17 sont limités : (1) le résultat du test technique v3 (R11, M-RED, M-PERSIST, M-DUR), qui confirme ou non la PWA unique (ADR-013, condition de DEC-034) ; (2) les arbitrages commanditaire en attente (§9) ; (3) des précisions de détail issues de E11 (revue de lancement) et du développement. Tout changement fait l'objet d'une nouvelle version du DAT, datée dans l'historique, et d'un signalement à Anthony.
@@ -8,46 +8,46 @@
 ## Sommaire
 
 - [Historique](#historique) (l. 52)
-- [1. Contexte et exigences structurantes](#1-contexte-et-exigences-structurantes) (l. 77)
-  - [1.1 Contexte](#11-contexte) (l. 79)
-  - [1.2 Exigences structurantes](#12-exigences-structurantes) (l. 88)
-  - [1.3 Exigences non fonctionnelles techniques (proposées)](#13-exigences-non-fonctionnelles-techniques-proposées) (l. 104)
-- [2. Vue d'ensemble](#2-vue-densemble) (l. 118)
-  - [2.1 Principe directeur : local-first, sans serveur applicatif](#21-principe-directeur--local-first-sans-serveur-applicatif) (l. 120)
-  - [2.2 C4 niveau 1 : contexte](#22-c4-niveau-1--contexte) (l. 125)
-  - [2.3 C4 niveau 2 : conteneurs](#23-c4-niveau-2--conteneurs) (l. 150)
-  - [2.4 Découpage logique du noyau (architecture hexagonale, ADR-010)](#24-découpage-logique-du-noyau-architecture-hexagonale-adr-010) (l. 181)
-- [3. Choix technologiques](#3-choix-technologiques) (l. 214)
-  - [3.1 Plateforme : options étudiées (détail dans ADR-001)](#31-plateforme--options-étudiées-détail-dans-adr-001) (l. 218)
-  - [3.2 Pile retenue](#32-pile-retenue) (l. 229)
-  - [3.3 Outillage de tests : organisation (ADR-009)](#33-outillage-de-tests--organisation-adr-009) (l. 257)
-- [4. Intégration Google](#4-intégration-google) (l. 276)
-  - [4.1 OAuth 2.0, scopes et jetons (ADR-004, ADR-005)](#41-oauth-20-scopes-et-jetons-adr-004-adr-005) (l. 278)
-  - [4.2 Google Drive : stockage et format (ADR-003)](#42-google-drive--stockage-et-format-adr-003) (l. 444)
-  - [4.3 Cycle de synchronisation des données](#43-cycle-de-synchronisation-des-données) (l. 596)
-  - [4.4 Google Calendar (ADR-006)](#44-google-calendar-adr-006) (l. 631)
-- [5. Traitements planifiés sans serveur (ADR-007)](#5-traitements-planifiés-sans-serveur-adr-007) (l. 688)
-- [6. Modèle de données de haut niveau](#6-modèle-de-données-de-haut-niveau) (l. 711)
-  - [6.1 Entités](#61-entités) (l. 713)
-  - [6.2 Données dérivées (calculées, jamais stockées)](#62-données-dérivées-calculées-jamais-stockées) (l. 771)
-  - [6.3 Rotation équitable des fun facts (DEM-002, ADR-008)](#63-rotation-équitable-des-fun-facts-dem-002-adr-008) (l. 783)
-  - [6.4 Temps et horloges (ADR-011)](#64-temps-et-horloges-adr-011) (l. 792)
-- [7. Sécurité, données personnelles, observabilité, déploiement, environnements](#7-sécurité-données-personnelles-observabilité-déploiement-environnements) (l. 821)
-  - [7.1 Sécurité](#71-sécurité) (l. 823)
-  - [7.2 Données personnelles (RGPD)](#72-données-personnelles-rgpd) (l. 845)
-  - [7.3 Observabilité (sans serveur)](#73-observabilité-sans-serveur) (l. 852)
-  - [7.4 Environnements et déploiement](#74-environnements-et-déploiement) (l. 863)
-  - [7.4 bis Adresse de recette sur GitHub Pages (v0.11.1, ANT-26)](#74-bis-adresse-de-recette-sur-github-pages-v0111-ant-26) (l. 880)
-  - [7.5 Distribution et hébergement (DEC-006, DEC-023, DEC-034 ; repli DEC-021)](#75-distribution-et-hébergement-dec-006-dec-023-dec-034--repli-dec-021) (l. 905)
-- [8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper, via Jarvis)](#8-exigences-fonctionnelles-techniquement-sensibles-signalements-à-pepper-via-jarvis) (l. 937)
-  - [8.1 Points métier liés au fuseau horaire (pour Pepper, via Jarvis), mis à jour après DEC-012](#81-points-métier-liés-au-fuseau-horaire-pour-pepper-via-jarvis-mis-à-jour-après-dec-012) (l. 959)
-- [9. Arbitrages commanditaire](#9-arbitrages-commanditaire) (l. 972)
-- [10. Risques et points ouverts](#10-risques-et-points-ouverts) (l. 987)
-  - [10.1 Risques](#101-risques) (l. 989)
-  - [10.2 Points ouverts](#102-points-ouverts) (l. 1013)
-- [11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité](#11-décisions-pour-la-spécification-technique-ds-01-à-ds-20-et-points-de-testabilité) (l. 1033)
-  - [Réponses aux points de testabilité](#réponses-aux-points-de-testabilité) (l. 1060)
-- [12. Index des ADR](#12-index-des-adr) (l. 1078)
+- [1. Contexte et exigences structurantes](#1-contexte-et-exigences-structurantes) (l. 78)
+  - [1.1 Contexte](#11-contexte) (l. 80)
+  - [1.2 Exigences structurantes](#12-exigences-structurantes) (l. 89)
+  - [1.3 Exigences non fonctionnelles techniques (proposées)](#13-exigences-non-fonctionnelles-techniques-proposées) (l. 105)
+- [2. Vue d'ensemble](#2-vue-densemble) (l. 119)
+  - [2.1 Principe directeur : local-first, sans serveur applicatif](#21-principe-directeur--local-first-sans-serveur-applicatif) (l. 121)
+  - [2.2 C4 niveau 1 : contexte](#22-c4-niveau-1--contexte) (l. 126)
+  - [2.3 C4 niveau 2 : conteneurs](#23-c4-niveau-2--conteneurs) (l. 151)
+  - [2.4 Découpage logique du noyau (architecture hexagonale, ADR-010)](#24-découpage-logique-du-noyau-architecture-hexagonale-adr-010) (l. 182)
+- [3. Choix technologiques](#3-choix-technologiques) (l. 215)
+  - [3.1 Plateforme : options étudiées (détail dans ADR-001)](#31-plateforme--options-étudiées-détail-dans-adr-001) (l. 219)
+  - [3.2 Pile retenue](#32-pile-retenue) (l. 230)
+  - [3.3 Outillage de tests : organisation (ADR-009)](#33-outillage-de-tests--organisation-adr-009) (l. 258)
+- [4. Intégration Google](#4-intégration-google) (l. 277)
+  - [4.1 OAuth 2.0, scopes et jetons (ADR-004, ADR-005)](#41-oauth-20-scopes-et-jetons-adr-004-adr-005) (l. 279)
+  - [4.2 Google Drive : stockage et format (ADR-003)](#42-google-drive--stockage-et-format-adr-003) (l. 445)
+  - [4.3 Cycle de synchronisation des données](#43-cycle-de-synchronisation-des-données) (l. 605)
+  - [4.4 Google Calendar (ADR-006)](#44-google-calendar-adr-006) (l. 640)
+- [5. Traitements planifiés sans serveur (ADR-007)](#5-traitements-planifiés-sans-serveur-adr-007) (l. 697)
+- [6. Modèle de données de haut niveau](#6-modèle-de-données-de-haut-niveau) (l. 720)
+  - [6.1 Entités](#61-entités) (l. 722)
+  - [6.2 Données dérivées (calculées, jamais stockées)](#62-données-dérivées-calculées-jamais-stockées) (l. 780)
+  - [6.3 Rotation équitable des fun facts (DEM-002, ADR-008)](#63-rotation-équitable-des-fun-facts-dem-002-adr-008) (l. 792)
+  - [6.4 Temps et horloges (ADR-011)](#64-temps-et-horloges-adr-011) (l. 801)
+- [7. Sécurité, données personnelles, observabilité, déploiement, environnements](#7-sécurité-données-personnelles-observabilité-déploiement-environnements) (l. 830)
+  - [7.1 Sécurité](#71-sécurité) (l. 832)
+  - [7.2 Données personnelles (RGPD)](#72-données-personnelles-rgpd) (l. 854)
+  - [7.3 Observabilité (sans serveur)](#73-observabilité-sans-serveur) (l. 861)
+  - [7.4 Environnements et déploiement](#74-environnements-et-déploiement) (l. 872)
+  - [7.4 bis Adresse de recette sur GitHub Pages (v0.11.1, ANT-26)](#74-bis-adresse-de-recette-sur-github-pages-v0111-ant-26) (l. 889)
+  - [7.5 Distribution et hébergement (DEC-006, DEC-023, DEC-034 ; repli DEC-021)](#75-distribution-et-hébergement-dec-006-dec-023-dec-034--repli-dec-021) (l. 914)
+- [8. Exigences fonctionnelles techniquement sensibles (signalements à Pepper, via Jarvis)](#8-exigences-fonctionnelles-techniquement-sensibles-signalements-à-pepper-via-jarvis) (l. 946)
+  - [8.1 Points métier liés au fuseau horaire (pour Pepper, via Jarvis), mis à jour après DEC-012](#81-points-métier-liés-au-fuseau-horaire-pour-pepper-via-jarvis-mis-à-jour-après-dec-012) (l. 968)
+- [9. Arbitrages commanditaire](#9-arbitrages-commanditaire) (l. 981)
+- [10. Risques et points ouverts](#10-risques-et-points-ouverts) (l. 996)
+  - [10.1 Risques](#101-risques) (l. 998)
+  - [10.2 Points ouverts](#102-points-ouverts) (l. 1022)
+- [11. Décisions pour la spécification technique (DS-01 à DS-20) et points de testabilité](#11-décisions-pour-la-spécification-technique-ds-01-à-ds-20-et-points-de-testabilité) (l. 1042)
+  - [Réponses aux points de testabilité](#réponses-aux-points-de-testabilité) (l. 1069)
+- [12. Index des ADR](#12-index-des-adr) (l. 1087)
 
 ## Historique
 
@@ -73,6 +73,7 @@
 | 0.11.5 | 2026-10-28 | Starck | E11 de LOT-001 : vérification de la correction de RL-LOT-001-A1 (réserve levée) | **§4.1.6** : une suppression d'espace confirmée ne peut pas être annulée (limite d'IndexedDB) ; si elle reste bloquée, elle aboutit dès la fermeture de l'autre fenêtre ; « Fermer » sur `ERR-017` ramène l'onglet à l'écran de connexion. Aucune décision d'ADR modifiée. |
 | 0.11.6 | 2026-10-29 | Starck | E13 du rang 2 de LOT-001 : **Q-ANT-E13-R2-1** (Anthony), DT-008 ; mesure en navigateur réel (Chromium, build de production servi en statique) | **§7.1 et nouvel ADR-014 (Proposé)** : la CSP `style-src 'self'` bloque 14 feuilles `<style>` injectées par Stencil pour les composants Ionic « scoped », ce qui dégrade le rendu (`ion-buttons`, `ion-input`, `ion-textarea`, `ion-header`, `ion-action-sheet`). Décision : `style-src 'self' 'unsafe-inline'`, avec `script-src` inchangé, toujours sans `unsafe-inline` ni `unsafe-eval`. Le nonce est écarté, car il serait fixe et public sur un hébergement statique. Les hachages sont écartés à cause de leur maintenance, liée aux versions d'Ionic. La sonde de Zod 4 (`Function('')`, violation `eval` sans effet) est à neutraliser par `z.config({ jitless: true })`. Un test de fumée CSP en navigateur réel (Playwright) est ajouté. §10.2 : PO-13, styles éventuels de GIS, à vérifier en E14. §12 : index. |
 | 0.11.7 | 2026-10-31 | Starck | E10 de l'incrément 2 d'US-017 (rang 9) : **Q-ST017-STA-4** (Anthony) | **§4.2 (hiérarchies)** : la réparation RG-048 n'écrit **aucune entrée de journal** ; seul le signalement porte l'identifiant déterministe ; une valeur rétablie se retrouve par le HLC de son origine, pas par une entrée de réparation. **§4.2.1 (précisions de mise en œuvre)** : (1) identifiant = SHA-256, codé de façon synchrone dans le domaine, encodé en base32hex (52 caractères) ; l'empreinte des fichiers reste calculée par WebCrypto ; (2) deux valeurs structurellement égales ne forment pas une valeur écartée ; (3) avec plusieurs pierres tombales concurrentes, une écriture n'est écartée que si aucune ne la connaît ; (4) départage de l'union pour un même identifiant complété jusqu'à un **ordre total** (intitulé connu de la suppression, puis sérialisation canonique) ; (5) détection linéaire en nombre de registres. **§4.2 (format et stockage)** : tableaux `valeursEcartees` et `lectures` du schéma 1, sans nouveau `schemaVersion` (lus et ignorés par l'incrément 1) ; base locale version 3 en ajout pur ; lecture de l'état **avant** les signalements pour le dépôt. Aucune décision d'ADR modifiée. Points (2) et (3) : conditionnés à la réponse de Pepper à Q-ST017-PEP-2 a ; absence d'entrée d'historique : Q-ST017-PEP-2 b. |
+| 0.11.8 | 2026-11-01 | Starck | E10 de l'incrément 2 d'US-017 (rang 9) : **Q-ST017-STA-5** (Anthony), suite de **Q-ST017-PEP-2 b** (Pepper, cahier des charges v0.14.3, US-023 CA-11 et S18d) | **§4.2 (hiérarchies) et §6.1** : la réparation RG-048 écrit **une entrée de journal `CHANGEMENT_PARENT` par déplacement annulé**, entièrement déterminée par l'annulation (identifiant = texte de l'identifiant du signalement, HLC, instant et jour du déplacement annulé, `avant` = placement annulé, `apres` = placement rétabli à ce pas, sans `cause`), donc identique sur tous les appareils et dédoublonnée par l'union ; non réécrite si le journal la contient déjà. Le journal n'est jamais une source de l'état de `parentId` (les registres font foi) ; la boucle de réparation ignore les entrées de réparation. Ordre d'un historique complété : à HLC égal, l'entrée de cas d'usage précède l'entrée de réparation. Pas de nouveau `schemaVersion` (aucun schéma 1 publié, recette comprise). Remplace la puce « Pas d'entrée de journal » de la v0.11.7. Aucune décision d'ADR modifiée. |
 
 ## 1. Contexte et exigences structurantes
 
@@ -464,7 +465,7 @@ Done Juan/
   - deux déplacements croisés qui créent un cycle, ou un deuxième niveau de sous-objectifs (Q-24).
 
   Après chaque fusion, une **passe de réparation déterministe** du domaine s'exécute :
-  - les cycles et les profondeurs illégales sont corrigés en annulant les déplacements en cause **un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide** (RG-048, DEC-025). Chaque déplacement annulé est consigné comme valeur écartée ;
+  - les cycles et les profondeurs illégales sont corrigés en annulant les déplacements en cause **un par un, du plus ancien au plus récent, jusqu'à obtenir une hiérarchie valide** (RG-048, DEC-025). Chaque déplacement annulé est consigné comme valeur écartée et dans le journal métier (ci-dessous, « hiérarchies », puce « Entrée de journal de la réparation ») ;
   - les incohérences d'état ne sont pas corrigées automatiquement : elles sont **signalées** à l'utilisateur, par exemple « tâche terminée avec une sous-tâche à faire ».
 
   Les règles exactes de réparation sont fixées par RG-047 à RG-049 (établies, V-03 à V-05, DEC-018).
@@ -481,7 +482,15 @@ Done Juan/
     - **Terminaison** : chaque annulation fait reculer la valeur d'un élément d'au moins un cran dans son propre historique, qui est fini. Au pire, toutes les valeurs reviennent à leur création. Or un ensemble de valeurs de création est toujours valide : chaque création a été validée localement, et un parent ne peut devenir sous-élément que par un déplacement, qui est candidat. La boucle s'arrête donc toujours sur une hiérarchie valide.
     - **Convergence** : le calcul ne dépend que de l'état fusionné et du journal, fusionné par union. Les deux appareils annulent les mêmes déplacements, dans le même ordre, et écrivent les mêmes valeurs ; l'écart d'horodatage entre leurs écritures de réparation est sans effet, puisque les valeurs sont identiques.
     - **Signalement** : chaque déplacement annulé produit une entrée « Modifications non retenues » (RG-056), avec un identifiant déterministe (élément, HLC du déplacement annulé). Une chaîne de N déplacements annulés produit N entrées, signalées une seule fois même si les deux appareils les constatent (RG-056 c).
-    - **Pas d'entrée de journal pour la réparation (v0.11.7, Q-ST017-STA-4 d)** : la réparation écrit seulement le registre `parentId` (valeur rétablie, avec son origine et le HLC de cette origine) et le signalement. Elle n'ajoute **aucune** entrée au journal métier. Raisons : une entrée datée par chaque appareil qui répare aurait un identifiant et un HLC propres à cet appareil, et l'union du journal en garderait deux ; la boucle n'en a pas besoin, puisqu'une valeur rétablie d'origine « déplacement » se retrouve dans le journal par le HLC de ce déplacement (l'entrée de l'utilisateur), jamais par une entrée de réparation. L'identifiant déterministe cité ci-dessus est celui du signalement. L'absence de l'annulation dans l'historique de l'objectif (RG-050) est une question métier posée à Pepper (Q-ST017-PEP-2 b) ; si une entrée d'historique était exigée, elle devrait être datée de façon déterministe (HLC du déplacement annulé, identifiant dérivé de celui du signalement), jamais de l'heure de l'appareil qui répare.
+    - **Entrée de journal de la réparation (v0.11.8, Q-ST017-PEP-2 b, Q-ST017-STA-5 ; remplace la puce « Pas d'entrée de journal » de la v0.11.7)** : chaque déplacement annulé produit une entrée `CHANGEMENT_PARENT` du journal métier, conséquence enregistrée (RG-050, US-023 CA-11 et S18d). Elle est **entièrement déterminée par l'annulation**, pour que les appareils qui réparent produisent la même entrée et que l'union du journal la dédoublonne :
+      - identifiant = texte de l'identifiant du signalement de cette annulation (`hash(type, id, champ parentId, HLC du déplacement annulé)`, §4.2.1, base32hex, 52 caractères, sans `:`) ; les signalements et le journal sont deux espaces d'identifiants distincts, le partage du texte est voulu (il relie l'entrée à son signalement) ;
+      - HLC = HLC du déplacement annulé (`hlcOrigine` du placement annulé) ; instant et jour = ceux de l'entrée du déplacement annulé (journée du placement annulé) ; à défaut de cette entrée, physique de ce HLC et jour de Paris de cet instant ;
+      - `avant` = placement annulé, `apres` = placement rétabli par **cette** annulation (avant toute annulation suivante), tous deux avec origine et HLC d'origine ; pas de `cause` (§6.1, c).
+
+      Elle n'est jamais datée de l'heure de l'appareil qui répare, ni ne porte la valeur finale d'une chaîne, qui dépendrait du nombre de passes. Une entrée dont l'identifiant figure déjà dans le journal n'est pas réécrite (idempotence entre passes et entre appareils).
+      - **Pourquoi l'union reste convergente** : l'union du journal garde, pour un identifiant, la première entrée reçue ; elle n'est commutative que si un même identifiant porte toujours le même contenu. C'est le cas ici : le contenu ne dépend que de l'élément, du HLC du déplacement annulé et de l'entrée de ce déplacement (le placement annulé est son `apres`, le placement rétabli son `avant`), toutes données immuables et présentes ensemble dans tout état qui contient le registre (un fichier d'appareil porte l'état complet, registres et journal). Le cas « entrée du déplacement absente » n'est donc pas atteint ; s'il l'était, il est journalisé en « erreur » par le service (incohérence). À trois appareils, un appareil qui voit un état partiel peut annuler un déplacement que l'état complet n'aurait pas exigé : son entrée est conservée par l'union, comme le signalement correspondant (§4.2.1, « Existence d'une entrée ») ; tous les appareils finissent avec le même ensemble d'entrées, au pire une entrée de trop, jamais deux contenus pour un même identifiant.
+      - **Le journal n'est pas une source de l'état** : le placement courant d'un objectif est celui des registres. Aucune projection ne déduit `parentId` en rejouant le journal (la dernière entrée d'un historique n'est pas forcément le placement final, Q-ST017-PEP-3). La boucle de réparation cherche la valeur rétablie dans l'entrée du **déplacement** (identifiant `<UUID v7 de l'opération>:<rang>`), jamais dans une entrée de réparation, qui porte le même HLC et le même élément ; l'index du journal utilisé par la boucle les écarte.
+      - Les entrées de réparation n'entrent pas dans l'index des écritures en attente et ne font pas avancer `dernierHlc` (leur HLC est déjà connu) ; elles sont déposées avec la fusion (`fusionNonDeposee`).
     - Le mécanisme précédent (« le plus ancien est annulé ») en est le cas particulier N = 1 : la conception est conservée, seule la boucle est explicitée. Un cas de test à prévoir pour Anthony : une chaîne de trois déplacements croisés qui exige deux annulations.
   - **incohérences d'état** (RG-049) : elles sont **dérivées**, et signalées tant qu'elles existent ;
   - **état d'une tâche** : l'état et ses dates (`etat`, `dateFin`, `dateAbandon`, `abandonParCascade`) forment **un seul registre**, fusionné comme une seule information. Une tâche abandonnée ne peut ainsi jamais porter de date de fin ;
@@ -754,10 +763,10 @@ erDiagram
 **Historique RG-050 : format de `EvenementJournal` (v0.9, avis sur Q-US-001-2)** :
 - **Valeurs structurées, jamais rendues** : chaque entrée porte `type` (liste fermée), `element` (type et id), `avant` et `apres` sous forme d'objets typés `{champ: valeur}`, limités aux champs historisés, ainsi que `hlc`, l'instant UTC, le jour à Paris et `cause`. Le **rendu** textuel des scénarios (« délai 2026-12-15 », « parent Publier le guide »…) relève des *step definitions* et, au lot qui l'affichera, d'un modèle de vue. Il **n'engage pas le format Drive**. Pour l'architecture, Q-US-001-2 a) n'est donc bloquante que pour E10, pas pour E9.
 - **Liste fermée des types (b)** : `CREATION`, `MODIFICATION_DELAI`, `MODIFICATION_ESTIMATION`, `RATTACHEMENT`, `DETACHEMENT`, `CHANGEMENT_PARENT`, `FIN`, `REOUVERTURE`, `ABANDON`, `REPRISE`, `SUPPRESSION`, complétée aux lots suivants (`PLANIFICATION`, `RAF_CORRIGE`…). Un type inconnu de même `schemaVersion` est conservé tel quel (ANT-19). Les noms du §6.1 de la v0.8 (`TACHE_CREEE`, `TERMINEE`…) sont remplacés par cette liste, qui s'applique aux objectifs comme aux tâches.
-- **Conséquences indirectes (c), principe technique** : **toute conséquence écrite dans l'état produit une entrée**, avec `cause` égale à l'identifiant de l'entrée qui l'a déclenchée. C'est le cas de l'abandon en cascade (une entrée `ABANDON` par sous-tâche, puisque `abandonParCascade` est écrit), de la réouverture de la tâche parente (US-003 CA-9, ou ajout d'une sous-tâche à une tâche terminée), de l'estimation recopiée à la suppression de la dernière sous-tâche et des déplacements annulés par RG-048. Une **conséquence dérivée à la lecture** (§4.2, RG-046 et RG-047 : détachement d'une tâche d'un objectif supprimé, sous-objectif devenu principal, sous-tâche d'une tâche supprimée) **ne produit pas d'entrée**. Le calcul de la vélocité et du backlog rejoue le journal avec les mêmes fonctions de dérivation, ce qui le rend déterministe. Raison : une conséquence dérivée apparaît aussi à la fusion, sur les deux appareils, sans écriture ; la journaliser créerait des doublons ou des divergences. Pepper reste maître de ce que les scénarios vérifient ; si elle souhaite voir ces conséquences comme des entrées, elles devront être écrites, avec un identifiant déterministe.
+- **Conséquences indirectes (c), principe technique** : **toute conséquence écrite dans l'état produit une entrée**, avec `cause` égale à l'identifiant de l'entrée qui l'a déclenchée. C'est le cas de l'abandon en cascade (une entrée `ABANDON` par sous-tâche, puisque `abandonParCascade` est écrit), de la réouverture de la tâche parente (US-003 CA-9, ou ajout d'une sous-tâche à une tâche terminée), de l'estimation recopiée à la suppression de la dernière sous-tâche et des déplacements annulés par RG-048 (l'entrée d'un déplacement annulé ne porte pas de `cause` : elle n'appartient à aucune opération, la réparation étant une conséquence de la fusion ; elle se rattache au déplacement par son HLC, égal, et à son signalement par son identifiant, §4.2, v0.11.8). Une **conséquence dérivée à la lecture** (§4.2, RG-046 et RG-047 : détachement d'une tâche d'un objectif supprimé, sous-objectif devenu principal, sous-tâche d'une tâche supprimée) **ne produit pas d'entrée**. Le calcul de la vélocité et du backlog rejoue le journal avec les mêmes fonctions de dérivation, ce qui le rend déterministe. Raison : une conséquence dérivée apparaît aussi à la fusion, sur les deux appareils, sans écriture ; la journaliser créerait des doublons ou des divergences. Pepper reste maître de ce que les scénarios vérifient ; si elle souhaite voir ces conséquences comme des entrées, elles devront être écrites, avec un identifiant déterministe.
 - **Identifiant d'une entrée écrite par un cas d'usage (v0.10.2, ANT-25)** : `<UUID v7 de l'opération>:<rang>`. L'opération est l'appel unique au service d'écriture qui applique une décision ; son UUID v7 est tiré une fois par le port `GenerateurIdentifiants`. Le rang est l'entier décimal (0, 1, 2…, sans zéros de tête) de l'entrée dans cette décision. L'identifiant est globalement unique (UUID v7 unique, rang unique dans l'opération), calculable par le domaine sans tirage, donc déterministe dans les tests, et il permet à une décision d'enregistrer l'identifiant de sa propre entrée (par exemple `abandonParCascade`) avant l'écriture. `cause` désigne une entrée de la même opération. L'identifiant est **opaque** : aucun traitement ne doit en extraire l'opération, le rang ou l'horodatage du UUID.
-- **Entrées produites par la fusion** (réparation RG-048) : identifiant **déterministe** `hash(élément, HLC du déplacement annulé)`, pour que les deux appareils produisent la même entrée et que l'union la dédoublonne. Son encodage (base32hex) ne contient pas le caractère `:`, ce qui exclut toute collision avec la forme précédente.
-- **Ordre d'un historique** : HLC croissant, puis `id` en comparaison ordinale de chaînes (unités de code, sans `localeCompare`). Le second critère ne sert qu'en cas d'égalité d'HLC, qui ne se produit pas entre deux entrées écrites par des cas d'usage (au plus une entrée par modification, et un HLC distinct par modification).
+- **Entrées produites par la fusion** (réparation RG-048, §4.2 ; v0.11.8) : identifiant **déterministe**, égal au texte de l'identifiant du signalement `PLACEMENT_ANNULE` correspondant (`hash(élément, HLC du déplacement annulé)`, §4.2.1), pour que tous les appareils produisent la même entrée et que l'union la dédoublonne. Son encodage (base32hex, 52 caractères `[0-9a-v]`) ne contient pas le caractère `:`, ce qui exclut toute collision avec la forme `<UUID v7 de l'opération>:<rang>`. La base locale et le fichier d'appareil (schéma 1) acceptent les deux formes ; aucun schéma 1 n'étant publié avant la livraison du lot 1 (ni en production ni en recette), pas de nouveau `schemaVersion`.
+- **Ordre d'un historique** (v0.11.8) : HLC croissant ; à HLC égal, une entrée écrite par un cas d'usage avant une entrée de réparation ; puis `id` en comparaison ordinale de chaînes (unités de code, sans `localeCompare`). L'ordre est total (identifiants uniques). Deux entrées d'un même élément n'ont le même HLC que dans un cas : un déplacement annulé et son entrée de réparation, qui le suit donc immédiatement (US-023 S18d). L'ordre sert à l'affichage ; il ne sert à reconstituer aucun état (§4.2).
 - **(d)** : l'intitulé et la description ne sont pas historisés (RG-050 ne les cite pas) ; aucun obstacle technique à les ajouter plus tard, comme nouveaux champs optionnels sans changement de `schemaVersion`.
 
 **Données locales non synchronisées** :
