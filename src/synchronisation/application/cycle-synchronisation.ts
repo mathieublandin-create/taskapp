@@ -4,18 +4,21 @@ import type { JournalTechnique } from '../../commun/application/ports/journal-te
 import type { Annulation, Planificateur } from '../../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../../commun/application/ports/source-aleatoire';
 import { succes, type Resultat } from '../../commun/domaine/resultat';
+import { Instant } from '../../commun/domaine/temps/instant';
 import { delaiAvantTentative, TENTATIVES_AVANT_ABANDON } from '../../infrastructure-google';
 import type { ContenuFichierAppareil, Generation } from '../domaine/contenu-fichier';
 import { contenuAEnvoyer, doitDeposer, retirerDeposees } from '../domaine/depot';
 import type { EtatLocal } from '../domaine/etat-local';
-import { planifierFusion } from '../domaine/fusion';
 import type { Hlc } from '../domaine/hlc';
+import type { IdEvenement } from '../domaine/identifiant-evenement';
 import type { IdFichierDrive, MetaSynchronisation } from '../domaine/meta-synchronisation';
 import {
   PERIODE_SYNCHRONISATION_PREMIER_PLAN,
   TEMPORISATION_DEPOT,
 } from '../domaine/parametres-synchronisation';
 import { PLAN_VIDE, type PlanEcriture } from '../domaine/planifier-ecritures';
+import { planifierSynchronisation } from '../domaine/planifier-synchronisation';
+import type { Signalements } from '../domaine/signalements';
 import { SCHEMA_VERSION } from '../domaine/version-schema';
 import type { AccesGoogle, EtatAccesGoogle } from './ports/acces-google';
 import type { DepotLocal, ErreurDepotLocal } from './ports/depot-local';
@@ -51,7 +54,12 @@ export type DependancesCycle = {
 
 type ErreurCycle = ErreurTransport | ErreurDepotLocal;
 type Etape<T = undefined> = Promise<Resultat<T, ErreurCycle>>;
-type Lecture = { readonly etat: EtatLocal; readonly meta: MetaSynchronisation };
+/** Lectures du début d'un cycle ou d'un dépôt ; les signalements sont lus après l'état (§6.2, condition (1)). */
+type Lu = {
+  readonly etat: EtatLocal;
+  readonly meta: MetaSynchronisation;
+  readonly signalements: Signalements;
+};
 
 /** Incrément 1 : la génération est toujours initiale (« Repartir de zéro » : incrément 3). */
 const GENERATION: Generation = { type: 'INITIALE' };
@@ -73,8 +81,9 @@ const planRetrait = (etat: EtatLocal, x: Hlc | undefined): PlanEcriture => {
   };
 };
 
-const planNonVide = (plan: PlanEcriture): boolean =>
-  plan.registresEcrits.length > 0 || plan.evenementsAjoutes.length > 0;
+/** Instant physique corrigé de l'écart mesuré avec Google (§6.3, `physique(e)`). */
+const physique = (horloge: Horloge, etat: EtatLocal): Instant =>
+  Instant.decaler(horloge.maintenant(), etat.correctionHorloge);
 
 /**
  * Cycle de synchronisation d'un espace (ST-US-017 §6.3) : lecture des fichiers des autres appareils, fusion,
@@ -317,7 +326,7 @@ export class CycleSynchronisation implements SuiviCycle {
     if (!dossier.ok) return dossier;
     const inventaire = await this.#inventaire(dossier.valeur, lu.valeur.meta.pageToken);
     if (!inventaire.ok) return inventaire;
-    const fusion = await this.#fusionner(inventaire.valeur.fichiers, lu.valeur.etat);
+    const fusion = await this.#fusionner(inventaire.valeur.fichiers, lu.valeur);
     if (!fusion.ok) return fusion;
     const jeton = await this.#memoriserJeton(lu.valeur.meta, inventaire.valeur.jeton);
     if (!jeton.ok) return jeton;
@@ -345,12 +354,19 @@ export class CycleSynchronisation implements SuiviCycle {
     return this.#deposer(dossier.valeur);
   }
 
-  async #lire(): Etape<Lecture> {
-    const etat = await this.dependances.depot.lire();
+  /**
+   * État, puis méta, puis signalements, dans cet ordre (§6.2, v0.7) : lus avant l'état, une lecture « Compris » écrite
+   * entre les deux serait couverte par `deposeJusquA` sans figurer dans le fichier déposé (UT-US-017-110).
+   */
+  async #lire(): Etape<Lu> {
+    const { depot } = this.dependances;
+    const etat = await depot.lire();
     if (!etat.ok) return etat;
-    const meta = await this.dependances.depot.lireMeta();
+    const meta = await depot.lireMeta();
     if (!meta.ok) return meta;
-    return succes({ etat: etat.valeur, meta: meta.valeur });
+    const signalements = await depot.lireSignalements();
+    if (!signalements.ok) return signalements;
+    return succes({ etat: etat.valeur, meta: meta.valeur, signalements: signalements.valeur });
   }
 
   /** Méta fusionnée clé à clé, sans plan d'écriture. */
@@ -383,19 +399,16 @@ export class CycleSynchronisation implements SuiviCycle {
   }
 
   /** Fusionne chaque fichier d'un autre appareil ; rend vrai si une fusion a écrit dans l'état local. */
-  async #fusionner(
-    fichiers: ReadonlyArray<FichierAppareilDistant>,
-    etat: EtatLocal,
-  ): Etape<boolean> {
+  async #fusionner(fichiers: ReadonlyArray<FichierAppareilDistant>, lu: Lu): Etape<boolean> {
     let ecrit = false;
-    for (const fichier of fichiers.filter((f) => f.appareil !== etat.appareilId)) {
+    for (const fichier of fichiers.filter((f) => f.appareil !== lu.etat.appareilId)) {
       const contenu = await this.dependances.transport.lireFichierAppareil(fichier.id);
       if (!contenu.ok) {
         if (!estIgnorable(contenu.erreur)) return contenu;
         this.#consigner('FichierAppareilIgnore', contenu.erreur.type);
         continue;
       }
-      const integre = await this.#integrer(contenu.valeur, etat);
+      const integre = await this.#integrer(contenu.valeur, lu);
       if (!integre.ok) return integre;
       ecrit ||= integre.valeur;
     }
@@ -403,18 +416,38 @@ export class CycleSynchronisation implements SuiviCycle {
   }
 
   /**
-   * Fusion d'un fichier reçu dans une transaction ; aucune transaction s'il n'apporte rien à l'état lu au début du
-   * cycle (l'état local ne fait que croître : un plan vide alors l'est encore ensuite).
+   * Intégration d'un fichier reçu dans une transaction (§6.3, §6.6 n° 11) : détection, fusion, réparation, union des
+   * signalements (`planifierSynchronisation`). Pré-contrôle sur les lectures du début du cycle : aucune transaction
+   * ni journal s'il n'apporte rien (l'état local et les signalements ne font que croître). Après la transaction
+   * validée seulement, une entrée « erreur » par réparation sans entrée du déplacement (condition C2, §8 n° 11).
    */
-  async #integrer(recu: ContenuFichierAppareil, etatInitial: EtatLocal): Etape<boolean> {
-    if (!planNonVide(planifierFusion(etatInitial, recu))) return succes(false);
+  async #integrer(recu: ContenuFichierAppareil, lu: Lu): Etape<boolean> {
+    const { depot, horloge } = this.dependances;
+    const pre = planifierSynchronisation(
+      lu.etat,
+      lu.signalements,
+      recu,
+      physique(horloge, lu.etat),
+    );
+    if (pre.meta.fusionNonDeposee !== true) return succes(false);
+    // Le calcul reste pur : il ne fait que retenir son résultat (rejoué, le dernier calcul fait foi).
     let ecrit = false;
-    const applique = await this.dependances.depot.appliquerSynchronisation((e) => {
-      const plan = planifierFusion(e, recu);
-      ecrit = planNonVide(plan);
-      return { plan, meta: ecrit ? { fusionNonDeposee: true } : {} };
+    let sansEntree: ReadonlyArray<IdEvenement> = [];
+    const applique = await depot.appliquerSynchronisation((e, _m, s) => {
+      const retenu = planifierSynchronisation(e, s, recu, physique(horloge, e));
+      ecrit = retenu.meta.fusionNonDeposee === true;
+      sansEntree = retenu.deplacementsSansEntree ?? [];
+      return retenu;
     });
-    return applique.ok ? succes(ecrit) : applique;
+    if (!applique.ok) return applique;
+    for (const entree of sansEntree) {
+      this.dependances.journal.consigner({
+        niveau: 'erreur',
+        evenement: 'ReparationSansEntreeDeplacement',
+        champs: { entree },
+      });
+    }
+    return succes(ecrit);
   }
 
   /** Manifeste mémorisé, relu, ou écrit (avec LISEZ-MOI) s'il est absent (§6.3). */
@@ -436,16 +469,16 @@ export class CycleSynchronisation implements SuiviCycle {
   }
 
   /** Dépôt (§6.2) : `deposeJusquA` n'avance qu'après la confirmation de Drive (ENF-T-07). */
-  async #deposer(dossier: IdFichierDrive, lecture?: Lecture): Etape {
+  async #deposer(dossier: IdFichierDrive, lecture?: Lu): Etape {
     const lu = lecture === undefined ? await this.#lire() : succes(lecture);
     if (!lu.ok) return lu;
-    const { etat, meta } = lu.valeur;
+    const { etat, meta, signalements } = lu.valeur;
     if (!doitDeposer(etat, meta)) return succes(undefined);
     const x = etat.dernierHlc;
     const { transport, versionApplication, horloge, depot } = this.dependances;
     const depose = await transport.deposerFichierAppareil({
       dossier,
-      contenu: contenuAEnvoyer(etat, { versionApplication, generation: GENERATION }),
+      contenu: contenuAEnvoyer(etat, { versionApplication, generation: GENERATION, signalements }),
       ...(meta.fichierPropre === undefined ? {} : { fichierExistant: meta.fichierPropre }),
     });
     if (!depose.ok) return depose;
