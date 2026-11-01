@@ -80,19 +80,44 @@ describe('construireConfirmation — confirmations des rangs suivants (guide §6
       tacheId: T,
       intitule: 'Chapitre 1',
       sousTachesAbandonnees: 0,
+      sousTachesTerminees: 0,
     });
     const cascade = construireConfirmation({
       type: 'ABANDON_TACHE',
       tacheId: T,
       intitule: 'Chapitre 1',
       sousTachesAbandonnees: 3,
+      sousTachesTerminees: 0,
     });
 
     expect(simple.code).toBe('CNF-ABANDON-TACHE');
     expect(simple.texte).toContain('Vous la retrouverez dans');
     expect(cascade.code).toBe('CNF-ABANDON-TACHE-CASCADE');
-    expect(cascade.texte).toContain('Ses 3 sous-tâches à faire seront abandonnées aussi');
+    expect(cascade.texte).toBe(
+      '3 sous-tâches à faire seront abandonnées aussi. La tâche quitte vos tâches à faire. Vous la retrouverez dans «\u00a0Abandonnées\u00a0» et pourrez la reprendre.',
+    );
     expect(cascade.actionLibelle).toBe('Abandonner');
+  });
+
+  it('UT-COMP-DT-015-01 ABANDON_TACHE — la cascade écrit en entier les nombres accordés et le rappel de reprise (guide §6.6.7)', () => {
+    const texte = (n: number, t: number) =>
+      construireConfirmation({
+        type: 'ABANDON_TACHE',
+        tacheId: T,
+        intitule: 'Chapitre 1',
+        sousTachesAbandonnees: n,
+        sousTachesTerminees: t,
+      }).texte;
+    const fin =
+      'La tâche quitte vos tâches à faire. Vous la retrouverez dans «\u00a0Abandonnées\u00a0» et pourrez la reprendre.';
+
+    expect(texte(2, 1)).toBe(
+      `2 sous-tâches à faire seront abandonnées aussi. 1 sous-tâche déjà terminée reste terminée. ${fin}`,
+    );
+    expect(texte(1, 2)).toBe(
+      `1 sous-tâche à faire sera abandonnée aussi. 2 sous-tâches déjà terminées restent terminées. ${fin}`,
+    );
+    expect(texte(1, 0)).toBe(`1 sous-tâche à faire sera abandonnée aussi. ${fin}`);
   });
 
   it('UT-COMP-US-001-13 REPRISE_SOUS_TACHE — nomme la sous-tâche et la tâche parente, bouton « Reprendre les deux »', () => {

@@ -30,8 +30,15 @@ const controler = (
 export const abandonnable = (vue: VueMetier, tacheId: IdTache): boolean =>
   controler({ tacheId }, vue).ok;
 
+const sousTachesAuxEtat = (
+  vue: VueMetier,
+  tache: Tache,
+  etat: Tache['cycleDeVie']['etat'],
+): ReadonlyArray<Tache> =>
+  sousTachesParCreation(vue, tache.id).filter((s) => s.cycleDeVie.etat === etat);
+
 const sousTachesAFaire = (vue: VueMetier, tache: Tache): ReadonlyArray<Tache> =>
-  sousTachesParCreation(vue, tache.id).filter((s) => s.cycleDeVie.etat === 'A_FAIRE');
+  sousTachesAuxEtat(vue, tache, 'A_FAIRE');
 
 export const evaluerAbandon =
   (c: { readonly tacheId: IdTache }): EvaluationSurVue =>
@@ -45,6 +52,7 @@ export const evaluerAbandon =
         tacheId: tache.valeur.id,
         intitule: tache.valeur.intitule,
         sousTachesAbandonnees: sousTachesAFaire(vue, tache.valeur).length,
+        sousTachesTerminees: sousTachesAuxEtat(vue, tache.valeur, 'TERMINEE').length,
       },
     });
   };

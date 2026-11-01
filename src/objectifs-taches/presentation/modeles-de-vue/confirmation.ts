@@ -26,10 +26,19 @@ const modele = (code: CodeCatalogue, variables: VariablesLibelle): ModeleVueConf
   actionLibelle: libelle(code, variables, 'action'),
 });
 
-const abandon = (intitule: string, sousTachesAbandonnees: number): ModeleVueConfirmation =>
-  sousTachesAbandonnees === 0
-    ? modele('CNF-ABANDON-TACHE', { element: intitule })
-    : modele('CNF-ABANDON-TACHE-CASCADE', { element: intitule, n: sousTachesAbandonnees });
+const abandon = (
+  intitule: string,
+  sousTachesAbandonnees: number,
+  sousTachesTerminees: number,
+): ModeleVueConfirmation => {
+  if (sousTachesAbandonnees === 0) return modele('CNF-ABANDON-TACHE', { element: intitule });
+  return modele('CNF-ABANDON-TACHE-CASCADE', {
+    element: intitule,
+    n: sousTachesAbandonnees,
+    t: sousTachesTerminees,
+    ...(sousTachesTerminees === 0 ? { variante: 'sans-terminee' } : {}),
+  });
+};
 
 export const construireConfirmation = (c: ConfirmationRequise): ModeleVueConfirmation => {
   switch (c.type) {
@@ -50,7 +59,7 @@ export const construireConfirmation = (c: ConfirmationRequise): ModeleVueConfirm
     case 'REOUVERTURE_SOUS_TACHE':
       return modele('CNF-ROUVRIR-SOUS-TACHE', { element: c.intitule });
     case 'ABANDON_TACHE':
-      return abandon(c.intitule, c.sousTachesAbandonnees);
+      return abandon(c.intitule, c.sousTachesAbandonnees, c.sousTachesTerminees);
     case 'REPRISE_SOUS_TACHE':
       return modele('CNF-REPRENDRE-SOUS-TACHE', {
         element: c.intitule,
