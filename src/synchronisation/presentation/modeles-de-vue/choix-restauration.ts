@@ -1,5 +1,7 @@
-import { nonImplemente } from '@non-implemente';
 import type { Instant } from '../../../commun/domaine/temps/instant';
+import { formaterAnciennete } from '../../../commun/presentation/format/heure';
+import type { CodeCatalogue } from '../../../commun/presentation/messages/codes';
+import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { CopieLocale } from '../../domaine/copie-locale';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 
@@ -38,10 +40,67 @@ export type ModeleVueChoixRestauration = {
 };
 
 /**
+ * Textes du composant `ChoixRestauration` (guide §6.6.4, famille `RST-`, et parties d'`ERR-012`) : le composant n'écrit
+ * aucun texte. Construits par la composition (D3, `TODO(D3-RST)` : les codes `RST-*` n'existent pas encore au catalogue).
+ */
+export type TextesChoixRestauration = {
+  /** `libelle('SYN-ACTION')` : titre de la feuille. */
+  readonly titreFeuille: string;
+  /** « Fermer » (en-tête de la feuille) : même effet que « Décider plus tard ». */
+  readonly fermer: string;
+  /** `RST-RESTAURER`. */
+  readonly phraseRestaurer: string;
+  /** `RST-RESTAURATION-EN-COURS` : libellé du bouton entre le geste et la fin de la demande. */
+  readonly restaurationEnCours: string;
+  /** `RST-DEMANDEE` (variante `en-ligne` si le réseau est connecté). */
+  readonly mentionDemandee: string;
+  /** `RST-DEMANDEE`, partie `action` : « Annuler la demande ». */
+  readonly annulerDemande: string;
+  /** `ERR-012`, partie `actionSecondaire`. */
+  readonly repartirDeZero: string;
+  /** `RST-REPARTIR-ZERO`. */
+  readonly phraseRepartirDeZero: string;
+  /** `RST-REPARTIR-INDISPONIBLE`. */
+  readonly repartirDeZeroIndisponible: string;
+  /** `ERR-012`, partie `fermeture`. */
+  readonly deciderPlusTard: string;
+  /** `RST-PLUS-TARD`. */
+  readonly phraseDeciderPlusTard: string;
+};
+
+/** Contenu de `CNF-REPARTIR-ZERO` pour la boîte de confirmation commune (`n` = `RepartirDeZero.evaluer`). */
+export type ConfirmationRepartirDeZero = {
+  readonly code: CodeCatalogue;
+  readonly titre: string;
+  readonly texte: string;
+  readonly actionLibelle: string;
+};
+
+/**
  * Modèle de vue d'`ERR-012` et de son choix (n° 16) : `undefined` si `etat.actionRequise ≠ DONNEES_ABSENTES`
  * (« aucun choix entre restaurer et repartir de zéro n'est demandé ») ; sinon le modèle ci-dessus.
  */
-export const construireChoixRestauration = (
-  e: EntreeChoixRestauration,
-): ModeleVueChoixRestauration | undefined =>
-  nonImplemente(`construireChoixRestauration (${String(e.etat.actionRequise)})`);
+export const construireChoixRestauration = ({
+  etat,
+  restaurationDemandee,
+  decisionReportee,
+  copie,
+  maintenant,
+}: EntreeChoixRestauration): ModeleVueChoixRestauration | undefined => {
+  if (etat.actionRequise !== 'DONNEES_ABSENTES') return undefined;
+  const anciennete = formaterAnciennete(copie.derniereMiseAJour ?? maintenant, maintenant);
+  return {
+    code: 'ERR-012',
+    titre: libelle('ERR-012'),
+    texte: libelle(
+      'ERR-012',
+      { objectifs: copie.objectifs, taches: copie.taches, anciennete },
+      'texte',
+    ),
+    propose: !decisionReportee,
+    restaurer: { libelle: libelle('ERR-012', {}, 'action'), disponible: true },
+    repartirDeZero: { disponible: etat.reseau === 'CONNECTE' },
+    deciderPlusTard: { disponible: true },
+    ...(restaurationDemandee ? { restaurationEnAttente: true as const } : {}),
+  };
+};
