@@ -117,12 +117,26 @@ const lireDelai: Lecteur = (_etat, registre) => {
   return date === undefined ? { type: 'AUCUNE' } : { type: 'DATE', date };
 };
 
+/** RG-056 : la valeur d'état porte sa date (fin ou abandon) ; « à faire » n'en a pas. */
+const valeurEtat = (cycle: CycleDeVie): ValeurSignalee => {
+  switch (cycle.etat) {
+    case 'A_FAIRE':
+      return { type: 'ETAT', etat: 'A_FAIRE' };
+    case 'TERMINEE':
+      return { type: 'ETAT', etat: 'TERMINEE', date: cycle.dateFin };
+    case 'ABANDONNEE':
+      return { type: 'ETAT', etat: 'ABANDONNEE', date: cycle.dateAbandon };
+    default:
+      return assertNever(cycle);
+  }
+};
+
 const lireMesure: Lecteur = (_etat, registre) => {
   if (estRegistre(registre, 'TACHE', 'estimationInitiale')) {
     return { type: 'DUREE', duree: registre.ecriture.valeur };
   }
   return estRegistre(registre, 'TACHE', 'cycleDeVie')
-    ? { type: 'ETAT', etat: registre.ecriture.valeur.etat }
+    ? valeurEtat(registre.ecriture.valeur)
     : undefined;
 };
 

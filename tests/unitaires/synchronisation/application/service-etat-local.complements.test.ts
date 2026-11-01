@@ -120,4 +120,29 @@ describe('ServiceEtatLocalTransactionnel — compléments (ST-socle-ecriture.md 
 
     expect(journal.map((e) => e.id.split(':')[1])).toEqual(['1', '10', '2']);
   });
+
+  it('UT-COMP-US-017-2-29 lireJournal — à HLC égal, une entrée de cas d’usage précède une entrée de réparation, quel que soit l’identifiant (ST-US-017 v0.6 §6.6 n° 9 c)', async () => {
+    const O = idObjectif(1);
+    const h = hlc(DEPART, 0, SMARTPHONE);
+    const evenement = (id: string): EvenementJournal => ({
+      type: 'SUPPRESSION',
+      element: { type: 'OBJECTIF', id: O },
+      avant: {},
+      apres: {},
+      id: id as EvenementJournal['id'],
+      hlc: h,
+      instant: instant(DEPART),
+      jour: date('2026-10-21'),
+    });
+    const reparation = '0'.repeat(52);
+    const etat = etatLocal({
+      appareilId: SMARTPHONE,
+      journal: [evenement(reparation), evenement(idEvenementTest(idOperation(1), 1))],
+    });
+    const service = serviceSur({ ...depotIllisible, lire: () => Promise.resolve(succes(etat)) });
+
+    const journal = valeurDe(await service.lireJournal({ type: 'OBJECTIF', id: O }));
+
+    expect(journal.map((e) => e.id === reparation)).toEqual([false, true]);
+  });
 });
