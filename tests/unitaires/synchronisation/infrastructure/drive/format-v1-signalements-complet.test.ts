@@ -15,13 +15,19 @@ import {
   empreinteSha256,
   serialiserCanonique,
 } from '@src/synchronisation/infrastructure/drive/serialisation-canonique';
+import { contenuAEnvoyer } from '@src/synchronisation/domaine/depot';
+import type { ValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
+import { etatLocal } from '@tests/support/fabriques/etat-local';
 import {
+  creeSous,
   h,
   idArbitraire,
   intituleTache,
+  parentObjectif,
+  signalements,
   suppressionTache,
 } from '@tests/support/synchronisation/ecritures-concurrentes';
-import { idTache, PC, SMARTPHONE } from '@tests/support/valeurs';
+import { idObjectif, idTache, PC, SMARTPHONE, TROISIEME } from '@tests/support/valeurs';
 
 const T1 = idTache(1);
 const SANS_SIGNALEMENT: ContenuFichierAppareil = {
@@ -82,6 +88,10 @@ describe('Signalements du schéma 1 : lecture tolérante (ST-US-017 v0.5 §5.2, 
 
   it('UT-COMP-US-017-2-20 propriété inconnue d’une entrée tolérée ; registre d’un champ inconnu : entrée ignorée', async () => {
     const enPlus = await avecValeurModifiee((v) => ({ ...v, ajoutFutur: 1 }));
+    const motifFutur = await avecValeurModifiee((v) => ({ ...v, motif: 'FUTUR', ecartee: 1 }));
+    const luFutur = await decoderFichierAppareil(motifFutur);
+    expect(luFutur.ok && 'valeursEcartees' in luFutur.valeur).toBe(false);
+    expect(luFutur.ok && luFutur.valeur.lectures).toEqual(AVEC_SIGNALEMENTS.lectures);
     const champInconnu = await avecValeurModifiee((v) => ({
       ...v,
       ecartee: { ...(v['ecartee'] as Brut), champ: 'couleur' },
@@ -126,6 +136,77 @@ describe('Signalements du schéma 1 : lecture tolérante (ST-US-017 v0.5 §5.2, 
 
     expect(await decoderFichierAppareil(lectureInvalide)).toEqual(SCHEMA);
     const lu = await decoderFichierAppareil(typeInconnu);
+    expect(lu.ok && lu.valeur.valeursEcartees).toBeUndefined();
+  });
+
+  it('UT-COMP-US-017-2-23 aller-retour des quatre motifs, écrits triés par identifiant ; contenuAEnvoyer avec des lectures seules', async () => {
+    const O1 = idObjectif(1);
+    const valeurs: ReadonlyArray<ValeurEcartee> = [
+      {
+        id: idArbitraire(4),
+        motif: 'DONNEES_EFFACEES',
+        ecartee: intituleTache(T1, 'Perdu', h(1, TROISIEME)),
+        generation: h(5, PC),
+      },
+      {
+        id: idArbitraire(3),
+        motif: 'PLACEMENT_ANNULE',
+        ecartee: parentObjectif(O1, creeSous(idObjectif(2), h(1, PC)), h(1, PC)),
+        gagnante: parentObjectif(O1, { origine: 'CREATION', hlcOrigine: h(0, PC) }, h(3, PC)),
+      },
+      {
+        id: idArbitraire(2),
+        motif: 'SUPPRESSION',
+        ecartee: intituleTache(T1, 'A', h(1, PC)),
+        gagnante: suppressionTache(T1, h(2, SMARTPHONE)),
+        intituleElement: 'Chapitre 1',
+      },
+      {
+        id: idArbitraire(1),
+        motif: 'CONFLIT',
+        ecartee: intituleTache(T1, 'A', h(1, PC)),
+        gagnante: intituleTache(T1, 'B', h(2, SMARTPHONE)),
+      },
+    ];
+    const contenu = { ...SANS_SIGNALEMENT, valeursEcartees: valeurs };
+    const brut = await brutDe(contenu);
+
+    expect((brut['valeursEcartees'] as ReadonlyArray<Brut>).map((v) => v['id'])).toEqual(
+      [1, 2, 3, 4].map(idArbitraire),
+    );
+    expect(brut['appareils']).toEqual([SMARTPHONE, PC, TROISIEME].sort());
+    expect(await decoderFichierAppareil(await encoderFichierAppareil(contenu))).toEqual(
+      succes({ ...contenu, valeursEcartees: [...valeurs].reverse() }),
+    );
+    const etat = etatLocal({ appareilId: SMARTPHONE });
+    const lecture = { id: idArbitraire(1), hlc: h(3, PC) };
+    const depose = contenuAEnvoyer(etat, {
+      versionApplication: '0.1.0',
+      generation: { type: 'INITIALE' },
+      signalements: signalements([], [lecture]),
+    });
+    expect(['valeursEcartees' in depose, depose.lectures]).toEqual([false, [lecture]]);
+    const valeursSeules = contenuAEnvoyer(etat, {
+      versionApplication: '0.1.0',
+      generation: { type: 'INITIALE' },
+      signalements: signalements(valeurs),
+    });
+    expect(['lectures' in valeursSeules, valeursSeules.valeursEcartees]).toEqual([
+      false,
+      [...valeurs].reverse(),
+    ]);
+  });
+
+  it('UT-COMP-US-017-2-24 DONNEES_EFFACEES dont le registre écarté est inconnu : entrée ignorée', async () => {
+    const effacee = await avecValeurModifiee(({ gagnante, ...v }) => ({
+      ...v,
+      motif: 'DONNEES_EFFACEES',
+      generation: (gagnante as Brut)['hlc'],
+      ecartee: { ...(v['ecartee'] as Brut), type: 'PROJET' },
+    }));
+
+    const lu = await decoderFichierAppareil(effacee);
+
     expect(lu.ok && lu.valeur.valeursEcartees).toBeUndefined();
   });
 });

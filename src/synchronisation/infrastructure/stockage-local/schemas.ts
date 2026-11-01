@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { assertNever } from '../../../commun/domaine/assert-never';
 import { Duree } from '../../../commun/domaine/duree';
 import { IdAppareil, IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
 import { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
@@ -477,6 +476,7 @@ export const encoderValeurEcartee = (valeur: ValeurEcartee): object => {
     motif: valeur.motif,
     ecartee: encoderColonnesRegistre(valeur.ecartee),
   };
+  // Switch exhaustif sans `default` : un motif ajouté au domaine sans cas ici ne compile pas (TS2366).
   switch (valeur.motif) {
     case 'CONFLIT':
     case 'PLACEMENT_ANNULE':
@@ -491,8 +491,6 @@ export const encoderValeurEcartee = (valeur: ValeurEcartee): object => {
       };
     case 'DONNEES_EFFACEES':
       return { ...commun, generation: encoderHlc(valeur.generation) };
-    default:
-      return assertNever(valeur);
   }
 };
 

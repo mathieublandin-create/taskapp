@@ -212,4 +212,47 @@ describe('DepotLocalDexie — signalements, base version 3 (ST-US-017 v0.5 §5.1
 
     expect(await depot.lireSignalements()).toEqual(echec({ type: 'EspaceLocalNonOuvert' }));
   });
+
+  it('UT-COMP-US-017-2-25 ligne de valeur écartée dont un registre est invalide : DonneesLocalesIllisibles ; suppression sans intitulé relue sans lui', async () => {
+    const fabrique = new IDBFactory();
+    const sansIntitule: ValeurEcartee = {
+      id: idArbitraire(5),
+      motif: 'SUPPRESSION',
+      ecartee: intituleTache(T1, 'A', h(1, PC)),
+      gagnante: suppressionTache(T1, h(2, SMARTPHONE)),
+    };
+    valeurDe(
+      await deposerSignalements(nouveauDepot(fabrique), {
+        valeursEcartees: [sansIntitule],
+        lectures: [],
+      }),
+    );
+    expect([
+      ...valeurDe(await nouveauDepot(fabrique).lireSignalements()).valeursEcartees.values(),
+    ]).toEqual([sansIntitule]);
+    const base = new Dexie(NOM_BASE, { indexedDB: fabrique });
+    await base.open();
+    const [ligne] = (await base.table('valeursEcartees').toArray()) as ReadonlyArray<
+      Record<string, Record<string, unknown>>
+    >;
+    base.close();
+    const registreInvalide = { ...ligne?.['ecartee'], champ: 'couleur' };
+
+    for (const cle of ['ecartee', 'gagnante']) {
+      await ecrireLigneBrute(fabrique, 'valeursEcartees', { ...ligne, [cle]: registreInvalide });
+      expect(await nouveauDepot(fabrique).lireSignalements()).toEqual(
+        echec({ type: 'DonneesLocalesIllisibles' }),
+      );
+    }
+  });
+
+  it('UT-COMP-US-017-2-26 lireSignalements sur un espace dont la méta est illisible : DonneesLocalesIllisibles', async () => {
+    const fabrique = new IDBFactory();
+    valeurDe(await nouveauDepot(fabrique).lire());
+    await ecrireLigneBrute(fabrique, 'meta', { nom: 'appareilId', valeur: 'illisible' });
+
+    expect(await nouveauDepot(fabrique).lireSignalements()).toEqual(
+      echec({ type: 'DonneesLocalesIllisibles' }),
+    );
+  });
 });

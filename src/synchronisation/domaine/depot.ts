@@ -10,7 +10,7 @@ import { SCHEMA_VERSION } from './version-schema';
 /** Ordre des tableaux du fichier d'appareil (ST-US-017 v0.5 §5.2) : identifiant, en unités de code. */
 export const trierParIdentifiant = <T extends { readonly id: IdValeurEcartee }>(
   entrees: Iterable<T>,
-): ReadonlyArray<T> => [...entrees].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+): ReadonlyArray<T> => [...entrees].sort((a, b) => Number(a.id > b.id) - Number(a.id < b.id));
 
 // DAT §4.1.5 bis, §4.3 ; ENF-T-07 (ST-US-017 §6.2).
 export const contenuAEnvoyer = (
