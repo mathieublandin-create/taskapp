@@ -9,7 +9,7 @@ import { formaterDate } from '../../../commun/presentation/format/date';
 import { mentionHeureParis } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
 import { libelle, type VariablesLibelle } from '../../../commun/presentation/messages/libelle';
-import { construireLigneTache, nomAccessibleCaseTerminer, type LigneTache } from './ligne-tache';
+import { construireLigneTache, nomAccessibleCase, type LigneTache } from './ligne-tache';
 import { comparerOrdreReference } from './ordre-reference';
 import { phraseSousTacheDe } from './phrases-tache-parente';
 
@@ -29,7 +29,7 @@ export type LigneSousTache = {
    * suivi de « , en retard » si `enRetard` ; même forme que `LigneTache.nomAccessible`.
    */
   readonly nomAccessible: string;
-  /** Case « Terminer » de la ligne : nom accessible « Terminer « {intitulé} » ». */
+  /** Case « Terminer » de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). */
   readonly caseTerminer: { readonly nomAccessible: string };
   /** Sous-tâches d'une tâche parente abandonnée (ST-US-025 §6.4). */
   readonly etiquette?: {
@@ -174,7 +174,9 @@ const construireLigneSousTache = (
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     alertes: ligne.alertes,
     nomAccessible: ligne.nomAccessible,
-    caseTerminer: { nomAccessible: nomAccessibleCaseTerminer(ligne.intitule) },
+    caseTerminer: {
+      nomAccessible: nomAccessibleCase(ligne.intitule, ligne.etat.code === 'ETA-TACHE-TERMINEE'),
+    },
     ...etiquetteSousTache(resume, parente),
   };
 };

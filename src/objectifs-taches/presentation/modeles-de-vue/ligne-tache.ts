@@ -2,11 +2,10 @@ import type { IdTache } from '../../../commun/domaine/identifiants';
 import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { formaterDuree } from '../../../commun/presentation/format/duree';
-import { libelle } from '../../../commun/presentation/messages/libelle';
+import { libelle, type VariablesLibelle } from '../../../commun/presentation/messages/libelle';
 import { mentionAttenteSi } from '../../../synchronisation';
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { AlerteDelaiTache } from '../../domaine/alertes-delai';
-import { terminaison } from './ordre-reference';
 
 // ST-US-002 §4.5 ; ALR-006 : ST-US-024 ; MEN-INCOHERENCE : ST-US-024 (rang 9).
 export type AlerteLigneTache =
@@ -81,25 +80,68 @@ const modeleCompteur = (resume: ResumeTache): Pick<LigneTache, 'compteurSousTach
   };
 };
 
-// TODO(DT-019) : « Terminer « {intitulé} » » n'a pas de code au catalogue (guide §6.6) ; Q-ANT-E12-R6-1.
-export const nomAccessibleCaseTerminer = (intitule: string): string => `Terminer « ${intitule} »`;
+/** ETA-TACHE-CASE : nom accessible de toute case ronde, « Rouvrir » pour une case pleine active (guide §6.6.4). */
+export const nomAccessibleCase = (intitule: string, rouvrir = false): string =>
+  libelle(
+    'ETA-TACHE-CASE',
+    { element: intitule, ...(rouvrir ? { variante: 'rouvrir' } : {}) },
+    'nomAccessible',
+  );
 
 const modeleCaseTerminer = (resume: ResumeTache): Pick<LigneTache, 'caseTerminer'> =>
   resume.cycleDeVie.etat === 'A_FAIRE'
-    ? { caseTerminer: { nomAccessible: nomAccessibleCaseTerminer(resume.intitule) } }
+    ? { caseTerminer: { nomAccessible: nomAccessibleCase(resume.intitule) } }
     : {};
 
-const enMinuscules = (texte: string): string => texte.charAt(0).toLowerCase() + texte.slice(1);
+const partie = (variante: string, variables: VariablesLibelle = {}): string =>
+  libelle('ETA-TACHE-LIGNE', { ...variables, variante }, 'nomAccessible');
 
-/** WCAG 4.1.2 : « {intitulé}, {état en toutes lettres}, délai {date} », suivi de « , en retard ». */
+const partieObjectifs = (resume: ResumeTache): ReadonlyArray<string> => {
+  const [premier] = resume.objectifs;
+  // Une sous-tâche hérite de ses objectifs : la ligne ne les montre pas (guide §6.6.4).
+  if (premier === undefined || resume.objectifsHerites) return [];
+  const n = resume.objectifs.length;
+  return [
+    n === 1
+      ? partie('objectif', { objectif: premier.intitule })
+      : partie('objectifs', { n, objectif: premier.intitule }),
+  ];
+};
+
+/** Parties facultatives du nom, dans l'ordre du guide : une par information affichée sur la ligne. */
+const partiesDuNom = (resume: ResumeTache): ReadonlyArray<string> => [
+  ...(resume.enRetard ? [partie('retard')] : []),
+  ...(resume.alertes.some((alerte) => alerte.type === 'OBJECTIFS')
+    ? [partie('alerte-objectif')]
+    : []),
+  ...(resume.alertes.some((alerte) => alerte.type === 'TACHE_PARENTE')
+    ? [partie('alerte-tache')]
+    : []),
+  partie('estimation', { duree: formaterDuree(resume.estimation) }),
+  ...partieObjectifs(resume),
+  ...(resume.sousTaches === undefined
+    ? []
+    : [
+        partie('sous-taches', {
+          t: resume.sousTaches.terminees,
+          n: resume.sousTaches.nonAbandonnees,
+        }),
+      ]),
+  ...(resume.incoherence === undefined ? [] : [partie('incoherence')]),
+];
+
+/** WCAG 4.1.2, 2.5.3 : « {intitulé}, {état}, délai {date} » puis une partie par information affichée (DT-017). */
 const nomAccessible = (resume: ResumeTache, aujourdhui: DateCalendaire): string => {
-  const fin = terminaison(resume);
-  const etat = libelle(CODES_ETAT[resume.cycleDeVie.etat], {
-    date: fin === undefined ? '' : formaterDate(fin.date, aujourdhui),
-  });
-  const retard = resume.enRetard ? `, ${enMinuscules(libelle('MEN-EN-RETARD'))}` : '';
-  const delai = formaterDate(resume.delai, aujourdhui);
-  return `${resume.intitule}, ${enMinuscules(etat)}, délai ${delai}${retard}`;
+  const base = libelle(
+    'ETA-TACHE-LIGNE',
+    {
+      element: resume.intitule,
+      etat: libelle(CODES_ETAT[resume.cycleDeVie.etat], {}, 'nomAccessible'),
+      date: formaterDate(resume.delai, aujourdhui),
+    },
+    'nomAccessible',
+  );
+  return [base, ...partiesDuNom(resume)].join(', ');
 };
 
 const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'enRetard'> =>

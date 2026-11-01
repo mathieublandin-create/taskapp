@@ -96,7 +96,12 @@ describe('Magasin des tâches — abandon et reprise (ST-US-025 §4.2)', () => {
     expect(refus).toEqual({ type: 'REFUSEE', messages: [] });
     if (demande.type !== 'CONFIRMATION_REQUISE') throw new Error(`Issue : ${demande.type}`);
     expect(demande.confirmation.code).toBe('CNF-ABANDON-TACHE-CASCADE');
-    expect(demande.confirmation.variables).toEqual({ element: 'Chapitre 1', n: 2, t: 0, variante: 'sans-terminee' });
+    expect(demande.confirmation.variables).toEqual({
+      element: 'Chapitre 1',
+      n: 2,
+      t: 0,
+      variante: 'sans-terminee',
+    });
     expect(magasin.getState().detail?.etat.code).toBe('ETA-TACHE-A-FAIRE');
     expect((await demande.confirmer()).type).toBe('FAITE');
     expect(magasin.getState().detail?.etat.code).toBe('ETA-TACHE-ABANDONNEE');

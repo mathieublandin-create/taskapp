@@ -10,7 +10,7 @@ import { construireSelecteurParent } from '@src/objectifs-taches';
 import { SelecteurParent } from '@src/objectifs-taches/presentation/ui/composants/selecteur-parent';
 import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { resumeObjectif } from '@tests/support/fabriques/resumes';
-import { idObjectif } from '@tests/support/valeurs';
+import { date, idObjectif } from '@tests/support/valeurs';
 import {
   choixDuMenu,
   cliquerBoutonIon,
@@ -29,13 +29,43 @@ const objectif = resumeObjectif({ id: X, intitule: 'Publier le guide' });
 const candidats = [objectif, resumeObjectif({ id: P, intitule: 'Développer mon activité' })];
 
 const proprietesSelecteur = (nombreSousObjectifs = 0) => ({
-  modele: construireSelecteurParent({ objectif, candidats, nombreSousObjectifs }),
+  modele: construireSelecteurParent({
+    objectif,
+    candidats,
+    nombreSousObjectifs,
+    jour: date('2026-10-21'),
+    autresSousObjectifs: new Map(),
+  }),
   surRefusCompris: vi.fn(),
   surChoisir: vi.fn(),
   surFermer: vi.fn(),
 });
 
 describe('ParentPicker (ECR-008 C, D ; guide §4.28)', () => {
+  it('UT-COMP-US-023-13 les indications d’un candidat (délai, puis effectif) sont lues avec l’option (aria-describedby), sur une ligne', () => {
+    const parent = resumeObjectif({
+      id: P,
+      intitule: 'Développer mon activité',
+      delai: '2026-12-15',
+    });
+    render(
+      <SelecteurParent
+        {...proprietesSelecteur()}
+        modele={construireSelecteurParent({
+          objectif,
+          candidats: [objectif, parent],
+          nombreSousObjectifs: 0,
+          jour: date('2026-10-21'),
+          autresSousObjectifs: new Map([[P, 2]]),
+        })}
+      />,
+    );
+
+    const option = screen.getByRole('radio', { name: 'Développer mon activité' });
+    const decrit = document.getElementById(option.getAttribute('aria-describedby') ?? '');
+    expect(decrit?.textContent).toBe('Son délai\u00a0: 15 déc. · Aura 3 sous-objectifs');
+  });
+
   it('UT-COMP-US-023-01 les options sont des boutons radio ; l’objectif lui-même est indisponible et lu avec sa raison ; le choix est transmis', async () => {
     const proprietes = proprietesSelecteur();
     render(<SelecteurParent {...proprietes} />);

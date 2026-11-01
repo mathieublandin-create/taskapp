@@ -99,7 +99,7 @@ describe('construireConfirmation — confirmations des rangs suivants (guide §6
     expect(cascade.actionLibelle).toBe('Abandonner');
   });
 
-  it('UT-COMP-DT-015-01 ABANDON_TACHE — la cascade écrit en entier les nombres accordés et le rappel de reprise (guide §6.6.7)', () => {
+  it('UT-COMP-US-025-16 ABANDON_TACHE — la cascade écrit en entier les nombres accordés et le rappel de reprise (guide §6.6.7)', () => {
     const texte = (n: number, t: number) =>
       construireConfirmation({
         type: 'ABANDON_TACHE',
@@ -197,6 +197,12 @@ describe('construireDetailObjectif — niveau, description, retard et alerte', (
     expect(detail.description).toBe('Version 1');
     expect(detail.enRetard).toMatchObject({ code: 'MEN-EN-RETARD' });
     expect(detail.alerteDelai).toMatchObject({ code: 'ALR-007', parent: 'Guide' });
+    expect(detail.alerteDelai?.carte).toEqual({
+      titre: 'Délai postérieur à celui du parent',
+      texte:
+        'Le délai de ce sous-objectif (1 oct.) est après celui de «\u00a0Guide\u00a0» (1 sept.). Rien n’est bloqué.',
+      action: 'Changer le délai',
+    });
     expect(detail.progression).toBe(25);
     expect(detail.nomAccessible).toContain('Publier le guide, En cours, 1 tâches sur 4 terminées');
   });

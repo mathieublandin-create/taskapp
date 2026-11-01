@@ -1,12 +1,4 @@
-import {
-  IonButton,
-  IonButtons,
-  IonChip,
-  IonContent,
-  IonHeader,
-  IonNote,
-  IonToolbar,
-} from '@ionic/react';
+import { IonButton, IonButtons, IonChip, IonContent, IonHeader, IonToolbar } from '@ionic/react';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
@@ -28,6 +20,8 @@ export type ProprietesDetailObjectif = {
   /** Facultatifs (US-002) : sans eux, les tâches ne sont pas cliquables et « Ajouter une tâche » n'est pas offert. */
   readonly surOuvrirTache?: (id: IdTache) => void;
   readonly surAjouterTache?: () => void;
+  /** Facultatif : sans lui, la carte d'ALR-007 n'offre pas « Changer le délai ». */
+  readonly surChangerDelai?: () => void;
 };
 
 const ESPACE_INSECABLE = ' ';
@@ -160,8 +154,35 @@ const TachesDuDetail = ({
   </>
 );
 
+/** ALR-007, variante détail (ECR-003 E) : niveau Attention, non fermable, une seule action secondaire. */
+const CarteAlerteDelai = ({
+  alerte,
+  surChangerDelai,
+}: {
+  readonly alerte: ModeleVueDetailObjectif['alerteDelai'];
+  readonly surChangerDelai: ProprietesDetailObjectif['surChangerDelai'];
+}) =>
+  alerte === undefined ? null : (
+    <section role="status" className="carte-alerte" data-code={alerte.code} data-variante="detail">
+      <h2>{alerte.carte.titre}</h2>
+      <p>{alerte.carte.texte}</p>
+      {surChangerDelai === undefined ? null : (
+        <IonButton fill="outline" onClick={surChangerDelai}>
+          {alerte.carte.action}
+        </IonButton>
+      )}
+    </section>
+  );
+
 export const DetailObjectif = ({ modele, ...proprietes }: ProprietesDetailObjectif) => {
-  const { surRetour, surOuvrirMenu, surOuvrirTache, surAjouterTache, ...organisation } = proprietes;
+  const {
+    surRetour,
+    surOuvrirMenu,
+    surOuvrirTache,
+    surAjouterTache,
+    surChangerDelai,
+    ...organisation
+  } = proprietes;
   const taches = {
     ...(surOuvrirTache === undefined ? {} : { surOuvrirTache }),
     ...(surAjouterTache === undefined ? {} : { surAjouterTache }),
@@ -171,11 +192,7 @@ export const DetailObjectif = ({ modele, ...proprietes }: ProprietesDetailObject
       <BarreDetail surRetour={surRetour} surOuvrirMenu={surOuvrirMenu} />
       <IonContent>
         <EnTeteDetail modele={modele} />
-        {modele.alerteDelai === undefined ? null : (
-          <IonNote color="warning" role="status" data-code={modele.alerteDelai.code}>
-            {modele.alerteDelai.libelle}
-          </IonNote>
-        )}
+        <CarteAlerteDelai alerte={modele.alerteDelai} surChangerDelai={surChangerDelai} />
         {modele.description === undefined ? null : <p>{modele.description}</p>}
         <OrganisationDetail modele={modele} {...organisation} />
         <TachesDuDetail modele={modele} {...taches} />

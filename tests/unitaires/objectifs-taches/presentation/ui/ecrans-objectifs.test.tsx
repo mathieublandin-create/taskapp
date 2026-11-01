@@ -13,6 +13,7 @@ import { ListeObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/lis
 import { resumeObjectif } from '@tests/support/fabriques/resumes';
 import { horlogeSur } from '@tests/support/horloge';
 import { NEW_YORK, idObjectif } from '@tests/support/valeurs';
+import { cliquerBoutonIon } from '@tests/support/ui-objectifs';
 
 afterEach(cleanup);
 
@@ -213,7 +214,7 @@ describe('DetailObjectif (ECR-003 A, B, D)', () => {
         parentIntitule: 'Guide',
         delai: '2026-10-01',
         enRetard: true,
-        alerteDelai: { parentIntitule: 'Guide' } as never,
+        alerteDelai: { parentIntitule: 'Guide', delaiParent: '2026-09-01' } as never,
       }),
     });
     render(<DetailObjectif modele={modele} {...proprietes()} />);
@@ -223,6 +224,29 @@ describe('DetailObjectif (ECR-003 A, B, D)', () => {
       'En retard · 1 oct.',
     );
     expect(document.querySelector('[data-code="ALR-007"]')?.getAttribute('role')).toBe('status');
+  });
+
+  it('UT-COMP-US-023-12 la carte ALR-007 du détail d’un sous-objectif (variante detail) porte titre, texte et l’action « Changer le délai » qui ouvre la feuille du délai', async () => {
+    const surChangerDelai = vi.fn();
+    const modele = detail({
+      objectif: resumeObjectif({
+        id: o(2),
+        intitule: 'Relecture',
+        parentId: o(1),
+        parentIntitule: 'Guide',
+        delai: '2026-10-01',
+        alerteDelai: { parentIntitule: 'Guide', delaiParent: '2026-09-01' } as never,
+      }),
+    });
+    render(<DetailObjectif modele={modele} {...proprietes()} surChangerDelai={surChangerDelai} />);
+
+    const carte = document.querySelector('[data-code="ALR-007"]');
+    expect(carte?.getAttribute('data-variante')).toBe('detail');
+    expect(carte?.getAttribute('role')).toBe('status');
+    expect(carte?.textContent).toContain('Délai postérieur à celui du parent');
+    expect(carte?.textContent).toContain('Rien n’est bloqué.');
+    await cliquerBoutonIon('Changer le délai');
+    expect(surChangerDelai).toHaveBeenCalledOnce();
   });
 
   it('UT-COMP-US-001-50 les sous-objectifs sont listés sous leur titre ; un appui ouvre le détail du sous-objectif', async () => {
