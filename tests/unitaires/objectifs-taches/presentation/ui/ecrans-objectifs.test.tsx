@@ -160,6 +160,7 @@ describe('DetailObjectif (ECR-003 A, B, D)', () => {
     surRetour: vi.fn(),
     surOuvrirMenu: vi.fn(),
     surOuvrirSousObjectif: vi.fn(),
+    surChangerDelai: vi.fn(),
   });
 
   it('UT-COMP-US-001-47 en-tête : intitulé, état, niveau, barre de progression nommée, compteur, délai, description', () => {
@@ -238,7 +239,7 @@ describe('DetailObjectif (ECR-003 A, B, D)', () => {
         alerteDelai: { parentIntitule: 'Guide', delaiParent: '2026-09-01' } as never,
       }),
     });
-    render(<DetailObjectif modele={modele} {...proprietes()} surChangerDelai={surChangerDelai} />);
+    render(<DetailObjectif {...proprietes()} modele={modele} surChangerDelai={surChangerDelai} />);
 
     const carte = document.querySelector('[data-code="ALR-007"]');
     expect(carte?.getAttribute('data-variante')).toBe('detail');

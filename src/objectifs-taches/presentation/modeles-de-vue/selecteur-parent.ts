@@ -1,8 +1,9 @@
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
+import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { ResumeObjectif } from '../../application/requetes/resumes';
-import type { SelecteurParent } from '../../application/requetes/consulter-selecteur-parent';
+import type { CandidatParent, SelecteurParent } from '../../application/requetes/consulter-selecteur-parent';
 import type { MessageRefus } from './messages-de-refus';
 import { comparerOrdreReference } from './ordre-reference';
 
@@ -30,12 +31,12 @@ export type ModeleVueSelecteurParent = {
 
 const RAISON_LUI_MEME: MessageRefus = { code: 'ERR-031', variables: {} };
 
-/** Un objectif qui a des sous-objectifs ne peut aller sous aucun objectif : seule l'option AUCUN reste (guide §4.28). */
+/** Délai du candidat, puis effectif qu'il aurait (SEL-PARENT-EFFECTIF : n = autres + 1). */
 const indicationsDe = (
-  candidat: ResumeObjectif,
-  { jour, autresSousObjectifs }: Pick<SelecteurParent, 'jour' | 'autresSousObjectifs'>,
+  candidat: CandidatParent,
+  jour: DateCalendaire,
 ): ReadonlyArray<IndicationCandidat> => {
-  const autres = autresSousObjectifs.get(candidat.id) ?? 0;
+  const autres = candidat.autresSousObjectifs;
   return [
     ...(candidat.delai === undefined
       ? []
@@ -57,7 +58,7 @@ const indicationsDe = (
 };
 
 const optionObjectif = (
-  candidat: ResumeObjectif,
+  candidat: CandidatParent,
   donnees: SelecteurParent,
   bloquant: MessageRefus | undefined,
 ): OptionParent => {
@@ -67,10 +68,11 @@ const optionObjectif = (
     intitule: candidat.intitule,
     disponible: raison === undefined,
     ...(raison === undefined ? {} : { raison }),
-    indications: raison === undefined ? indicationsDe(candidat, donnees) : [],
+    indications: raison === undefined ? indicationsDe(candidat, donnees.jour) : [],
   };
 };
 
+/** Un objectif qui a des sous-objectifs ne peut aller sous aucun objectif : seule l'option AUCUN reste (guide §4.28). */
 const messageBloquant = (
   objectif: ResumeObjectif,
   nombreSousObjectifs: number,

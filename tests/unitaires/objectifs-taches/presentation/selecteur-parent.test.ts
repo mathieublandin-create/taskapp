@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { construireSelecteurParent } from '@src/objectifs-taches/presentation/modeles-de-vue/selecteur-parent';
+import type { CandidatParent } from '@src/objectifs-taches/application/requetes/consulter-selecteur-parent';
+import type { ResumeObjectif } from '@src/objectifs-taches/application/requetes/resumes';
 import { resumeObjectif } from '@tests/support/fabriques/resumes';
 import { date, idObjectif } from '@tests/support/valeurs';
 
@@ -8,10 +10,14 @@ const P1 = idObjectif(2);
 const P2 = idObjectif(3);
 const objectif = resumeObjectif({ id: X, intitule: 'Publier le guide' });
 const JOUR = date('2026-10-21');
+const candidat = (resume: ResumeObjectif, autresSousObjectifs = 0): CandidatParent => ({
+  ...resume,
+  autresSousObjectifs,
+});
 const candidats = [
-  resumeObjectif({ id: P1, intitule: 'Délai 30', delai: '2026-11-30' }),
-  objectif,
-  resumeObjectif({ id: P2, intitule: 'Délai 20', delai: '2026-11-20' }),
+  candidat(resumeObjectif({ id: P1, intitule: 'Délai 30', delai: '2026-11-30' })),
+  candidat(objectif),
+  candidat(resumeObjectif({ id: P2, intitule: 'Délai 20', delai: '2026-11-20' })),
 ];
 
 describe('construireSelecteurParent (ECR-008 C, D ; guide §4.28)', () => {
@@ -21,7 +27,6 @@ describe('construireSelecteurParent (ECR-008 C, D ; guide §4.28)', () => {
       candidats,
       nombreSousObjectifs: 0,
       jour: JOUR,
-      autresSousObjectifs: new Map(),
     });
 
     expect(modele.options.map((option) => [option.cible, option.disponible])).toEqual([
@@ -40,7 +45,6 @@ describe('construireSelecteurParent (ECR-008 C, D ; guide §4.28)', () => {
       candidats,
       nombreSousObjectifs: 1,
       jour: JOUR,
-      autresSousObjectifs: new Map(),
     });
 
     expect(modele.messageBloquant).toEqual({
@@ -53,13 +57,13 @@ describe('construireSelecteurParent (ECR-008 C, D ; guide §4.28)', () => {
   it('UT-COMP-US-023-11 construireSelecteurParent — textes du catalogue (SEL-PARENT-TITRE, -AUCUN) et indications SEL-PARENT-DELAI puis -EFFECTIF d’un candidat (guide §6.6.4)', () => {
     const modele = construireSelecteurParent({
       objectif,
-      candidats,
+      candidats: [
+        candidat(resumeObjectif({ id: P1, intitule: 'Délai 30', delai: '2026-11-30' }), 2),
+        candidat(resumeObjectif({ id: P2, intitule: 'Délai 20', delai: '2026-11-20' })),
+        candidat(objectif),
+      ],
       nombreSousObjectifs: 0,
       jour: JOUR,
-      autresSousObjectifs: new Map([
-        [P1, 2],
-        [P2, 0],
-      ]),
     });
     const indications = (rang: number) =>
       modele.options[rang]?.indications.map((indication) => indication.libelle);

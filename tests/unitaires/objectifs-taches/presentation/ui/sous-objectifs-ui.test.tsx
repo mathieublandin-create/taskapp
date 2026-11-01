@@ -26,7 +26,10 @@ afterEach(nettoyerDocument);
 const X = idObjectif(1);
 const P = idObjectif(2);
 const objectif = resumeObjectif({ id: X, intitule: 'Publier le guide' });
-const candidats = [objectif, resumeObjectif({ id: P, intitule: 'Développer mon activité' })];
+const candidats = [
+  { ...objectif, autresSousObjectifs: 0 },
+  { ...resumeObjectif({ id: P, intitule: 'Développer mon activité' }), autresSousObjectifs: 0 },
+];
 
 const proprietesSelecteur = (nombreSousObjectifs = 0) => ({
   modele: construireSelecteurParent({
@@ -34,7 +37,6 @@ const proprietesSelecteur = (nombreSousObjectifs = 0) => ({
     candidats,
     nombreSousObjectifs,
     jour: date('2026-10-21'),
-    autresSousObjectifs: new Map(),
   }),
   surRefusCompris: vi.fn(),
   surChoisir: vi.fn(),
@@ -53,10 +55,12 @@ describe('ParentPicker (ECR-008 C, D ; guide §4.28)', () => {
         {...proprietesSelecteur()}
         modele={construireSelecteurParent({
           objectif,
-          candidats: [objectif, parent],
+          candidats: [
+            { ...objectif, autresSousObjectifs: 0 },
+            { ...parent, autresSousObjectifs: 2 },
+          ],
           nombreSousObjectifs: 0,
           jour: date('2026-10-21'),
-          autresSousObjectifs: new Map([[P, 2]]),
         })}
       />,
     );

@@ -20,8 +20,8 @@ export type ProprietesDetailObjectif = {
   /** Facultatifs (US-002) : sans eux, les tâches ne sont pas cliquables et « Ajouter une tâche » n'est pas offert. */
   readonly surOuvrirTache?: (id: IdTache) => void;
   readonly surAjouterTache?: () => void;
-  /** Facultatif : sans lui, la carte d'ALR-007 n'offre pas « Changer le délai ». */
-  readonly surChangerDelai?: () => void;
+  /** Action unique de la carte d'ALR-007 : « Changer le délai ». */
+  readonly surChangerDelai: () => void;
 };
 
 const ESPACE_INSECABLE = ' ';
@@ -166,11 +166,9 @@ const CarteAlerteDelai = ({
     <section role="status" className="carte-alerte" data-code={alerte.code} data-variante="detail">
       <h2>{alerte.carte.titre}</h2>
       <p>{alerte.carte.texte}</p>
-      {surChangerDelai === undefined ? null : (
-        <IonButton fill="outline" onClick={surChangerDelai}>
-          {alerte.carte.action}
-        </IonButton>
-      )}
+      <IonButton fill="outline" onClick={surChangerDelai}>
+        {alerte.carte.action}
+      </IonButton>
     </section>
   );
 

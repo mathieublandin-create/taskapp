@@ -9,16 +9,17 @@ import { objectifActif, sousObjectifsDe } from '../../domaine/vue-metier';
 import { lireVueCourante } from './lecture-courante';
 import { resumerObjectif, type ResumeObjectif } from './resumes';
 
+/** Candidat au rôle de parent, avec ses sous-objectifs (atteints compris) autres que l'élément (SEL-PARENT-EFFECTIF). */
+export type CandidatParent = ResumeObjectif & { readonly autresSousObjectifs: number };
+
 // ST-US-023 §4.2, §6.5 : les candidats comprennent l'objectif lui-même s'il est principal ; leur ordre
 // est donné par le modèle de vue.
 export type SelecteurParent = {
   readonly objectif: ResumeObjectif;
-  readonly candidats: ReadonlyArray<ResumeObjectif>;
+  readonly candidats: ReadonlyArray<CandidatParent>;
   readonly nombreSousObjectifs: number;
   /** Jour de Paris, pour le format des délais des candidats. */
   readonly jour: DateCalendaire;
-  /** Par candidat : ses sous-objectifs (atteints compris) autres que l'élément (indication SEL-PARENT-EFFECTIF). */
-  readonly autresSousObjectifs: ReadonlyMap<IdObjectif, number>;
 };
 
 export class ConsulterSelecteurParent {
@@ -38,15 +39,13 @@ export class ConsulterSelecteurParent {
     const principaux = [...vue.objectifs.values()].filter(estObjectifPrincipal);
     return succes({
       objectif: resumerObjectif(vue, objectif.valeur, jour),
-      candidats: principaux.map((o) => resumerObjectif(vue, o, jour)),
+      candidats: principaux.map((o) => ({
+        ...resumerObjectif(vue, o, jour),
+        autresSousObjectifs: sousObjectifsDe(vue, o.id).filter((sous) => sous.id !== c.objectifId)
+          .length,
+      })),
       nombreSousObjectifs: sousObjectifsDe(vue, c.objectifId).length,
       jour,
-      autresSousObjectifs: new Map(
-        principaux.map((o) => [
-          o.id,
-          sousObjectifsDe(vue, o.id).filter((sous) => sous.id !== c.objectifId).length,
-        ]),
-      ),
     });
   }
 }
