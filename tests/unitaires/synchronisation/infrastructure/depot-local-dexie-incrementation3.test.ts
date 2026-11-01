@@ -99,6 +99,52 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     relu.fermer();
   });
 
+  it('UT-COMP-US-017-3-4 reinitialiser sans signalements : tables vidées, clés de synchronisation retirées, valeurs initiales', async () => {
+    const fabrique = new IDBFactory();
+    const depot = depotSur(fabrique);
+    const sansTitre: ValeurEcartee = {
+      id: idArbitraire(2),
+      motif: 'DONNEES_EFFACEES',
+      ecartee: intituleObjectif(idObjectif(2), 'Sans titre connu', h(2, PC)),
+      generation: h(5, SMARTPHONE),
+    };
+    valeurDe(
+      await depot.appliquerSynchronisation((etat) => ({
+        plan: planVide(etat),
+        meta: { dossier: 'dossier' as IdFichierDrive, restaurationConnue: h(3, PC) },
+        signalements: { valeursEcartees: [sansTitre], lectures: [] },
+      })),
+    );
+    expect([...valeurDe(await depot.lireSignalements()).valeursEcartees.values()]).toEqual([
+      sansTitre,
+    ]);
+    valeurDe(
+      await depot.appliquerSynchronisation((etat) => ({
+        plan: planVide(etat),
+        meta: {},
+        reinitialiser: true,
+      })),
+    );
+    expect(valeurDe(await depot.lireMeta())).toEqual({ fusionNonDeposee: false });
+    expect(valeurDe(await depot.lireSignalements()).valeursEcartees.size).toBe(0);
+    depot.fermer();
+  });
+
+  it('UT-COMP-US-017-3-5 une ligne de méta étrangère (nom non textuel) est ignorée à la lecture de l’état et de la méta', async () => {
+    const fabrique = new IDBFactory();
+    const depot = depotSur(fabrique);
+    valeurDe(await depot.lire());
+    depot.fermer();
+    const brute = new Dexie(NOM, { indexedDB: fabrique });
+    await brute.open();
+    await brute.table('meta').put({ nom: 5, valeur: 'étrangère' });
+    brute.close();
+    const relu = depotSur(fabrique);
+    expect(valeurDe(await relu.lireMeta())).toEqual({ fusionNonDeposee: false });
+    expect(valeurDe(await relu.lire()).appareilId).toBe(SMARTPHONE);
+    relu.fermer();
+  });
+
   it('UT-COMP-US-017-3-3 une clé de méta de l’incrément 3 illisible donne DonneesLocalesIllisibles', async () => {
     const fabrique = new IDBFactory();
     const depot = depotSur(fabrique);
