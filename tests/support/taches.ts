@@ -18,6 +18,7 @@ import {
   type ModeleVueListeTaches,
   type ResumeTache,
 } from '@src/objectifs-taches';
+import { incoherenceDe } from '@src/objectifs-taches/domaine/incoherence';
 import { construireVueMetier } from '@src/objectifs-taches/domaine/vue-metier';
 import { convertirDuree, convertirIntitules } from './conversions';
 import type { AppareilSimule } from './banc/appareil-simule';
@@ -87,6 +88,12 @@ export const ligneTacheDe = async (
 export const unElementEstEnAttente = async (appareil: AppareilSimule): Promise<boolean> => {
   const vue = construireVueMetier(valeurDe(await appareil.service.lire()));
   return [...vue.objectifs.values(), ...vue.taches.values()].some((element) => element.enAttente);
+};
+
+/** Vrai si au moins une tâche de l'appareil est en incohérence (RG-049, dérivée de la vue métier). */
+export const uneTacheEstEnIncoherence = async (appareil: AppareilSimule): Promise<boolean> => {
+  const vue = construireVueMetier(valeurDe(await appareil.service.lire()));
+  return [...vue.taches.keys()].some((id) => incoherenceDe(vue, id) !== undefined);
 };
 
 export const detailTacheDe = async (

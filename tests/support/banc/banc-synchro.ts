@@ -48,6 +48,12 @@ export class BancSynchro {
     return this.appareil(nom);
   }
 
+  /** Retire l'appareil du banc après avoir fermé son application : ses données restent dans le Drive du compte. */
+  retirerAppareil(nom: NomAppareil): void {
+    this.parNom.get(nom)?.fermerApplication();
+    this.parNom.delete(nom);
+  }
+
   appareils(): ReadonlyArray<AppareilSimule> {
     return [...this.parNom.values()];
   }

@@ -23,6 +23,7 @@ import {
   ligneTacheDe,
   nombreDeTaches,
   unElementEstEnAttente,
+  uneTacheEstEnIncoherence,
 } from '../../support/taches';
 
 /** Libellés des actions (guide §6.6.2, §6.6.3) ↦ codes des modèles de vue. */
@@ -213,14 +214,20 @@ etapeAssertion(
 // ---------------------------------------------------------------- Mention « en attente » (ST-US-017 §12.1 n° 18)
 
 const MENTION_ATTENTE = 'MEN-ATTENTE';
+const MENTION_INCOHERENCE = 'MEN-INCOHERENCE';
 
-/** Mention `MEN-ATTENTE` de la ligne de l'objectif ou de la tâche (seule mention prise en charge ici). */
+/** Mention `MEN-ATTENTE` de la ligne de l'objectif ou de la tâche, ou `MEN-INCOHERENCE` de celle d'une tâche (RG-049). */
 const porteLaMention = async (
   { monde, appareil }: Parameters<Parameters<typeof etapeAssertion>[1]>[0],
   nature: string,
   intitule: string,
   mention: string,
 ): Promise<boolean> => {
+  if (nature === 'tâche' && mention === MENTION_INCOHERENCE) {
+    return (
+      (await ligneTacheDe(monde, appareil, intitule)).incoherence?.code === MENTION_INCOHERENCE
+    );
+  }
   assert.equal(mention, MENTION_ATTENTE, `Mention non prise en charge : ${mention}`);
   const ligne =
     nature === 'objectif'
@@ -251,6 +258,10 @@ etapeAssertion(
 );
 
 etapeAssertion(/^aucun élément ne porte la mention "([^"]*)"$/, async ({ appareil }, mention) => {
+  if (mention === MENTION_INCOHERENCE) {
+    assert.equal(await uneTacheEstEnIncoherence(appareil), false);
+    return;
+  }
   assert.equal(mention, MENTION_ATTENTE, `Mention non prise en charge : ${String(mention)}`);
   assert.equal(await unElementEstEnAttente(appareil), false);
 });
