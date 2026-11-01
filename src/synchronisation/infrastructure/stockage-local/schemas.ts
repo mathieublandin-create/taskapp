@@ -27,7 +27,11 @@ import {
   type ValeursParChamp,
 } from '../../domaine/information';
 import type { Lecture } from '../../domaine/lectures';
-import type { IdValeurEcartee, ValeurEcartee } from '../../domaine/valeurs-ecartees';
+import {
+  FORME_ID_VALEUR_ECARTEE,
+  type IdValeurEcartee,
+  type ValeurEcartee,
+} from '../../domaine/valeurs-ecartees';
 
 // Lignes IndexedDB de DepotLocalDexie (ST-socle-ecriture.md §5.1) : encodage du domaine vers des valeurs
 // structurées, et relecture validée par Zod (conventions.md §6.2, « unknown aux frontières »).
@@ -439,7 +443,7 @@ export const decoderEnAttente = (
 /** base32hex minuscule, 52 caractères (§6.6 n° 1). */
 const idValeurEcartee = z
   .string()
-  .regex(/^[0-9a-v]{52}$/)
+  .regex(FORME_ID_VALEUR_ECARTEE)
   .transform((texte) => texte as IdValeurEcartee);
 
 const ligneAvecGagnante = <M extends 'CONFLIT' | 'PLACEMENT_ANNULE'>(motif: M) =>

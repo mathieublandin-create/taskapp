@@ -16,7 +16,11 @@ import {
   type TypeElement,
   type ValeursParChamp,
 } from '../../../domaine/information';
-import type { IdValeurEcartee, MotifValeurEcartee } from '../../../domaine/valeurs-ecartees';
+import {
+  FORME_ID_VALEUR_ECARTEE,
+  type IdValeurEcartee,
+  type MotifValeurEcartee,
+} from '../../../domaine/valeurs-ecartees';
 
 // ST-US-017 §5.2, §5.3 : schéma 1 du format Drive. Objets **lâches** (`z.looseObject`) : un champ inconnu d'une
 // version plus récente de même schemaVersion est toléré (RG-058, ANT-19) ; `.strict()` est interdit.
@@ -125,7 +129,7 @@ export const MOTIFS_VALEUR_ECARTEE_V1 = {
 /** Identifiant d'une valeur écartée : base32hex minuscule sans remplissage, 52 caractères (§6.6 n° 1). */
 const idValeurEcartee = z
   .string()
-  .regex(/^[0-9a-v]{52}$/)
+  .regex(FORME_ID_VALEUR_ECARTEE)
   .transform((texte) => texte as IdValeurEcartee);
 
 /**

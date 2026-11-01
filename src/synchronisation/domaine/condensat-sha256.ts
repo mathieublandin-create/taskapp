@@ -123,3 +123,9 @@ export const encoderBase32Hex = (octets: Uint8Array): string => {
     texte + ALPHABET_BASE32HEX.charAt((tampon << (BITS_PAR_CARACTERE - bits)) & MASQUE_CARACTERE)
   );
 };
+
+/**
+ * Forme d'un condensat SHA-256 encodé par `encoderBase32Hex` : 256 bits, soit 52 caractères `[0-9a-v]`. Celle d'un
+ * identifiant de valeur écartée et, par construction, d'une entrée de réparation (ST-US-017 §6.6 n° 1, n° 9 d ; CR-22).
+ */
+export const FORME_CONDENSAT_BASE32HEX = /^[0-9a-v]{52}$/;
