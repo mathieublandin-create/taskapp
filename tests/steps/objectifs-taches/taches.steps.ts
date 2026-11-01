@@ -25,6 +25,10 @@ import {
   lObjectifAUnNombreDeTaches,
   separerIntitules,
 } from '../../support/construction-taches';
+import {
+  tacheEnIncoherence,
+  type EtatParentIncoherent,
+} from '../../support/construction-incoherence';
 import { detailObjectifDe, objectifsDe, resoudreObjectif } from '../../support/objectifs';
 import {
   etapeAction,
@@ -36,6 +40,7 @@ import {
   detailTacheDe,
   existeUneTacheIntitulee,
   formulaireSousTacheDe,
+  ligneTacheDe,
   listeIntitules,
   listeTachesDe,
   minutes,
@@ -835,5 +840,28 @@ etapeAssertion(
       await (await objectifsDe(appareil)).consulterDetailObjectif.executer(id),
     );
     assert.equal(detail.taches.length, Number(nombre));
+  },
+);
+
+// ---------------------------------------------------------------- Incohérence (RG-049 ; ST-US-017 §12.5 N10, N11)
+
+etapeContexte(
+  new RegExp(
+    `^la tâche ${TEXTE}, (terminée|abandonnée), est signalée en incohérence avec sa sous-tâche à faire ${TEXTE}$`,
+  ),
+  (contexte, parente, etat, sousTache) =>
+    tacheEnIncoherence(contexte, etat as EtatParentIncoherent, String(parente), String(sousTache)),
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} porte la mention "MEN-INCOHERENCE" pour sa sous-tâche ${TEXTE}$`),
+  async ({ monde, appareil }, parente, sousTache) => {
+    const ligne = await ligneTacheDe(monde, appareil, String(parente));
+    assert.equal(ligne.incoherence?.code, 'MEN-INCOHERENCE', `« ${String(parente)} » sans mention`);
+    const { incoherence } = await resumeTacheDe(monde, appareil, String(parente));
+    assert.deepEqual(
+      incoherence?.sousTachesAFaire.map((s) => s.intitule),
+      [String(sousTache)],
+    );
   },
 );

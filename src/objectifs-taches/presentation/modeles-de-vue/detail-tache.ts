@@ -4,6 +4,7 @@ import type { DateCalendaire } from '../../../commun/domaine/temps/date-calendai
 import type { ResumeTache } from '../../application/requetes/resumes';
 import type { DetailTache } from '../../application/requetes/consulter-detail-tache';
 import type { ActionTache } from '../../domaine/actions';
+import type { Incoherence } from '../../domaine/incoherence';
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { mentionHeureParis } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
@@ -256,9 +257,27 @@ const objectifsDe = (tache: ResumeTache, ligne: LigneTache): ModeleVueDetailTach
 const infoFinImpossible = (n: number): Pick<ModeleVueDetailTache, 'infoFinImpossible'> =>
   n === 0 ? {} : { infoFinImpossible: { code: 'ALR-013', n, libelle: libelle('ALR-013', { n }) } };
 
+const CODE_INCOHERENCE: Readonly<Record<Incoherence['etatParent'], 'ALR-003' | 'ALR-004'>> = {
+  TERMINEE: 'ALR-003',
+  ABANDONNEE: 'ALR-004',
+};
+
+/** Carte d'incohérence (RG-049) : n sous-tâches à faire sous une tâche terminée ou abandonnée. */
+const incoherenceDeCarte = (
+  tache: ResumeTache,
+  intitulesObjectifs: ReadonlyArray<string>,
+): Pick<ModeleVueDetailTache, 'incoherence'> => {
+  if (tache.incoherence === undefined) return {};
+  const code = CODE_INCOHERENCE[tache.incoherence.etatParent];
+  const n = tache.incoherence.sousTachesAFaire.length;
+  // TODO(Q-ST017-D2-1) : {element} d'ALR-003 nomme « l'objectif » ; une tâche peut en avoir 0 ou plusieurs (intitulés joints).
+  const element = intitulesObjectifs.join(', ');
+  return { incoherence: { code, n, libelle: libelle(code, { n, element }) } };
+};
+
 /**
  * Rang 5 (ST-US-002) : champs d'édition, verrous et actions. Sous-tâches, ALR-013 : ST-US-024 ; dateFin,
- * dateAbandon : ST-US-003 et 025 ; incohérence : rang 9.
+ * dateAbandon : ST-US-003 et 025 ; incohérence : RG-049 (rang 9).
  */
 export const construireDetailTache = (
   donnees: DetailTache,
@@ -284,6 +303,7 @@ export const construireDetailTache = (
     actions: donnees.actions,
     ...sectionSousTaches(donnees, aujourdhui),
     ...infoFinImpossible(donnees.sousTachesAFaire),
+    ...incoherenceDeCarte(tache, ligne.objectifs),
     ...dateFinDe(tache, aujourdhui, dependances.horloge),
     ...dateAbandonDe(tache, aujourdhui, dependances.horloge),
   };
