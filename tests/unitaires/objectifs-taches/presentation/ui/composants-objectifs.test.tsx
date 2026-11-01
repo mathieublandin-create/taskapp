@@ -23,7 +23,7 @@ import {
   cliquerBoutonIon,
   nettoyerDocument,
   ouvrir,
-  saisir,
+  renseigner,
 } from '@tests/support/ui-objectifs';
 
 /** Les superpositions Ionic sont téléportées dans le corps de la page : elles sont retirées aussi. */
@@ -70,16 +70,16 @@ describe('FeuilleObjectif (ECR-008 B, ECR-003 C)', () => {
       expect(declarer).toHaveBeenLastCalledWith('feuille-test', false);
     });
 
-    await saisir('Intitulé', 'Guide 2');
+    await renseigner('Intitulé', 'Guide 2');
     await waitFor(() => {
       expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
     });
-    await saisir('Intitulé', 'Guide');
+    await renseigner('Intitulé', 'Guide');
     await waitFor(() => {
       expect(declarer).toHaveBeenLastCalledWith('feuille-test', false);
     });
 
-    await saisir('Intitulé', 'Autre');
+    await renseigner('Intitulé', 'Autre');
     await waitFor(() => {
       expect(declarer).toHaveBeenLastCalledWith('feuille-test', true);
     });
