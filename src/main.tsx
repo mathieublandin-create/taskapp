@@ -5,7 +5,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-import { StrictMode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { StrictMode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -23,6 +23,8 @@ import { appareilDepuisAgent } from './commun/presentation/format/appareil';
 import { Toast } from './commun/presentation/ui/toast';
 import { FeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
 import { Bandeau } from './synchronisation/presentation/ui/Bandeau';
+import { ModificationsNonRetenues } from './synchronisation/presentation/ui/ModificationsNonRetenues';
+import type { RefElementMetier } from './synchronisation';
 import { IndicateurSynchronisation } from './synchronisation/presentation/ui/IndicateurSynchronisation';
 import './commun/presentation/ui/styles.css';
 import type { ObjectifsTaches } from './composition/objectifs-taches';
@@ -89,26 +91,63 @@ const NavigationEspaces = ({
   </nav>
 );
 
-/** Écrans des tâches (US-002, rang 5) et des objectifs (US-001, rang 2), sur les magasins de l'espace ouvert. */
-const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches }) => {
+/** Magasins des tâches et des objectifs de l'espace ouvert, abonnés à son dépôt. */
+const useMagasins = (objectifs: ObjectifsTaches) => {
   const magasinObjectifs = useMemo(() => creerMagasinObjectifsTaches(objectifs), [objectifs]);
   const magasinTaches = useMemo(() => creerMagasinTaches(objectifs), [objectifs]);
-  const [onglet, setOnglet] = useState<Onglet>('TACHES');
   useEffect(() => magasinObjectifs.getState().actions.observerDepot(), [magasinObjectifs]);
   useEffect(() => magasinTaches.getState().actions.observerDepot(), [magasinTaches]);
+  return { magasinObjectifs, magasinTaches };
+};
+
+type Magasins = ReturnType<typeof useMagasins>;
+
+/** Ouvre le détail demandé par « Voir … » de la section « À lire », puis acquitte la demande. */
+const useOuvertureDemandee = (
+  { magasinObjectifs, magasinTaches }: Magasins,
+  demande: RefElementMetier | undefined,
+  surOuvert: () => void,
+): void => {
+  useEffect(() => {
+    if (demande === undefined) return;
+    if (demande.type === 'TACHE') void magasinTaches.getState().actions.ouvrirDetail(demande.id);
+    else void magasinObjectifs.getState().actions.ouvrirDetail(demande.id);
+    surOuvert();
+  }, [demande, magasinObjectifs, magasinTaches, surOuvert]);
+};
+
+type NavigationUi = {
+  readonly onglet: Onglet;
+  readonly surOnglet: (onglet: Onglet) => void;
+  /** Élément demandé par « Voir … » ; `surOuvert` acquitte la demande. */
+  readonly demande: RefElementMetier | undefined;
+  readonly surOuvert: () => void;
+};
+
+/** Écrans des tâches (US-002, rang 5) et des objectifs (US-001, rang 2), sur les magasins de l'espace ouvert. */
+const EcransObjectifs = ({
+  objectifs,
+  navigation,
+}: {
+  readonly objectifs: ObjectifsTaches;
+  readonly navigation: NavigationUi;
+}) => {
+  const magasins = useMagasins(objectifs);
+  const { onglet, surOnglet, demande, surOuvert } = navigation;
+  useOuvertureDemandee(magasins, demande, surOuvert);
   return (
     <>
-      <NavigationEspaces onglet={onglet} surChoisir={setOnglet} />
+      <NavigationEspaces onglet={onglet} surChoisir={surOnglet} />
       {onglet === 'TACHES' ? (
-        <EspaceTaches magasin={magasinTaches} />
+        <EspaceTaches magasin={magasins.magasinTaches} />
       ) : (
         <EspaceObjectifs
-          magasin={magasinObjectifs}
+          magasin={magasins.magasinObjectifs}
           taches={{
-            magasin: magasinTaches,
+            magasin: magasins.magasinTaches,
             surOuvrirTache: (id) => {
-              setOnglet('TACHES');
-              void magasinTaches.getState().actions.ouvrirDetail(id);
+              surOnglet('TACHES');
+              void magasins.magasinTaches.getState().actions.ouvrirDetail(id);
             },
           }}
         />
@@ -117,8 +156,28 @@ const EcransObjectifs = ({ objectifs }: { readonly objectifs: ObjectifsTaches })
   );
 };
 
-/** Indicateur, bandeau et feuille de synchronisation (ECR-011), présents avec l'état de synchronisation. */
-const EtatSynchronisation = ({ controleur }: { readonly controleur: ControleurInterface }) => {
+/** Section « À lire » d'ECR-011, en tête de la feuille de synchronisation (guide §6.6.2). */
+const ALire = ({
+  controleur,
+  surVoir,
+}: {
+  readonly controleur: ControleurInterface;
+  readonly surVoir: (element: RefElementMetier) => void;
+}) => {
+  const { nonRetenues, aujourdhui } = useSyncExternalStore(controleur.observer, controleur.vue);
+  if (nonRetenues === undefined || aujourdhui === undefined) return null;
+  return (
+    <ModificationsNonRetenues
+      vue={nonRetenues}
+      contexte={{ appareil: APPAREIL, aujourdhui }}
+      surCompris={(ids) => void controleur.marquerCommeLue(ids)}
+      surVoir={surVoir}
+    />
+  );
+};
+
+/** Indicateur et bandeau de synchronisation, présents avec l'état de synchronisation. */
+const IndicateurEtBandeau = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
   return (
     <>
@@ -136,6 +195,23 @@ const EtatSynchronisation = ({ controleur }: { readonly controleur: ControleurIn
           surMasquer={() => void controleur.masquerRappel()}
         />
       )}
+    </>
+  );
+};
+
+/** Indicateur, bandeau, section « À lire » et feuille de synchronisation (ECR-011). */
+const EtatSynchronisation = ({
+  controleur,
+  surVoir,
+}: {
+  readonly controleur: ControleurInterface;
+  readonly surVoir: (element: RefElementMetier) => void;
+}) => {
+  const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  return (
+    <>
+      <IndicateurEtBandeau controleur={controleur} />
+      <ALire controleur={controleur} surVoir={surVoir} />
       {vue.feuille === undefined ? null : (
         <FeuilleSynchronisation
           vue={vue.feuille}
@@ -147,20 +223,39 @@ const EtatSynchronisation = ({ controleur }: { readonly controleur: ControleurIn
   );
 };
 
+/** Navigation entre espaces, pilotée aussi par « Voir … » de la section « À lire ». */
+const useNavigation = (): NavigationUi & {
+  readonly voir: (element: RefElementMetier) => void;
+} => {
+  const [onglet, surOnglet] = useState<Onglet>('TACHES');
+  const [demande, setDemande] = useState<RefElementMetier | undefined>(undefined);
+  const surOuvert = useCallback(() => {
+    setDemande(undefined);
+  }, []);
+  const voir = useCallback((element: RefElementMetier) => {
+    surOnglet(element.type === 'TACHE' ? 'TACHES' : 'OBJECTIFS');
+    setDemande(element);
+  }, []);
+  return { onglet, surOnglet, demande, surOuvert, voir };
+};
+
 /** Espace de l'application : indicateur, bandeau, section « Compte », puis les objectifs. */
 const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
   const objectifs = controleur.objectifs();
+  const { voir, ...navigation } = useNavigation();
   return (
     <main aria-label="Done Juan">
-      <EtatSynchronisation controleur={controleur} />
+      <EtatSynchronisation controleur={controleur} surVoir={voir} />
       {vue.toast === undefined ? null : (
         <Toast code={vue.toast} surAction={() => void controleur.reessayer()} />
       )}
       {vue.compte === undefined ? null : (
         <SectionCompte vue={vue.compte} surAction={(a) => void controleur.actionCompte(a)} />
       )}
-      {objectifs === undefined ? null : <EcransObjectifs objectifs={objectifs} />}
+      {objectifs === undefined ? null : (
+        <EcransObjectifs objectifs={objectifs} navigation={navigation} />
+      )}
     </main>
   );
 };

@@ -49,6 +49,7 @@ const preparer = () => {
     },
     lireElementsEnAttente: () => Promise.resolve(donnees.elements),
     lireDernierContact: () => Promise.resolve(donnees.dernierContact),
+    lireModificationsNonRetenues: () => Promise.resolve(undefined),
     synchroniserMaintenant: () => Promise.resolve(),
     observerSynchronisation: (rappel: () => void) => {
       rappels.push(rappel);
