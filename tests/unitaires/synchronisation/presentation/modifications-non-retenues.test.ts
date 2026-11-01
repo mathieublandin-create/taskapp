@@ -1,6 +1,6 @@
 /**
  * Modèle de vue de la section « À lire » d'ECR-011 (guide §4.24, §5.8 f, §6.6.2, §6.6.9 ; glossaire §8 ; H-2, H-6 ;
- * ST-US-017 v0.5 §6.6 n° 13). UT-US-017-58.
+ * ST-US-017 v0.5 §6.6 n° 13 ; v0.6 : date d'une valeur d'état). UT-US-017-58.
  */
 import { describe, expect, it } from 'vitest';
 import { libelle } from '@src/commun/presentation/messages/libelle';
@@ -190,6 +190,16 @@ describe('construireModificationsNonRetenues (ECR-011, section « À lire »)', 
     expect(seulementEffacees?.n).toBe(0);
     expect(seulementEffacees?.lignes).toEqual([]);
     expect(seulementEffacees?.donneesEffacees?.ids).toEqual([idArbitraire(8)]);
+    // v0.6 (RG-056) : une valeur d'état garde sa date jusqu'au composant (deux fins à des dates différentes).
+    const deuxFins = detail(10, {
+      motif: 'CONFLIT',
+      information: 'ETAT',
+      valeurNonRetenue: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-22') },
+      valeurConservee: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-23') },
+    });
+    const ligneEtat = construireModificationsNonRetenues([deuxFins])?.lignes[0];
+    expect(ligneEtat?.valeurNonRetenue).toStrictEqual(deuxFins.valeurNonRetenue);
+    expect(ligneEtat?.valeurConservee).toStrictEqual(deuxFins.valeurConservee);
     // Rien de non lu : section absente (guide §6.5, « Modifications non retenues, rien à lire »).
     expect(construireModificationsNonRetenues([lue])).toBeUndefined();
     expect(construireModificationsNonRetenues([])).toBeUndefined();
