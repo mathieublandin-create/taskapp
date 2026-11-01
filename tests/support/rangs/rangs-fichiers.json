@@ -151,11 +151,11 @@
     },
     "src/composition/application.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 9
     },
     "src/composition/controleur-interface.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 9
     },
     "src/composition/objectifs-taches.ts": {
       "debut": 2,
@@ -383,7 +383,7 @@
     },
     "src/main.tsx": {
       "debut": 0,
-      "fin": 1
+      "fin": 9
     },
     "src/objectifs-taches/application/cas-usage/abandonner-tache.ts": {
       "debut": 8,
@@ -599,7 +599,7 @@
     },
     "src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts": {
       "debut": 6,
-      "fin": 8
+      "fin": 9
     },
     "src/objectifs-taches/presentation/modeles-de-vue/formulaire-sous-tache.ts": {
       "debut": 6,
@@ -749,6 +749,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/synchronisation/application/cas-usage/marquer-comme-lue.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/application/cycle-synchronisation.ts": {
       "debut": 3,
       "fin": 3
@@ -785,6 +789,10 @@
       "debut": 1,
       "fin": 1
     },
+    "src/synchronisation/application/requetes/consulter-modifications-non-retenues.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/application/service-etat-local-transactionnel.ts": {
       "debut": 0,
       "fin": 0
@@ -792,6 +800,10 @@
     "src/synchronisation/application/service-etat-local.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/condensat-sha256.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/contenu-fichier.ts": {
       "debut": 3,
@@ -805,6 +817,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/domaine/detail-valeurs-ecartees.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/domaine/ecriture.ts": {
       "debut": 0,
       "fin": 0
@@ -812,6 +828,10 @@
     "src/synchronisation/domaine/elements-en-attente.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/domaine/entree-reparation.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/etat-local.ts": {
       "debut": 0,
@@ -845,6 +865,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/lectures.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/domaine/meta-synchronisation.ts": {
       "debut": 3,
       "fin": 3
@@ -865,9 +889,25 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/planifier-synchronisation.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/domaine/projection.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/reparation-hierarchie.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/signalements.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/valeurs-ecartees.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/version-schema.ts": {
       "debut": 3,
@@ -925,6 +965,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/presentation/modeles-de-vue/modifications-non-retenues.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/presentation/modeles-de-vue/ordre-feuille.ts": {
       "debut": 3,
       "fin": 3
@@ -940,6 +984,10 @@
     "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
       "debut": 1,
       "fin": 1
+    },
+    "src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx": {
+      "debut": 9,
+      "fin": 9
     }
   }
 }

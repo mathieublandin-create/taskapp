@@ -4,6 +4,7 @@ import { IdOperation } from '../../commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
 import { Instant } from '../../commun/domaine/temps/instant';
 import { jourDeReference } from '../../commun/domaine/temps/jour-de-reference';
+import { estIdEvenementDeReparation } from '../domaine/entree-reparation';
 import type { EtatLocal } from '../domaine/etat-local';
 import type { EtatMetier } from '../domaine/etat-metier';
 import type { EvenementJournal } from '../domaine/evenement-journal';
@@ -25,10 +26,17 @@ export type DependancesServiceEtatLocal = {
   readonly generateur: GenerateurIdentifiants;
 };
 
-/** Ordre chronologique d'un historique : HLC croissant, puis identifiant en ordre ordinal (jamais localeCompare). */
+/**
+ * Ordre chronologique d'un historique (ST-socle §6.8, ST-US-017 v0.6 §6.6 n° 9 c) : HLC croissant ; à HLC égal, une
+ * entrée de cas d'usage avant une entrée de réparation (qui suit ainsi le déplacement qu'elle annule, US-023 S18d) ;
+ * puis identifiant en ordre ordinal (jamais localeCompare). Ordre total. Affichage seulement (condition C1).
+ */
 const comparerEvenements = (a: EvenementJournal, b: EvenementJournal): number => {
   const parHlc = comparerHlc(a.hlc, b.hlc);
   if (parHlc !== 0) return parHlc;
+  const parNature =
+    Number(estIdEvenementDeReparation(a.id)) - Number(estIdEvenementDeReparation(b.id));
+  if (parNature !== 0) return parNature;
   if (a.id === b.id) return 0;
   return a.id < b.id ? -1 : 1;
 };

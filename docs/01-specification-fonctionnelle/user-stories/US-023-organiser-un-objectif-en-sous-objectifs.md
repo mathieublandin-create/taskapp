@@ -34,6 +34,7 @@ Statut : Validée
    - Exemple 2 : sur le PC, l'objectif O est placé sous P ; sur le smartphone, un sous-objectif S est créé sous O. Après échange, O redevient objectif principal avec son sous-objectif S, et l'utilisateur est informé que le placement de O sous P a été annulé.
 10. **CA-10** — *(RG-047)* Si un objectif est supprimé sur un appareil pendant qu'un sous-objectif est créé sous lui sur l'autre, le sous-objectif créé devient objectif principal après échange, et ce placement est signalé dans « Modifications non retenues » (« placement non retenu, objectif supprimé » ; Q-US-001-1 a, DEC-030 ; S19).
 11. **CA-11** — *(RG-050)* La création d'un sous-objectif et chaque changement de parent sont conservés dans l'historique, avec la journée et les valeurs avant et après.
+    - *Précision E10 du rang 9 (Q-ST017-PEP-2 b, 2026-10-31, sans changement de RG-048 ni de RG-050)* : un placement annulé par la réparation (CA-9) est une conséquence **enregistrée** (glossaire d'étapes §11, précision E8 Q-US-001-2) : il figure dans l'historique de l'objectif comme un « changement parent » (avant : le parent annulé ; après : le placement rétabli), **à la journée du placement annulé** et juste après lui, quel que soit le jour de l'échange, une seule fois même si les deux appareils font la réparation (S18d). Il figure aussi, séparément, dans « Modifications non retenues » (CA-9, RG-056).
 
 ## Cas limites et cas d'erreur
 - Sous-objectif sans délai sous un objectif avec délai, ou l'inverse : aucune alerte (RG-022).
@@ -114,7 +115,7 @@ Statut : Validée
 | CA-8 | S15 |
 | CA-9 (RG-048) | S16, S17, S18, S18b (trois placements concurrents, seul le plus ancien est annulé), S18c (chaîne de trois placements, deux annulations successives, du plus ancien au plus récent) |
 | CA-10 (RG-047) | S19 |
-| CA-11 (RG-050) | S20 |
+| CA-11 (RG-050) | S20, S18d (placement annulé par la réparation) |
 | Cas limite : un des délais absent ; délais égaux | S05 |
 | Cas limite : déplacement sous le parent actuel | S12 |
 | Cas limite : sous-objectif atteint, parent avec tâches à faire | S13 |
@@ -132,3 +133,4 @@ Aucune. Q-US-001-1 (volet US-023) est répondue par le commanditaire (DEC-030).
 | 2026-10-21 | E7, tour 2 du refinement (Pepper) : DEC-025 / Q-REF-1 a intégrée à RG-048 et au CA-9 (annulation un par un, du plus ancien au plus récent, jusqu'à une hiérarchie valide ; chaque annulation signalée). Nouveau scénario S18c (chaîne de trois déplacements, deux annulations). S16, S17, S18 et S18b restent valables. |
 | 2026-10-21 | E8 (Pepper), réponses aux demandes de précision d'Anthony : Q-US-023-1 (ordre des refus cumulés ; deux exemples ajoutés à S11), Q-US-023-2 (glossaire v1.2), Q-US-001-2 (rendu de l'historique de S20 confirmé, valeur « aucun (objectif principal) » inscrite au glossaire), Q-US-017-7 (préfixes d'appareil, S16 à S18c). Précisions sans changement de règle. Q-US-001-1 (S19) en attente du commanditaire. |
 | 2026-10-21 | Complément validé par le commanditaire, DEC-030 (verbatim « Reco ») : CA-10 : le placement d'un sous-objectif sous un objectif supprimé de façon concurrente est signalé dans « Modifications non retenues » (Q-US-001-1 a ; S19 complété ; RG-047 complétée). |
+| 2026-10-31 | E10 du rang 9 (Pepper), réponse à Q-ST017-PEP-2 b d'Anthony (ST-US-017 v0.5 §16) : **option 2**. La ST v0.5 (§6.6 n° 9, aucune entrée d'historique) n'est pas conforme aux spécifications en vigueur : RG-050 (« changement de parent » historisé ; conséquence enregistrée = trace propre), CA-11, glossaire d'étapes §11 (v1.2, Q-US-001-2 : « placement annulé par RG-048 (`changement parent`) » est une conséquence enregistrée) et DAT §6.1, « Conséquences indirectes » (déplacements annulés par RG-048 journalisés, contredit depuis par la v0.11.7 §4.2). Sans cette trace, l'historique laisserait l'objectif sous un parent qu'il n'a jamais gardé, et la vélocité et les graphiques (RG-010, RG-015, RG-016) ne pourraient pas être reconstitués ; l'annulation ne se déduit pas d'une autre trace. Précision ajoutée au CA-11 (journée du placement annulé, entrée unique), scénario S18d. Aucune règle modifiée : pas de nouvelle validation du commanditaire. |

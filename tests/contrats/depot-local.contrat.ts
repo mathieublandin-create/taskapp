@@ -2,6 +2,7 @@
  * Suite de contrat du port DepotLocal (ST-socle-ecriture.md §4.3 ; conventions.md §11.10).
  * Exécutée sur DepotLocalDexie (fake-indexeddb) et sur la doublure DepotLocalEnMemoire (ST-US-017 §12.3).
  * CT-DEPOT-08 à 11 : méthodes de l'incrément 1 d'US-017 (lireMeta, appliquerSynchronisation).
+ * CT-DEPOT-12, 13 : signalements de l'incrément 2 (lireSignalements, ST-US-017 v0.5 §4.6), rang 9.
  * Identifiants : CT-DEPOT-nn. Les cas « erreur de la base » et « espace non ouvert » sont couverts
  * par les tests d'intégration de l'adaptateur (ST-socle-ecriture.md §14).
  * Précision E10 : les observateurs de l'instance qui écrit sont appelés après la validation et au plus
@@ -16,11 +17,18 @@ import {
   META_INITIALE,
   type IdFichierDrive,
 } from '@src/synchronisation/domaine/meta-synchronisation';
+import type { Signalements } from '@src/synchronisation/domaine/signalements';
+import type { ValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
 import { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-local-dexie';
 import { DepotLocalEnMemoire, StockageDepotEnMemoire } from '@tests/doublures/depot-local-memoire';
 import { registre, texteDeCle } from '@tests/support/fabriques/etat-local';
 import { valeurDe } from '@tests/support/environnement';
 import { planAjoutant, planVide } from '@tests/support/plans';
+import {
+  h as hSignalement,
+  idArbitraire,
+  intituleTache,
+} from '@tests/support/synchronisation/ecritures-concurrentes';
 import {
   date,
   ecart,
@@ -28,6 +36,7 @@ import {
   idEvenementTest,
   idObjectif,
   idOperation,
+  idTache,
   instant,
   SMARTPHONE,
 } from '@tests/support/valeurs';
@@ -57,6 +66,19 @@ const entreeEnAttente = {
   premiereEcriture: instant('2026-10-21T08:00:00.000Z'),
   derniereHlc: h,
 };
+
+const T = idTache(1);
+const conflit = (n: number, gagnante: string): ValeurEcartee => ({
+  id: idArbitraire(n),
+  motif: 'CONFLIT',
+  ecartee: intituleTache(T, 'A', hSignalement(1, SMARTPHONE)),
+  gagnante: intituleTache(T, gagnante, hSignalement(2, SMARTPHONE)),
+});
+const lecture = { id: idArbitraire(1), hlc: hSignalement(3, SMARTPHONE) };
+const enTableaux = (s: Signalements) => ({
+  valeursEcartees: [...s.valeursEcartees.values()],
+  lectures: [...s.lectures.values()],
+});
 
 /** Fabrique deux instances qui partagent le même stockage (deux onglets, ou un redémarrage). */
 export type FabriqueDepots = () => {
@@ -300,6 +322,77 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
         fusionNonDeposee: false,
       });
       expect(valeurDe(await autre.lire()).version).toBe(1);
+    });
+
+    it('CT-DEPOT-12 lireSignalements — vides pour un espace neuf ; appliquerSynchronisation écrit les signalements, version + 1, observateurs prévenus', async () => {
+      const { premier, second } = fabriquer();
+      expect(enTableaux(valeurDe(await premier.lireSignalements()))).toEqual({
+        valeursEcartees: [],
+        lectures: [],
+      });
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planVide(etat),
+          meta: {},
+          signalements: { valeursEcartees: [conflit(1, 'B')], lectures: [lecture] },
+        })),
+      );
+
+      const autre = second();
+      expect(enTableaux(valeurDe(await autre.lireSignalements()))).toEqual({
+        valeursEcartees: [conflit(1, 'B')],
+        lectures: [lecture],
+      });
+      expect(valeurDe(await autre.lire()).version).toBe(1);
+      expect(appels).toBe(1);
+      let vus: Signalements | undefined;
+      valeurDe(
+        await autre.appliquerSynchronisation((etat, _meta, signalementsLus) => {
+          vus = signalementsLus;
+          return { plan: planVide(etat), meta: {} };
+        }),
+      );
+      expect(vus && enTableaux(vus)).toEqual({
+        valeursEcartees: [conflit(1, 'B')],
+        lectures: [lecture],
+      });
+      expect(valeurDe(await autre.lire()).version).toBe(1);
+    });
+
+    it('CT-DEPOT-13 appliquerSynchronisation — une entrée de même identifiant est remplacée ; une exception n’écrit aucun signalement', async () => {
+      const { premier, second } = fabriquer();
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planVide(etat),
+          meta: {},
+          signalements: { valeursEcartees: [conflit(1, 'B'), conflit(2, 'B')], lectures: [] },
+        })),
+      );
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planVide(etat),
+          meta: {},
+          signalements: { valeursEcartees: [conflit(1, 'C')], lectures: [] },
+        })),
+      );
+      await expect(
+        premier.appliquerSynchronisation(() => {
+          throw new Error('panne de calcul');
+        }),
+      ).rejects.toThrow('panne de calcul');
+
+      const relus = enTableaux(valeurDe(await second().lireSignalements()));
+      expect(relus.valeursEcartees).toHaveLength(2);
+      expect(relus.valeursEcartees).toEqual(
+        expect.arrayContaining([conflit(1, 'C'), conflit(2, 'B')]),
+      );
+      expect(relus.lectures).toEqual([]);
+      expect(valeurDe(await second().lire()).version).toBe(2);
     });
   });
 };

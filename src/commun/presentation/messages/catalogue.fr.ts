@@ -13,6 +13,8 @@ export type TextesLibelle = {
   readonly libelle: string;
   /** Texte d'explication sous le titre. */
   readonly texte?: string;
+  /** Ligne sous le titre d'une ligne de la section « À lire » qui nomme l'élément (ALR-010 `rattachement`, `placement`). */
+  readonly sousTitre?: string;
   /** Libellé du bouton d'action. */
   readonly action?: string;
   /** Libellé d'une seconde action (« Aller à la connexion » d'ERR-017). */
@@ -59,6 +61,16 @@ export const CATALOGUE = {
     texte:
       'Cette tâche est terminée, mais {n} sous-tâche{n:|s} {n:est|sont} à faire. Rien n’a été modifié. Tant que c’est le cas, l’objectif « {element} » n’est pas atteint.',
     action: 'Rouvrir la tâche',
+    variantes: {
+      'sans-objectif': {
+        texte:
+          'Cette tâche est terminée, mais {n} sous-tâche{n:|s} {n:est|sont} à faire. Rien n’a été modifié.',
+      },
+      objectifs: {
+        texte:
+          'Cette tâche est terminée, mais {n} sous-tâche{n:|s} {n:est|sont} à faire. Rien n’a été modifié. Tant que c’est le cas, les objectifs {objectifs} ne sont pas atteints.',
+      },
+    },
   },
   'ALR-004': {
     libelle: 'Incohérence avec une sous-tâche',
@@ -81,35 +93,38 @@ export const CATALOGUE = {
   'ALR-009': {
     libelle: '{information} de « {element} »',
     texte:
-      'Votre valeur « {valeur} » ({appareil}, {heure}) n’a pas été retenue. Valeur conservée : « {valeurConservee} » ({appareil}, {heure}).',
+      'Votre valeur « {valeur} » n’a pas été retenue. Valeur conservée : « {valeurConservee} ».',
     action: 'Compris',
   },
   'ALR-010': {
     libelle: 'Objectif « {element} » supprimé',
-    texte:
-      'Supprimé sur votre {appareil}. Votre modification de {information} ({appareil}, {heure}) n’a pas été conservée.',
+    texte: 'Votre modification de {information} n’a pas été conservée.',
     action: 'Compris',
     variantes: {
       tache: { libelle: 'Tâche « {element} » supprimée' },
+      'sous-tache': {
+        libelle: 'Sous-tâche « {element} » supprimée',
+        texte: 'Sa tâche « {tache} » a été supprimée. Votre sous-tâche n’a pas été conservée.',
+      },
       rattachement: {
         libelle: 'Rattachement non retenu, objectif supprimé',
+        sousTitre: 'Tâche « {element} »',
         texte:
-          'Supprimé sur votre {appareil}. Votre rattachement à « {objectif} » ({appareil}, {heure}) n’a pas été conservé. La tâche n’est rattachée à aucun objectif.',
-        action: 'Voir la tâche',
+          'Votre rattachement à « {objectif} » n’a pas été conservé : l’objectif a été supprimé.',
       },
       placement: {
         libelle: 'Placement non retenu, objectif supprimé',
+        sousTitre: 'Objectif « {element} »',
         texte:
-          'Supprimé sur votre {appareil}. Votre placement sous « {objectif} » ({appareil}, {heure}) n’a pas été conservé. « {element} » est devenu objectif principal.',
-        action: 'Voir l’objectif',
+          'Votre placement sous « {objectif} » n’a pas été conservé. « {element} » est devenu objectif principal.',
       },
     },
   },
   'ALR-011': {
     libelle: 'Placement de « {element} » annulé',
     texte:
-      'Un déplacement plus récent, fait sur votre {appareil}, place « {element} » sous « {parent} ». Les deux ne peuvent pas coexister : le plus ancien a été annulé.',
-    action: 'Voir l’objectif',
+      'Votre placement sous « {parent} » a été annulé : un déplacement plus récent place « {parent} » sous « {element} ». Les deux ne peuvent pas coexister.',
+    action: 'Compris',
   },
   'ALR-012': {
     libelle: 'L’estimation de la tâche ({duree}) sera remplacée par la somme de ses sous-tâches.',
@@ -117,8 +132,7 @@ export const CATALOGUE = {
   'ALR-013': { libelle: 'Il reste {n} sous-tâche{n:|s} à terminer ou abandonner.' },
   'ALR-014': {
     libelle: '{information} de « {element} »',
-    texte:
-      'Votre valeur « {valeur} » ({appareil}, {heure}) n’a pas été conservée : les données ont été effacées.',
+    texte: 'Votre valeur « {valeur} » n’a pas été conservée.',
   },
   'ALR-015': {
     libelle: 'Vos données ne sont pas protégées',
@@ -413,6 +427,10 @@ export const CATALOGUE = {
   },
 
   // ---- Titres de section (§6.6.4)
+  'SEC-MODIFS-EFFACEES': {
+    libelle: 'Voir les {n} modifications',
+    variantes: { une: { libelle: 'Voir la modification' } },
+  },
   'SEC-OBJ-ATTEINTS': { libelle: 'Atteints ({n})' },
   'SEC-SOUS-OBJECTIFS': { libelle: 'Sous-objectifs', nomAccessible: 'Sous-objectifs ({n})' },
   'SEC-SOUS-TACHES': { libelle: 'Sous-tâches', nomAccessible: 'Sous-tâches {terminees} / {n}' },
@@ -500,4 +518,38 @@ export const CATALOGUE = {
     libelle: 'Terminez votre saisie, puis reprenez la synchronisation.',
   },
   'TST-TERMINEE': { libelle: 'Tâche terminée', action: 'Annuler' },
+
+  // ---- Fragments de texte partagés (§6.6.12) : libelle = titre, texte = forme « dans une phrase »
+  'TXT-INF-CREATION': { libelle: 'Création', texte: 'sa création' },
+  'TXT-INF-DELAI': { libelle: 'Délai', texte: 'son délai' },
+  'TXT-INF-DESCRIPTION': { libelle: 'Description', texte: 'sa description' },
+  'TXT-INF-ESTIMATION': { libelle: 'Estimation', texte: 'son estimation' },
+  'TXT-INF-ETAT': { libelle: 'État', texte: 'son état' },
+  'TXT-INF-INTITULE': { libelle: 'Intitulé', texte: 'son intitulé' },
+  'TXT-INF-OBJECTIFS': { libelle: 'Rattachement', texte: 'son rattachement' },
+  'TXT-INF-PARENT': { libelle: 'Placement', texte: 'son placement' },
+  'TXT-VAL-AUCUNE': {
+    libelle: 'aucune description',
+    variantes: { delai: { libelle: 'sans délai' } },
+  },
+  'TXT-VAL-CREEE': { libelle: 'création' },
+  'TXT-VAL-DETACHEE': { libelle: 'détachée de “{objectif}”' },
+  'TXT-VAL-DONNEES-EFFACEES': { libelle: 'données effacées (repartir de zéro)' },
+  'TXT-VAL-ETAT': {
+    libelle: 'à faire',
+    variantes: {
+      TERMINEE: { libelle: 'terminée le {date}' },
+      ABANDONNEE: { libelle: 'abandonnée le {date}' },
+    },
+  },
+  'TXT-VAL-OBJECTIF-SUPPRIME': { libelle: 'objectif supprimé' },
+  'TXT-VAL-PLACEMENT-ANNULE': { libelle: 'placement annulé' },
+  'TXT-VAL-PRINCIPAL': { libelle: 'objectif principal' },
+  'TXT-VAL-RATTACHEE': { libelle: 'rattachée à “{objectif}”' },
+  'TXT-VAL-SOUS': { libelle: 'sous “{objectif}”' },
+  'TXT-VAL-SOUS-TACHE-DE': { libelle: 'sous-tâche de “{tache}”' },
+  'TXT-VAL-SUPPRIMEE-AVEC': { libelle: 'supprimée avec la tâche “{tache}”' },
+  'TXT-VAL-TACHE-SUPPRIMEE': { libelle: 'tâche supprimée' },
+  'TXT-VOIR-OBJECTIF': { libelle: 'Voir l’objectif' },
+  'TXT-VOIR-TACHE': { libelle: 'Voir la tâche' },
 } as const satisfies Record<CodeCatalogue, GabaritLibelle>;

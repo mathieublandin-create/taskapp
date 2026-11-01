@@ -150,11 +150,11 @@ describe('Contrôles de CI (conventions.md §8.5, §9.1, §11.8, §11.13, §14)'
     ).toEqual(['a.feature:1 : tag inconnu @ANOMALIE']);
   });
 
-  it('UT-COMP-86 lireScenarios — lit les dix fichiers du lot, 286 scénarios identifiés', () => {
+  it('UT-COMP-86 lireScenarios — lit les dix fichiers du lot, 289 scénarios identifiés', () => {
     const scenarios = lireScenarios();
 
-    // 286 depuis US-017 S06c à S06f (ANO-001, glossaire v1.11).
-    expect(scenarios).toHaveLength(286);
+    // 286 depuis US-017 S06c à S06f (ANO-001, glossaire v1.11) ; 289 depuis US-017 S10b, S10c et US-023 S18d (Q-ST017-PEP-2).
+    expect(scenarios).toHaveLength(289);
     expect(scenarios.every((s) => s.identifiant !== undefined)).toBe(true);
     expect(scenarios[0]?.tags).toEqual(expect.arrayContaining(['@US-001', '@LOT-001']));
   });

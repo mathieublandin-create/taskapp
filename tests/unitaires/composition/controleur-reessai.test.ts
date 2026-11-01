@@ -74,6 +74,8 @@ const preparer = () => {
     consulterEtat: () => Promise.resolve(undefined),
     lireElementsEnAttente: () => Promise.resolve([]),
     lireDernierContact: () => Promise.resolve(undefined),
+    lireModificationsNonRetenues: () => Promise.resolve(undefined),
+    marquerCommeLue: () => Promise.resolve(succes(undefined)),
     synchroniserMaintenant: () => Promise.resolve(),
     observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => undefined,

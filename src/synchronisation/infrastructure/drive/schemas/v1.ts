@@ -16,6 +16,11 @@ import {
   type TypeElement,
   type ValeursParChamp,
 } from '../../../domaine/information';
+import {
+  FORME_ID_VALEUR_ECARTEE,
+  type IdValeurEcartee,
+  type MotifValeurEcartee,
+} from '../../../domaine/valeurs-ecartees';
 
 // ST-US-017 §5.2, §5.3 : schéma 1 du format Drive. Objets **lâches** (`z.looseObject`) : un champ inconnu d'une
 // version plus récente de même schemaVersion est toléré (RG-058, ANT-19) ; `.strict()` est interdit.
@@ -112,6 +117,26 @@ const schemaGeneration = (hlc: z.ZodType<Hlc>): z.ZodType<Generation> =>
       .looseObject({ type: z.literal('NOUVELLE'), hlc })
       .transform(({ hlc: h }): Generation => ({ type: 'NOUVELLE', hlc: h })),
   ]);
+
+/** Motifs de valeur écartée connus du schéma 1 (ST-US-017 v0.5 §5.2) ; un motif ajouté au domaine doit l'être ici. */
+export const MOTIFS_VALEUR_ECARTEE_V1 = {
+  CONFLIT: true,
+  SUPPRESSION: true,
+  PLACEMENT_ANNULE: true,
+  DONNEES_EFFACEES: true,
+} as const satisfies Record<MotifValeurEcartee, true>;
+
+/** Identifiant d'une valeur écartée : base32hex minuscule sans remplissage, 52 caractères (§6.6 n° 1). */
+const idValeurEcartee = z
+  .string()
+  .regex(FORME_ID_VALEUR_ECARTEE)
+  .transform((texte) => texte as IdValeurEcartee);
+
+/**
+ * DAT v0.11.7 §4.2 (Q-ST017-STA-4 b) : le motif d'une valeur écartée est lu **avant** sa forme, pour qu'une entrée d'un
+ * motif ajouté plus tard (même `schemaVersion`) soit ignorée sans rendre le fichier illisible.
+ */
+export const SchemaMotifV1 = z.looseObject({ motif: z.string() });
 
 // --- Enveloppes, lues avant la table des appareils ---------------------------------------------------
 
@@ -338,10 +363,24 @@ const schemaContexte = (appareils: ReadonlyArray<IdAppareil>, hlc: z.ZodType<Hlc
     ),
   );
 
-const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
-  const hlc = schemaHlc(schemaAppareilParIndice(appareils));
-  const placement = schemaPlacement(hlc);
-  const registre = z.looseObject({
+/** §5.2 : valeur écartée (lue après son motif ; `gagnante` ou `generation` exigés selon le motif, format-v1.ts) et lecture. */
+const schemasSignalements = (registre: z.ZodType<RegistreLuV1>, hlc: z.ZodType<Hlc>) => ({
+  valeurEcartee: z.looseObject({
+    id: idValeurEcartee,
+    motif: z.string(),
+    ecartee: registre,
+    gagnante: registre.optional(),
+    generation: hlc.optional(),
+    intituleElement: z.string().optional(),
+  }),
+  lecture: z
+    .looseObject({ id: idValeurEcartee, hlc })
+    .transform(({ id, hlc: h }) => ({ id, hlc: h })),
+});
+
+/** Registre brut (type et champ non encore reconnus) ; sa valeur est lue par `schemaDeValeurV1`. */
+const schemaRegistre = (appareils: ReadonlyArray<IdAppareil>, hlc: z.ZodType<Hlc>) =>
+  z.looseObject({
     type: z.string(),
     id: z.string(),
     champ: z.string(),
@@ -349,6 +388,13 @@ const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
     hlc,
     contexte: schemaContexte(appareils, hlc).optional(),
   });
+
+type RegistreLuV1 = z.output<ReturnType<typeof schemaRegistre>>;
+
+const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
+  const hlc = schemaHlc(schemaAppareilParIndice(appareils));
+  const placement = schemaPlacement(hlc);
+  const registre = schemaRegistre(appareils, hlc);
   const fichier = z.looseObject({
     schemaVersion: z.number().int().positive(),
     versionApplication: z.string(),
@@ -363,6 +409,7 @@ const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
   });
   return {
     fichier,
+    ...schemasSignalements(registre, hlc),
     valeurs: schemasDesValeurs(placement),
     contenuEvenement: schemaContenuEvenement(placement),
     communEvenement: schemaCommunEvenement(hlc),

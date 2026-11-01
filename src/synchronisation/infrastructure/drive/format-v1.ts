@@ -9,6 +9,7 @@ import type {
   ContenuManifeste,
   Generation,
 } from '../../domaine/contenu-fichier';
+import { trierParIdentifiant } from '../../domaine/depot';
 import type { RegistreQuelconque } from '../../domaine/ecriture';
 import type { EvenementJournal } from '../../domaine/evenement-journal';
 import type { Hlc } from '../../domaine/hlc';
@@ -18,12 +19,16 @@ import type {
   PlacementObjectif,
   TypeElement,
 } from '../../domaine/information';
+import type { Lecture } from '../../domaine/lectures';
+import type { MotifValeurEcartee, ValeurEcartee } from '../../domaine/valeurs-ecartees';
 import { SCHEMA_VERSION } from '../../domaine/version-schema';
 import { compresser, decompresser } from './compression';
 import {
   lireEvenementV1,
   lireIdElementV1,
+  MOTIFS_VALEUR_ECARTEE_V1,
   schemaDeValeurV1,
+  SchemaMotifV1,
   schemasFichierV1,
   SchemaManifesteV1,
   SchemaTableAppareilsV1,
@@ -45,35 +50,50 @@ const CLE_EMPREINTE = 'empreinte';
 
 const TYPES_ELEMENT: ReadonlySet<string> = new Set(Object.keys(TYPES_ELEMENT_V1));
 const TYPES_EVENEMENT: ReadonlySet<string> = new Set(Object.keys(TYPES_EVENEMENT_V1));
+const estMotifV1 = (motif: string): motif is MotifValeurEcartee =>
+  Object.hasOwn(MOTIFS_VALEUR_ECARTEE_V1, motif);
 
 const illisible = (cause: CauseIllisible): Resultat<never, ErreurLecture> =>
   echec({ type: 'FichierIllisible', cause });
 
 // --- Encodage ------------------------------------------------------------------------------------
 
-/** Table des appareils cités par les HLC (écritures, contextes, placements, journal, génération), triée. */
+const hlcsDuPlacement = (valeur: unknown): ReadonlyArray<Hlc> => {
+  const placement = valeur as Partial<PlacementObjectif>;
+  return placement.hlcOrigine === undefined ? [] : [placement.hlcOrigine];
+};
+
+const hlcsDuRegistre = ({ cle, ecriture }: RegistreQuelconque): ReadonlyArray<Hlc> => [
+  ecriture.hlc,
+  ...Object.values(ecriture.contexte),
+  ...(cle.type === 'OBJECTIF' && cle.champ === 'parent' ? hlcsDuPlacement(ecriture.valeur) : []),
+];
+
+const hlcsDeLEvenement = (e: EvenementJournal): ReadonlyArray<Hlc> => [
+  e.hlc,
+  ...(e.type === 'CHANGEMENT_PARENT'
+    ? [...hlcsDuPlacement(e.avant), ...hlcsDuPlacement(e.apres)]
+    : []),
+];
+
+const hlcsDeLaValeurEcartee = (v: ValeurEcartee): ReadonlyArray<Hlc> => [
+  ...hlcsDuRegistre(v.ecartee),
+  ...(v.motif === 'DONNEES_EFFACEES' ? [v.generation] : hlcsDuRegistre(v.gagnante)),
+];
+
+/**
+ * Table des appareils cités par les HLC (écritures, contextes, placements, journal, génération, et, depuis l'incrément 2,
+ * valeurs écartées et lectures : ST-US-017 v0.5 §5.2), triée.
+ */
 const tableDesAppareils = (contenu: ContenuFichierAppareil): ReadonlyArray<IdAppareil> => {
-  const cites = new Set<IdAppareil>();
-  const citer = (h: Hlc): void => {
-    cites.add(h.appareil);
-  };
-  const citerPlacement = (valeur: unknown): void => {
-    const placement = valeur as Partial<PlacementObjectif>;
-    if (placement.hlcOrigine !== undefined) citer(placement.hlcOrigine);
-  };
-  contenu.registres.forEach(({ cle, ecriture }) => {
-    citer(ecriture.hlc);
-    Object.values(ecriture.contexte).forEach(citer);
-    if (cle.type === 'OBJECTIF' && cle.champ === 'parent') citerPlacement(ecriture.valeur);
-  });
-  contenu.journal.forEach((e) => {
-    citer(e.hlc);
-    if (e.type === 'CHANGEMENT_PARENT') {
-      citerPlacement(e.avant);
-      citerPlacement(e.apres);
-    }
-  });
-  if (contenu.generation.type === 'NOUVELLE') citer(contenu.generation.hlc);
+  const hlcs = [
+    ...contenu.registres.flatMap(hlcsDuRegistre),
+    ...contenu.journal.flatMap(hlcsDeLEvenement),
+    ...(contenu.generation.type === 'NOUVELLE' ? [contenu.generation.hlc] : []),
+    ...(contenu.valeursEcartees ?? []).flatMap(hlcsDeLaValeurEcartee),
+    ...(contenu.lectures ?? []).map((l) => l.hlc),
+  ];
+  const cites = new Set(hlcs.map((h) => h.appareil));
   return [...cites].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 };
 
@@ -158,6 +178,36 @@ const encoderEvenement = (evenement: EvenementJournal, indices: Indices): object
   };
 };
 
+/** §5.2 : `{ id, motif, ecartee, gagnante?, generation?, intituleElement? }`, registres sous la forme de `registres`. */
+const encoderValeurEcartee = (valeur: ValeurEcartee, indices: Indices): object => {
+  const commun = {
+    id: valeur.id,
+    motif: valeur.motif,
+    ecartee: encoderRegistre(valeur.ecartee, indices),
+  };
+  // Switch exhaustif sans `default` : un motif ajouté au domaine sans cas ici ne compile pas (TS2366).
+  switch (valeur.motif) {
+    case 'CONFLIT':
+    case 'PLACEMENT_ANNULE':
+      return { ...commun, gagnante: encoderRegistre(valeur.gagnante, indices) };
+    case 'SUPPRESSION':
+      return {
+        ...commun,
+        gagnante: encoderRegistre(valeur.gagnante, indices),
+        ...(valeur.intituleElement === undefined
+          ? {}
+          : { intituleElement: valeur.intituleElement }),
+      };
+    case 'DONNEES_EFFACEES':
+      return { ...commun, generation: encoderHlc(valeur.generation, indices) };
+  }
+};
+
+const encoderLecture = (lecture: Lecture, indices: Indices): object => ({
+  id: lecture.id,
+  hlc: encoderHlc(lecture.hlc, indices),
+});
+
 const encoderGeneration = (generation: Generation, encoder: (h: Hlc) => object): object =>
   generation.type === 'INITIALE'
     ? { type: 'INITIALE' }
@@ -181,10 +231,13 @@ export const encoderFichierAppareil = async (
     appareils,
     generation: encoderGeneration(contenu.generation, (h) => encoderHlc(h, indices)),
     journal: contenu.journal.map((e) => encoderEvenement(e, indices)),
-    lectures: [],
+    // §5.2 (incrément 2) : les deux tableaux sont toujours écrits, vides compris, triés par identifiant.
+    lectures: trierParIdentifiant(contenu.lectures ?? []).map((l) => encoderLecture(l, indices)),
     registres: contenu.registres.map((r) => encoderRegistre(r, indices)),
     schemaVersion: contenu.schemaVersion,
-    valeursEcartees: [],
+    valeursEcartees: trierParIdentifiant(contenu.valeursEcartees ?? []).map((v) =>
+      encoderValeurEcartee(v, indices),
+    ),
     versionApplication: contenu.versionApplication,
   });
   return compresser(new TextEncoder().encode(texte));
@@ -238,6 +291,7 @@ const verifierEmpreinte = async (objet: Record<string, unknown>): Promise<boolea
 };
 
 type RegistreBrut = z.output<SchemasFichierV1['fichier']>['registres'][number];
+type ValeurEcarteeBrute = z.output<SchemasFichierV1['valeurEcartee']>;
 
 /** Registre relu ; 'IGNORE' pour un type ou un champ inconnu (§5.3), undefined s'il est invalide. */
 const lireRegistre = (
@@ -272,6 +326,63 @@ const lireTout = <B, T>(
   return lus;
 };
 
+/** Registre relu d'une valeur écartée (`IGNORE` : type ou champ inconnu, §5.3 ; undefined : invalide). */
+type RegistreLu = RegistreQuelconque | 'IGNORE' | undefined;
+
+/** Entrée `DONNEES_EFFACEES` : `generation` exigée. */
+const assemblerDonneesEffacees = (
+  brute: ValeurEcarteeBrute,
+  ecartee: RegistreLu,
+): ValeurEcartee | 'IGNORE' | undefined => {
+  if (brute.generation === undefined || ecartee === undefined) return undefined;
+  if (ecartee === 'IGNORE') return 'IGNORE';
+  return { id: brute.id, motif: 'DONNEES_EFFACEES', ecartee, generation: brute.generation };
+};
+
+/** Entrées `CONFLIT`, `SUPPRESSION`, `PLACEMENT_ANNULE` : `gagnante` exigée. */
+const assemblerAvecGagnante = (
+  schemas: SchemasFichierV1,
+  motif: Exclude<MotifValeurEcartee, 'DONNEES_EFFACEES'>,
+  brute: ValeurEcarteeBrute,
+  ecartee: RegistreLu,
+): ValeurEcartee | 'IGNORE' | undefined => {
+  const { id, intituleElement } = brute;
+  const gagnante = brute.gagnante === undefined ? undefined : lireRegistre(schemas, brute.gagnante);
+  if (ecartee === undefined || gagnante === undefined) return undefined;
+  if (ecartee === 'IGNORE' || gagnante === 'IGNORE') return 'IGNORE';
+  // Exhaustif sans `default` (TS2366), comme `encoderValeurEcartee`.
+  switch (motif) {
+    case 'CONFLIT':
+    case 'PLACEMENT_ANNULE':
+      return { id, motif, ecartee, gagnante };
+    case 'SUPPRESSION':
+      return {
+        id,
+        motif,
+        ecartee,
+        gagnante,
+        ...(intituleElement === undefined ? {} : { intituleElement }),
+      };
+  }
+};
+
+/** Motif lu avant la forme (DAT v0.11.7 §4.2) : motif inconnu → 'IGNORE' ; entrée mal formée → undefined. */
+const lireValeurEcartee = (
+  schemas: SchemasFichierV1,
+  brut: unknown,
+): ValeurEcartee | 'IGNORE' | undefined => {
+  const entete = SchemaMotifV1.safeParse(brut);
+  if (!entete.success) return undefined;
+  const { motif } = entete.data;
+  if (!estMotifV1(motif)) return 'IGNORE';
+  const brute = schemas.valeurEcartee.safeParse(brut);
+  if (!brute.success) return undefined;
+  const ecartee = lireRegistre(schemas, brute.data.ecartee);
+  return motif === 'DONNEES_EFFACEES'
+    ? assemblerDonneesEffacees(brute.data, ecartee)
+    : assemblerAvecGagnante(schemas, motif, brute.data, ecartee);
+};
+
 const decompresserEnJson = async (
   octets: Uint8Array,
 ): Promise<Resultat<Record<string, unknown>, ErreurLecture>> => {
@@ -280,6 +391,25 @@ const decompresserEnJson = async (
   } catch {
     return illisible('DECOMPRESSION');
   }
+};
+
+/** Tableaux `valeursEcartees` et `lectures`, rendus si et seulement si non vides (§5.2, UT-US-017-12) ; undefined si invalides. */
+const lireSignalements = (
+  schemas: SchemasFichierV1,
+  fichier: {
+    readonly valeursEcartees?: ReadonlyArray<unknown> | undefined;
+    readonly lectures?: ReadonlyArray<unknown> | undefined;
+  },
+): Pick<ContenuFichierAppareil, 'valeursEcartees' | 'lectures'> | undefined => {
+  const valeursEcartees = lireTout(fichier.valeursEcartees ?? [], (brut) =>
+    lireValeurEcartee(schemas, brut),
+  );
+  const lectures = lireTout(fichier.lectures ?? [], (brut) => schemas.lecture.safeParse(brut).data);
+  if (valeursEcartees === undefined || lectures === undefined) return undefined;
+  return {
+    ...(valeursEcartees.length === 0 ? {} : { valeursEcartees }),
+    ...(lectures.length === 0 ? {} : { lectures }),
+  };
 };
 
 /** Validation Zod puis lecture des registres et du journal (types et champs inconnus ignorés). */
@@ -295,7 +425,10 @@ const lireContenu = (
   const journal = lireTout(lu.data.journal, (brut) =>
     TYPES_EVENEMENT.has(brut.type) ? lireEvenementV1(schemas, brut) : 'IGNORE',
   );
-  if (registres === undefined || journal === undefined) return illisible('SCHEMA');
+  const signalements = lireSignalements(schemas, lu.data);
+  if (registres === undefined || journal === undefined || signalements === undefined) {
+    return illisible('SCHEMA');
+  }
   return succes({
     schemaVersion: lu.data.schemaVersion,
     versionApplication: lu.data.versionApplication,
@@ -303,6 +436,7 @@ const lireContenu = (
     appareil: lu.data.appareil.id,
     registres,
     journal,
+    ...signalements,
   });
 };
 

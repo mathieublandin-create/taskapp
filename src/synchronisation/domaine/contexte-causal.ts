@@ -30,8 +30,30 @@ export const contexteDeNouvelleEcriture = (
     ? CONTEXTE_VIDE
     : retirerAppareil(ajouterAuContexte(precedente.contexte, precedente.hlc), auteur);
 
-export const estConnue = (gagnante: EcritureDatee, autre: EcritureDatee): boolean => {
-  if (autre.hlc.appareil === gagnante.hlc.appareil) return true;
+/** Connaissance par le contexte seul (écriture d'un autre appareil). */
+const connueParLeContexte = (gagnante: EcritureDatee, autre: EcritureDatee): boolean => {
   const connue = gagnante.contexte[autre.hlc.appareil];
   return connue !== undefined && comparerHlc(connue, autre.hlc) >= 0;
+};
+
+/**
+ * ST-socle v0.3.2 §6.2, DAT v0.11.9 §4.2.1 (condition J1, UT-SOC-15, 16) : une écriture du même appareil est connue si
+ * elle est antérieure ou égale (`autre.hlc ≤ gagnante.hlc`) ; une écriture postérieure (réparation RG-048 écrite après
+ * une pierre tombale) ne l'est pas. Une écriture d'un autre appareil est connue par le contexte.
+ */
+export const estConnue = (gagnante: EcritureDatee, autre: EcritureDatee): boolean =>
+  autre.hlc.appareil === gagnante.hlc.appareil
+    ? comparerHlc(autre.hlc, gagnante.hlc) <= 0
+    : connueParLeContexte(gagnante, autre);
+
+/** Mêmes appareils et, pour chacun, le même HLC (ST-US-017 v0.8 §6.6 n° 3 b). */
+export const contextesEgaux = (c1: ContexteCausal, c2: ContexteCausal): boolean => {
+  const entrees = Object.entries(c1);
+  return (
+    entrees.length === Object.keys(c2).length &&
+    entrees.every(([appareil, h1]) => {
+      const h2 = c2[appareil];
+      return h2 !== undefined && comparerHlc(h1, h2) === 0;
+    })
+  );
 };

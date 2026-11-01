@@ -12,17 +12,22 @@ import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
 import { cleEnTexte } from '../domaine/information';
 import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
 import type { PlanEcriture } from '../domaine/planifier-ecritures';
+import type { AjoutsSignalements, Signalements } from '../domaine/signalements';
 import {
   decoderEnAttente,
   decoderEvenement,
+  decoderLecture,
   decoderMeta,
   decoderMetaSynchronisation,
   decoderRegistre,
+  decoderValeurEcartee,
   encoderEnAttente,
   encoderEvenement,
+  encoderLecture,
   encoderMeta,
   encoderMetaSynchronisation,
   encoderRegistre,
+  encoderValeurEcartee,
 } from './stockage-local/schemas';
 
 /**
@@ -53,7 +58,8 @@ export type OptionsOuvertureEspace = {
   readonly surFermetureImposee?: () => void;
 };
 
-const TABLES = ['registres', 'journal', 'enAttente', 'meta'];
+const TABLES_SIGNALEMENTS = ['valeursEcartees', 'lectures'];
+const TABLES = ['registres', 'journal', 'enAttente', 'meta', ...TABLES_SIGNALEMENTS];
 
 type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
 
@@ -75,6 +81,8 @@ const creerBase = (nomBase: string, fabrique: IDBFactory | undefined): Dexie => 
   base.version(1).stores(tables);
   // ST-US-017 §5.1 : version 2, aucune nouvelle table ; la méta reçoit les clés de synchronisation.
   base.version(2).stores(tables);
+  // ST-US-017 v0.5 §5.1 (DAT v0.11.7 §4.2) : version 3, ajout pur des tables de signalements, sans `upgrade`.
+  base.version(3).stores({ ...tables, valeursEcartees: 'id', lectures: 'id' });
   return base;
 };
 
@@ -101,6 +109,9 @@ const planEstVide = (plan: PlanEcriture): boolean =>
   plan.evenementsAjoutes.length === 0 &&
   plan.enAttenteEcrites.length === 0 &&
   plan.enAttenteRetirees.length === 0;
+
+const signalementsVides = (ajouts: AjoutsSignalements | undefined): boolean =>
+  ajouts === undefined || (ajouts.valeursEcartees.length === 0 && ajouts.lectures.length === 0);
 
 /** Décode toutes les lignes ; undefined si l'une d'elles est invalide. */
 const decoderTout = <T>(
@@ -248,13 +259,30 @@ export class DepotLocalDexie implements DepotLocal {
     }
   }
 
+  /** ST-US-017 v0.5 §4.6 : tables `valeursEcartees` et `lectures` (version 3), lues dans une transaction. */
+  async lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', TABLES_SIGNALEMENTS, () => this.signalements());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
+  }
+
   /**
-   * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état et méta lus, calcul, puis plan et méta écrits
-   * ensemble. La méta est fusionnée clé à clé ; `version` et les observateurs ne changent que si le plan est
-   * non vide. Une exception du calcul est propagée et rien n'est écrit.
+   * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état, méta et signalements lus, calcul, puis plan, méta et
+   * signalements écrits ensemble (v0.5 §4.6). La méta est fusionnée clé à clé ; `version`, `dernierHlc` et les
+   * observateurs ne changent que si le plan ou les signalements sont non vides. Une exception du calcul est propagée et
+   * rien n'est écrit.
    */
   async appliquerSynchronisation(
-    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     if (this.ferme) return ESPACE_NON_OUVERT;
     const surveillance: Surveillance = { exception: undefined };
@@ -345,6 +373,20 @@ export class DepotLocalDexie implements DepotLocal {
     return succes({ valeur, etatApres });
   }
 
+  /** Dans une transaction qui couvre les deux tables : signalements relus, ou DonneesLocalesIllisibles. */
+  private async signalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    const valeurs = decoderTout(
+      await this.base.table('valeursEcartees').toArray(),
+      decoderValeurEcartee,
+    );
+    const lectures = decoderTout(await this.base.table('lectures').toArray(), decoderLecture);
+    if (valeurs === undefined || lectures === undefined) return ESPACE_ILLISIBLE;
+    return succes({
+      valeursEcartees: new Map(valeurs.map((v) => [v.id, v])),
+      lectures: new Map(lectures.map((l) => [l.id, l])),
+    });
+  }
+
   private async metaSynchronisation(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
     const meta = decoderMetaSynchronisation(await this.base.table('meta').toArray());
     return meta === undefined ? ESPACE_ILLISIBLE : succes(meta);
@@ -352,25 +394,32 @@ export class DepotLocalDexie implements DepotLocal {
 
   /** Dans la transaction : lit l'état et la méta, appelle le calcul, écrit la méta puis le plan s'il est non vide. */
   private async executerSynchronisation(
-    calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
     surveillance: Surveillance,
   ): Promise<IssueExecution<undefined, never>> {
     const etat = await this.etatAJour();
     if (!etat.ok) return etat;
     const meta = await this.metaSynchronisation();
     if (!meta.ok) return meta;
+    const signalements = await this.signalements();
+    if (!signalements.ok) return signalements;
     let synchronisation: PlanSynchronisation;
     try {
-      synchronisation = calcul(etat.valeur, meta.valeur);
+      synchronisation = calcul(etat.valeur, meta.valeur, signalements.valeur);
     } catch (exception) {
       if (exception instanceof Error) surveillance.exception = exception;
       throw exception;
     }
-    const { plan, meta: metaEcrite } = synchronisation;
+    const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
     await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
-    if (planEstVide(plan)) return succes({ valeur: undefined });
+    if (planEstVide(plan) && signalementsVides(ajouts)) return succes({ valeur: undefined });
     const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
     await this.ecrire(plan, etatApres);
+    if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
     return succes({ valeur: undefined, etatApres });
   }
 
@@ -397,6 +446,14 @@ export class DepotLocalDexie implements DepotLocal {
     await this.base.table('enAttente').bulkPut(entreesEcrites);
     await this.base.table('enAttente').bulkDelete([...plan.enAttenteRetirees]);
     await this.base.table('meta').bulkPut([...encoderMeta(etatApres)]);
+  }
+
+  /** Ajout ou remplacement par identifiant, dans la transaction en cours. */
+  private async ecrireSignalements(ajouts: AjoutsSignalements): Promise<void> {
+    await this.base
+      .table('valeursEcartees')
+      .bulkPut(ajouts.valeursEcartees.map(encoderValeurEcartee));
+    await this.base.table('lectures').bulkPut(ajouts.lectures.map(encoderLecture));
   }
 
   private confirmer(etatApres: EtatLocal): void {

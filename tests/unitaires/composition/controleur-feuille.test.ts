@@ -33,6 +33,7 @@ const preparer = (etat: EtatSynchronisationLu | undefined) => {
     consulterEtat: () => Promise.resolve(etat),
     lireElementsEnAttente: () => Promise.resolve(ELEMENTS),
     lireDernierContact: () => Promise.resolve(instant('2026-10-21T07:50:00.000Z')),
+    lireModificationsNonRetenues: () => Promise.resolve(undefined),
     synchroniserMaintenant: () => {
       appels.push('synchroniserMaintenant');
       return Promise.resolve();

@@ -185,14 +185,15 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   @US-031 @RG-049 @LOT-001
   Scénario: S12 — Au retour du réseau sur le PC, une incohérence d'état est signalée sans correction
     Étant donné les tâches suivantes :
-      | intitulé  | état     | délai      | estimation | objectifs | tâche parente |
-      | Section A | terminée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
+      | Chapitre 2 | à faire  | 2026-11-30 | 2 h        | Publier le guide |               |
+      | Section A  | terminée | 2026-11-20 | 1 h        |                  | Chapitre 2    |
     Et que le PC est sans réseau
-    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 1"
+    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 2"
     Et sur le PC, l'utilisateur rouvre la tâche "Section A"
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
-    Alors sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
+    Alors sur les deux appareils, la tâche "Chapitre 2" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
 
   # ---------------------------------------------------------------- Perte de l'accès Google (CA-9)
 

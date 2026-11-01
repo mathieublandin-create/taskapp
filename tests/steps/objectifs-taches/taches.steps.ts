@@ -4,12 +4,13 @@
  * expressions régulières qui acceptent le singulier, le pluriel et la forme littérale (conventions.md §11.6).
  */
 import assert from 'node:assert/strict';
-import type { DataTable } from '@cucumber/cucumber';
+import { Then, type DataTable } from '@cucumber/cucumber';
 import {
   construireConfirmation,
   construireFormulaireTache,
   type ModeleVueDetailTache,
 } from '@src/objectifs-taches';
+import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import {
   convertirDuree,
   FRAGMENT_DATE,
@@ -25,6 +26,11 @@ import {
   lObjectifAUnNombreDeTaches,
   separerIntitules,
 } from '../../support/construction-taches';
+import {
+  tacheEnIncoherence,
+  type EtatParentIncoherent,
+} from '../../support/construction-incoherence';
+import type { MondeDoneJuan } from '../../support/monde';
 import { detailObjectifDe, objectifsDe, resoudreObjectif } from '../../support/objectifs';
 import {
   etapeAction,
@@ -36,6 +42,7 @@ import {
   detailTacheDe,
   existeUneTacheIntitulee,
   formulaireSousTacheDe,
+  ligneTacheDe,
   listeIntitules,
   listeTachesDe,
   minutes,
@@ -835,5 +842,47 @@ etapeAssertion(
       await (await objectifsDe(appareil)).consulterDetailObjectif.executer(id),
     );
     assert.equal(detail.taches.length, Number(nombre));
+  },
+);
+
+// ---------------------------------------------------------------- Incohérence (RG-049 ; ST-US-017 §12.5 N10, N11)
+
+etapeContexte(
+  new RegExp(
+    `^la tâche ${TEXTE}, (terminée|abandonnée), est signalée en incohérence avec sa sous-tâche à faire ${TEXTE}$`,
+  ),
+  (contexte, parente, etat, sousTache) =>
+    tacheEnIncoherence(contexte, etat as EtatParentIncoherent, String(parente), String(sousTache)),
+);
+
+etapeAssertion(
+  new RegExp(`^la tâche ${TEXTE} porte la mention "MEN-INCOHERENCE" pour sa sous-tâche ${TEXTE}$`),
+  async ({ monde, appareil }, parente, sousTache) => {
+    const ligne = await ligneTacheDe(monde, appareil, String(parente));
+    assert.equal(ligne.incoherence?.code, 'MEN-INCOHERENCE', `« ${String(parente)} » sans mention`);
+    const { incoherence } = await resumeTacheDe(monde, appareil, String(parente));
+    assert.deepEqual(
+      incoherence?.sousTachesAFaire.map((s) => s.intitule),
+      [String(sousTache)],
+    );
+  },
+);
+
+// ST-US-017 v0.5 §12.5 n° 9 : la tâche d'intitulé initial « X » (référence du monde) porte le même intitulé, « A » ou
+// « B », sur les deux appareils.
+const intituleSurLAppareil = async (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+  initial: string,
+): Promise<string> => (await resumeTacheDe(monde, appareil, initial)).intitule;
+
+Then(
+  /^les deux appareils affichent le même intitulé pour la tâche "([^"]*)", "([^"]*)" ou "([^"]*)"$/,
+  async function (this: MondeDoneJuan, initial: string, premier: string, second: string) {
+    const intitules = await Promise.all(
+      this.banc.appareils().map((appareil) => intituleSurLAppareil(this, appareil, initial)),
+    );
+    assert.equal(new Set(intitules).size, 1, `Intitulés différents : ${intitules.join(', ')}`);
+    assert.ok([premier, second].includes(intitules[0] ?? ''), `Intitulé : ${intitules[0] ?? ''}`);
   },
 );

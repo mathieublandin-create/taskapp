@@ -11,7 +11,7 @@ import {
 } from '../../domaine/alertes-delai';
 import { compteurObjectif, etatObjectif, type EtatObjectif } from '../../domaine/etat-objectif';
 import { estimationEnVigueur } from '../../domaine/estimation';
-import type { Incoherence } from '../../domaine/incoherence';
+import { incoherenceDe, type Incoherence } from '../../domaine/incoherence';
 import { estObjectifEnRetard, estTacheEnRetard } from '../../domaine/retard';
 import {
   objectifsDirectsDe,
@@ -54,7 +54,7 @@ export type ResumeTache = {
   readonly alertes: ReadonlyArray<AlerteDelaiTache>;
   /** Présent si la tâche a au moins une sous-tâche. */
   readonly sousTaches?: { readonly terminees: number; readonly nonAbandonnees: number };
-  readonly incoherence?: Incoherence; // RG-049, dérivée ; renseignée au rang 9 seulement (ST-US-024 §15)
+  readonly incoherence?: Incoherence; // RG-049, dérivée (ST-US-024 §6.6)
   readonly creeLe: Instant;
   readonly enAttente: boolean;
 };
@@ -108,6 +108,7 @@ export const resumerTache = (vue: VueMetier, tache: Tache, jour: DateCalendaire)
   const parente =
     tache.tacheParenteId === undefined ? undefined : vue.taches.get(tache.tacheParenteId);
   const sousTaches = compteurSousTaches(vue, tache);
+  const incoherence = incoherenceDe(vue, tache.id);
   return {
     id: tache.id,
     intitule: tache.intitule,
@@ -124,6 +125,7 @@ export const resumerTache = (vue: VueMetier, tache: Tache, jour: DateCalendaire)
     enRetard: estTacheEnRetard(tache, jour),
     alertes: alertesDelaiTache(vue, tache.id),
     ...(sousTaches === undefined ? {} : { sousTaches }),
+    ...(incoherence === undefined ? {} : { incoherence }),
     creeLe: tache.creeLe,
     enAttente: tache.enAttente,
   };

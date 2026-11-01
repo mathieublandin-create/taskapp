@@ -1,5 +1,8 @@
 import type { Horloge } from '../commun/application/ports/horloge';
+import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartees';
 import type { Annulation } from '../commun/application/ports/planificateur';
+import { jourDeReference } from '../commun/domaine/temps/jour-de-reference';
+import type { DateCalendaire } from '../commun/domaine/temps/date-calendaire';
 import type { Resultat } from '../commun/domaine/resultat';
 import type { IssueOuverture } from '../compte/application/cas-usage/ouvrir-application';
 import type { IssueSuppression } from '../compte/application/cas-usage/supprimer-donnees-appareil';
@@ -33,6 +36,10 @@ import {
   type ModeleVueIndicateur,
 } from '../synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
 import {
+  construireModificationsNonRetenues,
+  type ModeleVueModificationsNonRetenues,
+} from '../synchronisation/presentation/modeles-de-vue/modifications-non-retenues';
+import {
   construireFeuilleSynchronisation,
   type ActionCarteFeuille,
   type ModeleVueFeuilleSynchronisation,
@@ -55,6 +62,8 @@ export type ApplicationInterface = Pick<
   | 'masquage'
   | 'lireElementsEnAttente'
   | 'lireDernierContact'
+  | 'lireModificationsNonRetenues'
+  | 'marquerCommeLue'
   | 'synchroniserMaintenant'
   | 'observerSynchronisation'
   | 'ouvrirGoogleDrive'
@@ -72,6 +81,10 @@ export type VueInterface = {
   readonly indicateur?: ModeleVueIndicateur;
   /** Section « Synchronisation » d'ECR-011 ; présente avec l'indicateur (espace ouvert). */
   readonly feuille?: ModeleVueFeuilleSynchronisation;
+  /** Section « À lire » d'ECR-011, en tête de la feuille ; absente s'il n'y a rien à lire (I2-21). */
+  readonly nonRetenues?: ModeleVueModificationsNonRetenues;
+  /** Jour de référence des dates de la section « À lire » (année affichée si elle diffère, guide §6.6.1). */
+  readonly aujourdhui?: DateCalendaire;
   readonly bandeau?: ModeleVueBandeau;
   readonly confirmation?: ModeleVueConfirmationCompte;
   readonly suppressionBloquee?: { readonly enCours: boolean };
@@ -250,6 +263,20 @@ export class ControleurInterface {
     await this.rafraichir();
   };
 
+  /**
+   * « Compris » sur une ligne, ou sur la carte `ALR-008` (toutes ses lignes). Un échec d'écriture locale n'est jamais
+   * silencieux : toast ERR-014, « Réessayer » rejoue le geste.
+   */
+  readonly marquerCommeLue = async (ids: ReadonlyArray<IdValeurEcartee>): Promise<void> => {
+    this.#effacerToast();
+    const r = await this.application.marquerCommeLue(ids);
+    if (!r.ok) {
+      this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
+      this.#etat.reessai = () => this.marquerCommeLue(ids);
+    }
+    await this.rafraichir();
+  };
+
   readonly actionCarte = async (action: ActionCarteFeuille): Promise<void> => {
     if (action === 'OUVRIR_GOOGLE_DRIVE') this.application.ouvrirGoogleDrive();
     else await this.synchroniser();
@@ -264,7 +291,9 @@ export class ControleurInterface {
 
   async #synchronisation(
     etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
-  ): Promise<Pick<VueInterface, 'indicateur' | 'bandeau' | 'feuille'>> {
+  ): Promise<
+    Pick<VueInterface, 'indicateur' | 'bandeau' | 'feuille' | 'nonRetenues' | 'aujourdhui'>
+  > {
     const maintenant = this.horloge.maintenant();
     const bandeau = construireBandeau(etat, maintenant);
     const dernierEchange = await this.application.lireDernierContact();
@@ -274,9 +303,14 @@ export class ControleurInterface {
       ...(dernierEchange === undefined ? {} : { dernierEchange }),
       elementsEnAttente: await this.application.lireElementsEnAttente(),
     });
+    const lu = await this.application.lireModificationsNonRetenues();
+    const nonRetenues =
+      lu === undefined ? undefined : construireModificationsNonRetenues(lu.valeurs);
     return {
       indicateur: construireIndicateur(etat),
       feuille,
+      aujourdhui: jourDeReference(maintenant),
+      ...(nonRetenues === undefined ? {} : { nonRetenues }),
       ...(bandeau === undefined ? {} : { bandeau }),
     };
   }

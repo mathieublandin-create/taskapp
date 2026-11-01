@@ -6,7 +6,7 @@ import type { JournalTechnique } from '../commun/application/ports/journal-techn
 import type { Annulation, Planificateur } from '../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../commun/application/ports/source-aleatoire';
 import { ErreurProgrammation } from '../commun/domaine/erreur-programmation';
-import { echec, succes } from '../commun/domaine/resultat';
+import { echec, succes, type Resultat } from '../commun/domaine/resultat';
 import { OuvrirApplication } from '../compte/application/cas-usage/ouvrir-application';
 import { ReprendreSession } from '../compte/application/cas-usage/reprendre-session';
 import { SeConnecter } from '../compte/application/cas-usage/se-connecter';
@@ -29,6 +29,7 @@ import {
 import { CoffreJetonsMemoire } from '../compte/infrastructure/coffre-jetons-memoire';
 import { GestionEspacesIndexedDb } from '../compte/infrastructure/espaces/gestion-espaces-indexeddb';
 import type { NomEnvironnement } from '../compte/infrastructure/espaces/nom-espace';
+import { MarquerCommeLue } from '../synchronisation/application/cas-usage/marquer-comme-lue';
 import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
 import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
 import { MasquageRappel } from '../synchronisation/application/masquage-rappel';
@@ -37,8 +38,13 @@ import type {
   EtatAccesGoogle,
 } from '../synchronisation/application/ports/acces-google';
 import { SUIVI_CYCLE_AU_REPOS } from '../synchronisation/application/ports/suivi-cycle';
+import type { ErreurDepotLocal } from '../synchronisation/application/ports/depot-local';
 import type { TransportSynchro } from '../synchronisation/application/ports/transport-synchro';
 import { PreparationDossierDrive } from '../synchronisation/application/preparation-dossier-drive';
+import {
+  consulterModificationsNonRetenues,
+  type ModificationsNonRetenuesLues,
+} from '../synchronisation/application/requetes/consulter-modifications-non-retenues';
 import {
   consulterEtatSynchronisation,
   type AttenteLocale,
@@ -50,6 +56,8 @@ import {
   elementsEnAttenteDetailles,
   type ElementEnAttente,
 } from '../synchronisation/domaine/elements-en-attente';
+import { compterALire } from '../synchronisation/domaine/lectures';
+import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartees';
 import {
   decompterModificationsEnAttente,
   plusAncienneModificationEnAttente,
@@ -111,6 +119,15 @@ export type Application = {
   readonly lireElementsEnAttente: () => Promise<ReadonlyArray<ElementEnAttente>>;
   /** `dernierContactDrive` de l'espace ouvert ; undefined sans espace, sans échange ou si la lecture échoue. */
   readonly lireDernierContact: () => Promise<Instant | undefined>;
+  /**
+   * Section « À lire » d'ECR-011 (ST-US-017 v0.5 §3.4, I2-21) : détail des valeurs non retenues de l'espace ouvert ;
+   * undefined sans espace ou si la lecture échoue.
+   */
+  readonly lireModificationsNonRetenues: () => Promise<ModificationsNonRetenuesLues | undefined>;
+  /** « Compris » (RG-056 b) : marque ces valeurs comme lues ; sans effet, et sans erreur, sans espace ouvert. */
+  readonly marquerCommeLue: (
+    ids: ReadonlyArray<IdValeurEcartee>,
+  ) => Promise<Resultat<undefined, ErreurDepotLocal>>;
   /** Cycle immédiat de l'espace ouvert ; sans effet sans espace. */
   readonly synchroniserMaintenant: () => Promise<void>;
   /**
@@ -139,10 +156,22 @@ const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocal
   const etat = await espace.depot.lire();
   if (!etat.ok) return { enAttente: 0 };
   const plusAncienne = plusAncienneModificationEnAttente(etat.valeur.enAttente);
+  const signalements = await espace.depot.lireSignalements();
   return {
     enAttente: decompterModificationsEnAttente(etat.valeur.enAttente),
     ...(plusAncienne === undefined ? {} : { plusAncienneEnAttente: plusAncienne }),
+    ...(signalements.ok
+      ? { aLire: compterALire(signalements.valeur.valeursEcartees, signalements.valeur.lectures) }
+      : {}),
   };
+};
+
+const modificationsNonRetenuesDe = async (
+  espace: EspaceOuvert | undefined,
+): Promise<ModificationsNonRetenuesLues | undefined> => {
+  if (espace === undefined) return undefined;
+  const lu = await consulterModificationsNonRetenues(espace.depot);
+  return lu.ok ? lu.valeur : undefined;
 };
 
 const elementsEnAttenteDe = async (
@@ -158,6 +187,15 @@ const dernierContactDe = async (espace: EspaceOuvert | undefined): Promise<Insta
   const meta = await espace.depot.lireMeta();
   return meta.ok ? meta.valeur.dernierContactDrive : undefined;
 };
+
+const marquerCommeLueDans = async (
+  espace: EspaceOuvert | undefined,
+  horloge: Horloge,
+  ids: ReadonlyArray<IdValeurEcartee>,
+): Promise<Resultat<undefined, ErreurDepotLocal>> =>
+  espace === undefined
+    ? succes(undefined)
+    : new MarquerCommeLue({ depot: espace.depot, horloge }).executer(ids);
 
 const URL_GOOGLE_DRIVE = 'https://drive.google.com/';
 
@@ -358,6 +396,13 @@ const assemblerSortie = (a: AdaptateursApplication, n: Noyau) => {
   };
 };
 
+/** Section « À lire » d'ECR-011 (ST-US-017 v0.5 §3.4, I2-21) : lecture du détail et « Compris ». */
+const assemblerNonRetenues = (a: AdaptateursApplication, n: Noyau) => ({
+  lireModificationsNonRetenues: () => modificationsNonRetenuesDe(n.espace()),
+  marquerCommeLue: (ids: ReadonlyArray<IdValeurEcartee>) =>
+    marquerCommeLueDans(n.espace(), a.horloge, ids),
+});
+
 /** ST-US-017 §3.1 n° 16 : l'indicateur lit le cycle de l'espace ouvert. */
 const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
   const masquage = new MasquageRappel();
@@ -373,6 +418,7 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
       }),
     lireElementsEnAttente: () => elementsEnAttenteDe(n.espace()),
     lireDernierContact: () => dernierContactDe(n.espace()),
+    ...assemblerNonRetenues(a, n),
     synchroniserMaintenant: async () => {
       await n.espace()?.cycle.synchroniserMaintenant();
     },
