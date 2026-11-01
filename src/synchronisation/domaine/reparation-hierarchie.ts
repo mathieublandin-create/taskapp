@@ -191,5 +191,10 @@ export const reparerHierarchie = (
       })),
   );
   const dernierHlc = registresEcrits.at(-1)?.ecriture.hlc;
-  return { registresEcrits, valeursEcartees, ...(dernierHlc === undefined ? {} : { dernierHlc }) };
+  return {
+    registresEcrits,
+    valeursEcartees,
+    evenementsAjoutes: [], // B1b : entrée de journal par placement annulé (ST-US-017 v0.6 §6.6 n° 9 b)
+    ...(dernierHlc === undefined ? {} : { dernierHlc }),
+  };
 };
