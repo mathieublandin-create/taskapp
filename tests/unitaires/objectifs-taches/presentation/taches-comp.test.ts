@@ -51,9 +51,96 @@ describe('Tâches — compléments de la présentation (US-002)', () => {
       AUJOURDHUI,
     );
 
-    expect(enRetard.nomAccessible).toBe('Payer, à faire, délai 19 oct., en retard');
-    expect(finie.nomAccessible).toMatch(/^Plan, terminée le 18 oct\., délai /);
-    expect(abandonnee1.nomAccessible).toMatch(/^Logo, abandonnée le 12 oct\., délai /);
+    expect(enRetard.nomAccessible).toBe('Payer, à faire, délai 19 oct., en retard, estimation 1 h');
+    expect(finie.nomAccessible).toMatch(/^Plan, terminée, délai /);
+    expect(abandonnee1.nomAccessible).toMatch(/^Logo, abandonnée, délai /);
+  });
+
+  it('UT-COMP-US-002-95 construireLigneTache — nom accessible ETA-TACHE-LIGNE : une partie par information affichée, dans l’ordre du guide §6.6.4', () => {
+    const ligne = construireLigneTache(
+      resumeTache({
+        id: t(1),
+        intitule: 'Corriger les illustrations',
+        delai: '2026-11-12',
+        estimationMinutes: 120,
+        enRetard: true,
+        objectifs: [
+          { id: idObjectif(1), intitule: 'Publier le guide' },
+          { id: idObjectif(2), intitule: 'Autre' },
+        ],
+        sousTaches: { terminees: 1, nonAbandonnees: 3 },
+        alertes: [
+          {
+            type: 'OBJECTIFS',
+            objectifs: [
+              { id: idObjectif(1), intitule: 'Publier le guide', delai: date('2026-11-01') },
+            ],
+          },
+        ],
+      }),
+      AUJOURDHUI,
+    );
+    const sousTache = construireLigneTache(
+      resumeTache({
+        id: t(2),
+        intitule: 'Section A',
+        delai: '2026-11-12',
+        objectifs: [{ id: idObjectif(1), intitule: 'Publier le guide' }],
+        objectifsHerites: true,
+        alertes: [
+          {
+            type: 'TACHE_PARENTE',
+            tache: { id: t(1), intitule: 'Chapitre', delai: date('2026-11-01') },
+          },
+        ],
+      }),
+      AUJOURDHUI,
+    );
+    const incoherente = construireLigneTache(
+      resumeTache({
+        id: t(4),
+        intitule: 'Plan',
+        cycleDeVie: terminee('2026-10-18'),
+        incoherence: { etatParent: 'TERMINEE', sousTachesAFaire: [] },
+      }),
+      AUJOURDHUI,
+    );
+    const objectifUnique = construireLigneTache(
+      resumeTache({
+        id: t(3),
+        intitule: 'Plan',
+        objectifs: [{ id: idObjectif(1), intitule: 'Publier le guide' }],
+        sousTaches: { terminees: 0, nonAbandonnees: 1 },
+      }),
+      AUJOURDHUI,
+    );
+
+    expect(ligne.nomAccessible).toBe(
+      'Corriger les illustrations, à faire, délai 12 nov., en retard, après le délai de l’objectif, estimation 2 h, 2 objectifs, dont «\u00a0Publier le guide\u00a0», 1 sous-tâche terminée sur 3',
+    );
+    expect(incoherente.nomAccessible).toBe(
+      'Plan, terminée, délai 31 déc., estimation 1 h, incohérence avec une sous-tâche',
+    );
+    expect(sousTache.nomAccessible).toBe(
+      'Section A, à faire, délai 12 nov., après le délai de la tâche parente, estimation 1 h',
+    );
+    expect(objectifUnique.nomAccessible).toContain(
+      'objectif «\u00a0Publier le guide\u00a0», 0 sous-tâche terminée sur 1',
+    );
+  });
+
+  it('UT-COMP-US-002-96 construireLigneTache — objectifsAffiches : vide pour une sous-tâche (objectifs hérités, non affichés), sinon tous les intitulés ; objectifs reste inchangé', () => {
+    const guide = { id: idObjectif(1), intitule: 'Publier le guide' };
+    const objectifs = [guide, { id: idObjectif(2), intitule: 'Écrire' }];
+    const sousTache = construireLigneTache(
+      resumeTache({ id: t(2), objectifs: [guide], objectifsHerites: true }),
+      AUJOURDHUI,
+    );
+    const tache = construireLigneTache(resumeTache({ id: t(3), objectifs }), AUJOURDHUI);
+
+    expect(sousTache.objectifsAffiches).toEqual([]);
+    expect(sousTache.objectifs).toEqual(['Publier le guide']);
+    expect(tache.objectifsAffiches).toEqual(['Publier le guide', 'Écrire']);
   });
 
   it('UT-COMP-US-002-43 construireLigneTache — ALR-006, compteur de sous-tâches, estimation calculée et mention en attente', () => {

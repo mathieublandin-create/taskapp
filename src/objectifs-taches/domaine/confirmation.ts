@@ -30,6 +30,8 @@ export type ConfirmationRequise =
       readonly tacheId: IdTache;
       readonly intitule: string;
       readonly sousTachesAbandonnees: number;
+      /** Sous-tâches déjà terminées : elles restent terminées (CNF-ABANDON-TACHE-CASCADE). */
+      readonly sousTachesTerminees: number;
     }
   | {
       // CNF-REPRENDRE-SOUS-TACHE (DEC-032, US-025 CA-13) : la sous-tâche reprise et sa tâche parente terminée

@@ -32,7 +32,7 @@ const MetaLigne = ({ ligne }: { readonly ligne: LigneTache }) => (
   <span className="ligne-tache-meta">
     <span>{ligne.delai.libelle}</span>
     <span data-calculee={ligne.estimation.calculee}>{ligne.estimation.libelle}</span>
-    <PucesObjectifsLigne objectifs={ligne.objectifs} />
+    <PucesObjectifsLigne objectifs={ligne.objectifsAffiches} />
     {ligne.compteurSousTaches === undefined ? null : (
       <span>{ligne.compteurSousTaches.libelle}</span>
     )}

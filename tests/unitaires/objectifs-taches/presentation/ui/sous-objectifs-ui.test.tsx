@@ -10,7 +10,7 @@ import { construireSelecteurParent } from '@src/objectifs-taches';
 import { SelecteurParent } from '@src/objectifs-taches/presentation/ui/composants/selecteur-parent';
 import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { resumeObjectif } from '@tests/support/fabriques/resumes';
-import { idObjectif } from '@tests/support/valeurs';
+import { date, idObjectif } from '@tests/support/valeurs';
 import {
   choixDuMenu,
   cliquerBoutonIon,
@@ -26,16 +26,50 @@ afterEach(nettoyerDocument);
 const X = idObjectif(1);
 const P = idObjectif(2);
 const objectif = resumeObjectif({ id: X, intitule: 'Publier le guide' });
-const candidats = [objectif, resumeObjectif({ id: P, intitule: 'Développer mon activité' })];
+const candidats = [
+  { ...objectif, autresSousObjectifs: 0 },
+  { ...resumeObjectif({ id: P, intitule: 'Développer mon activité' }), autresSousObjectifs: 0 },
+];
 
 const proprietesSelecteur = (nombreSousObjectifs = 0) => ({
-  modele: construireSelecteurParent({ objectif, candidats, nombreSousObjectifs }),
+  modele: construireSelecteurParent({
+    objectif,
+    candidats,
+    nombreSousObjectifs,
+    jour: date('2026-10-21'),
+  }),
   surRefusCompris: vi.fn(),
   surChoisir: vi.fn(),
   surFermer: vi.fn(),
 });
 
 describe('ParentPicker (ECR-008 C, D ; guide §4.28)', () => {
+  it('UT-COMP-US-023-13 les indications d’un candidat (délai, puis effectif) sont lues avec l’option (aria-describedby), sur une ligne', () => {
+    const parent = resumeObjectif({
+      id: P,
+      intitule: 'Développer mon activité',
+      delai: '2026-12-15',
+    });
+    render(
+      <SelecteurParent
+        {...proprietesSelecteur()}
+        modele={construireSelecteurParent({
+          objectif,
+          candidats: [
+            { ...objectif, autresSousObjectifs: 0 },
+            { ...parent, autresSousObjectifs: 2 },
+          ],
+          nombreSousObjectifs: 0,
+          jour: date('2026-10-21'),
+        })}
+      />,
+    );
+
+    const option = screen.getByRole('radio', { name: 'Développer mon activité' });
+    const decrit = document.getElementById(option.getAttribute('aria-describedby') ?? '');
+    expect(decrit?.textContent).toBe('Son délai\u00a0: 15 déc. · Aura 3 sous-objectifs');
+  });
+
   it('UT-COMP-US-023-01 les options sont des boutons radio ; l’objectif lui-même est indisponible et lu avec sa raison ; le choix est transmis', async () => {
     const proprietes = proprietesSelecteur();
     render(<SelecteurParent {...proprietes} />);
@@ -153,6 +187,26 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
       expect(screen.getByText('Objectif principal')).toBeTruthy();
     });
     expect(screen.queryByText(/^Sous-objectif de/)).toBeNull();
+  });
+
+  it('UT-COMP-US-023-14 la carte ALR-007 du détail d’un sous-objectif propose « Changer le délai », qui ouvre la feuille du délai', async () => {
+    const banc = creerBancObjectifs();
+    const parent = await banc.creer('Publier le guide', '2026-12-15');
+    valeurDe(
+      await banc.services.creerSousObjectif.executer({
+        parentId: parent,
+        intitule: 'Version imprimable',
+        delai: date('2027-01-15'),
+      }),
+    );
+    afficher(banc);
+    await ouvrirDetail(/^Publier le guide/, 'Publier le guide');
+    await userEvent.click(await ligne(/^Version imprimable/));
+    await screen.findByRole('heading', { level: 1, name: 'Version imprimable' });
+
+    await ouvrir('Modal', () => cliquerBoutonIon('Changer le délai'));
+
+    expect(await screen.findByText('Délai de l’objectif')).toBeTruthy();
   });
 });
 

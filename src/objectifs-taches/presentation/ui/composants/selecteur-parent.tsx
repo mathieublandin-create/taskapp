@@ -4,7 +4,6 @@ import { aUnePartie, libelle } from '../../../../commun/presentation/messages/li
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import type { ModeleVueSelecteurParent, OptionParent } from '../../modeles-de-vue/selecteur-parent';
-import { LIBELLES_OBJECTIFS } from '../libelles-ui';
 
 // ParentPicker (ECR-008 C, D ; guide §4.28) : choix unique au clavier (boutons radio). Une option indisponible est
 // lue avec sa raison ; le refus ERR-030 s'explique dans une boîte avec « Compris », avant tout choix.
@@ -28,9 +27,32 @@ type ProprietesOption = {
   readonly surChoisir: () => void;
 };
 
+/** Indications du candidat sur une ligne, dans l'ordre délai puis effectif (guide §6.6.4). */
+const IndicationsOption = ({
+  indications,
+  id,
+}: {
+  readonly indications: OptionParent['indications'];
+  readonly id: string;
+}) =>
+  indications.length === 0 ? null : (
+    <span id={id}>
+      {indications.map((indication, rang) => (
+        <span key={indication.code} data-code={indication.code}>
+          {rang === 0 ? '' : ' · '}
+          {indication.libelle}
+        </span>
+      ))}
+    </span>
+  );
+
 const OptionRadio = ({ option, choisie, surChoisir }: ProprietesOption) => {
-  const idRaison = `${useId()}-raison`;
-  const { raison } = option;
+  const identifiant = useId();
+  const idRaison = `${identifiant}-raison`;
+  const idIndications = `${identifiant}-indications`;
+  const { raison, indications } = option;
+  const description = raison === undefined ? idIndications : idRaison;
+  const decrite = raison !== undefined || indications.length > 0;
   return (
     <li>
       <label>
@@ -39,11 +61,12 @@ const OptionRadio = ({ option, choisie, surChoisir }: ProprietesOption) => {
           name="parent"
           checked={choisie}
           disabled={!option.disponible}
-          {...(raison === undefined ? {} : { 'aria-describedby': idRaison })}
+          {...(decrite ? { 'aria-describedby': description } : {})}
           onChange={surChoisir}
         />
         {option.intitule}
       </label>
+      <IndicationsOption indications={indications} id={idIndications} />
       {raison === undefined ? null : (
         <span id={idRaison} data-code={raison.code}>
           {libelle(raison.code, raison.variables)}
@@ -105,7 +128,7 @@ type ProprietesOptions = {
 
 const Options = ({ options, choix, surChoix }: ProprietesOptions) => (
   <fieldset>
-    <legend>{LIBELLES_OBJECTIFS.placerSous}</legend>
+    <legend>{libelle('SEL-PARENT-MENU')}</legend>
     <ul>
       {options.map((option) => (
         <OptionRadio
@@ -140,7 +163,7 @@ const ActionsFormulaire = ({
         if (choix !== undefined) surChoisir(choix);
       }}
     >
-      {LIBELLES_OBJECTIFS.validerPlacement}
+      {libelle('SEL-PARENT-VALIDER')}
     </button>
   </div>
 );

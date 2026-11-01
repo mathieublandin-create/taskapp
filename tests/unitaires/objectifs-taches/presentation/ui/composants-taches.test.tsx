@@ -104,6 +104,25 @@ describe('Ligne, champs, filtres et puces', () => {
     expect(surOuvrir).toHaveBeenCalledWith(ligne);
   });
 
+  it('UT-COMP-US-002-96 LigneTacheUi — une ligne de sous-tâche n’affiche aucune puce d’objectif (guide §6.6.4)', () => {
+    const ligne = construireLigneTache(
+      resumeTache({
+        id: idTache(2),
+        intitule: 'Section A',
+        objectifs: [{ id: O1, intitule: 'Publier le guide' }],
+        objectifsHerites: true,
+      }),
+      date('2026-10-21'),
+    );
+    render(
+      <ul>
+        <LigneTacheUi ligne={ligne} niveau="SOUS_TACHE" surOuvrir={vi.fn()} />
+      </ul>,
+    );
+
+    expect(document.querySelector('.ligne-tache-objectifs')).toBeNull();
+  });
+
   it('UT-COMP-US-002-72 ChampDetail et ChampVerrouille — « Modifier » ouvre l’éditeur ; un champ verrouillé explique pourquoi et n’a pas de bouton', async () => {
     const surEditer = vi.fn();
     const { rerender } = render(

@@ -1,12 +1,17 @@
 import { IonActionSheet } from '@ionic/react';
 import type { ActionObjectif } from '../../../domaine/types-actions';
+import { libelle } from '../../../../commun/presentation/messages/libelle';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import { LIBELLES_OBJECTIFS } from '../libelles-ui';
 
 // Menu « … » de l'objectif (ECR-003 C) : actions peu fréquentes regroupées, suppression isolée en bas et en rouge.
 // Seules les actions de l'objectif offertes par le modèle de vue et connues de l'écran sont présentées. « Créer un
 // sous-objectif » n'y figure pas : « Ajouter » est dans l'en-tête de la section « Sous-objectifs » (ECR-003 D).
-export type ActionMenuObjectif = keyof typeof LIBELLES_OBJECTIFS.menu;
+export type ActionMenuObjectif = keyof typeof LIBELLES_OBJECTIFS.menu | 'PLACER';
+
+/** « Placer sous un autre objectif » est un texte du catalogue (SEL-PARENT-MENU) ; les autres sont des libellés d'écran. */
+const libelleAction = (action: ActionMenuObjectif): string =>
+  action === 'PLACER' ? libelle('SEL-PARENT-MENU') : LIBELLES_OBJECTIFS.menu[action];
 
 const ORDRE_MENU: ReadonlyArray<ActionMenuObjectif> = [
   'RENOMMER',
@@ -35,7 +40,7 @@ export const MenuObjectif = ({ ouvert, actions, surAction, surFermer }: Propriet
     onDidDismiss={surFermer}
     buttons={[
       ...actionsDuMenu(actions).map((action) => ({
-        text: LIBELLES_OBJECTIFS.menu[action],
+        text: libelleAction(action),
         ...(action === 'SUPPRIMER' ? { role: 'destructive' } : {}),
         handler: () => {
           surAction(action);
