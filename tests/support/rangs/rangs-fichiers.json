@@ -829,6 +829,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/domaine/entree-reparation.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/domaine/etat-local.ts": {
       "debut": 0,
       "fin": 0

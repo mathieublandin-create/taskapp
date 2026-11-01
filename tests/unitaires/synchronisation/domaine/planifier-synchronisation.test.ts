@@ -1,6 +1,7 @@
 /**
  * Intégration d'un fichier reçu à l'incrément 2 (ST-US-017 v0.5 §6.6 n° 11) : détection, fusion, réparation RG-048,
- * union des valeurs écartées et des lectures reçues, dans un seul plan. UT-US-017-51.
+ * union des valeurs écartées et des lectures reçues, dans un seul plan. UT-US-017-51 (entrée de journal de la réparation :
+ * UT-US-017-104, v0.6).
  */
 import { describe, expect, it } from 'vitest';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
@@ -98,7 +99,8 @@ describe('planifierSynchronisation (ST-US-017 v0.5 §6.6 n° 11)', () => {
       contexteDeNouvelleEcriture(alphaSousBeta.ecriture, SMARTPHONE),
     );
     expect(s25.plan.registresEcrits).toEqual([retabli]);
-    expect(s25.plan.evenementsAjoutes).toEqual([journalPc]);
+    // L'entrée reçue d'abord ; l'entrée de journal de la réparation qui la suit : UT-US-017-104 (v0.6, tranche B1b).
+    expect(s25.plan.evenementsAjoutes.slice(0, 1)).toEqual([journalPc]);
     expect(s25.plan.etatApres.registres.get(texteDeCle(retabli.cle))).toEqual(retabli);
     expect(s25.plan.etatApres.registres.get(texteDeCle(betaSousAlpha.cle))).toEqual(betaSousAlpha);
     expect(s25.plan.etatApres.dernierHlc).toEqual(h(3, SMARTPHONE));

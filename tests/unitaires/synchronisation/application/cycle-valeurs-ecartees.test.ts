@@ -1,6 +1,7 @@
 /**
  * Cycle de l'incrément 2 sur deux appareils (FauxDrive, DepotLocalDexie) : signalement unique, réparation convergente,
  * lecture partagée (ST-US-017 v0.5 §6.6 n° 11, §6.3 ; US-017 S10, S16, S25). UT-US-017-54.
+ * v0.6 : entrée de journal de la réparation, identique et unique sur les deux appareils (US-023 S18d). UT-US-017-108.
  */
 import { describe, expect, it } from 'vitest';
 import type { IdObjectif, IdTache } from '@src/commun/domaine/identifiants';
@@ -22,6 +23,7 @@ import {
   date,
   duree,
   ecart,
+  HEURE,
   idObjectif,
   idTache,
   instant,
@@ -140,5 +142,40 @@ describe('Cycle et valeurs écartées (ST-US-017 v0.5 §6.6)', () => {
         .map((v) => v.id);
     expect(await annulations(env.smartphone)).toHaveLength(1);
     expect(await annulations(env.pc)).toEqual(await annulations(env.smartphone));
+  });
+
+  it('UT-US-017-108 US-023 S18d : après échange, le même historique d’Alpha sur les deux appareils, avec une seule entrée de réparation, à la journée du placement annulé (le 22), pas à celle de l’échange (le 23)', async () => {
+    const env = preparer();
+    valeurDe(
+      await appliquerModifications(env.pc.service, (_etat, contexte) => [
+        creationObjectif({ id: ALPHA, intitule: 'Alpha' }, contexte.instant, 0),
+        creationObjectif({ id: BETA, intitule: 'Bêta' }, contexte.instant, 1),
+      ]),
+    );
+    await env.echanger();
+
+    // Le 22 à 09:00 (Paris) : Alpha sous Bêta sur le PC ; 10 min plus tard, Bêta sous Alpha sur le smartphone.
+    env.temps.avancer(ecart(23 * HEURE));
+    valeurDe(await placer(env.pc, ALPHA, BETA));
+    env.plusTard();
+    valeurDe(await placer(env.smartphone, BETA, ALPHA));
+    // Le 23 : échange.
+    env.temps.avancer(ecart(24 * HEURE));
+    await env.echanger();
+
+    const historique = async (a: AppareilCycle) =>
+      valeurDe(await a.service.lireJournal({ type: 'OBJECTIF', id: ALPHA }));
+    const surLeSmartphone = await historique(env.smartphone);
+    expect(surLeSmartphone.map((e) => [e.type, e.jour])).toEqual([
+      ['CREATION', '2026-10-21'],
+      ['CHANGEMENT_PARENT', '2026-10-22'],
+      ['CHANGEMENT_PARENT', '2026-10-22'],
+    ]);
+    const [, deplacement, reparation] = surLeSmartphone;
+    expect(deplacement?.apres).toMatchObject({ parentId: BETA, origine: 'DEPLACEMENT' });
+    expect(reparation?.avant).toEqual(deplacement?.apres);
+    expect(reparation?.apres).toEqual(deplacement?.avant);
+    expect(reparation?.hlc).toEqual(deplacement?.hlc);
+    expect(await historique(env.pc)).toStrictEqual(surLeSmartphone);
   });
 });

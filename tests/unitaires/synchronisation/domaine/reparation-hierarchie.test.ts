@@ -1,6 +1,8 @@
 /**
  * Réparation des hiérarchies après fusion (RG-048, DEC-025 ; DAT §4.2 « hiérarchies » ; ST-US-017 v0.5 §6.6 n° 7 à 10).
  * UT-US-017-48 à 50 (dont le cas imposé par le DAT : une chaîne de trois déplacements croisés qui exige deux annulations).
+ * v0.6 : l'entrée de journal de chaque annulation (§6.6 n° 9 b à 9 d) est vérifiée par UT-US-017-100 à 105
+ * (`reparation-journal.test.ts`) ; ici, registres, signalements et `dernierHlc` seulement (tranche B1).
  */
 import { describe, expect, it } from 'vitest';
 import type { IdAppareil, IdObjectif } from '@src/commun/domaine/identifiants';
@@ -9,7 +11,10 @@ import type { RegistreQuelconque } from '@src/synchronisation/domaine/ecriture';
 import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
 import type { Hlc } from '@src/synchronisation/domaine/hlc';
 import type { PlacementObjectif } from '@src/synchronisation/domaine/information';
-import { reparerHierarchie } from '@src/synchronisation/domaine/reparation-hierarchie';
+import {
+  reparerHierarchie,
+  type ReparationHierarchie,
+} from '@src/synchronisation/domaine/reparation-hierarchie';
 import { idValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
 import { etatLocal, registre } from '@tests/support/fabriques/etat-local';
 import {
@@ -89,6 +94,18 @@ const reparation = (
     contexteDeNouvelleEcriture(annule.ecriture, appareil),
   );
 
+/** Résultat sans les entrées de journal (UT-US-017-100 à 105) : la tranche B1 rend `evenementsAjoutes` vide. */
+const sansJournal = ({
+  evenementsAjoutes: _journal,
+  ...reste
+}: ReparationHierarchie): Omit<ReparationHierarchie, 'evenementsAjoutes'> => reste;
+
+const RIEN: ReparationHierarchie = {
+  registresEcrits: [],
+  valeursEcartees: [],
+  evenementsAjoutes: [],
+};
+
 describe('reparerHierarchie (RG-048)', () => {
   it('UT-US-017-48 S25 : placements croisés (cycle) : le plus ancien est annulé et signalé ; hiérarchie valide : rien', () => {
     const alphaSousBeta = deplacer(ALPHA, BETA, 1, PC);
@@ -104,7 +121,7 @@ describe('reparerHierarchie (RG-048)', () => {
       alphaSousBeta.registre,
       SMARTPHONE,
     );
-    expect(resultat).toEqual({
+    expect(sansJournal(resultat)).toEqual({
       registresEcrits: [ecrit],
       valeursEcartees: [
         {
@@ -119,7 +136,7 @@ describe('reparerHierarchie (RG-048)', () => {
 
     expect(
       reparerHierarchie(etatFusionne(SMARTPHONE, [ALPHA, BETA], [alphaSousBeta]), instant(t(3))),
-    ).toEqual({ registresEcrits: [], valeursEcartees: [] });
+    ).toEqual(RIEN);
   });
 
   it('UT-US-017-49 deuxième niveau : la création n’est jamais candidate (US-023 S17), seul le plus ancien est annulé (S18, S18b) ; parent supprimé = principal', () => {
@@ -185,7 +202,7 @@ describe('reparerHierarchie (RG-048)', () => {
         }),
         instant(t(4)),
       ),
-    ).toEqual({ registresEcrits: [], valeursEcartees: [] });
+    ).toEqual(RIEN);
   });
 
   it('UT-US-017-50 S18c : chaîne de trois déplacements, deux annulations dans l’ordre ; valeur rétablie issue d’un déplacement encore candidate ; même résultat sur les deux appareils', () => {
@@ -212,7 +229,7 @@ describe('reparerHierarchie (RG-048)', () => {
       gammaSousAlpha.registre,
       SMARTPHONE,
     );
-    expect(resultat).toEqual({
+    expect(sansJournal(resultat)).toEqual({
       registresEcrits: [alphaRetabli, gammaRetabli],
       valeursEcartees: [
         {

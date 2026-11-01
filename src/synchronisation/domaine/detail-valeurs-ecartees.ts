@@ -34,7 +34,8 @@ export type ValeurSignalee =
   | { readonly type: 'AUCUNE' }
   | { readonly type: 'DATE'; readonly date: DateCalendaire }
   | { readonly type: 'DUREE'; readonly duree: Duree }
-  | { readonly type: 'ETAT'; readonly etat: CycleDeVie['etat'] }
+  /** v0.6 (RG-056) : `date` = `dateFin` (terminée), `dateAbandon` (abandonnée) ; absente pour « à faire ». */
+  | { readonly type: 'ETAT'; readonly etat: CycleDeVie['etat']; readonly date?: DateCalendaire }
   | { readonly type: 'SOUS'; readonly intitule: string }
   | { readonly type: 'PRINCIPAL' }
   | { readonly type: 'RATTACHEE'; readonly intitule: string }

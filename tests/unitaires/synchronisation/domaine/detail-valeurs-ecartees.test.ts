@@ -1,6 +1,8 @@
 /**
  * Détail des valeurs écartées pour la liste ECR-011 (glossaire §8, H-2 ; ST-US-017 v0.5 §6.6 n° 12) : élément,
  * information, valeur non retenue, valeur conservée, lecture, existence de l'élément. UT-US-017-57.
+ * v0.6 (RG-056, remarque de Pepper) : une valeur d'état porte sa date (fin ou abandon), sinon deux fins à des dates
+ * différentes s'afficheraient « terminée / terminée ».
  */
 import { describe, expect, it } from 'vitest';
 import {
@@ -47,17 +49,24 @@ const O3 = idObjectif(3); // « Version imprimable », créé sous O1
 const ALPHA = idObjectif(5);
 const BETA = idObjectif(6);
 
-const cycle = (etat: 'TERMINEE' | 'ABANDONNEE', n: number, appareil = PC): RegistreQuelconque =>
+const cycle = (
+  etat: 'A_FAIRE' | 'TERMINEE' | 'ABANDONNEE',
+  n: number,
+  appareil = PC,
+  jour = '2026-10-21',
+): RegistreQuelconque =>
   registre(
     { type: 'TACHE', id: T4, champ: 'cycleDeVie' },
-    etat === 'TERMINEE'
-      ? { etat, dateFin: date('2026-10-21'), instantFin: instant('2026-10-21T08:10:00.000Z') }
-      : {
-          etat,
-          dateAbandon: date('2026-10-21'),
-          instantAbandon: instant('2026-10-21T08:20:00.000Z'),
-          evenementAbandon: idEvenementTest(idOperation(1), 0),
-        },
+    etat === 'A_FAIRE'
+      ? { etat }
+      : etat === 'TERMINEE'
+        ? { etat, dateFin: date(jour), instantFin: instant(`${jour}T08:10:00.000Z`) }
+        : {
+            etat,
+            dateAbandon: date(jour),
+            instantAbandon: instant(`${jour}T08:20:00.000Z`),
+            evenementAbandon: idEvenementTest(idOperation(1), 0),
+          },
     h(n, appareil),
   );
 
@@ -141,6 +150,19 @@ const VALEURS: ReadonlyArray<ValeurEcartee> = [
     ecartee: delaiTache(T2, '2026-12-01', h(1, SMARTPHONE)),
     generation: h(4, PC),
   },
+  // v0.6 : deux fins à des dates différentes (US-017 CA-8, précision Q-ST017-PEP-2 a) ; réouverture contre fin.
+  {
+    id: idArbitraire(9),
+    motif: 'CONFLIT',
+    ecartee: cycle('TERMINEE', 1, PC, '2026-10-22'),
+    gagnante: cycle('TERMINEE', 2, SMARTPHONE, '2026-10-23'),
+  },
+  {
+    id: idArbitraire(10),
+    motif: 'CONFLIT',
+    ecartee: cycle('A_FAIRE', 1),
+    gagnante: cycle('TERMINEE', 2, SMARTPHONE, '2026-10-23'),
+  },
 ];
 
 const physique = (n: number) => h(n, PC).physique;
@@ -171,8 +193,8 @@ describe('detaillerValeursEcartees (glossaire §8, H-2)', () => {
         element: { type: 'TACHE', id: T4 },
         intitule: 'B',
         information: 'ETAT',
-        valeurNonRetenue: { type: 'ETAT', etat: 'TERMINEE' },
-        valeurConservee: { type: 'ETAT', etat: 'ABANDONNEE' },
+        valeurNonRetenue: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-21') },
+        valeurConservee: { type: 'ETAT', etat: 'ABANDONNEE', date: date('2026-10-21') },
         instant: physique(2),
         lue: true,
         elementExiste: true,
@@ -253,8 +275,37 @@ describe('detaillerValeursEcartees (glossaire §8, H-2)', () => {
         lue: false,
         elementExiste: true,
       },
+      {
+        id: idArbitraire(9),
+        motif: 'CONFLIT',
+        element: { type: 'TACHE', id: T4 },
+        intitule: 'B',
+        information: 'ETAT',
+        valeurNonRetenue: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-22') },
+        valeurConservee: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-23') },
+        instant: physique(2),
+        lue: false,
+        elementExiste: true,
+      },
+      {
+        id: idArbitraire(10),
+        motif: 'CONFLIT',
+        element: { type: 'TACHE', id: T4 },
+        intitule: 'B',
+        information: 'ETAT',
+        valeurNonRetenue: { type: 'ETAT', etat: 'A_FAIRE' },
+        valeurConservee: { type: 'ETAT', etat: 'TERMINEE', date: date('2026-10-23') },
+        instant: physique(2),
+        lue: false,
+        elementExiste: true,
+      },
     ];
     expect(detail).toHaveLength(attendus.length);
+    // « À faire » ne porte pas de date (propriété absente, pas seulement indéfinie).
+    expect(detail.find((d) => d.id === idArbitraire(10))?.valeurNonRetenue).toStrictEqual({
+      type: 'ETAT',
+      etat: 'A_FAIRE',
+    });
     expect(detail).toEqual(expect.arrayContaining([...attendus]));
   });
 });
