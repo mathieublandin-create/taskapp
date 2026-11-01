@@ -23,10 +23,16 @@ import {
   type ObservationDrive,
   type SituationLocale,
 } from '@src/synchronisation/domaine/controle-drive';
-import { valeursDonneesEffacees } from '@src/synchronisation/domaine/donnees-effacees';
+import {
+  planReinitialisation,
+  valeursDonneesEffacees,
+} from '@src/synchronisation/domaine/donnees-effacees';
 import { comparerHlc, hlcSuivant, maxHlc, type Hlc } from '@src/synchronisation/domaine/hlc';
 import type { CleInformation } from '@src/synchronisation/domaine/information';
-import type { IdFichierDrive } from '@src/synchronisation/domaine/meta-synchronisation';
+import {
+  META_INITIALE,
+  type IdFichierDrive,
+} from '@src/synchronisation/domaine/meta-synchronisation';
 import { etatLocal, registre } from '@tests/support/fabriques/etat-local';
 import { date, idObjectif, instant, PC, SMARTPHONE, TROISIEME } from '@tests/support/valeurs';
 
@@ -352,5 +358,14 @@ describe('valeursDonneesEffacees — propriété (n° 10, n° 11 b ; C9)', () =>
       ),
       GRAINE,
     );
+  });
+
+  it('UT-COMP-US-017-3-87 planReinitialisation — état neuf (sans dernierHlc) : dernierHlc du plan = celui fourni, ou absent', () => {
+    const neuf = etatLocal({ appareilId: MOI });
+    const h = { physique: ORIGINE, compteur: 0, appareil: MOI };
+    const avec = planReinitialisation(neuf, { meta: META_INITIALE, valeurs: [], dernierHlc: h });
+    expect(avec.plan.etatApres.dernierHlc).toEqual(h);
+    const sans = planReinitialisation(neuf, { meta: META_INITIALE, valeurs: [] });
+    expect('dernierHlc' in sans.plan.etatApres).toBe(false);
   });
 });
