@@ -105,3 +105,18 @@ Question pour Steeve (E14, non bloquante) : la légende du groupe de radios du s
 ## 11. Suite
 
 Benjamin corrige RC-CAT-1 à RC-CAT-4 sur `us/DT-015-017-019-catalogue`. Le passage 2 ne portera que sur ces remarques et sur le différentiel correspondant.
+
+## 12. Passage 2 (HEAD 3f2d629, différentiel 14a0308..3f2d629)
+
+**Verdict : Approuvé.**
+
+| N° | Statut | Contrôle |
+|---|---|---|
+| RC-CAT-1 | Close | `objectifsAffiches` est la source unique de la puce et du nom accessible ; vide pour une sous-tâche ; `objectifs` inchangé. UT-COMP-US-002-96 en deux tests (modèle de vue, composant) |
+| RC-CAT-2 | Close | `CandidatParent` calculé par la requête ; table et `?? 0` supprimés |
+| RC-CAT-3 | Close | `surChangerDelai` obligatoire, condition retirée |
+| RC-CAT-4 | Close | Commentaires replacés |
+| RC-CAT-5 | Acceptée en l'état | Séparateur `' · '` laissé dans le composant |
+| RC-CAT-6, 7 | Closes | Commentaire à jour ; `nomAccessibleCase(intitule, 'TERMINER' \| 'ROUVRIR')` |
+
+Tests : aucune assertion existante modifiée (seules les fabriques et entrées changent ; les 4 assertions ajoutées sont celles du test -96). Couverture : la CI de 3f2d629 était encore en cours à la revue (build vert) ; elle fait foi. Aucun point bloquant.
