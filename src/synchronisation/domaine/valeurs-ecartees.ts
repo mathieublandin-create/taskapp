@@ -1,6 +1,6 @@
 import type { Marque } from '../../commun/domaine/marque';
-import { condensatSha256, encoderBase32Hex } from './condensat-sha256';
-import { contextesEgaux, estConnue, estConnueCausalement } from './contexte-causal';
+import { condensatSha256, encoderBase32Hex, FORME_CONDENSAT_BASE32HEX } from './condensat-sha256';
+import { contextesEgaux, estConnue } from './contexte-causal';
 import { estRegistre, type Registre, type RegistreQuelconque } from './ecriture';
 import { comparerHlc, type Hlc } from './hlc';
 import {
@@ -17,6 +17,9 @@ import { cibleDe, joindrePierresTombales } from './pierre-tombale';
 
 /** base32hex(SHA-256(UTF-8 de `${type}|${id}|${champ}|${appareil}|${physique}|${compteur}`)), 52 caractères. */
 export type IdValeurEcartee = Marque<string, 'IdValeurEcartee'>;
+
+/** Forme d'un `IdValeurEcartee` (§6.6 n° 1) : base32hex minuscule sans remplissage, 52 caractères. */
+export const FORME_ID_VALEUR_ECARTEE = FORME_CONDENSAT_BASE32HEX;
 
 /**
  * Identifiant déterministe d'une valeur écartée : information écartée et HLC de l'écriture écartée (DAT §4.2.1) ; pour
@@ -215,7 +218,7 @@ const intituleConnu = (
     const registre = etat.registres.get(cle);
     return registre !== undefined &&
       estIntitule(registre) &&
-      estConnueCausalement(gagnante.ecriture, registre.ecriture)
+      estConnue(gagnante.ecriture, registre.ecriture)
       ? [registre]
       : [];
   });
@@ -223,7 +226,7 @@ const intituleConnu = (
 };
 
 /**
- * n° 3 : R écartée si aucune pierre tombale ne la connaît (`estConnueCausalement`, J1), paire examinée si D ou R vient
+ * n° 3 : R écartée si aucune pierre tombale ne la connaît (`estConnue`, J1), paire examinée si D ou R vient
  * du fichier reçu ; `gagnante` = jointure des pierres tombales (n° 3 b, même HLC que la plus récente). Aucune pierre
  * tombale : rien d'écarté.
  */
@@ -233,9 +236,7 @@ const ecarteePar = (
 ): RegistreQuelconque | undefined => {
   const [premiere, ...autres] = tombes;
   const examinee = version.deRecu || tombes.some((d) => d.deRecu);
-  const connue = tombes.some((d) =>
-    estConnueCausalement(d.registre.ecriture, version.registre.ecriture),
-  );
+  const connue = tombes.some((d) => estConnue(d.registre.ecriture, version.registre.ecriture));
   if (premiere === undefined || !examinee || connue) return undefined;
   return autres.reduce((j, d) => joindrePierresTombales(j, d.registre), premiere.registre);
 };

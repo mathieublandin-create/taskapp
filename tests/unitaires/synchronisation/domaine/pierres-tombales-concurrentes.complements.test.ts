@@ -3,11 +3,7 @@
  * Starck, Q-ST017-STA-6). UT-COMP-US-017-2-52 et suivants.
  */
 import { describe, expect, it } from 'vitest';
-import {
-  contextesEgaux,
-  estConnue,
-  estConnueCausalement,
-} from '@src/synchronisation/domaine/contexte-causal';
+import { contextesEgaux, estConnue } from '@src/synchronisation/domaine/contexte-causal';
 import { joindrePierresTombales } from '@src/synchronisation/domaine/pierre-tombale';
 import {
   detecterValeursEcartees,
@@ -32,15 +28,15 @@ const T1 = idTache(1);
 const resume = (v: ValeurEcartee) => [v.id, v.motif, 'gagnante' in v ? v.gagnante : undefined];
 
 describe('J1 : une pierre tombale ne connaît pas une écriture postérieure de son propre appareil (DAT v0.11.9 §4.2.1)', () => {
-  it('UT-COMP-US-017-2-52 estConnueCausalement : même appareil connue si antérieure ou égale, pas si postérieure ; autre appareil par le contexte', () => {
+  it('UT-COMP-US-017-2-52 estConnue : même appareil connue si antérieure ou égale, pas si postérieure ; autre appareil par le contexte', () => {
     const tombe = suppressionObjectif(E, h(2, PC), { [SMARTPHONE]: h(1, SMARTPHONE) });
     const ecriture = (hlc: ReturnType<typeof h>) => ({ hlc, contexte: {} });
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(1, PC)))).toBe(true);
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(2, PC)))).toBe(true);
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(4, PC)))).toBe(false);
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(1, SMARTPHONE)))).toBe(true);
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(2, SMARTPHONE)))).toBe(false);
-    expect(estConnueCausalement(tombe.ecriture, ecriture(h(0, TROISIEME)))).toBe(false);
+    expect(estConnue(tombe.ecriture, ecriture(h(1, PC)))).toBe(true);
+    expect(estConnue(tombe.ecriture, ecriture(h(2, PC)))).toBe(true);
+    expect(estConnue(tombe.ecriture, ecriture(h(4, PC)))).toBe(false);
+    expect(estConnue(tombe.ecriture, ecriture(h(1, SMARTPHONE)))).toBe(true);
+    expect(estConnue(tombe.ecriture, ecriture(h(2, SMARTPHONE)))).toBe(false);
+    expect(estConnue(tombe.ecriture, ecriture(h(0, TROISIEME)))).toBe(false);
   });
 
   it('UT-COMP-US-017-2-53 réparation RG-048 du PC postérieure à sa suppression, qui replace un objectif sous E : écartée, que la pierre tombale du PC soit vue seule ou jointe', () => {
@@ -66,11 +62,17 @@ describe('J1 : une pierre tombale ne connaît pas une écriture postérieure de 
     expect(vueJointe.map(resume)).toEqual([[attendu, 'SUPPRESSION', tombeJointe]]);
   });
 
-  it('UT-COMP-US-017-2-54 J1 sans effet entre deux écritures d’une même information : estConnue et estConnueCausalement coïncident quand la gagnante est la plus grande', () => {
+  it('UT-COMP-US-017-2-54 J1 sans effet entre deux écritures d’une même information : quand la gagnante est la plus grande, toute écriture de son appareil est connue, une autre par le contexte seul', () => {
     const gagnante = { hlc: h(3, PC), contexte: { [SMARTPHONE]: h(1, SMARTPHONE) } };
-    for (const autre of [h(1, PC), h(2, PC), h(1, SMARTPHONE), h(2, SMARTPHONE), h(2, TROISIEME)]) {
-      const ecriture = { hlc: autre, contexte: {} };
-      expect(estConnueCausalement(gagnante, ecriture)).toBe(estConnue(gagnante, ecriture));
+    const attendus: ReadonlyArray<readonly [ReturnType<typeof h>, boolean]> = [
+      [h(1, PC), true],
+      [h(2, PC), true],
+      [h(1, SMARTPHONE), true],
+      [h(2, SMARTPHONE), false],
+      [h(2, TROISIEME), false],
+    ];
+    for (const [autre, connue] of attendus) {
+      expect(estConnue(gagnante, { hlc: autre, contexte: {} })).toBe(connue);
     }
   });
 });

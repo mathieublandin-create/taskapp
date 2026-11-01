@@ -8,7 +8,7 @@ import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
 import {
   contexteDeNouvelleEcriture,
-  estConnueCausalement,
+  estConnue,
 } from '@src/synchronisation/domaine/contexte-causal';
 import type { RegistreQuelconque } from '@src/synchronisation/domaine/ecriture';
 import { registreDe, type EtatLocal } from '@src/synchronisation/domaine/etat-local';
@@ -321,9 +321,8 @@ describe('Jointure des pierres tombales : connaissance exacte (condition J1 de S
     fc.assert(
       fc.property(pierreTombale, pierreTombale, pierreTombale, ecritureQuelconque, (a, b, c, r) => {
         const jointe = joindrePierresTombales(a, b);
-        expect(estConnueCausalement(jointe.ecriture, r.ecriture)).toBe(
-          estConnueCausalement(a.ecriture, r.ecriture) ||
-            estConnueCausalement(b.ecriture, r.ecriture),
+        expect(estConnue(jointe.ecriture, r.ecriture)).toBe(
+          estConnue(a.ecriture, r.ecriture) || estConnue(b.ecriture, r.ecriture),
         );
         expect(joindrePierresTombales(joindrePierresTombales(a, b), c)).toEqual(
           joindrePierresTombales(a, joindrePierresTombales(b, c)),

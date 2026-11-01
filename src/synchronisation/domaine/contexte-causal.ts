@@ -36,19 +36,12 @@ const connueParLeContexte = (gagnante: EcritureDatee, autre: EcritureDatee): boo
   return connue !== undefined && comparerHlc(connue, autre.hlc) >= 0;
 };
 
-/** ST-socle §6.2 (UT-SOC-15, 16) : une écriture du même appareil est toujours connue. */
-export const estConnue = (gagnante: EcritureDatee, autre: EcritureDatee): boolean =>
-  autre.hlc.appareil === gagnante.hlc.appareil || connueParLeContexte(gagnante, autre);
-
 /**
- * DAT v0.11.9 §4.2.1, précision de `connue` (condition J1 de Starck, Q-ST017-STA-6) : « ses propres écritures
- * antérieures » s'entend `autre.hlc ≤ gagnante.hlc`, soit `Ĉ(gagnante)[autre.appareil] ≥ autre.hlc`. Identique à
- * `estConnue` quand la gagnante est la plus grande (deux écritures d'une même information) ; seule une pierre tombale
- * peut rencontrer une écriture postérieure de son propre appareil (réparation RG-048), qu'elle ne connaît pas.
- * Distincte d'`estConnue` tant que la ST-socle §6.2 et UT-SOC-16 (« même appareil : toujours connue ») ne sont pas
- * alignés sur le DAT v0.11.9 (Q-BRU-4).
+ * ST-socle v0.3.2 §6.2, DAT v0.11.9 §4.2.1 (condition J1, UT-SOC-15, 16) : une écriture du même appareil est connue si
+ * elle est antérieure ou égale (`autre.hlc ≤ gagnante.hlc`) ; une écriture postérieure (réparation RG-048 écrite après
+ * une pierre tombale) ne l'est pas. Une écriture d'un autre appareil est connue par le contexte.
  */
-export const estConnueCausalement = (gagnante: EcritureDatee, autre: EcritureDatee): boolean =>
+export const estConnue = (gagnante: EcritureDatee, autre: EcritureDatee): boolean =>
   autre.hlc.appareil === gagnante.hlc.appareil
     ? comparerHlc(autre.hlc, gagnante.hlc) <= 0
     : connueParLeContexte(gagnante, autre);
