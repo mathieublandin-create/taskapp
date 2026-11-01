@@ -10,7 +10,11 @@ import type {
 } from '../application/ports/depot-local';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
 import { cleEnTexte } from '../domaine/information';
-import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
+import {
+  META_INITIALE,
+  type MetaSynchronisation,
+  type PlanSynchronisation,
+} from '../domaine/meta-synchronisation';
 import type { PlanEcriture } from '../domaine/planifier-ecritures';
 import type { AjoutsSignalements, Signalements } from '../domaine/signalements';
 import {
@@ -26,6 +30,7 @@ import {
   encoderLecture,
   encoderMeta,
   encoderMetaSynchronisation,
+  NOMS_META_SYNCHRONISATION,
   encoderRegistre,
   encoderValeurEcartee,
 } from './stockage-local/schemas';
@@ -59,6 +64,8 @@ export type OptionsOuvertureEspace = {
 };
 
 const TABLES_SIGNALEMENTS = ['valeursEcartees', 'lectures'];
+/** Tables vidées par `reinitialiser` (la méta est traitée à part). */
+const TABLES_VIDEES = ['registres', 'journal', 'enAttente', ...TABLES_SIGNALEMENTS];
 const TABLES = ['registres', 'journal', 'enAttente', 'meta', ...TABLES_SIGNALEMENTS];
 
 type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
@@ -407,12 +414,12 @@ export class DepotLocalDexie implements DepotLocal {
     if (!meta.ok) return meta;
     const signalements = await this.signalements();
     if (!signalements.ok) return signalements;
-    let synchronisation: PlanSynchronisation;
-    try {
-      synchronisation = calcul(etat.valeur, meta.valeur, signalements.valeur);
-    } catch (exception) {
-      if (exception instanceof Error) surveillance.exception = exception;
-      throw exception;
+    const synchronisation = this.proteger(
+      () => calcul(etat.valeur, meta.valeur, signalements.valeur),
+      surveillance,
+    );
+    if (synchronisation.reinitialiser === true) {
+      return this.reinitialiser(synchronisation, etat.valeur.version);
     }
     const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
     await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
@@ -421,6 +428,46 @@ export class DepotLocalDexie implements DepotLocal {
     await this.ecrire(plan, etatApres);
     if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
     return succes({ valeur: undefined, etatApres });
+  }
+
+  /**
+   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14), dans la transaction en cours : vide les tables d'état et de signalements,
+   * REMPLACE les clés de synchronisation de la méta par `{ ...META_INITIALE, ...meta }`, écrit l'état vide
+   * (`appareilId`, `dernierHlc`, `correctionHorloge` de `plan.etatApres`, version + 1) puis les signalements.
+   */
+  private async reinitialiser(
+    synchronisation: PlanSynchronisation,
+    versionAvant: number,
+  ): Promise<IssueExecution<undefined, never>> {
+    const etatApres: EtatLocal = {
+      ...synchronisation.plan.etatApres,
+      version: versionAvant + 1,
+      registres: new Map(),
+      journal: new Map(),
+      enAttente: new Map(),
+    };
+    await Promise.all(TABLES_VIDEES.map((table) => this.base.table(table).clear()));
+    await this.base.table('meta').bulkDelete([...NOMS_META_SYNCHRONISATION]);
+    await this.base
+      .table('meta')
+      .bulkPut([
+        ...encoderMetaSynchronisation({ ...META_INITIALE, ...synchronisation.meta }),
+        ...encoderMeta(etatApres),
+      ]);
+    if (synchronisation.signalements !== undefined) {
+      await this.ecrireSignalements(synchronisation.signalements);
+    }
+    return succes({ valeur: undefined, etatApres });
+  }
+
+  /** Appelle le calcul de l'appelant ; une exception est mémorisée (pour être propagée telle quelle) puis relancée. */
+  private proteger<T>(calcul: () => T, surveillance: Surveillance): T {
+    try {
+      return calcul();
+    } catch (exception) {
+      if (exception instanceof Error) surveillance.exception = exception;
+      throw exception;
+    }
   }
 
   private calculer<T, E extends { readonly type: string }>(

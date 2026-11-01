@@ -21,7 +21,7 @@ import {
 
 /**
  * Doublure en mémoire du port DepotLocal (ST-US-017 §12.3 ; condition de Starck sur Q-ST017-STA-1).
- * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 13). Plusieurs instances
+ * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 14). Plusieurs instances
  * partagent un même `StockageDepotEnMemoire` (deux onglets, ou un redémarrage). Chaque `appliquer` et chaque
  * `appliquerSynchronisation` est atomique : le calcul reçoit l'état (et la méta) du stockage, puis le plan et
  * la méta sont recopiés ensemble, ou rien si le calcul échoue ou lève. Les observateurs de toutes les
@@ -58,6 +58,38 @@ export class StockageDepotEnMemoire {
         ajouts.valeursEcartees,
       ),
       lectures: remplacerParIdentifiant(this.signalements.lectures, ajouts.lectures),
+    };
+    this.observateurs.forEach((rappel) => {
+      rappel();
+    });
+  }
+
+  /**
+   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14) : état, signalements et clés de synchronisation de la méta remplacés
+   * ensemble ; `plan.etatApres` (vide) porte `appareilId`, `dernierHlc` et `correctionHorloge` ; version + 1.
+   */
+  reinitialiser(
+    plan: PlanEcriture,
+    meta: Partial<MetaSynchronisation>,
+    ajouts: AjoutsSignalements = AUCUN_AJOUT,
+  ): void {
+    const { dernierHlc } = plan.etatApres;
+    this.meta = { ...META_INITIALE, ...meta };
+    this.etat = {
+      appareilId: this.etat.appareilId,
+      version: this.etat.version + 1,
+      ...(dernierHlc === undefined ? {} : { dernierHlc }),
+      correctionHorloge: plan.etatApres.correctionHorloge,
+      registres: new Map(),
+      journal: new Map(),
+      enAttente: new Map(),
+    };
+    this.signalements = {
+      valeursEcartees: remplacerParIdentifiant(
+        SIGNALEMENTS_VIDES.valeursEcartees,
+        ajouts.valeursEcartees,
+      ),
+      lectures: remplacerParIdentifiant(SIGNALEMENTS_VIDES.lectures, ajouts.lectures),
     };
     this.observateurs.forEach((rappel) => {
       rappel();
@@ -148,12 +180,13 @@ export class DepotLocalEnMemoire implements DepotLocal {
     ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     return Promise.resolve().then(() => {
-      const { plan, meta, signalements } = calcul(
+      const { plan, meta, signalements, reinitialiser } = calcul(
         this.stockage.etat,
         this.stockage.meta,
         this.stockage.signalements,
       );
-      this.stockage.valider(plan, meta, signalements);
+      if (reinitialiser === true) this.stockage.reinitialiser(plan, meta, signalements);
+      else this.stockage.valider(plan, meta, signalements);
       return succes(undefined);
     });
   }
