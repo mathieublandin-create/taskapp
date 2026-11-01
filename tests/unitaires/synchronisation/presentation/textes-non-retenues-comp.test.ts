@@ -207,6 +207,33 @@ describe('textes de la section « À lire » (Q-ST017-STE-2 et 3)', () => {
     ]);
   });
 
+  it('UT-COMP-US-017-2-61 RC-US-017-3 — l’objectif supprimé est l’élément déplacé lui-même : ligne ALR-010 générique, sans variante ni « Voir », texte et sous-titre rendus sans erreur', () => {
+    const objectif = { type: 'OBJECTIF', id: idObjectif(7) } as const;
+    for (const valeurNonRetenue of [
+      { type: 'PRINCIPAL' },
+      { type: 'SOUS', intitule: 'Guide' },
+    ] as const) {
+      const ligne = ligneDe(
+        suppression({
+          information: 'PARENT',
+          element: objectif,
+          intitule: 'Version imprimable',
+          valeurNonRetenue,
+          valeurConservee: { type: 'OBJECTIF_SUPPRIME' },
+          supprime: objectif,
+        }),
+      );
+
+      expect(ligne.code).toBe('ALR-010');
+      expect(ligne.variante).toBeUndefined();
+      expect(ligne.voir).toBeUndefined();
+      expect(texteLigne(ligne, CONTEXTE)).toBe(
+        'Votre modification de son placement n’a pas été conservée.',
+      );
+      expect(sousTitreLigne(ligne)).toBeUndefined();
+    }
+  });
+
   it('UT-COMP-US-017-2-42 texteLigne ALR-011 — {élément} et {parent} distincts ; une valeur sans intitulé à citer est une erreur de programmation', () => {
     const annule = ligneDe(
       detail(1, {
@@ -252,7 +279,7 @@ describe('textes de la section « À lire » (Q-ST017-STE-2 et 3)', () => {
 
   it('UT-COMP-US-017-2-44 carte ALR-008 — {appareil} est l’autre appareil, titre et texte des lignes ALR-014 sans appareil ni heure, libellé du repli (une modification : « Voir la modification »)', () => {
     const ligne = {
-      id: 'x',
+      id: idArbitraire(0),
       element: 'Annexe',
       information: 'DELAI' as const,
       valeurNonRetenue: { type: 'DATE' as const, date: date('2026-12-01') },

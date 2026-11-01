@@ -267,10 +267,9 @@ export class ControleurInterface {
    * « Compris » sur une ligne, ou sur la carte `ALR-008` (toutes ses lignes). Un échec d'écriture locale n'est jamais
    * silencieux : toast ERR-014, « Réessayer » rejoue le geste.
    */
-  readonly marquerCommeLue = async (ids: ReadonlyArray<string>): Promise<void> => {
+  readonly marquerCommeLue = async (ids: ReadonlyArray<IdValeurEcartee>): Promise<void> => {
     this.#effacerToast();
-    // Les identifiants viennent du modèle de vue, qui les élargit en `string` (ils ne sont jamais saisis).
-    const r = await this.application.marquerCommeLue(ids as ReadonlyArray<IdValeurEcartee>);
+    const r = await this.application.marquerCommeLue(ids);
     if (!r.ok) {
       this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
       this.#etat.reessai = () => this.marquerCommeLue(ids);

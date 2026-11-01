@@ -176,6 +176,10 @@ describe('construireModificationsNonRetenues (ECR-011, section « À lire »)', 
     ]);
     expect(vue?.donneesEffacees).toEqual({
       code: 'ALR-008',
+      // RC-US-017-7 : les textes de la carte viennent du modèle de vue.
+      titre: libelle('ALR-008'),
+      nomAccessibleCompris: 'Compris : vos données ont été effacées',
+      action: libelle('ALR-008', {}, 'action'),
       ids: [idArbitraire(9), idArbitraire(8)],
       lignes: [9, 8].map((n) => ({
         id: idArbitraire(n),

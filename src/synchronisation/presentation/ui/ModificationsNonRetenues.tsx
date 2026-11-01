@@ -1,7 +1,7 @@
 import { IonCard, IonCardContent, IonCardTitle } from '@ionic/react';
-import { useState, type ReactElement } from 'react';
-import { libelle } from '../../../commun/presentation/messages/libelle';
+import { useEffect, useRef, useState, type ReactElement, type RefCallback } from 'react';
 import type { RefElementMetier } from '../../domaine/information';
+import type { IdValeurEcartee } from '../../domaine/valeurs-ecartees';
 import {
   libelleModificationsEffacees,
   libelleVoir,
@@ -25,13 +25,56 @@ export type ProprietesModificationsNonRetenues = {
   /** Appareil courant et jour de référence : `{appareil}` d'`ALR-008`, année des dates des valeurs. */
   readonly contexte: ContexteTextes;
   /** « Compris » : identifiants d'une ligne, ou de toutes les lignes `ALR-014` de la carte `ALR-008`. */
-  readonly surCompris: (ids: ReadonlyArray<string>) => void;
+  readonly surCompris: (ids: ReadonlyArray<IdValeurEcartee>) => void;
   readonly surVoir: (element: RefElementMetier) => void;
 };
 
 const ID_TITRE = 'feuille-synchronisation-a-lire';
 
-type ActionsLigneProprietes = Pick<ProprietesModificationsNonRetenues, 'surCompris' | 'surVoir'>;
+const CLE_CARTE = 'ALR-008';
+
+/** « Compris » d'une entrée de la section : la clé identifie l'entrée (ligne ou carte), pour le focus (WCAG 2.4.3). */
+type ComprisFocalisable = {
+  readonly surCompris: (cle: string, ids: ReadonlyArray<IdValeurEcartee>) => void;
+  readonly ref: (cle: string) => RefCallback<HTMLButtonElement>;
+};
+
+type ActionsLigneProprietes = Pick<ProprietesModificationsNonRetenues, 'surVoir'> & {
+  readonly compris: ComprisFocalisable;
+};
+
+/**
+ * Quand une entrée disparaît après « Compris », le focus va sur le « Compris » de l'entrée suivante, sinon de la
+ * précédente (guide §10, WCAG 2.4.3). Il n'est déplacé que s'il est tombé sur `body` : une entrée qui reste (échec
+ * d'enregistrement) garde le focus où il est.
+ */
+const useFocusApresCompris = (
+  cles: ReadonlyArray<string>,
+  surCompris: ProprietesModificationsNonRetenues['surCompris'],
+): ComprisFocalisable => {
+  const boutons = useRef(new Map<string, HTMLButtonElement>());
+  const attente = useRef<{ readonly retiree: string; readonly cible: string } | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    const en = attente.current;
+    if (en === undefined || cles.includes(en.retiree)) return;
+    attente.current = undefined;
+    if (document.activeElement === document.body) boutons.current.get(en.cible)?.focus();
+  });
+  return {
+    surCompris: (cle, ids) => {
+      const rang = cles.indexOf(cle);
+      const cible = cles[rang + 1] ?? cles[rang - 1];
+      attente.current = cible === undefined ? undefined : { retiree: cle, cible };
+      surCompris(ids);
+    },
+    ref: (cle) => (bouton) => {
+      if (bouton === null) boutons.current.delete(cle);
+      else boutons.current.set(cle, bouton);
+    },
+  };
+};
 
 const BoutonVoir = ({
   ligne,
@@ -55,32 +98,39 @@ const BoutonVoir = ({
 
 const ActionsLigne = ({
   ligne,
-  surCompris,
+  libelleCompris,
+  compris,
   surVoir,
-}: ActionsLigneProprietes & { readonly ligne: LigneModificationNonRetenue }) => (
+}: ActionsLigneProprietes & {
+  readonly ligne: LigneModificationNonRetenue;
+  readonly libelleCompris: string;
+}) => (
   <>
     {ligne.voir === undefined ? null : (
       <BoutonVoir ligne={ligne} voir={ligne.voir} surVoir={surVoir} />
     )}
     <button
       type="button"
+      ref={compris.ref(ligne.id)}
       aria-label={nomAccessibleCompris(ligne.titre)}
       onClick={() => {
-        surCompris([ligne.id]);
+        compris.surCompris(ligne.id, [ligne.id]);
       }}
     >
-      {libelle('ALR-009', {}, 'action')}
+      {libelleCompris}
     </button>
   </>
 );
 
 const Ligne = ({
   ligne,
+  libelleCompris,
   contexte,
-  surCompris,
+  compris,
   surVoir,
 }: ActionsLigneProprietes & {
   readonly ligne: LigneModificationNonRetenue;
+  readonly libelleCompris: string;
   readonly contexte: ContexteTextes;
 }) => {
   const sousTitre = sousTitreLigne(ligne);
@@ -92,7 +142,12 @@ const Ligne = ({
       <p>{ligne.titre}</p>
       {sousTitre === undefined ? null : <p>{sousTitre}</p>}
       <p>{texteLigne(ligne, contexte)}</p>
-      <ActionsLigne ligne={ligne} surCompris={surCompris} surVoir={surVoir} />
+      <ActionsLigne
+        ligne={ligne}
+        libelleCompris={libelleCompris}
+        compris={compris}
+        surVoir={surVoir}
+      />
     </li>
   );
 };
@@ -145,28 +200,54 @@ const LignesEffacees = ({
 const CarteDonneesEffacees = ({
   donnees,
   contexte,
-  surCompris,
+  compris,
 }: {
   readonly donnees: DonneesEffacees;
   readonly contexte: ContexteTextes;
-  readonly surCompris: ProprietesModificationsNonRetenues['surCompris'];
+  readonly compris: ComprisFocalisable;
 }) => (
   <IonCard data-message={donnees.code}>
-    <IonCardTitle>{libelle(donnees.code)}</IonCardTitle>
+    <IonCardTitle>{donnees.titre}</IonCardTitle>
     <IonCardContent>
       <p>{texteDonneesEffacees(donnees.lignes.length, contexte)}</p>
       <LignesEffacees lignes={donnees.lignes} contexte={contexte} />
       <button
         type="button"
-        aria-label={nomAccessibleCompris(libelle(donnees.code))}
+        ref={compris.ref(CLE_CARTE)}
+        aria-label={donnees.nomAccessibleCompris}
         onClick={() => {
-          surCompris(donnees.ids);
+          compris.surCompris(CLE_CARTE, donnees.ids);
         }}
       >
-        {libelle(donnees.code, {}, 'action')}
+        {donnees.action}
       </button>
     </IonCardContent>
   </IonCard>
+);
+
+const ListeLignes = ({
+  vue,
+  libelleCompris,
+  contexte,
+  compris,
+  surVoir,
+}: ActionsLigneProprietes & {
+  readonly vue: ModeleVueModificationsNonRetenues;
+  readonly libelleCompris: string;
+  readonly contexte: ContexteTextes;
+}) => (
+  <ul aria-labelledby={ID_TITRE}>
+    {vue.lignes.map((ligne) => (
+      <Ligne
+        key={ligne.id}
+        ligne={ligne}
+        libelleCompris={libelleCompris}
+        contexte={contexte}
+        compris={compris}
+        surVoir={surVoir}
+      />
+    ))}
+  </ul>
 );
 
 export const ModificationsNonRetenues = ({
@@ -174,28 +255,27 @@ export const ModificationsNonRetenues = ({
   contexte,
   surCompris,
   surVoir,
-}: ProprietesModificationsNonRetenues): ReactElement => (
-  <section>
-    <p id={ID_TITRE} data-etat={vue.code}>
-      {vue.libelle}
-    </p>
-    <ul aria-labelledby={ID_TITRE}>
-      {vue.lignes.map((ligne) => (
-        <Ligne
-          key={ligne.id}
-          ligne={ligne}
-          contexte={contexte}
-          surCompris={surCompris}
-          surVoir={surVoir}
-        />
-      ))}
-    </ul>
-    {vue.donneesEffacees === undefined ? null : (
-      <CarteDonneesEffacees
-        donnees={vue.donneesEffacees}
+}: ProprietesModificationsNonRetenues): ReactElement => {
+  const cles = [
+    ...vue.lignes.map((ligne) => ligne.id),
+    ...(vue.donneesEffacees === undefined ? [] : [CLE_CARTE]),
+  ];
+  const compris = useFocusApresCompris(cles, surCompris);
+  return (
+    <section>
+      <p id={ID_TITRE} data-etat={vue.code}>
+        {vue.libelle}
+      </p>
+      <ListeLignes
+        vue={vue}
+        libelleCompris={vue.libelleCompris}
         contexte={contexte}
-        surCompris={surCompris}
+        compris={compris}
+        surVoir={surVoir}
       />
-    )}
-  </section>
-);
+      {vue.donneesEffacees === undefined ? null : (
+        <CarteDonneesEffacees donnees={vue.donneesEffacees} contexte={contexte} compris={compris} />
+      )}
+    </section>
+  );
+};
