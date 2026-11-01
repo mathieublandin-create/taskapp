@@ -14,6 +14,7 @@ import type { DepotLocal } from '@src/synchronisation/application/ports/depot-lo
 import { consulterEtatSynchronisation } from '@src/synchronisation/application/requetes/consulter-etat-synchronisation';
 import { consulterModificationsNonRetenues } from '@src/synchronisation/application/requetes/consulter-modifications-non-retenues';
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
+import { idEvenementDeReparation } from '@src/synchronisation/domaine/entree-reparation';
 import type { ValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
 import { FauxDrive } from '@tests/doublures/faux-drive';
 import { HorlogeSimulee } from '@tests/doublures/horloge-simulee';
@@ -210,5 +211,50 @@ describe('Tranche B3, compléments (ST-US-017 v0.7)', () => {
       attente: () => Promise.resolve({ enAttente: 0 }),
     });
     expect(lu).toMatchObject({ aLire: 0, actionRequise: 'DRIVE_PLEIN' });
+  });
+
+  it('UT-COMP-US-017-2-35 C2 (§8 n° 11) : deux annulations sans entrée du déplacement, une entrée « erreur » par identifiant, dans l’ordre des annulations', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    const transport = env.drive.transportPour(PC, {
+      reseau: new ReseauCommandable(),
+      accesAccorde: () => true,
+    });
+    const dossier = valeurDe(await transport.preparerDossier());
+    const [alpha, beta, gamma] = [idObjectif(1), idObjectif(2), idObjectif(3)];
+    // Cycle de trois : Alpha sous Bêta (h1), Bêta sous Gamma (h2), Gamma sous Alpha (h3), sans entrée de journal.
+    // Annulation d'Alpha (h1), puis de Bêta (h2), qui reste sous Gamma, lui-même sous Alpha.
+    valeurDe(
+      await transport.deposerFichierAppareil({
+        dossier,
+        contenu: {
+          schemaVersion: 1,
+          versionApplication: '0.1.0',
+          generation: { type: 'INITIALE' },
+          appareil: PC,
+          registres: [
+            ...objectifCree(alpha, 'Alpha', h(0, PC)),
+            ...objectifCree(beta, 'Bêta', h(0, PC, 1)),
+            ...objectifCree(gamma, 'Gamma', h(0, PC, 2)),
+            parentObjectif(alpha, deplaceSous(beta, h(1, PC)), h(1, PC)),
+            parentObjectif(beta, deplaceSous(gamma, h(2, PC)), h(2, PC)),
+            parentObjectif(gamma, deplaceSous(alpha, h(3, PC)), h(3, PC)),
+          ],
+          journal: [],
+        },
+      }),
+    );
+
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(smartphone.journal.entrees.filter((e) => e.niveau === 'erreur')).toEqual(
+      [idEvenementDeReparation(alpha, h(1, PC)), idEvenementDeReparation(beta, h(2, PC))].map(
+        (entree) => ({
+          niveau: 'erreur',
+          evenement: 'ReparationSansEntreeDeplacement',
+          champs: { entree },
+        }),
+      ),
+    );
   });
 });
