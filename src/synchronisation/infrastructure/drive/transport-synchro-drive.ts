@@ -1,6 +1,6 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdAppareil } from '../../../commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
+import { Instant } from '../../../commun/domaine/temps/instant';
 import type { ClientGoogle, ErreurGoogle, RequeteGoogle } from '../../../infrastructure-google';
 import type {
   Changements,
@@ -37,7 +37,7 @@ export const TEXTE_LISEZ_MOI =
   "l'application les gère seule.";
 const TYPE_GZIP = 'application/gzip';
 const TYPE_JSON = 'application/json';
-const CHAMPS_FICHIER = 'id,name,appProperties,createdTime,modifiedTime';
+const CHAMPS_FICHIER = 'id,name,appProperties,createdTime,modifiedTime,version';
 const TAILLE_PAGE = '1000';
 const SEPARATEUR = 'donejuan-multipart-7f3a9c';
 
@@ -86,8 +86,24 @@ const fichierAppareil = (fichier: unknown): FichierAppareilDistant | undefined =
   if (id === undefined || appareil === undefined || champ(proprietes, 'donejuan') !== 'appareil') {
     return undefined;
   }
-  return { id, appareil: appareil as IdAppareil };
+  const version = texte(champ(fichier, 'version'));
+  return {
+    id,
+    appareil: appareil as IdAppareil,
+    ...(version === undefined ? {} : { version }),
+  };
 };
+
+/** Dossier ou manifeste décrit par Drive avec sa `createdTime` ; undefined si l'un des deux manque ou est illisible. */
+const elementDrive = (fichier: unknown): ElementDrive | undefined => {
+  const id = lireId(fichier);
+  const cree = Instant.depuisIso(texte(champ(fichier, 'createdTime')) ?? '');
+  return id === undefined || !cree.ok ? undefined : { id, creeA: cree.valeur };
+};
+
+/** Ordre canonique (§6.7 n° 13) : `creeA`, puis `id`. */
+const comparerCanonique = (a: ElementDrive, b: ElementDrive): number =>
+  a.creeA - b.creeA || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 /** Littéral de chaîne de la requête `q` de Drive v3 : `\` et `'` échappés par `\` (RC-R3-6). */
 export const litteralRequeteDrive = (valeur: string): string =>
@@ -219,8 +235,8 @@ export class TransportSynchroDrive implements TransportSynchro {
       requeteAppareils(p.dossier, p.contenu.appareil),
     );
     if (!existant.ok) return existant;
-    // Incrément 3 (ST-US-017 v0.10 §4.7, tranche R1) : `version` Drive à lire dans la réponse (`fields=id,version`) ;
-    // absente, elle est inconnue et le cycle relit le fichier propre (§6.7 n° 5).
+    // `version` Drive lue dans la réponse (`fields=id,version`) ; absente, elle est inconnue et le cycle relit le
+    // fichier propre (ST-US-017 §4.7, §6.7 n° 5).
     const ecrit =
       existant.valeur === undefined
         ? await this.#creer({
@@ -231,7 +247,7 @@ export class TransportSynchroDrive implements TransportSynchro {
             octets,
           })
         : await this.#remplacer(existant.valeur, TYPE_GZIP, octets);
-    return ecrit.ok ? succes({ id: ecrit.valeur }) : ecrit;
+    return ecrit;
   }
 
   async lireManifeste(
@@ -259,36 +275,63 @@ export class TransportSynchroDrive implements TransportSynchro {
     const octets = await encoderManifeste(p.contenu);
     const existant = await this.#existant(p.fichierExistant, requeteManifeste(p.dossier));
     if (!existant.ok) return existant;
-    if (existant.valeur !== undefined) return this.#remplacer(existant.valeur, TYPE_JSON, octets);
+    if (existant.valeur !== undefined) {
+      return idDe(await this.#remplacer(existant.valeur, TYPE_JSON, octets));
+    }
     const lisezMoi = await this.#assurerLisezMoi(p.dossier);
     if (!lisezMoi.ok) return lisezMoi;
-    return this.#creer({
-      nom: NOM_MANIFESTE,
-      typeContenu: TYPE_JSON,
-      appProperties: { donejuan: 'manifeste' },
-      dossier: p.dossier,
-      octets,
+    return idDe(
+      await this.#creer({
+        nom: NOM_MANIFESTE,
+        typeContenu: TYPE_JSON,
+        appProperties: { donejuan: 'manifeste' },
+        dossier: p.dossier,
+        octets,
+      }),
+    );
+  }
+
+  // ---- Incrément 3 (ST-US-017 §4.7, §6.7, §7) -----------------------------------------------------------------
+
+  /** Dossiers de l'application hors corbeille, en ordre canonique ; ne crée rien. */
+  async listerDossiers(): Promise<Resultat<ReadonlyArray<ElementDrive>, ErreurTransport>> {
+    const trouves = await this.#rechercher(REQUETE_DOSSIER);
+    return trouves.ok ? elementsCanoniques(trouves.valeur) : trouves;
+  }
+
+  /** Métadonnées seulement (aucun contenu lu) ; un dossier supprimé ou à la corbeille donne deux listes vides. */
+  async inventorierDossier(
+    dossier: IdFichierDrive,
+  ): Promise<Resultat<InventaireDossier, ErreurTransport>> {
+    const manifestes = await this.#rechercher(requeteManifeste(dossier));
+    if (!manifestes.ok) return manifestes;
+    const fichiers = await this.#rechercher(requeteAppareils(dossier));
+    if (!fichiers.ok) return fichiers;
+    const elements = elementsCanoniques(manifestes.valeur);
+    if (!elements.ok) return elements;
+    return succes({
+      manifestes: elements.valeur,
+      fichiers: fichiers.valeur.flatMap((f) => fichierAppareil(f) ?? []),
     });
   }
 
-  // ---- Incrément 3 (ST-US-017 v0.10 §4.7, §7 ; tranche R1) -------------------------------------------------
-
-  listerDossiers(): Promise<Resultat<ReadonlyArray<ElementDrive>, ErreurTransport>> {
-    return nonImplemente('TransportSynchroDrive.listerDossiers');
+  async lireContenuManifeste(
+    id: IdFichierDrive,
+  ): Promise<Resultat<ContenuManifeste, ErreurTransport>> {
+    const octets = await this.#lireOctets(id);
+    return octets.ok ? decoderManifeste(octets.valeur) : octets;
   }
 
-  inventorierDossier(
-    dossier: IdFichierDrive,
-  ): Promise<Resultat<InventaireDossier, ErreurTransport>> {
-    return nonImplemente(`TransportSynchroDrive.inventorierDossier (${dossier})`);
-  }
-
-  lireContenuManifeste(id: IdFichierDrive): Promise<Resultat<ContenuManifeste, ErreurTransport>> {
-    return nonImplemente(`TransportSynchroDrive.lireContenuManifeste (${id})`);
-  }
-
-  supprimerFichier(id: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>> {
-    return nonImplemente(`TransportSynchroDrive.supprimerFichier (${id})`);
+  /** Corbeille (`trashed: true`, récupérable ; un dossier entraîne son contenu), jamais `DELETE` (ST-US-017 §7). */
+  async supprimerFichier(id: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>> {
+    const reponse = await this.#executer({
+      methode: 'PATCH',
+      url: `${URL_FICHIERS_DRIVE}/${encodeURIComponent(id)}?fields=id`,
+      typeContenu: 'application/json',
+      corps: JSON.stringify({ trashed: true }),
+    });
+    if (reponse.ok || reponse.erreur.type === 'RessourceIntrouvable') return succes(undefined);
+    return reponse;
   }
 
   /** LISEZ-MOI.txt du dossier, créé s'il n'y est pas déjà (idempotent). */
@@ -357,10 +400,10 @@ export class TransportSynchroDrive implements TransportSynchro {
       : echec({ type: 'FichierIllisible', cause: 'DECOMPRESSION' });
   }
 
-  async #creer(f: NouveauFichier): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
+  async #creer(f: NouveauFichier): Promise<Resultat<FichierDepose, ErreurTransport>> {
     const cree = await this.#executer({
       methode: 'POST',
-      url: `${URL_ENVOI_DRIVE}?uploadType=multipart&fields=id`,
+      url: `${URL_ENVOI_DRIVE}?uploadType=multipart&fields=id,version`,
       typeContenu: `multipart/related; boundary=${SEPARATEUR}`,
       octets: corpsMultipart(
         {
@@ -373,21 +416,29 @@ export class TransportSynchroDrive implements TransportSynchro {
         f.octets,
       ),
     });
-    return this.#idCree(cree);
+    return this.#depose(cree);
   }
 
   async #remplacer(
     id: IdFichierDrive,
     typeContenu: string,
     octets: Uint8Array,
-  ): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
+  ): Promise<Resultat<FichierDepose, ErreurTransport>> {
     const remplace = await this.#executer({
       methode: 'PATCH',
-      url: `${URL_ENVOI_DRIVE}/${encodeURIComponent(id)}?uploadType=media&fields=id`,
+      url: `${URL_ENVOI_DRIVE}/${encodeURIComponent(id)}?uploadType=media&fields=id,version`,
       typeContenu,
       octets,
     });
-    return this.#idCree(remplace);
+    return this.#depose(remplace);
+  }
+
+  #depose(reponse: Resultat<unknown, ErreurTransport>): Resultat<FichierDepose, ErreurTransport> {
+    if (!reponse.ok) return reponse;
+    const id = lireId(reponse.valeur);
+    if (id === undefined) return echec({ type: 'FichierIllisible', cause: 'SCHEMA' });
+    const version = texte(champ(reponse.valeur, 'version'));
+    return succes(version === undefined ? { id } : { id, version });
   }
 
   #idCree(reponse: Resultat<unknown, ErreurTransport>): Resultat<IdFichierDrive, ErreurTransport> {
@@ -411,12 +462,28 @@ export class TransportSynchroDrive implements TransportSynchro {
   }
 }
 
+const idDe = (
+  depose: Resultat<FichierDepose, ErreurTransport>,
+): Resultat<IdFichierDrive, ErreurTransport> => (depose.ok ? succes(depose.valeur.id) : depose);
+
+const elementsCanoniques = (
+  fichiers: ReadonlyArray<unknown>,
+): Resultat<ReadonlyArray<ElementDrive>, ErreurTransport> => {
+  const elements: Array<ElementDrive> = [];
+  for (const fichier of fichiers) {
+    const element = elementDrive(fichier);
+    if (element === undefined) return echec({ type: 'FichierIllisible', cause: 'SCHEMA' });
+    elements.push(element);
+  }
+  return succes(elements.sort(comparerCanonique));
+};
+
 const urlChangements = (page: string): string =>
   `${URL_CHANGEMENTS_DRIVE}?${new URLSearchParams({
     pageToken: page,
     pageSize: TAILLE_PAGE,
     fields:
-      'nextPageToken,newStartPageToken,changes(fileId,removed,file(id,name,appProperties,parents,trashed))',
+      'nextPageToken,newStartPageToken,changes(fileId,removed,file(id,name,appProperties,parents,trashed,version))',
   }).toString()}`;
 
 /** Fichiers d'appareil du dossier créés ou modifiés, ni supprimés ni dans la corbeille. */
