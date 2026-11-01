@@ -394,6 +394,67 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
       expect(relus.lectures).toEqual([]);
       expect(valeurDe(await second().lire()).version).toBe(2);
     });
+
+    it('CT-DEPOT-14 appliquerSynchronisation avec reinitialiser — vide l’état et les signalements, garde appareil, dernierHlc et correction, remplace la méta, écrit les nouveaux signalements ; version + 1, observateurs (ST-US-017 v0.10 §4.7)', async () => {
+      const { premier, second } = fabriquer();
+      const generation = { type: 'NOUVELLE', hlc: hSignalement(9, SMARTPHONE) } as const;
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planAjoutant(etat, {
+            registres: [creation, intitule],
+            evenements: [evenement],
+            enAttente: [entreeEnAttente],
+            dernierHlc: h,
+          }),
+          meta: { dossier: DOSSIER, fichierPropre: FICHIER, deposeJusquA: h, pageToken: 'jeton' },
+          signalements: { valeursEcartees: [conflit(1, 'B')], lectures: [lecture] },
+        })),
+      );
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      const effacee: ValeurEcartee = {
+        id: idArbitraire(5),
+        motif: 'DONNEES_EFFACEES',
+        ecartee: intitule,
+        generation: generation.hlc,
+        intituleElement: 'Publier le guide',
+      };
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: {
+            ...planVide(etat),
+            etatApres: {
+              ...etat,
+              registres: new Map(),
+              journal: new Map(),
+              enAttente: new Map(),
+            },
+          },
+          meta: { dossier: DOSSIER, generation, fusionNonDeposee: true },
+          signalements: { valeursEcartees: [effacee], lectures: [] },
+          reinitialiser: true,
+        })),
+      );
+
+      const autre = second();
+      const relu = valeurDe(await autre.lire());
+      expect(relu.version).toBe(2);
+      expect(relu.appareilId).toBe(SMARTPHONE);
+      expect(relu.dernierHlc).toEqual(h);
+      expect(relu.registres.size + relu.journal.size + relu.enAttente.size).toBe(0);
+      expect(valeurDe(await autre.lireMeta())).toEqual({
+        dossier: DOSSIER,
+        generation,
+        fusionNonDeposee: true,
+      });
+      expect(enTableaux(valeurDe(await autre.lireSignalements()))).toEqual({
+        valeursEcartees: [effacee],
+        lectures: [],
+      });
+      expect(appels).toBe(1);
+    });
   });
 };
 

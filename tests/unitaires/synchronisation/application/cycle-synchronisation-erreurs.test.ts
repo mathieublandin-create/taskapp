@@ -70,6 +70,10 @@ const transportAvecPannes = (reel: TransportSynchro) => {
     deposerFichierAppareil: (p) => reel.deposerFichierAppareil(p),
     lireManifeste: (dossier) => panne('lireManifeste', () => reel.lireManifeste(dossier)),
     ecrireManifeste: (p) => reel.ecrireManifeste(p),
+    listerDossiers: () => reel.listerDossiers(),
+    inventorierDossier: (dossier) => reel.inventorierDossier(dossier),
+    lireContenuManifeste: (id) => reel.lireContenuManifeste(id),
+    supprimerFichier: (id) => reel.supprimerFichier(id),
   };
   return { transport, pannes, lectures };
 };

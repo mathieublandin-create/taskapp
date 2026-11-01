@@ -1,11 +1,15 @@
+import { nonImplemente } from '@non-implemente';
 import type { IdAppareil } from '../../../commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
 import type { ClientGoogle, ErreurGoogle, RequeteGoogle } from '../../../infrastructure-google';
 import type {
   Changements,
+  ElementDrive,
   ErreurTransport,
   FichierAppareilDistant,
+  FichierDepose,
   IdFichierDrive,
+  InventaireDossier,
   ManifesteDistant,
   TransportSynchro,
 } from '../../application/ports/transport-synchro';
@@ -208,21 +212,26 @@ export class TransportSynchroDrive implements TransportSynchro {
     readonly dossier: IdFichierDrive;
     readonly contenu: ContenuFichierAppareil;
     readonly fichierExistant?: IdFichierDrive;
-  }): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
+  }): Promise<Resultat<FichierDepose, ErreurTransport>> {
     const octets = await encoderFichierAppareil(p.contenu);
     const existant = await this.#existant(
       p.fichierExistant,
       requeteAppareils(p.dossier, p.contenu.appareil),
     );
     if (!existant.ok) return existant;
-    if (existant.valeur !== undefined) return this.#remplacer(existant.valeur, TYPE_GZIP, octets);
-    return this.#creer({
-      nom: `${p.contenu.appareil}.etat.json.gz`,
-      typeContenu: TYPE_GZIP,
-      appProperties: { donejuan: 'appareil', appareil: p.contenu.appareil },
-      dossier: p.dossier,
-      octets,
-    });
+    // Incrément 3 (ST-US-017 v0.10 §4.7, tranche R1) : `version` Drive à lire dans la réponse (`fields=id,version`) ;
+    // absente, elle est inconnue et le cycle relit le fichier propre (§6.7 n° 5).
+    const ecrit =
+      existant.valeur === undefined
+        ? await this.#creer({
+            nom: `${p.contenu.appareil}.etat.json.gz`,
+            typeContenu: TYPE_GZIP,
+            appProperties: { donejuan: 'appareil', appareil: p.contenu.appareil },
+            dossier: p.dossier,
+            octets,
+          })
+        : await this.#remplacer(existant.valeur, TYPE_GZIP, octets);
+    return ecrit.ok ? succes({ id: ecrit.valeur }) : ecrit;
   }
 
   async lireManifeste(
@@ -260,6 +269,26 @@ export class TransportSynchroDrive implements TransportSynchro {
       dossier: p.dossier,
       octets,
     });
+  }
+
+  // ---- Incrément 3 (ST-US-017 v0.10 §4.7, §7 ; tranche R1) -------------------------------------------------
+
+  listerDossiers(): Promise<Resultat<ReadonlyArray<ElementDrive>, ErreurTransport>> {
+    return nonImplemente('TransportSynchroDrive.listerDossiers');
+  }
+
+  inventorierDossier(
+    dossier: IdFichierDrive,
+  ): Promise<Resultat<InventaireDossier, ErreurTransport>> {
+    return nonImplemente(`TransportSynchroDrive.inventorierDossier (${dossier})`);
+  }
+
+  lireContenuManifeste(id: IdFichierDrive): Promise<Resultat<ContenuManifeste, ErreurTransport>> {
+    return nonImplemente(`TransportSynchroDrive.lireContenuManifeste (${id})`);
+  }
+
+  supprimerFichier(id: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>> {
+    return nonImplemente(`TransportSynchroDrive.supprimerFichier (${id})`);
   }
 
   /** LISEZ-MOI.txt du dossier, créé s'il n'y est pas déjà (idempotent). */

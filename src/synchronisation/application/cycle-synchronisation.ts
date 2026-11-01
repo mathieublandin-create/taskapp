@@ -1,3 +1,4 @@
+import { nonImplemente } from '@non-implemente';
 import type { EtatReseau } from '../../commun/application/ports/etat-reseau';
 import type { Horloge } from '../../commun/application/ports/horloge';
 import type { JournalTechnique } from '../../commun/application/ports/journal-technique';
@@ -38,7 +39,11 @@ export type IssueCycle =
   | 'DEJA_EN_COURS'
   | 'ACCES_REFUSE'
   | 'DRIVE_PLEIN'
-  | 'ECHEC_TRANSITOIRE';
+  | 'ECHEC_TRANSITOIRE'
+  /** Incrément 3 (ST-US-017 v0.10 §6.7 n° 12) : `ERR-012`, rien n'est écrit dans le Drive. */
+  | 'DONNEES_ALTEREES'
+  /** Contrôle 2 (RG-058) : aucune écriture, aucun effacement (incrément 4 : consultation seule). */
+  | 'FORMAT_PLUS_RECENT';
 
 export type DependancesCycle = {
   readonly depot: DepotLocal;
@@ -166,6 +171,16 @@ export class CycleSynchronisation implements SuiviCycle {
   async deposerMaintenant(): Promise<IssueCycle> {
     while (this.#enCours !== undefined) await this.#enCours.catch(() => undefined);
     return this.#lancer(() => this.#depotSeul());
+  }
+
+  /**
+   * « Repartir de zéro » confirmé (ST-US-017 v0.10 §6.7 n° 11, tranche R4) : attend la fin d'un cycle en cours, puis
+   * s'exécute comme un cycle (mêmes gardes, mêmes notifications) : nouvelle génération `NOUVELLE(h)`, fichier propre
+   * vide de cette génération, manifeste (écriture monotone, n° 13), puis réinitialisation locale sans `ALR-014`.
+   */
+  async repartirDeZero(): Promise<IssueCycle> {
+    while (this.#enCours !== undefined) await this.#enCours.catch(() => undefined);
+    return nonImplemente('CycleSynchronisation.repartirDeZero');
   }
 
   etatMoteur(): EtatMoteur {
@@ -485,7 +500,7 @@ export class CycleSynchronisation implements SuiviCycle {
     return depot.appliquerSynchronisation((e) => ({
       plan: planRetrait(e, x),
       meta: {
-        fichierPropre: depose.valeur,
+        fichierPropre: depose.valeur.id,
         ...(x === undefined ? {} : { deposeJusquA: x }),
         fusionNonDeposee: false,
         dernierContactDrive: horloge.maintenant(),

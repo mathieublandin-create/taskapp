@@ -1,5 +1,6 @@
 import type { Marque } from '../../commun/domaine/marque';
 import type { Instant } from '../../commun/domaine/temps/instant';
+import type { Generation } from './contenu-fichier';
 import type { Hlc } from './hlc';
 import type { IdEvenement } from './identifiant-evenement';
 import type { PlanEcriture } from './planifier-ecritures';
@@ -18,6 +19,17 @@ export type MetaSynchronisation = {
   readonly dernierContactDrive?: Instant;
   /** Une fusion a écrit des registres depuis le dernier dépôt confirmé. */
   readonly fusionNonDeposee: boolean;
+  // ---- Incrément 3 (ST-US-017 v0.10 §5.1, §6.7) : absentes ≡ valeur initiale.
+  /** Génération de l'espace (n° 3) ; absente ≡ INITIALE. */
+  readonly generation?: Generation;
+  /** Version Drive du fichier propre au dernier dépôt confirmé (n° 5) ; absente : inconnue, le fichier est relu. */
+  readonly versionFichierPropre?: string;
+  /** « Restaurer » choisi, pas encore exécuté (n° 9 ; hors ligne : exécuté au retour du réseau). */
+  readonly restaurationDemandee?: boolean;
+  /** Plus grande `restauration` lue dans un manifeste lors d'un cycle sans altération (n° 8). */
+  readonly restaurationConnue?: Hlc;
+  /** Le prochain cycle refait un inventaire complet (bascule ou déménagement de dossier, n° 12, n° 14). */
+  readonly inventaireAFaire?: boolean;
 };
 
 export const META_INITIALE: MetaSynchronisation = { fusionNonDeposee: false };
@@ -32,4 +44,12 @@ export type PlanSynchronisation = {
    * (`ReparationHierarchie.deplacementsSansEntree`), à journaliser en « erreur » par le service ; absent ≡ aucune.
    */
   readonly deplacementsSansEntree?: ReadonlyArray<IdEvenement>;
+  /**
+   * ST-US-017 v0.10 §6.7 n° 11 (incrément 3, RG-044 b et « Repartir de zéro ») : dans la même transaction, le dépôt
+   * vide l'état (registres, journal, index des écritures en attente) et les signalements, écrit `plan.etatApres`
+   * (vide, même `appareilId`, `dernierHlc` et `correctionHorloge` conservés, version + 1), **remplace** les clés de
+   * synchronisation de la méta par `{ ...META_INITIALE, ...meta }` (une clé absente de `meta` est retirée), puis écrit
+   * `signalements`. Observateurs prévenus. Absent ≡ faux.
+   */
+  readonly reinitialiser?: true;
 };

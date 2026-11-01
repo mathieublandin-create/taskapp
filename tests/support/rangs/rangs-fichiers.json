@@ -749,13 +749,17 @@
       "debut": 2,
       "fin": 2
     },
+    "src/synchronisation/application/cas-usage/choisir-restauration.ts": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/synchronisation/application/cas-usage/marquer-comme-lue.ts": {
       "debut": 9,
       "fin": 9
     },
     "src/synchronisation/application/cycle-synchronisation.ts": {
       "debut": 3,
-      "fin": 3
+      "fin": 10
     },
     "src/synchronisation/application/depot-avant-sortie-synchro.ts": {
       "debut": 3,
@@ -813,6 +817,14 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/controle-drive.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/domaine/copie-locale.ts": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/synchronisation/domaine/depot.ts": {
       "debut": 3,
       "fin": 3
@@ -820,6 +832,10 @@
     "src/synchronisation/domaine/detail-valeurs-ecartees.ts": {
       "debut": 9,
       "fin": 9
+    },
+    "src/synchronisation/domaine/donnees-effacees.ts": {
+      "debut": 10,
+      "fin": 10
     },
     "src/synchronisation/domaine/ecriture.ts": {
       "debut": 0,
@@ -868,6 +884,10 @@
     "src/synchronisation/domaine/lectures.ts": {
       "debut": 9,
       "fin": 9
+    },
+    "src/synchronisation/domaine/manifeste.ts": {
+      "debut": 10,
+      "fin": 10
     },
     "src/synchronisation/domaine/meta-synchronisation.ts": {
       "debut": 3,
@@ -939,7 +959,7 @@
     },
     "src/synchronisation/infrastructure/drive/transport-synchro-drive.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 10
     },
     "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
       "debut": 0,
@@ -948,6 +968,10 @@
     "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
       "debut": 1,
       "fin": 1
+    },
+    "src/synchronisation/presentation/modeles-de-vue/choix-restauration.ts": {
+      "debut": 10,
+      "fin": 10
     },
     "src/synchronisation/presentation/modeles-de-vue/etat-synchronisation-affichable.ts": {
       "debut": 1,

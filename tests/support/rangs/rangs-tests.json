@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "CT-DEPOT-1[4-9]\\b",
+      "rang": 10
+    },
+    {
       "motif": "CT-DEPOT-1[2-9]\\b",
       "rang": 9
     },
@@ -72,6 +76,10 @@
     {
       "motif": "UT-US-017-9\\d\\b",
       "rang": 3
+    },
+    {
+      "motif": "CT-TRANS-1[1-9]\\b",
+      "rang": 10
     },
     {
       "motif": "CT-TRANS-\\d+",

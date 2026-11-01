@@ -58,7 +58,7 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
     it('CT-TRANS-02 deposerFichierAppareil puis lireFichierAppareil — rend un contenu égal', async () => {
       const t = creer().transport(SMARTPHONE);
       const dossier = valeurDe(await t.preparerDossier());
-      const id = valeurDe(
+      const { id } = valeurDe(
         await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'A') }),
       );
       expect(await t.lireFichierAppareil(id)).toEqual(succes(contenu(SMARTPHONE, 'A')));
@@ -67,21 +67,24 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
     it('CT-TRANS-03 deposerFichierAppareil — remplace le fichier existant, même sans son identifiant, sans en créer un second', async () => {
       const t = creer().transport(SMARTPHONE);
       const dossier = valeurDe(await t.preparerDossier());
-      const id = valeurDe(
+      const { id } = valeurDe(
         await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'A') }),
       );
       expect(
-        await t.deposerFichierAppareil({
-          dossier,
-          contenu: contenu(SMARTPHONE, 'B'),
-          fichierExistant: id,
-        }),
-      ).toEqual(succes(id));
+        valeurDe(
+          await t.deposerFichierAppareil({
+            dossier,
+            contenu: contenu(SMARTPHONE, 'B'),
+            fichierExistant: id,
+          }),
+        ).id,
+      ).toBe(id);
       expect(
-        await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'C') }),
-      ).toEqual(succes(id));
+        valeurDe(await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'C') })).id,
+      ).toBe(id);
+      // Incrément 3 : `version` éventuelle ignorée ici (CT-TRANS-11).
       expect(valeurDe(await t.listerFichiersAppareils(dossier)).fichiers).toEqual([
-        { id, appareil: SMARTPHONE },
+        expect.objectContaining({ id, appareil: SMARTPHONE }),
       ]);
     });
 
@@ -89,17 +92,19 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
       const f = creer();
       const pc = f.transport(PC);
       const dossier = valeurDe(await pc.preparerDossier());
-      const idPc = valeurDe(
+      const { id: idPc } = valeurDe(
         await pc.deposerFichierAppareil({ dossier, contenu: contenu(PC, 'A') }),
       );
       const { jeton } = valeurDe(await pc.listerFichiersAppareils(dossier));
-      const idSmartphone = valeurDe(
+      const { id: idSmartphone } = valeurDe(
         await f
           .transport(SMARTPHONE)
           .deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'B') }),
       );
       const changements = valeurDe(await pc.changements(dossier, jeton));
-      expect(changements.fichiers).toEqual([{ id: idSmartphone, appareil: SMARTPHONE }]);
+      expect(changements.fichiers).toEqual([
+        expect.objectContaining({ id: idSmartphone, appareil: SMARTPHONE }),
+      ]);
       expect(changements.fichiers.some((x) => x.id === idPc)).toBe(false);
     });
 
@@ -113,14 +118,16 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
           await f
             .transport(SMARTPHONE)
             .deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'B') }),
-        );
+        ).id;
       });
 
       const { jeton } = valeurDe(await pc.listerFichiersAppareils(dossier));
       const changements = valeurDe(await pc.changements(dossier, jeton));
 
       expect(idSmartphone).toBeDefined();
-      expect(changements.fichiers).toContainEqual({ id: idSmartphone, appareil: SMARTPHONE });
+      expect(changements.fichiers).toContainEqual(
+        expect.objectContaining({ id: idSmartphone, appareil: SMARTPHONE }),
+      );
     });
 
     it('CT-TRANS-10 changements — un jeton refusé par Drive rend JetonChangementsInvalide (RL-LOT-001-A3)', async () => {
@@ -140,7 +147,7 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
       const f = creer();
       const t = f.transport(SMARTPHONE);
       const dossier = valeurDe(await t.preparerDossier());
-      const id = valeurDe(
+      const { id } = valeurDe(
         await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'A') }),
       );
       await f.modifierALaMain(id);
@@ -183,12 +190,133 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
         dossier,
         contenu: { schemaVersion: 1, generation: { type: 'INITIALE' } },
       });
-      const id = valeurDe(
+      const { id } = valeurDe(
         await f.transport(PC).deposerFichierAppareil({ dossier, contenu: contenu(PC, 'A') }),
       );
       expect(
         valeurDe(await f.transport(SMARTPHONE).listerFichiersAppareils(dossier)).fichiers,
-      ).toEqual([{ id, appareil: PC }]);
+      ).toEqual([expect.objectContaining({ id, appareil: PC })]);
+    });
+
+    // ---- Incrément 3 (ST-US-017 v0.10 §4.7, §13.5 ; rang 10, tranche R1) ------------------------------------
+
+    it('CT-TRANS-11 version — le dépôt rend la version Drive du fichier, la même que l’inventaire et les changements ; une modification à la main la change', async () => {
+      const f = creer();
+      const t = f.transport(SMARTPHONE);
+      const dossier = valeurDe(await t.preparerDossier());
+      const { jeton } = valeurDe(await t.listerFichiersAppareils(dossier));
+      const depot = valeurDe(
+        await t.deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'A') }),
+      );
+      expect(depot.version).toEqual(expect.any(String));
+      expect(valeurDe(await t.inventorierDossier(dossier)).fichiers).toEqual([
+        { id: depot.id, appareil: SMARTPHONE, version: depot.version },
+      ]);
+      expect(valeurDe(await t.changements(dossier, jeton)).fichiers).toEqual([
+        { id: depot.id, appareil: SMARTPHONE, version: depot.version },
+      ]);
+      expect(valeurDe(await t.listerFichiersAppareils(dossier)).fichiers).toEqual([
+        { id: depot.id, appareil: SMARTPHONE, version: depot.version },
+      ]);
+
+      await f.modifierALaMain(depot.id);
+      const [apres] = valeurDe(await t.inventorierDossier(dossier)).fichiers;
+      expect(apres?.version).toEqual(expect.any(String));
+      expect(apres?.version).not.toBe(depot.version);
+      const redepot = valeurDe(
+        await t.deposerFichierAppareil({
+          dossier,
+          contenu: contenu(SMARTPHONE, 'B'),
+          fichierExistant: depot.id,
+        }),
+      );
+      expect(redepot.id).toBe(depot.id);
+      expect([depot.version, apres?.version]).not.toContain(redepot.version);
+    });
+
+    it('CT-TRANS-12 inventorierDossier — manifestes et fichiers d’appareil du dossier, métadonnées seulement ; dossier supprimé : listes vides', async () => {
+      const f = creer();
+      const t = f.transport(PC);
+      const dossier = valeurDe(await t.preparerDossier());
+      expect(valeurDe(await t.inventorierDossier(dossier))).toEqual({
+        manifestes: [],
+        fichiers: [],
+      });
+      const manifeste = valeurDe(
+        await t.ecrireManifeste({
+          dossier,
+          contenu: { schemaVersion: 1, generation: { type: 'INITIALE' } },
+        }),
+      );
+      const pc = valeurDe(await t.deposerFichierAppareil({ dossier, contenu: contenu(PC, 'A') }));
+      const smartphone = valeurDe(
+        await f
+          .transport(SMARTPHONE)
+          .deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'B') }),
+      );
+
+      const inventaire = valeurDe(await t.inventorierDossier(dossier));
+      expect(inventaire.manifestes.map((m) => m.id)).toEqual([manifeste]);
+      expect(typeof inventaire.manifestes[0]?.creeA).toBe('number');
+      expect(inventaire.fichiers).toHaveLength(2);
+      expect(inventaire.fichiers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: pc.id, appareil: PC }),
+          expect.objectContaining({ id: smartphone.id, appareil: SMARTPHONE }),
+        ]),
+      );
+
+      valeurDe(await t.supprimerFichier(dossier));
+      expect(valeurDe(await t.inventorierDossier(dossier))).toEqual({
+        manifestes: [],
+        fichiers: [],
+      });
+    });
+
+    it('CT-TRANS-13 lireContenuManifeste et supprimerFichier — aller-retour ; fichier supprimé : RessourceIntrouvable ; suppression idempotente ; modification à la main : EMPREINTE', async () => {
+      const f = creer();
+      const t = f.transport(SMARTPHONE);
+      const dossier = valeurDe(await t.preparerDossier());
+      const contenuManifeste = {
+        schemaVersion: 1,
+        generation: { type: 'NOUVELLE', hlc: hlc('2026-10-21T09:00:00.000Z', 2, PC) },
+        restauration: hlc('2026-10-21T09:30:00.000Z', 0, SMARTPHONE),
+      } as const;
+      const id = valeurDe(await t.ecrireManifeste({ dossier, contenu: contenuManifeste }));
+      expect(await f.transport(PC).lireContenuManifeste(id)).toEqual(succes(contenuManifeste));
+
+      await f.modifierALaMain(id);
+      expect(await t.lireContenuManifeste(id)).toEqual({
+        ok: false,
+        erreur: { type: 'FichierIllisible', cause: 'EMPREINTE' },
+      });
+
+      expect(await t.supprimerFichier(id)).toEqual(succes(undefined));
+      expect(await t.supprimerFichier(id)).toEqual(succes(undefined));
+      expect(await t.lireContenuManifeste(id)).toEqual({
+        ok: false,
+        erreur: { type: 'RessourceIntrouvable' },
+      });
+      expect(await t.lireManifeste(dossier)).toEqual(succes(undefined));
+    });
+
+    it('CT-TRANS-14 listerDossiers — le dossier de l’application, sans rien créer ; vide après sa suppression ; accès retiré : NonAutorise', async () => {
+      const f = creer();
+      const t = f.transport(PC);
+      expect(valeurDe(await t.listerDossiers())).toEqual([]);
+      expect(valeurDe(await t.listerDossiers())).toEqual([]);
+      const dossier = valeurDe(await t.preparerDossier());
+      const dossiers = valeurDe(await f.transport(SMARTPHONE).listerDossiers());
+      expect(dossiers.map((d) => d.id)).toEqual([dossier]);
+      expect(typeof dossiers[0]?.creeA).toBe('number');
+      valeurDe(await t.supprimerFichier(dossier));
+      expect(valeurDe(await t.listerDossiers())).toEqual([]);
+      f.retirerAcces();
+      expect(await t.listerDossiers()).toEqual({ ok: false, erreur: { type: 'NonAutorise' } });
+      expect(await t.inventorierDossier(dossier)).toEqual({
+        ok: false,
+        erreur: { type: 'NonAutorise' },
+      });
     });
   });
 };

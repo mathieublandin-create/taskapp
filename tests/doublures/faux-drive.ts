@@ -2,11 +2,15 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import type { EtatReseau } from '@src/commun/application/ports/etat-reseau';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '@src/commun/domaine/resultat';
+import { Instant } from '@src/commun/domaine/temps/instant';
 import type {
   Changements,
+  ElementDrive,
   ErreurTransport,
   FichierAppareilDistant,
+  FichierDepose,
   IdFichierDrive,
+  InventaireDossier,
   ManifesteDistant,
   TransportSynchro,
 } from '@src/synchronisation/application/ports/transport-synchro';
@@ -44,6 +48,8 @@ export type FichierFaux = {
   readonly creeA: number;
   readonly modifieA: number;
   readonly supprime: boolean;
+  /** Incrément 3 : `version` Drive, augmentée à chaque création ou remplacement (et à la modification à la main). */
+  readonly version: string;
 };
 
 type NouveauFichier = Pick<FichierFaux, 'nom' | 'mimeType' | 'appProperties' | 'octets'> & {
@@ -71,6 +77,12 @@ type ApresDepot =
  *   mais l'appel renvoie ReseauIndisponible) ; `avantReponseDuProchainDepot(rappel)` (le dépôt suivant est écrit,
  *   puis le rappel est attendu avant la réponse) ; `desactiverPourLeCompte()` (tout appel → DriveIndisponible) ;
  * - observation : `fichiers()`, `nombreReponses(appareil)`, `ecrituresPar(appareil)` (créations et remplacements).
+ * - incrément 3 (ST-US-017 v0.10 §12.6) : `version` par fichier ; `listerDossiers`, `inventorierDossier`,
+ *   `lireContenuManifeste`, `supprimerFichier` ; ordre canonique (créé le plus tôt, puis id) pour le dossier et le
+ *   manifeste ; altérations `supprimerDonnees()`, `rendreDonneesIllisibles()`, `supprimerDossiers()`,
+ *   `modifierDelaiALaMain(id, objectif, delai)` ; doublons `ajouterDossier`, `ajouterManifeste` ; lectures comptées
+ *   (`lecturesDe(id, appareil)`), création concurrente d'un manifeste (`avantLaProchaineCreationDeManifeste`) ;
+ *   suppressions comptées dans `ecrituresPar`.
  */
 export class FauxDrive {
   readonly #fichiers: Array<FichierFaux> = [];
@@ -87,6 +99,9 @@ export class FauxDrive {
   #apresProchainDepot: ApresDepot | undefined;
   #pendantInventaire: (() => Promise<void>) | undefined;
   #numero = 0;
+  #version = 0;
+  readonly #lectures = new Map<string, number>();
+  #avantCreationManifeste: (() => Promise<void>) | undefined;
 
   constructor(private readonly temps: TempsSimule) {}
 
@@ -98,10 +113,15 @@ export class FauxDrive {
       listerFichiersAppareils: (dossier) => appeler(() => this.#lister(dossier)),
       changements: (dossier, jeton) =>
         appeler(() => Promise.resolve(this.#changementsDepuis(dossier, jeton))),
-      lireFichierAppareil: (id) => appeler(() => this.#lireFichierAppareil(id)),
+      lireFichierAppareil: (id) => appeler(() => this.#lireFichierAppareil(appareil, id)),
       deposerFichierAppareil: (p) => this.#deposer(appareil, conditions, p),
-      lireManifeste: (dossier) => appeler(() => this.#lireManifeste(dossier)),
+      lireManifeste: (dossier) => appeler(() => this.#lireManifeste(appareil, dossier)),
       ecrireManifeste: (p) => appeler(() => this.#ecrireManifeste(appareil, p)),
+      listerDossiers: () => appeler(() => Promise.resolve(succes(this.#dossiers().map(element)))),
+      inventorierDossier: (dossier) =>
+        appeler(() => Promise.resolve(succes(this.#inventaire(dossier)))),
+      lireContenuManifeste: (id) => appeler(() => this.#lireContenuManifeste(appareil, id)),
+      supprimerFichier: (id) => appeler(() => Promise.resolve(this.#supprimer(appareil, id))),
     };
   }
 
@@ -150,6 +170,91 @@ export class FauxDrive {
   }
 
   /**
+   * US-017 S18 à S22d (« supprimées ») : le manifeste, tous les fichiers d'appareil et LISEZ-MOI de tous les dossiers
+   * sont mis à la corbeille ; les dossiers restent.
+   */
+  supprimerDonnees(): void {
+    this.#fichiers
+      .filter((f) => !f.supprime && f.mimeType !== TYPE_DOSSIER)
+      .forEach((f) => {
+        this.#marquerSupprime(f);
+      });
+  }
+
+  /** US-017 S18 (« rendues illisibles ») : manifeste et fichiers d'appareil remplacés par des octets non gzip, non JSON. */
+  rendreDonneesIllisibles(): void {
+    this.#fichiers
+      .filter(
+        (f) =>
+          !f.supprime &&
+          (f.appProperties['donejuan'] === 'manifeste' ||
+            f.appProperties['donejuan'] === 'appareil'),
+      )
+      .forEach((f) => {
+        this.#remplacer(f, new TextEncoder().encode('illisible'));
+      });
+  }
+
+  /** Dossiers « Done Juan » mis à la corbeille avec tout leur contenu (parcours P-11 : dossier supprimé par erreur). */
+  supprimerDossiers(): void {
+    this.#dossiers().forEach((d) => {
+      this.#marquerSupprime(d);
+    });
+  }
+
+  /**
+   * US-017 S33 : dans le fichier `id`, le délai du registre `delai` de l'objectif `objectif` devient `delai`
+   * (AAAA-MM-JJ), gzip valide et ancienne empreinte conservée (fichier lisible, empreinte fausse).
+   */
+  modifierDelaiALaMain(id: string, objectif: string, delai: string): void {
+    const fichier = this.#trouver(id);
+    if (fichier === undefined) throw new Error(`Fichier simulé inconnu : ${id}`);
+    const objet = JSON.parse(Buffer.from(gunzipSync(fichier.octets)).toString('utf8')) as {
+      registres: Array<{ type: string; id: string; champ: string; valeur: unknown }>;
+    };
+    const registre = objet.registres.find(
+      (r) => r.type === 'OBJECTIF' && r.id === objectif && r.champ === 'delai',
+    );
+    if (registre === undefined) throw new Error(`Délai de l'objectif ${objectif} absent de ${id}`);
+    registre.valeur = delai;
+    this.#remplacer(fichier, new Uint8Array(gzipSync(Buffer.from(JSON.stringify(objet), 'utf8'))));
+  }
+
+  /** Doublon (DAT §4.2.2 d) : dossier « Done Juan » créé par `appareil` à l'instant `creeA` (millisecondes). */
+  ajouterDossier(appareil: IdAppareil, creeA: number): IdFichierDrive {
+    return this.#creer(
+      appareil,
+      {
+        nom: 'Done Juan',
+        mimeType: TYPE_DOSSIER,
+        appProperties: { donejuan: 'dossier' },
+        octets: new Uint8Array(),
+      },
+      creeA,
+    ).id as IdFichierDrive;
+  }
+
+  /** Doublon (DAT §4.2.2 d) : manifeste supplémentaire de `dossier`, créé par `appareil` à l'instant `creeA`. */
+  async ajouterManifeste(
+    appareil: IdAppareil,
+    dossier: IdFichierDrive,
+    contenu: ContenuManifeste,
+    creeA: number,
+  ): Promise<IdFichierDrive> {
+    return this.#creer(
+      appareil,
+      {
+        nom: NOM_MANIFESTE,
+        mimeType: TYPE_JSON,
+        appProperties: { donejuan: 'manifeste' },
+        parent: dossier,
+        octets: await encoderManifeste(contenu),
+      },
+      creeA,
+    ).id as IdFichierDrive;
+  }
+
+  /**
    * RL-LOT-001-A3 : `rappel` est exécuté une fois, au prochain `listerFichiersAppareils`, après la prise du jeton
    * de départ et avant l'inventaire (simule une écriture d'un autre appareil pendant l'inventaire).
    */
@@ -180,6 +285,36 @@ export class FauxDrive {
     return this.#ecritures.get(appareil) ?? 0;
   }
 
+  /** Nombre de lectures du contenu du fichier `id` (fichier d'appareil ou manifeste) par `appareil`. */
+  lecturesDe(id: string, appareil: IdAppareil): number {
+    return this.#lectures.get(`${appareil}|${id}`) ?? 0;
+  }
+
+  /**
+   * Exécute `rappel` une fois, juste avant la prochaine création d'un manifeste (simule la création concurrente d'un
+   * doublon par un autre appareil, DAT §4.2.2 d).
+   */
+  avantLaProchaineCreationDeManifeste(rappel: () => Promise<void>): void {
+    this.#avantCreationManifeste = rappel;
+  }
+
+  /** Fichier d'appareil non supprimé de `appareil` (le premier en ordre canonique), ou undefined. */
+  fichierDe(appareil: IdAppareil): FichierFaux | undefined {
+    return this.#fichiers
+      .filter(
+        (f) =>
+          !f.supprime &&
+          f.appProperties['donejuan'] === 'appareil' &&
+          f.appProperties['appareil'] === appareil,
+      )
+      .sort(canonique)[0];
+  }
+
+  /** Dossiers « Done Juan » non supprimés, en ordre canonique. */
+  dossiers(): ReadonlyArray<FichierFaux> {
+    return this.#dossiers();
+  }
+
   // ------------------------------------------------------------------ Opérations
 
   async #appeler<T>(
@@ -208,10 +343,7 @@ export class FauxDrive {
 
   /** Recherche le dossier de l'application (le plus ancien non supprimé), le crée à la racine s'il manque. */
   #preparerDossier(appareil: IdAppareil): Resultat<IdFichierDrive, ErreurTransport> {
-    const existant = this.#fichiers.find(
-      (f) =>
-        !f.supprime && f.mimeType === TYPE_DOSSIER && f.appProperties['donejuan'] === 'dossier',
-    );
+    const existant = this.#dossiers()[0];
     const dossier =
       existant ??
       this.#creer(appareil, {
@@ -250,18 +382,53 @@ export class FauxDrive {
   }
 
   async #lireFichierAppareil(
+    appareil: IdAppareil,
     id: IdFichierDrive,
   ): Promise<Resultat<ContenuFichierAppareil, ErreurTransport>> {
     const fichier = this.#trouver(id);
     if (fichier === undefined) return echec({ type: 'RessourceIntrouvable' });
+    this.#compterLecture(appareil, id);
     return decoderFichierAppareil(fichier.octets);
+  }
+
+  async #lireContenuManifeste(
+    appareil: IdAppareil,
+    id: IdFichierDrive,
+  ): Promise<Resultat<ContenuManifeste, ErreurTransport>> {
+    const fichier = this.#trouver(id);
+    if (fichier === undefined) return echec({ type: 'RessourceIntrouvable' });
+    this.#compterLecture(appareil, id);
+    return decoderManifeste(fichier.octets);
+  }
+
+  #inventaire(dossier: IdFichierDrive): InventaireDossier {
+    const enfants = this.#fichiers.filter((f) => !f.supprime && f.parent === dossier);
+    return {
+      manifestes: enfants
+        .filter((f) => f.appProperties['donejuan'] === 'manifeste')
+        .sort(canonique)
+        .map(element),
+      fichiers: enfants
+        .filter((f) => f.appProperties['donejuan'] === 'appareil')
+        .sort(canonique)
+        .map(distant),
+    };
+  }
+
+  /** Corbeille (un dossier entraîne son contenu) ; déjà absent : succès. Compté dans `ecrituresPar`. */
+  #supprimer(appareil: IdAppareil, id: IdFichierDrive): Resultat<undefined, ErreurTransport> {
+    const fichier = this.#trouver(id);
+    if (fichier === undefined) return succes(undefined);
+    this.#compterEcriture(appareil);
+    this.#marquerSupprime(fichier);
+    return succes(undefined);
   }
 
   async #deposer(
     appareil: IdAppareil,
     conditions: Conditions,
     p: Depot,
-  ): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
+  ): Promise<Resultat<FichierDepose, ErreurTransport>> {
     if (conditions.reseau.estConnecte() && this.#depotsInterrompus > 0) {
       this.#depotsInterrompus -= 1;
       return echec({ type: 'ReseauIndisponible' });
@@ -280,7 +447,7 @@ export class FauxDrive {
   async #ecrireFichierAppareil(
     appareil: IdAppareil,
     { dossier, contenu, fichierExistant }: Depot,
-  ): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
+  ): Promise<Resultat<FichierDepose, ErreurTransport>> {
     if (this.#plein) return echec({ type: 'EspaceDrivePlein' });
     const octets = await encoderFichierAppareil(contenu);
     const existant =
@@ -293,23 +460,26 @@ export class FauxDrive {
       return echec({ type: 'RessourceIntrouvable' });
     }
     this.#compterEcriture(appareil);
-    if (existant !== undefined)
-      return succes(this.#remplacer(existant, octets).id as IdFichierDrive);
-    const cree = this.#creer(appareil, {
-      nom: `${contenu.appareil}.etat.json.gz`,
-      mimeType: TYPE_GZIP,
-      appProperties: { donejuan: 'appareil', appareil: contenu.appareil },
-      parent: dossier,
-      octets,
-    });
-    return succes(cree.id as IdFichierDrive);
+    const ecrit =
+      existant === undefined
+        ? this.#creer(appareil, {
+            nom: `${contenu.appareil}.etat.json.gz`,
+            mimeType: TYPE_GZIP,
+            appProperties: { donejuan: 'appareil', appareil: contenu.appareil },
+            parent: dossier,
+            octets,
+          })
+        : this.#remplacer(existant, octets);
+    return succes({ id: ecrit.id as IdFichierDrive, version: ecrit.version });
   }
 
   async #lireManifeste(
+    appareil: IdAppareil,
     dossier: IdFichierDrive,
   ): Promise<Resultat<ManifesteDistant | undefined, ErreurTransport>> {
     const fichier = this.#manifeste(dossier);
     if (fichier === undefined) return succes(undefined);
+    this.#compterLecture(appareil, fichier.id);
     const contenu = await decoderManifeste(fichier.octets);
     return contenu.ok
       ? succes({ id: fichier.id as IdFichierDrive, contenu: contenu.valeur })
@@ -332,6 +502,11 @@ export class FauxDrive {
         : this.#trouver(p.fichierExistant);
     if (p.fichierExistant !== undefined && existant === undefined) {
       return echec({ type: 'RessourceIntrouvable' });
+    }
+    if (existant === undefined && this.#avantCreationManifeste !== undefined) {
+      const rappel = this.#avantCreationManifeste;
+      this.#avantCreationManifeste = undefined;
+      await rappel();
     }
     this.#compterEcriture(appareil);
     if (existant !== undefined)
@@ -370,9 +545,36 @@ export class FauxDrive {
   }
 
   #manifeste(dossier: IdFichierDrive): FichierFaux | undefined {
-    return this.#fichiers.find(
-      (f) => !f.supprime && f.parent === dossier && f.appProperties['donejuan'] === 'manifeste',
-    );
+    return this.#fichiers
+      .filter(
+        (f) => !f.supprime && f.parent === dossier && f.appProperties['donejuan'] === 'manifeste',
+      )
+      .sort(canonique)[0];
+  }
+
+  #dossiers(): ReadonlyArray<FichierFaux> {
+    return this.#fichiers
+      .filter(
+        (f) =>
+          !f.supprime && f.mimeType === TYPE_DOSSIER && f.appProperties['donejuan'] === 'dossier',
+      )
+      .sort(canonique);
+  }
+
+  #compterLecture(appareil: IdAppareil, id: string): void {
+    this.#lectures.set(`${appareil}|${id}`, this.lecturesDe(id, appareil) + 1);
+  }
+
+  /** Corbeille d'un fichier et, pour un dossier, de tout son contenu ; noté comme un changement. */
+  #marquerSupprime(fichier: FichierFaux): void {
+    const index = this.#fichiers.indexOf(fichier);
+    this.#fichiers[index] = { ...fichier, supprime: true };
+    this.#noterChangement(fichier.id);
+    this.#fichiers
+      .filter((f) => !f.supprime && f.parent === fichier.id)
+      .forEach((f) => {
+        this.#marquerSupprime(f);
+      });
   }
 
   #compterEcriture(appareil: IdAppareil): void {
@@ -384,15 +586,17 @@ export class FauxDrive {
     this.#changements.push({ sequence: this.#sequence, id });
   }
 
-  #creer(appareil: IdAppareil, nouveau: NouveauFichier): FichierFaux {
+  #creer(appareil: IdAppareil, nouveau: NouveauFichier, creeA?: number): FichierFaux {
     this.#numero += 1;
+    this.#version += 1;
     const maintenant = this.temps.maintenant();
     const fichier: FichierFaux = {
       id: `fichier-${String(this.#numero)}`,
       ...nouveau,
-      creeA: maintenant,
+      creeA: creeA ?? maintenant,
       modifieA: maintenant,
       supprime: false,
+      version: String(this.#version),
     };
     this.#fichiers.push(fichier);
     if (nouveau.mimeType === TYPE_DOSSIER) this.#compterEcriture(appareil);
@@ -401,7 +605,13 @@ export class FauxDrive {
   }
 
   #remplacer(fichier: FichierFaux, octets: Uint8Array): FichierFaux {
-    const remplace: FichierFaux = { ...fichier, octets, modifieA: this.temps.maintenant() };
+    this.#version += 1;
+    const remplace: FichierFaux = {
+      ...fichier,
+      octets,
+      modifieA: this.temps.maintenant(),
+      version: String(this.#version),
+    };
     this.#fichiers[this.#fichiers.indexOf(fichier)] = remplace;
     this.#noterChangement(fichier.id);
     return remplace;
@@ -411,4 +621,14 @@ export class FauxDrive {
 const distant = (f: FichierFaux): FichierAppareilDistant => ({
   id: f.id as IdFichierDrive,
   appareil: f.appProperties['appareil'] as IdAppareil,
+  version: f.version,
 });
+
+const element = (f: FichierFaux): ElementDrive => ({
+  id: f.id as IdFichierDrive,
+  creeA: Instant.depuisMillisecondes(f.creeA),
+});
+
+/** Ordre canonique (DAT §4.2.2 d) : créé le plus tôt, puis identifiant. */
+const canonique = (a: FichierFaux, b: FichierFaux): number =>
+  a.creeA - b.creeA || Number(a.id > b.id) - Number(a.id < b.id);
