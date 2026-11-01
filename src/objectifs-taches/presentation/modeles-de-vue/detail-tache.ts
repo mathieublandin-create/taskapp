@@ -8,7 +8,7 @@ import type { Incoherence } from '../../domaine/incoherence';
 import { formaterDate } from '../../../commun/presentation/format/date';
 import { mentionHeureParis } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
 import { jourDeReference } from '../../../commun/domaine/temps/jour-de-reference';
-import { libelle } from '../../../commun/presentation/messages/libelle';
+import { libelle, type VariablesLibelle } from '../../../commun/presentation/messages/libelle';
 import { construireLigneTache, nomAccessibleCaseTerminer, type LigneTache } from './ligne-tache';
 import { comparerOrdreReference } from './ordre-reference';
 import { phraseSousTacheDe } from './phrases-tache-parente';
@@ -87,8 +87,11 @@ export type ModeleVueDetailTache = {
   };
   readonly incoherence?: {
     readonly code: 'ALR-003' | 'ALR-004';
+    /** `ALR-003` seulement : `sans-objectif` (aucun objectif) ou `objectifs` (deux ou plus) ; absente pour un objectif. */
+    readonly variante?: 'sans-objectif' | 'objectifs';
     readonly n: number;
     readonly libelle: string;
+    readonly texte: string;
   }; // rang 9
   readonly dateFin?: {
     readonly date: DateCalendaire;
@@ -262,17 +265,51 @@ const CODE_INCOHERENCE: Readonly<Record<Incoherence['etatParent'], 'ALR-003' | '
   ABANDONNEE: 'ALR-004',
 };
 
+const ESPACE_INSECABLE = '\u00a0';
+
+const LISTE_FRANCAISE = new Intl.ListFormat('fr', { style: 'long', type: 'conjunction' });
+
+/** `{objectifs}` d'`ALR-003` : « A et B », « A, B et C », chaque intitulé entre « » (guide §6.6.9). */
+const objectifsNommes = (intitules: ReadonlyArray<string>): string =>
+  LISTE_FRANCAISE.format(intitules.map((i) => `«${ESPACE_INSECABLE}${i}${ESPACE_INSECABLE}»`));
+
+type VarianteTerminee = 'sans-objectif' | 'objectifs';
+type PrecisionIncoherence = {
+  readonly variante?: VarianteTerminee;
+  readonly variables: VariablesLibelle;
+};
+
+/** Variante et variables d'`ALR-003` selon le nombre d'objectifs de la tâche (0, 1, 2 et plus). */
+const precisionTerminee = (intitules: ReadonlyArray<string>): PrecisionIncoherence => {
+  const [seul, ...autres] = intitules;
+  if (seul === undefined) return { variante: 'sans-objectif', variables: {} };
+  if (autres.length === 0) return { variables: { element: seul } };
+  return { variante: 'objectifs', variables: { objectifs: objectifsNommes(intitules) } };
+};
+
 /** Carte d'incohérence (RG-049) : n sous-tâches à faire sous une tâche terminée ou abandonnée. */
 const incoherenceDeCarte = (
   tache: ResumeTache,
   intitulesObjectifs: ReadonlyArray<string>,
 ): Pick<ModeleVueDetailTache, 'incoherence'> => {
   if (tache.incoherence === undefined) return {};
-  const code = CODE_INCOHERENCE[tache.incoherence.etatParent];
-  const n = tache.incoherence.sousTachesAFaire.length;
-  // TODO(Q-ST017-D2-1) : {element} d'ALR-003 nomme « l'objectif » ; une tâche peut en avoir 0 ou plusieurs (intitulés joints).
-  const element = intitulesObjectifs.join(', ');
-  return { incoherence: { code, n, libelle: libelle(code, { n, element }) } };
+  const { etatParent, sousTachesAFaire } = tache.incoherence;
+  const n = sousTachesAFaire.length;
+  // ALR-004 ne nomme aucun objectif, quel que soit leur nombre (RG-025).
+  const precision =
+    etatParent === 'TERMINEE' ? precisionTerminee(intitulesObjectifs) : { variables: {} };
+  const variante = precision.variante === undefined ? {} : { variante: precision.variante };
+  const gabarit = { n, ...precision.variables, ...variante };
+  const code = CODE_INCOHERENCE[etatParent];
+  return {
+    incoherence: {
+      code,
+      ...variante,
+      n,
+      libelle: libelle(code, gabarit),
+      texte: libelle(code, gabarit, 'texte'),
+    },
+  };
 };
 
 /**
