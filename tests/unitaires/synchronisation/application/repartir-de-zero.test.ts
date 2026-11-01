@@ -2,15 +2,20 @@
  * « Repartir de zéro » et nouvelle génération (ST-US-017 v0.10 §6.7 n° 10, n° 11 ; RG-044 b ; DAT §4.2.2 ;
  * DEC-030) : sur l'appareil qui choisit (UT-US-017-69 ; US-017 S21, S22, S22b), sur l'autre appareil
  * (UT-US-017-70 ; US-017 S21, S22d).
+ * v0.10.1, conditions de Starck (DAT v0.11.10 §4.2.2) dans UT-US-017-69 : C2 (restauration connue initialisée à la
+ * création d'une génération), C3 (HLC du choix au-dessus des générations et restaurations lues), C6 (manifestes
+ * illisibles réécrits), C9 (« Repartir de zéro » interrompu achevé par son auteur).
  */
 import { describe, expect, it } from 'vitest';
 import { echec } from '@src/commun/domaine/resultat';
+import { comparerGenerations } from '@src/synchronisation/domaine/controle-drive';
 import { compterALire } from '@src/synchronisation/domaine/lectures';
 import { decompterModificationsEnAttente } from '@src/synchronisation/domaine/index-en-attente';
 import { valeurDe, appliquerModifications } from '@tests/support/environnement';
 import { creationObjectif } from '@tests/support/modifications';
 import {
   avecObjectifPublie,
+  DEPART,
   fichierDuDrive,
   manifestesDuDrive,
   metaDe,
@@ -21,7 +26,24 @@ import {
   signalementsDe,
 } from '@tests/support/synchronisation/restauration';
 import { registre } from '@tests/support/fabriques/etat-local';
-import { date, hlc, idObjectif, instant, SMARTPHONE, TROISIEME } from '@tests/support/valeurs';
+import {
+  date,
+  ecart,
+  hlc,
+  idObjectif,
+  instant,
+  MINUTE,
+  PC,
+  SMARTPHONE,
+  TROISIEME,
+} from '@tests/support/valeurs';
+
+const T0 = instant(DEPART);
+const fichiersDe = (env: ReturnType<typeof preparerRestauration>, appareil: string) =>
+  env.drive
+    .fichiers()
+    .filter((f) => !f.supprime && f.appProperties['appareil'] === appareil)
+    .map((f) => f.id);
 
 describe('« Repartir de zéro » sur l’appareil qui choisit (ST-US-017 v0.10 §6.7 n° 11)', () => {
   it('UT-US-017-69 S22b : sans réseau, « Repartir de zéro » est refusé (évaluer et exécuter), rien n’est écrit ni effacé ; sans ERR-012, il est refusé (AucuneAlteration)', async () => {
@@ -84,6 +106,147 @@ describe('« Repartir de zéro » sur l’appareil qui choisit (ST-US-017 v0.10 
     const ecritures = env.drive.ecrituresPar(SMARTPHONE);
     expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
     expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
+  });
+});
+
+describe('« Repartir de zéro » : conditions de convergence (v0.10.1, DAT v0.11.10 §4.2.2)', () => {
+  it('UT-US-017-69 condition C2 : « Repartir de zéro » initialise restaurationConnue à la restauration du manifeste écrit (gardée par la jointure) ; une altération ultérieure du fichier propre est un nouvel incident (ERR-012), jamais une « restauration faite ailleurs »', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    env.drive.supprimerDonnees();
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    valeurDe(await env.smartphone.restaurer.executer());
+    const restauration = (await manifestesDuDrive(env.drive))[0]?.contenu.restauration;
+    expect(restauration?.appareil).toBe(SMARTPHONE);
+    await env.echanger();
+
+    env.drive.modifierFichierALaMain((await fichierDuDrive(env.drive, SMARTPHONE)).fichier.id);
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    valeurDe(await env.smartphone.repartir.executer());
+    const meta = await metaDe(env.smartphone);
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.contenu)).toEqual([
+      { schemaVersion: 1, generation: meta.generation, restauration },
+    ]);
+    expect(meta.restaurationConnue).toEqual(restauration);
+
+    env.drive.modifierFichierALaMain((await fichierDuDrive(env.drive, SMARTPHONE)).fichier.id);
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBe('DONNEES_ABSENTES');
+  });
+
+  it('UT-US-017-69 condition C3 : « Repartir de zéro » sur un appareil dont l’horloge retarde donne une génération supérieure à la génération courante lue (HLC tiré au-dessus) ; elle l’emporte sur les deux appareils (DEC-030)', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    env.drive.supprimerDonnees();
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    env.temps.avancer(ecart(60 * MINUTE));
+    valeurDe(await env.pc.repartir.executer());
+    const g1 = (await metaDe(env.pc)).generation;
+    if (g1?.type !== 'NOUVELLE') throw new Error('génération du PC attendue');
+
+    // Horloge en retard d'une heure (et plus) : sans C3, le HLC du choix serait inférieur à celui de g1.
+    env.temps.positionner(T0);
+    valeurDe(await env.smartphone.repartir.executer());
+    const g2 = (await metaDe(env.smartphone)).generation;
+    if (g2?.type !== 'NOUVELLE') throw new Error('génération du smartphone attendue');
+    expect(comparerGenerations(g2, g1)).toBe(1);
+    expect(g2.hlc.appareil).toBe(SMARTPHONE);
+
+    env.plusTard();
+    await env.echanger();
+    expect((await metaDe(env.pc)).generation).toEqual(g2);
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.contenu.generation)).toEqual([g2]);
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(env.pc.cycle.etatMoteur().actionRequise).toBeUndefined();
+  });
+
+  it('UT-US-017-69 condition C6 : « Repartir de zéro » réécrit avec la nouvelle génération le manifeste canonique et tout doublon illisible, et le fichier propre illisible en place ; plus aucun ERR-012 ensuite', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    const dossier = (await metaDe(env.smartphone)).dossier;
+    if (dossier === undefined) throw new Error('dossier attendu');
+    await env.drive.ajouterManifeste(
+      PC,
+      dossier,
+      { schemaVersion: 1, generation: { type: 'INITIALE' } },
+      T0 + 60_000,
+    );
+    const { fichier } = await fichierDuDrive(env.drive, SMARTPHONE);
+    env.drive.rendreDonneesIllisibles();
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    valeurDe(await env.smartphone.repartir.executer());
+    const generation = (await metaDe(env.smartphone)).generation;
+    // `manifestesDuDrive` décode chaque manifeste présent : il échoue si l'un reste illisible.
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.contenu)).toEqual([
+      { schemaVersion: 1, generation },
+      { schemaVersion: 1, generation },
+    ]);
+    expect(fichiersDe(env, SMARTPHONE)).toEqual([fichier.id]);
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+
+    await env.echanger();
+    expect((await metaDe(env.pc)).generation).toEqual(generation);
+    expect(env.pc.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+  });
+
+  it('UT-US-017-69 condition C9 : « Repartir de zéro » interrompu après le dépôt de son fichier (réponse perdue) ; le PC adopte la génération puis affiche ERR-012 tant que le manifeste manque ; l’auteur achève son choix au cycle suivant (manifeste écrit, seules ses écritures postérieures au choix signalées, aucun second fichier) ; ERR-012 disparaît partout', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    env.drive.supprimerDonnees();
+    valeurDe(
+      await appliquerModifications(env.smartphone.service, (_etat, contexte) => [
+        creationObjectif(
+          { id: idObjectif(2), intitule: 'Avant le choix', delai: date('2027-01-15') },
+          contexte.instant,
+        ),
+      ]),
+    );
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    env.drive.perdreReponseDuProchainDepot();
+    expect((await env.smartphone.repartir.executer()).ok).toBe(false);
+    const { contenu } = await fichierDuDrive(env.drive, SMARTPHONE);
+    const generation = contenu.generation;
+    if (generation.type !== 'NOUVELLE')
+      throw new Error('fichier de la nouvelle génération attendu');
+    expect(generation.hlc.appareil).toBe(SMARTPHONE);
+    expect(await manifestesDuDrive(env.drive)).toEqual([]);
+    // État local intact ; seul dernierHlc a avancé jusqu'au HLC du choix (écritures suivantes postérieures).
+    expect((await objectifsDe(env.smartphone)).size).toBe(2);
+    expect(valeurDe(await env.smartphone.depot.lire()).dernierHlc).toEqual(generation.hlc);
+    valeurDe(await renommerObjectif(env.smartphone, PUBLIER, 'Après le choix'));
+
+    // Le PC adopte la génération (contrôle 3 avant l'altération), puis le manifeste manque : ERR-012 (DAT §4.2.2 a).
+    await env.pc.cycle.synchroniserMaintenant();
+    expect((await metaDe(env.pc)).generation).toEqual(generation);
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    // L'auteur achève son choix.
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect((await metaDe(env.smartphone)).generation).toEqual(generation);
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.contenu)).toEqual([
+      { schemaVersion: 1, generation },
+    ]);
+    expect((await objectifsDe(env.smartphone)).size).toBe(0);
+    const entrees = [...(await signalementsDe(env.smartphone)).valeursEcartees.values()];
+    expect(entrees).toHaveLength(1);
+    expect(entrees[0]).toMatchObject({
+      motif: 'DONNEES_EFFACEES',
+      intituleElement: 'Après le choix',
+      ecartee: { cle: { id: PUBLIER, champ: 'intitule' }, ecriture: { valeur: 'Après le choix' } },
+    });
+    expect(fichiersDe(env, SMARTPHONE)).toHaveLength(1);
+
+    await env.echanger();
+    expect(env.pc.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect((await metaDe(env.pc)).generation).toEqual(generation);
+    expect((await objectifsDe(env.pc)).size).toBe(0);
   });
 });
 

@@ -116,6 +116,36 @@ describe('valeursDonneesEffacees (ST-US-017 v0.10 §6.7 n° 10)', () => {
   });
 });
 
+describe('valeursDonneesEffacees, achèvement d’un « Repartir de zéro » interrompu (v0.10.1, condition C9)', () => {
+  it('UT-US-017-64 condition C9 : avec posterieuresA = HLC de la génération, seules les écritures en attente strictement postérieures sont signalées (les antérieures sont perdues en connaissance de cause)', () => {
+    const avant = registre(cle.intituleO1, 'Avant le choix', h(5));
+    const egal = registre(cle.delaiO1, date('2026-12-20'), h(10));
+    const apres = registre(cle.intituleO2, 'Après le choix', h(20));
+    const generation = h(10);
+    const etat = etatLocal({
+      appareilId: PC,
+      dernierHlc: h(20),
+      registres: [avant, egal, registre(cle.creationO2, { creeLe: INSTANT }, h(2)), apres],
+      enAttente: [
+        enAttente(cle.intituleO1, h(5)),
+        enAttente(cle.delaiO1, h(10)),
+        enAttente(cle.intituleO2, h(20)),
+      ],
+    });
+    expect(valeursDonneesEffacees(etat, generation, generation)).toEqual([
+      {
+        id: idValeurEcartee(cle.intituleO2, h(20)),
+        motif: 'DONNEES_EFFACEES',
+        ecartee: apres,
+        generation,
+        intituleElement: 'Après le choix',
+      },
+    ]);
+    // Sans posterieuresA (RG-044 b sur un autre appareil) : les trois.
+    expect(valeursDonneesEffacees(etat, generation)).toHaveLength(3);
+  });
+});
+
 describe('planReinitialisation (ST-US-017 v0.10 §6.7 n° 11)', () => {
   it('UT-US-017-64 état vide du même appareil (version, correction d’horloge et plus grand dernierHlc conservés), plan vide, reinitialiser, méta et signalements fournis', () => {
     const etat = etatLocal({

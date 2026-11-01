@@ -255,6 +255,33 @@ export class FauxDrive {
   }
 
   /**
+   * v0.10.1, condition C8 (DAT §4.2.2 b) : fichier d'appareil supplémentaire de `appareil` dans `dossier` (création
+   * interrompue dont l'identifiant n'a pas été mémorisé), créé à l'instant `creeA` (millisecondes, par défaut
+   * maintenant) ; `'ILLISIBLE'` : octets non gzip. Aucun autre fichier de l'appareil n'est remplacé.
+   */
+  async ajouterFichierAppareil(
+    appareil: IdAppareil,
+    dossier: IdFichierDrive,
+    contenu: ContenuFichierAppareil | 'ILLISIBLE',
+    creeA?: number,
+  ): Promise<IdFichierDrive> {
+    return this.#creer(
+      appareil,
+      {
+        nom: `${appareil}.etat.json.gz`,
+        mimeType: TYPE_GZIP,
+        appProperties: { donejuan: 'appareil', appareil },
+        parent: dossier,
+        octets:
+          contenu === 'ILLISIBLE'
+            ? new TextEncoder().encode('illisible')
+            : await encoderFichierAppareil(contenu),
+      },
+      creeA,
+    ).id as IdFichierDrive;
+  }
+
+  /**
    * RL-LOT-001-A3 : `rappel` est exécuté une fois, au prochain `listerFichiersAppareils`, après la prise du jeton
    * de départ et avant l'inventaire (simule une écriture d'un autre appareil pendant l'inventaire).
    */

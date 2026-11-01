@@ -2,6 +2,8 @@
  * Dossier et manifeste en double, dossier supprimé (ST-US-017 v0.10 §6.7 n° 13, n° 14 ; DAT §4.2.2 d) : le plus
  * ancien est canonique, un appareil ne supprime que le doublon qu'il a créé, déménagement vers le dossier canonique,
  * bascule vers le dossier recréé par une restauration. UT-US-017-71.
+ * v0.10.1, conditions de Starck (DAT v0.11.10 §4.2.2) : C5 (nouvel inventaire juste avant de mettre à la corbeille le
+ * dossier quitté) ; C8 (fichiers orphelins de l'appareil lus puis mis à la corbeille par lui).
  */
 import { describe, expect, it } from 'vitest';
 import type { IdFichierDrive } from '@src/synchronisation/domaine/meta-synchronisation';
@@ -17,7 +19,7 @@ import {
 } from '@tests/support/synchronisation/restauration';
 import { appliquerModifications } from '@tests/support/environnement';
 import { creationObjectif } from '@tests/support/modifications';
-import { date, hlc, idObjectif, instant, PC, SMARTPHONE } from '@tests/support/valeurs';
+import { date, hlc, idObjectif, instant, PC, SMARTPHONE, TROISIEME } from '@tests/support/valeurs';
 
 const PUBLIE = new Map([['Publier le guide', '2026-12-15']]);
 const T0 = instant(DEPART);
@@ -107,6 +109,67 @@ describe('Doublons du manifeste et du dossier (ST-US-017 v0.10 §6.7 n° 13, n°
     expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
     expect(env.pc.cycle.etatMoteur().actionRequise).toBeUndefined();
     expect((await fichierDuDrive(env.drive, PC)).fichier.parent).toBe(canonique);
+  });
+
+  it('UT-US-017-71 condition C5 : juste avant de mettre à la corbeille le dossier qu’il quitte, l’appareil refait l’inventaire ; un fichier d’appareil déposé entre-temps l’en empêche', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    const [ancien] = env.drive.dossiers();
+    if (ancien === undefined) throw new Error('dossier attendu');
+    const canonique = env.drive.ajouterDossier(PC, T0 - 60_000);
+    // Le PC déménage le premier : le fichier du smartphone est encore dans l'ancien dossier, qui reste.
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.drive.dossiers().map((d) => d.id)).toEqual([canonique, ancien.id]);
+
+    // Pendant le déménagement du smartphone (après son premier inventaire), un troisième appareil dépose dans l'ancien
+    // dossier : l'inventaire refait juste avant la suppression le voit.
+    const { contenu } = await fichierDuDrive(env.drive, SMARTPHONE);
+    env.drive.avantReponseDuProchainDepot(async () => {
+      await env.drive.ajouterFichierAppareil(TROISIEME, ancien.id as IdFichierDrive, {
+        ...contenu,
+        appareil: TROISIEME,
+        registres: [],
+        journal: [],
+      });
+    });
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.drive.fichierDe(SMARTPHONE)?.parent).toBe(canonique);
+    expect(env.drive.dossiers().map((d) => d.id)).toEqual([canonique, ancien.id]);
+    expect(env.drive.fichierDe(TROISIEME)?.parent).toBe(ancien.id);
+    // L'ancien fichier du smartphone, lui, est à la corbeille.
+    expect(
+      env.drive
+        .fichiers()
+        .filter((f) => f.parent === ancien.id && f.appProperties['appareil'] === SMARTPHONE)
+        .every((f) => f.supprime),
+    ).toBe(true);
+  });
+
+  it('UT-US-017-71 condition C8 : un fichier de l’appareil autre que celui qu’il mémorise (création interrompue), lisible ou non, est lu, jamais fusionné ni compté comme altération, puis mis à la corbeille par l’appareil lui-même ; le fichier mémorisé reste', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    const dossier = (await metaDe(env.smartphone)).dossier;
+    if (dossier === undefined) throw new Error('dossier attendu');
+    const { fichier, contenu } = await fichierDuDrive(env.drive, SMARTPHONE);
+    const valide = await env.drive.ajouterFichierAppareil(SMARTPHONE, dossier, contenu);
+    const illisible = await env.drive.ajouterFichierAppareil(SMARTPHONE, dossier, 'ILLISIBLE');
+
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(env.drive.lecturesDe(valide, SMARTPHONE)).toBe(1);
+    expect(env.drive.lecturesDe(illisible, SMARTPHONE)).toBe(1);
+    expect(
+      env.drive
+        .fichiers()
+        .filter((f) => !f.supprime && f.appProperties['appareil'] === SMARTPHONE)
+        .map((f) => f.id),
+    ).toEqual([fichier.id]);
+    expect((await metaDe(env.smartphone)).fichierPropre).toBe(fichier.id);
+
+    await env.echanger();
+    expect(await objectifsDe(env.pc)).toEqual(PUBLIE);
+    expect(env.pc.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
   });
 
   it('UT-US-017-71 dossier supprimé puis recréé par « Restaurer » sur le smartphone : le PC bascule vers le nouveau dossier et y réécrit son fichier sans question', async () => {

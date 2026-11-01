@@ -16,13 +16,18 @@ export type ValeurDonneesEffacees = Extract<ValeurEcartee, { readonly motif: 'DO
  * élément n'a pas de registre `suppression`. `id` = `idValeurEcartee(cle, hlc du registre)` ; `ecartee` = ce registre ;
  * `generation` = `generation` ; `intituleElement` = valeur du registre `intitule` de l'élément de la clé (élément
  * d'un lien : la tâche), omis s'il n'existe pas.
+ * v0.10.1, condition C9 de Starck : si `posterieuresA` est défini (achèvement par son auteur d'un « Repartir de zéro »
+ * interrompu, `posterieuresA` = HLC de la génération), seules les entrées dont `derniereHlc` lui est **strictement**
+ * postérieur (`comparerHlc > 0`) sont retenues : les écritures antérieures ont été perdues en connaissance de cause
+ * (`CNF-REPARTIR-ZERO`).
  */
 export const valeursDonneesEffacees = (
   etat: EtatLocal,
   generation: Hlc,
+  posterieuresA?: Hlc,
 ): ReadonlyArray<ValeurDonneesEffacees> =>
   nonImplemente(
-    `valeursDonneesEffacees (${String(etat.enAttente.size)}, ${String(generation.compteur)})`,
+    `valeursDonneesEffacees (${String(etat.enAttente.size)}, ${String(generation.compteur)}, ${String(posterieuresA?.compteur)})`,
   );
 
 /**

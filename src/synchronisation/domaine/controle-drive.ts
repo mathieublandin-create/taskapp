@@ -58,6 +58,16 @@ export type ObservationDrive = {
   }>;
   /** Vrai si l'inventaire du dossier contient au moins un fichier d'un autre appareil (lu ou non pendant ce cycle). */
   readonly autresPresents: boolean;
+  /**
+   * v0.10.1, condition C8 de Starck (DAT v0.11.10 §4.2.2 b) : fichiers de **cet** appareil présents dans l'inventaire
+   * du dossier autres que `meta.fichierPropre` (création interrompue, ou tous si `meta.fichierPropre` est absent), tous
+   * lus à chaque cycle (introuvable : omis), dans l'ordre canonique. Leur génération compte au contrôle 3 et leur
+   * format au contrôle 2 ; ils ne sont jamais fusionnés ni une altération ; le cycle les met à la corbeille (n° 12).
+   */
+  readonly orphelins: ReadonlyArray<{
+    readonly id: IdFichierDrive;
+    readonly lecture: LectureDrive<ContenuFichierAppareil>;
+  }>;
 };
 
 /** Ce que l'appareil sait de lui-même (méta locale, n° 2). */
@@ -88,8 +98,17 @@ export type Fusionnables = {
 export type DecisionControle =
   /** RG-058 (contrôle 2) : aucune écriture, aucun effacement, aucun contrôle suivant (incrément 4 : consultation seule). */
   | { readonly type: 'FORMAT_PLUS_RECENT' }
-  /** RG-044 b (contrôle 3) : génération effective plus récente que celle de l'appareil. */
-  | { readonly type: 'NOUVELLE_GENERATION'; readonly generation: GenerationNouvelle }
+  /**
+   * RG-044 b (contrôle 3) : génération effective plus récente que celle de l'appareil. `restaurationVue` : plus grande
+   * `restauration` des manifestes lisibles, valeur initiale de `restaurationConnue` dans la méta de réinitialisation
+   * (v0.10.1, condition C2). Si `generation.hlc.appareil` est cet appareil, c'est l'achèvement d'un « Repartir de zéro »
+   * interrompu (condition C9, n° 11).
+   */
+  | {
+      readonly type: 'NOUVELLE_GENERATION';
+      readonly generation: GenerationNouvelle;
+      readonly restaurationVue?: Hlc;
+    }
   /** `ERR-012` (n° 4) : rien n'est écrit dans le Drive tant que l'altération demeure. */
   | { readonly type: 'ALTERATION'; readonly portee: 'MANIFESTE' | 'FICHIER_PROPRE' }
   /** n° 8, n° 9 : réécriture du fichier propre (et, si `DEMANDEE`, du manifeste) ; fusion des fichiers valides avant. */
@@ -112,6 +131,34 @@ export type DecisionControle =
       /** Plus grande `restauration` des manifestes lisibles, à mémoriser dans `restaurationConnue`. */
       readonly restaurationVue?: Hlc;
     };
+
+/**
+ * v0.10.1, condition C1 de Starck (DAT v0.11.10 §4.2.2 b) : valeur de `restaurationConnue` après un cycle qui
+ * synchronise ou restaure **sans changer de génération** = maximum (`comparerHlc`) de l'ancienne et de la
+ * `restaurationVue` de la décision ; `undefined` si les deux le sont. Elle ne décroît jamais : un manifeste revenu en
+ * arrière après une écriture concurrente perdue ne la fait pas reculer. (À un changement de génération, elle est
+ * **initialisée**, et non maximisée : n° 11, condition C2.)
+ */
+export const restaurationConnueApres = (
+  connue: Hlc | undefined,
+  vue: Hlc | undefined,
+): Hlc | undefined =>
+  nonImplemente(`restaurationConnueApres (${String(connue?.compteur)}, ${String(vue?.compteur)})`);
+
+/**
+ * v0.10.1, condition C3 de Starck (DAT v0.11.10 §4.2.2 b, « HLC des choix ») : plancher du HLC d'un choix
+ * (« Restaurer », « Repartir de zéro ») = maximum (`comparerHlc`) de `situation.restaurationConnue`, du HLC de
+ * `situation.generation` (si `NOUVELLE`), des HLC de génération et de `restauration` des manifestes `LU`, et des HLC de
+ * génération des fichiers `LU` (propre, autres, orphelins) ; `undefined` s'il n'y en a aucun. Les lectures
+ * `ILLISIBLE` et `FORMAT_PLUS_RECENT` ne comptent pas. Le cycle tire `h = hlcSuivant(max(dernierHlc, plancher), …)`.
+ */
+export const hlcPlancherDesChoix = (
+  observation: ObservationDrive,
+  situation: SituationLocale,
+): Hlc | undefined =>
+  nonImplemente(
+    `hlcPlancherDesChoix (${String(observation.manifestes.length)}, ${situation.generation.type})`,
+  );
 
 /**
  * Point unique des contrôles du DAT §4.2.2 (n° 3) : fonction pure, sans effet. Précédence :

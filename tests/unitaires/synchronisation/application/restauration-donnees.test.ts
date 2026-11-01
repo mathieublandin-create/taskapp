@@ -2,9 +2,14 @@
  * « Restaurer mes données » (ST-US-017 v0.10 §6.7 n° 8, n° 9, n° 13 ; RG-044 ; DAT §4.2.2 b ; DEC-030) :
  * en ligne et restauration faite ailleurs (UT-US-017-67 ; US-017 S20, S22d, S33), hors ligne, annulée, abandonnée
  * devant une génération plus récente (UT-US-017-68 ; US-017 S20b, S22c).
+ * v0.10.1, condition C7 de Starck (DAT v0.11.10 §4.2.2 b) : fichier propre réécrit en place s'il est présent, créé
+ * seulement s'il est absent, identifiant mémorisé dès le dépôt confirmé, avant le manifeste (UT-US-017-67).
  */
 import { describe, expect, it } from 'vitest';
 import { echec } from '@src/commun/domaine/resultat';
+import { DemanderRestauration } from '@src/synchronisation/application/cas-usage/choisir-restauration';
+import { CycleSynchronisation } from '@src/synchronisation/application/cycle-synchronisation';
+import type { TransportSynchro } from '@src/synchronisation/application/ports/transport-synchro';
 import { compterALire } from '@src/synchronisation/domaine/lectures';
 import { comparerHlc } from '@src/synchronisation/domaine/hlc';
 import type { IdFichierDrive } from '@src/synchronisation/domaine/meta-synchronisation';
@@ -19,6 +24,9 @@ import {
   renommerObjectif,
   signalementsDe,
 } from '@tests/support/synchronisation/restauration';
+import { HorlogeSimulee } from '@tests/doublures/horloge-simulee';
+import { SourceAleatoireDeterministe } from '@tests/doublures/source-aleatoire-deterministe';
+import { JournalEnMemoire } from '@tests/support/compte/doublures-compte';
 import { valeurDe } from '@tests/support/environnement';
 import { PC, SMARTPHONE, TROISIEME } from '@tests/support/valeurs';
 
@@ -100,6 +108,95 @@ describe('Restaurer en ligne ; restauration faite ailleurs (ST-US-017 v0.10 §6.
     expect(await objectifsDe(env.smartphone)).toEqual(PUBLIE);
     expect(await objectifsDe(env.pc)).toEqual(PUBLIE);
     expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+  });
+
+  it('UT-US-017-67 condition C7 : fichier propre présent mais modifié à la main (S32) → « Restaurer » le réécrit en place (fichierExistant = fichier mémorisé), sans en créer un second ; le PC ne l’ignore plus et fusionne ses nouvelles valeurs', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    const reel = env.drive.transportPour(SMARTPHONE, {
+      reseau: env.smartphone.reseau,
+      accesAccorde: () => true,
+    });
+    const depots: Array<IdFichierDrive | undefined> = [];
+    const transport: TransportSynchro = {
+      ...reel,
+      deposerFichierAppareil: (p) => {
+        depots.push(p.fichierExistant);
+        return reel.deposerFichierAppareil(p);
+      },
+    };
+    const cycle = new CycleSynchronisation({
+      depot: env.smartphone.depot,
+      transport,
+      acces: env.smartphone.acces,
+      reseau: env.smartphone.reseau,
+      planificateur: env.planificateur,
+      aleatoire: new SourceAleatoireDeterministe([500]),
+      horloge: new HorlogeSimulee(env.temps),
+      journal: new JournalEnMemoire(),
+      versionApplication: '0.1.0',
+    });
+    const restaurer = new DemanderRestauration({
+      depot: env.smartphone.depot,
+      cycle,
+      reseau: env.smartphone.reseau,
+    });
+    const { fichier } = await fichierDuDrive(env.drive, SMARTPHONE);
+    env.drive.modifierFichierALaMain(fichier.id);
+    expect(await cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(valeurDe(await restaurer.executer())).toBe('LANCEE');
+    expect(depots).toEqual([fichier.id]);
+    const duSmartphone = env.drive
+      .fichiers()
+      .filter((f) => !f.supprime && f.appProperties['appareil'] === SMARTPHONE);
+    expect(duSmartphone.map((f) => f.id)).toEqual([fichier.id]);
+    expect((await metaDe(env.smartphone)).fichierPropre).toBe(fichier.id);
+
+    valeurDe(await renommerObjectif(env.smartphone, PUBLIER, 'Publier le guide illustré'));
+    for (let tour = 0; tour < 3; tour += 1) {
+      expect(await cycle.synchroniserMaintenant()).toBe('TERMINE');
+      expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    }
+    expect(await objectifsDe(env.pc)).toEqual(
+      new Map([['Publier le guide illustré', '2026-12-15']]),
+    );
+  });
+
+  it('UT-US-017-67 condition C7 : fichier propre absent → créé ; son identifiant (et sa version) sont mémorisés dès le dépôt confirmé, avant l’écriture du manifeste ; après une panne entre les deux, la reprise réécrit ce fichier sans en créer un second', async () => {
+    const env = preparerRestauration();
+    await avecObjectifPublie(env);
+    env.drive.supprimerDonnees();
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    env.drive.avantReponseDuProchainDepot(() => {
+      env.drive.indisponible('toujours');
+      return Promise.resolve();
+    });
+    await env.smartphone.restaurer.executer();
+    const cree = env.drive.fichierDe(SMARTPHONE);
+    if (cree === undefined) throw new Error('fichier du smartphone attendu');
+    const meta = await metaDe(env.smartphone);
+    expect(meta.fichierPropre).toBe(cree.id);
+    expect(meta.versionFichierPropre).toBe(cree.version);
+    expect(meta.restaurationDemandee).toBe(true);
+    expect(await manifestesDuDrive(env.drive)).toEqual([]);
+
+    env.drive.retablir();
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(
+      env.drive
+        .fichiers()
+        .filter((f) => !f.supprime && f.appProperties['appareil'] === SMARTPHONE)
+        .map((f) => f.id),
+    ).toEqual([cree.id]);
+    expect((await manifestesDuDrive(env.drive))[0]?.contenu.restauration?.appareil).toBe(
+      SMARTPHONE,
+    );
+    expect((await metaDe(env.smartphone)).restaurationDemandee).toBe(false);
+    await env.echanger();
+    expect(await objectifsDe(env.pc)).toEqual(PUBLIE);
   });
 
   it('UT-US-017-67 sans ERR-012, « Restaurer » est refusé (AucuneAlteration) et rien n’est écrit', async () => {

@@ -26,7 +26,12 @@ export type MetaSynchronisation = {
   readonly versionFichierPropre?: string;
   /** « Restaurer » choisi, pas encore exécuté (n° 9 ; hors ligne : exécuté au retour du réseau). */
   readonly restaurationDemandee?: boolean;
-  /** Plus grande `restauration` lue dans un manifeste lors d'un cycle sans altération (n° 8). */
+  /**
+   * Dernière restauration vue (n° 8 ; v0.10.1, conditions C1 et C2) : maximum des `restauration` lues à chaque cycle
+   * qui synchronise ou restaure, jamais décroissant dans une génération (`restaurationConnueApres`) ; initialisée à
+   * l'adoption d'une génération (`restaurationVue` de la décision) et à la création d'une génération (`restauration`
+   * du manifeste écrit) ; égale au HLC d'une restauration faite par cet appareil.
+   */
   readonly restaurationConnue?: Hlc;
   /** Le prochain cycle refait un inventaire complet (bascule ou déménagement de dossier, n° 12, n° 14). */
   readonly inventaireAFaire?: boolean;

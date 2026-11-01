@@ -2,7 +2,10 @@
  * Contrôles du Drive (ST-US-017 v0.10 §6.7 n° 2 à n° 8 ; RG-044 ; DAT §4.2.2 ; DEC-030) : ordre des contrôles et
  * précédence des décisions (UT-US-017-60), fichier propre et fichiers des autres appareils (UT-US-017-61),
  * restauration demandée ou faite ailleurs (UT-US-017-62).
+ * v0.10.1 (conditions de Starck, DAT v0.11.10 §4.2.2) : C1 et C2 (dernière restauration vue), C3 (plancher du HLC
+ * d'un choix) dans UT-US-017-62 ; C8 (fichiers orphelins de l'appareil) dans UT-US-017-60.
  */
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import type {
@@ -14,13 +17,15 @@ import {
   controlerDrive,
   GENERATION_INITIALE,
   hlcMaxDuContenu,
+  hlcPlancherDesChoix,
+  restaurationConnueApres,
   situationDe,
   type LectureDrive,
   type ObservationDrive,
   type SituationLocale,
 } from '@src/synchronisation/domaine/controle-drive';
 import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
-import type { Hlc } from '@src/synchronisation/domaine/hlc';
+import { comparerHlc, maxHlc, type Hlc } from '@src/synchronisation/domaine/hlc';
 import type { IdEvenement } from '@src/synchronisation/domaine/identifiant-evenement';
 import {
   META_INITIALE,
@@ -71,6 +76,7 @@ const observation = (p: Partial<ObservationDrive> = {}): ObservationDrive => ({
   fichierPropre: { type: 'INCHANGE' },
   autres: [],
   autresPresents: false,
+  orphelins: [],
   ...p,
 });
 
@@ -251,6 +257,52 @@ describe('controlerDrive — ordre des contrôles et manifeste (ST-US-017 v0.10 
         situation(),
       ),
     ).toEqual(synchroniser({ fusion: { aFusionner: [], ignores: [id('f-pc')] } }));
+  });
+
+  it('UT-US-017-60 condition C8 : un fichier orphelin de l’appareil (création interrompue) compte au contrôle 3 et au contrôle 2, jamais comme altération ni comme fichier à fusionner', () => {
+    const G3: Generation = { type: 'NOUVELLE', hlc: H3 };
+    // « Repartir de zéro » interrompu après le dépôt (fichier créé, identifiant non mémorisé) : sa génération l'emporte,
+    // même devant le manifeste absent (C9 : l'appareil achève son choix, n° 11).
+    expect(
+      controlerDrive(
+        observation({
+          manifestes: [],
+          fichierPropre: { type: 'ABSENT' },
+          orphelins: [{ id: id('f-orphelin'), lecture: lu(fichier(SMARTPHONE, G3)) }],
+        }),
+        situation({ generation: G1 }),
+      ),
+    ).toEqual({ type: 'NOUVELLE_GENERATION', generation: G3 });
+    // Orphelin illisible ou d'une génération antérieure : ni altération, ni fusion, ni « ignoré » des autres.
+    expect(
+      controlerDrive(
+        observation({
+          orphelins: [
+            { id: id('f-o1'), lecture: ILLISIBLE },
+            { id: id('f-o2'), lecture: lu(fichier(SMARTPHONE, GENERATION_INITIALE, [H1])) },
+          ],
+        }),
+        situation({ generation: G1 }),
+      ),
+    ).toEqual(synchroniser({ manifesteAEcrire: manifeste(G1) }));
+    // Orphelin de la même génération : jamais fusionné (le contenu de l'appareil est déjà dans sa copie locale).
+    expect(
+      controlerDrive(
+        observation({
+          orphelins: [
+            { id: id('f-o1'), lecture: lu(fichier(SMARTPHONE, GENERATION_INITIALE, [H1])) },
+          ],
+        }),
+        situation(),
+      ),
+    ).toEqual(synchroniser());
+    // Orphelin d'un format plus récent : contrôle 2 (aucun contrôle suivant).
+    expect(
+      controlerDrive(
+        observation({ orphelins: [{ id: id('f-o1'), lecture: PLUS_RECENT }] }),
+        situation(),
+      ),
+    ).toEqual({ type: 'FORMAT_PLUS_RECENT' });
   });
 
   it('UT-US-017-60 manifeste en retard sur la génération de l’appareil, ou doublons de contenus différents → contenu à écrire = jointure ; canonique déjà égal → rien', () => {
@@ -502,6 +554,131 @@ describe('controlerDrive — restauration (n° 8, n° 9 ; DAT §4.2.2 b ; DEC-03
         situation({ restaurationConnue: H1 }),
       ),
     ).toEqual(synchroniser({ restaurationVue: H3 }));
+  });
+
+  it('UT-US-017-62 condition C2 : NOUVELLE_GENERATION porte restaurationVue (plus grande restauration des manifestes lisibles, toutes générations), valeur initiale de restaurationConnue à l’adoption', () => {
+    expect(
+      controlerDrive(
+        observation({
+          manifestes: [
+            { id: id('m1'), lecture: lu(manifeste(G2, H1)) },
+            { id: id('m2'), lecture: ILLISIBLE },
+          ],
+        }),
+        situation({ restaurationConnue: H3 }),
+      ),
+    ).toEqual({ type: 'NOUVELLE_GENERATION', generation: G2, restaurationVue: H1 });
+    // Génération lue dans un fichier seulement, manifeste d'une génération antérieure qui garde une restauration.
+    expect(
+      controlerDrive(
+        observation({
+          manifestes: [{ id: id('m1'), lecture: lu(manifeste(GENERATION_INITIALE, H3)) }],
+          autres: [{ id: id('f-pc'), lecture: lu(fichier(PC, G2)) }],
+          autresPresents: true,
+        }),
+        situation(),
+      ),
+    ).toEqual({ type: 'NOUVELLE_GENERATION', generation: G2, restaurationVue: H3 });
+  });
+
+  it('UT-US-017-62 condition C1 : restaurationConnueApres — maximum de l’ancienne et de la vue, jamais décroissante (manifeste revenu en arrière après une écriture concurrente perdue)', () => {
+    expect(restaurationConnueApres(undefined, undefined)).toBeUndefined();
+    expect(restaurationConnueApres(undefined, H1)).toEqual(H1);
+    expect(restaurationConnueApres(H1, undefined)).toEqual(H1);
+    expect(restaurationConnueApres(H1, H3)).toEqual(H3);
+    expect(restaurationConnueApres(H3, H2)).toEqual(H3);
+    // Puis la décision : la restauration du manifeste revenu en arrière (H2) n'est pas « plus récente que la connue »
+    // (H3) : une altération du fichier propre est un nouvel incident.
+    expect(
+      controlerDrive(
+        observation({
+          manifestes: [{ id: id('m1'), lecture: lu(manifeste(GENERATION_INITIALE, H2)) }],
+          fichierPropre: ILLISIBLE,
+        }),
+        situation({ restaurationConnue: restaurationConnueApres(H3, H2) ?? H3 }),
+      ),
+    ).toEqual({ type: 'ALTERATION', portee: 'FICHIER_PROPRE' });
+  });
+
+  it('UT-US-017-62 condition C1 (propriété) : pour toute suite de restaurations vues, restaurationConnue est croissante et vaut le maximum de celles vues', () => {
+    const hlcArbitraire = fc
+      .tuple(
+        fc.integer({ min: 0, max: 5 }),
+        fc.integer({ min: 0, max: 2 }),
+        fc.constantFrom(PC, SMARTPHONE, TROISIEME),
+      )
+      .map(([minute, compteur, appareil]) =>
+        hlc(`2026-10-21T08:0${String(minute)}:00.000Z`, compteur, appareil),
+      );
+    fc.assert(
+      fc.property(
+        fc.array(fc.option(hlcArbitraire, { nil: undefined }), { maxLength: 12 }),
+        (vues) => {
+          let connue: Hlc | undefined;
+          let maximum: Hlc | undefined;
+          for (const vue of vues) {
+            const apres = restaurationConnueApres(connue, vue);
+            const recul =
+              connue !== undefined && (apres === undefined || comparerHlc(apres, connue) < 0);
+            expect(recul).toBe(false);
+            if (vue !== undefined) maximum = maximum === undefined ? vue : maxHlc(maximum, vue);
+            connue = apres;
+          }
+          expect(connue).toEqual(maximum);
+        },
+      ),
+      { seed: 20261101, numRuns: 300 },
+    );
+  });
+
+  it('UT-US-017-62 condition C3 : hlcPlancherDesChoix — maximum de la restauration connue, de la génération de l’appareil, des générations et restaurations des manifestes lisibles et des générations des fichiers lus valides ; illisibles ignorés', () => {
+    const H4 = hlc('2026-10-21T11:00:00.000Z', 0, PC);
+    const H5 = hlc('2026-10-21T12:00:00.000Z', 0, TROISIEME);
+    expect(hlcPlancherDesChoix(observation(), situation())).toBeUndefined();
+    expect(hlcPlancherDesChoix(observation(), situation({ restaurationConnue: H2 }))).toEqual(H2);
+    expect(hlcPlancherDesChoix(observation(), situation({ generation: G1 }))).toEqual(H1);
+    expect(
+      hlcPlancherDesChoix(
+        observation({ manifestes: [{ id: id('m1'), lecture: lu(manifeste(G1, H3)) }] }),
+        situation({ generation: G1 }),
+      ),
+    ).toEqual(H3);
+    expect(
+      hlcPlancherDesChoix(
+        observation({
+          manifestes: [
+            { id: id('m1'), lecture: lu(manifeste(G1)) },
+            { id: id('m2'), lecture: ILLISIBLE },
+          ],
+          fichierPropre: lu(fichier(SMARTPHONE, G1)),
+          autres: [
+            { id: id('f-pc'), lecture: lu(fichier(PC, { type: 'NOUVELLE', hlc: H4 })) },
+            { id: id('f-3'), lecture: ILLISIBLE },
+          ],
+          autresPresents: true,
+        }),
+        situation({ generation: G1, restaurationConnue: H2 }),
+      ),
+    ).toEqual(H4);
+    // Fichier orphelin de l'appareil (C8) : sa génération compte aussi ; un format plus récent ne compte pas.
+    expect(
+      hlcPlancherDesChoix(
+        observation({
+          orphelins: [
+            { id: id('f-o1'), lecture: lu(fichier(SMARTPHONE, { type: 'NOUVELLE', hlc: H5 })) },
+            { id: id('f-o2'), lecture: PLUS_RECENT },
+          ],
+        }),
+        situation({ generation: G1 }),
+      ),
+    ).toEqual(H5);
+    // Le contenu des registres ne compte pas (seuls les HLC de génération et de restauration) :
+    expect(
+      hlcPlancherDesChoix(
+        observation({ fichierPropre: lu(fichier(SMARTPHONE, GENERATION_INITIALE, [H5])) }),
+        situation(),
+      ),
+    ).toBeUndefined();
   });
 
   it('UT-US-017-62 situationDe — méta initiale : rien d’attendu, INITIALE, aucune demande ; méta complète recopiée', () => {

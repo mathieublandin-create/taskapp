@@ -6,7 +6,9 @@ import { gunzipSync, gzipSync } from 'node:zlib';
  * parent, corbeille ; pages), création de dossier (JSON), envoi `multipart` et remplacement `media`, lecture
  * `alt=media`, `changes.getStartPageToken` et `changes.list` (pages ; jeton refusé → 404).
  * Pilotage : `retirerAcces()` (401), `taillePage`, `modifierALaMain(id)`, `pendantLeProchainInventaire(rappel)`,
- * `invaliderJetons()`, `repondre(statut, corps?)` (prochaine réponse forcée) ; observation : `requetes`.
+ * `invaliderJetons()`, `repondre(statut, corps?)` (prochaine réponse forcée) ; observation : `requetes`, `etatDe(id)`.
+ * v0.10.1 (condition C5) : `files.list` ne masque la corbeille que si `q` contient `trashed = false` ; `files.update`
+ * `{ trashed: true }` (corbeille) et `files.delete` (définitif) sont simulés.
  */
 type FichierHttp = {
   readonly id: string;
@@ -49,8 +51,10 @@ const filtreDe = (q: string) => {
   const appareil = /key='appareil' and value='([^']+)'/.exec(q)?.[1];
   const parent = /'([^']+)' in parents/.exec(q)?.[1];
   const dossier = q.includes("mimeType = 'application/vnd.google-apps.folder'");
+  // Comme Drive v3 : sans `trashed = false` dans `q`, la corbeille est listée (v0.10.1, condition C5).
+  const horsCorbeille = q.includes('trashed = false');
   return (f: FichierHttp): boolean =>
-    !f.trashed &&
+    (!horsCorbeille || !f.trashed) &&
     (donejuan === undefined || f.appProperties['donejuan'] === donejuan) &&
     (appareil === undefined || f.appProperties['appareil'] === appareil) &&
     (parent === undefined || f.parents.includes(parent)) &&
@@ -114,6 +118,13 @@ export class DriveHttpSimule {
     return [...this.#fichiers];
   }
 
+  /** v0.10.1 (condition C5) : `PRESENT`, `CORBEILLE` (récupérable) ou `ABSENT` (supprimé définitivement, ou inconnu). */
+  etatDe(id: string): 'PRESENT' | 'CORBEILLE' | 'ABSENT' {
+    const fichier = this.#fichiers.find((f) => f.id === id);
+    if (fichier === undefined) return 'ABSENT';
+    return fichier.trashed ? 'CORBEILLE' : 'PRESENT';
+  }
+
   async #traiter(adresse: string, init: RequestInit): Promise<Response> {
     const methode = init.method ?? 'GET';
     this.requetes.push({ methode, url: adresse });
@@ -131,6 +142,9 @@ export class DriveHttpSimule {
     if (chemin === '/upload/drive/v3/files') return this.#envoyer(init);
     const id = decodeURIComponent(chemin.split('/').pop() ?? '');
     if (chemin.startsWith('/upload/drive/v3/files/')) return this.#remplacer(id, init);
+    if (chemin.startsWith('/drive/v3/files/') && methode === 'DELETE') return this.#detruire(id);
+    if (chemin.startsWith('/drive/v3/files/') && methode === 'PATCH')
+      return this.#patcher(id, init);
     if (chemin.startsWith('/drive/v3/files/')) return this.#lire(id);
     return json({ error: { code: 400 } }, 400);
   }
@@ -252,6 +266,36 @@ export class DriveHttpSimule {
     fichier.octets = new Uint8Array(init.body as Uint8Array);
     this.#noter(id);
     return json({ id });
+  }
+
+  /** `files.delete` : suppression **définitive** (jamais utilisée par l'adaptateur : condition C5, contrôlée par CT-TRANS-15). */
+  #detruire(id: string): Response {
+    const index = this.#fichiers.findIndex((f) => f.id === id);
+    if (index < 0) return json({ error: { code: 404 } }, 404);
+    this.#fichiers.splice(index, 1);
+    this.#noter(id);
+    return new Response(null, { status: 204 });
+  }
+
+  /** `files.update` des métadonnées : seul `{ trashed: true }` est simulé (corbeille ; un dossier entraîne son contenu). */
+  #patcher(id: string, init: RequestInit): Response {
+    const fichier = this.#fichiers.find((f) => f.id === id);
+    if (fichier === undefined) return json({ error: { code: 404 } }, 404);
+    const corps = JSON.parse(typeof init.body === 'string' ? init.body : '{}') as {
+      trashed?: unknown;
+    };
+    if (corps.trashed === true) this.#corbeille(fichier);
+    return json({ id });
+  }
+
+  #corbeille(fichier: FichierHttp): void {
+    fichier.trashed = true;
+    this.#noter(fichier.id);
+    this.#fichiers
+      .filter((f) => !f.trashed && f.parents.includes(fichier.id))
+      .forEach((f) => {
+        this.#corbeille(f);
+      });
   }
 
   #lire(id: string): Response {

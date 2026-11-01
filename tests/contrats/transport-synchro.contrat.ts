@@ -30,6 +30,8 @@ export type FixtureTransport = {
   readonly pendantLeProchainInventaire: (rappel: () => Promise<void>) => void;
   /** Rend invalides tous les jetons de changements déjà émis. */
   readonly invaliderJetons: () => void;
+  /** v0.10.1 (condition C5) : `PRESENT`, `CORBEILLE` (récupérable) ou `ABSENT` (supprimé définitivement). */
+  readonly etatDe: (id: IdFichierDrive) => 'PRESENT' | 'CORBEILLE' | 'ABSENT';
 };
 
 const contenu = (appareil: IdAppareil, intitule: string): ContenuFichierAppareil => ({
@@ -318,6 +320,45 @@ export const suiteContratTransport = (nom: string, creer: () => FixtureTransport
         erreur: { type: 'NonAutorise' },
       });
     });
+
+    it('CT-TRANS-15 corbeille (condition C5 de Starck) — supprimerFichier met à la corbeille, jamais définitivement, un dossier avec son contenu ; listerDossiers, inventorierDossier et listerFichiersAppareils excluent la corbeille', async () => {
+      const f = creer();
+      const t = f.transport(PC);
+      const dossier = valeurDe(await t.preparerDossier());
+      const manifeste = valeurDe(
+        await t.ecrireManifeste({
+          dossier,
+          contenu: { schemaVersion: 1, generation: { type: 'INITIALE' } },
+        }),
+      );
+      const pc = valeurDe(await t.deposerFichierAppareil({ dossier, contenu: contenu(PC, 'A') }));
+      const smartphone = valeurDe(
+        await f
+          .transport(SMARTPHONE)
+          .deposerFichierAppareil({ dossier, contenu: contenu(SMARTPHONE, 'B') }),
+      );
+
+      valeurDe(await t.supprimerFichier(pc.id));
+      expect(f.etatDe(pc.id)).toBe('CORBEILLE');
+      expect(valeurDe(await t.inventorierDossier(dossier)).fichiers.map((x) => x.id)).toEqual([
+        smartphone.id,
+      ]);
+      expect(valeurDe(await t.listerFichiersAppareils(dossier)).fichiers.map((x) => x.id)).toEqual([
+        smartphone.id,
+      ]);
+
+      valeurDe(await t.supprimerFichier(dossier));
+      expect([f.etatDe(dossier), f.etatDe(manifeste), f.etatDe(smartphone.id)]).toEqual([
+        'CORBEILLE',
+        'CORBEILLE',
+        'CORBEILLE',
+      ]);
+      expect(valeurDe(await t.listerDossiers())).toEqual([]);
+      expect(valeurDe(await t.inventorierDossier(dossier))).toEqual({
+        manifestes: [],
+        fichiers: [],
+      });
+    });
   });
 };
 
@@ -343,6 +384,11 @@ suiteContratTransport('FauxDrive', () => {
     invaliderJetons: () => {
       drive.invaliderJetons();
     },
+    etatDe: (id) => {
+      const fichier = drive.fichiers().find((x) => x.id === id);
+      if (fichier === undefined) return 'ABSENT';
+      return fichier.supprime ? 'CORBEILLE' : 'PRESENT';
+    },
   };
 });
 
@@ -367,5 +413,6 @@ suiteContratTransport('TransportSynchroDrive sur Drive HTTP simulé', () => {
     invaliderJetons: () => {
       drive.invaliderJetons();
     },
+    etatDe: (id) => drive.etatDe(id),
   };
 });

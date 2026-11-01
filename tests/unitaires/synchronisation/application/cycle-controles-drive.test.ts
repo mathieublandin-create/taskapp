@@ -1,9 +1,13 @@
 /**
  * Cycle et contrôles du Drive (ST-US-017 v0.10 §6.7 n° 2 à n° 7, n° 12 ; RG-044 ; DAT §4.2.2) : qui affiche ERR-012
- * et rien n'est écrit (UT-US-017-65 ; US-017 S18, S19, S23, S32, S32b, S33), version du fichier propre (UT-US-017-66).
+ * et rien n'est écrit (UT-US-017-65 ; US-017 S18, S19, S23, S32, S32b, S33), version du fichier propre (UT-US-017-66 ;
+ * v0.10.1, condition C4 de Starck : égalité de chaînes seulement).
  */
 import { describe, expect, it } from 'vitest';
-import type { TransportSynchro } from '@src/synchronisation/application/ports/transport-synchro';
+import type {
+  FichierAppareilDistant,
+  TransportSynchro,
+} from '@src/synchronisation/application/ports/transport-synchro';
 import { CycleSynchronisation } from '@src/synchronisation/application/cycle-synchronisation';
 import { succes } from '@src/commun/domaine/resultat';
 import { HorlogeSimulee } from '@tests/doublures/horloge-simulee';
@@ -185,5 +189,71 @@ describe('Cycle : version du fichier propre (ST-US-017 v0.10 §6.7 n° 5 ; §4.7
     expect(cycle.etatMoteur().actionRequise).toBeUndefined();
     expect((await metaDe(env.smartphone)).versionFichierPropre).toBe(fichier.version);
     expect(env.drive.fichierDe(SMARTPHONE)?.version).toBe(fichier.version);
+  });
+
+  it('UT-US-017-66 condition C4 : la version Drive est comparée par égalité de chaînes, jamais par ordre ni par valeur numérique ; une version différente (même nombre écrit autrement, ou inférieure : renommage, métadonnées) fait relire le fichier une fois, sans effet, et la version relue est mémorisée', async () => {
+    const env = preparerRestauration();
+    const reel = env.drive.transportPour(SMARTPHONE, {
+      reseau: env.smartphone.reseau,
+      accesAccorde: () => true,
+    });
+    let versionAnnoncee = (version: string): string => version;
+    const annoncer = (f: FichierAppareilDistant): FichierAppareilDistant =>
+      f.appareil === SMARTPHONE && f.version !== undefined
+        ? { ...f, version: versionAnnoncee(f.version) }
+        : f;
+    const transport: TransportSynchro = {
+      ...reel,
+      inventorierDossier: async (dossier) => {
+        const r = await reel.inventorierDossier(dossier);
+        return r.ok ? succes({ ...r.valeur, fichiers: r.valeur.fichiers.map(annoncer) }) : r;
+      },
+      listerFichiersAppareils: async (dossier) => {
+        const r = await reel.listerFichiersAppareils(dossier);
+        return r.ok ? succes({ ...r.valeur, fichiers: r.valeur.fichiers.map(annoncer) }) : r;
+      },
+      changements: async (dossier, jeton) => {
+        const r = await reel.changements(dossier, jeton);
+        return r.ok ? succes({ ...r.valeur, fichiers: r.valeur.fichiers.map(annoncer) }) : r;
+      },
+    };
+    const cycle = new CycleSynchronisation({
+      depot: env.smartphone.depot,
+      transport,
+      acces: env.smartphone.acces,
+      reseau: env.smartphone.reseau,
+      planificateur: env.planificateur,
+      aleatoire: new SourceAleatoireDeterministe([500]),
+      horloge: new HorlogeSimulee(env.temps),
+      journal: new JournalEnMemoire(),
+      versionApplication: '0.1.0',
+    });
+    valeurDe(
+      await appliquerModifications(env.smartphone.service, (_etat, contexte) => [
+        creationObjectif({ id: PUBLIER, intitule: 'Publier le guide' }, contexte.instant),
+      ]),
+    );
+    expect(await cycle.synchroniserMaintenant()).toBe('TERMINE');
+    const { fichier } = await fichierDuDrive(env.drive, SMARTPHONE);
+    expect((await metaDe(env.smartphone)).versionFichierPropre).toBe(fichier.version);
+    const ecritures = env.drive.ecrituresPar(SMARTPHONE);
+
+    // Même nombre, autre chaîne : relu une fois, puis la chaîne relue est mémorisée.
+    versionAnnoncee = (version) => `0${version}`;
+    expect(await cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.drive.lecturesDe(fichier.id, SMARTPHONE)).toBe(1);
+    expect((await metaDe(env.smartphone)).versionFichierPropre).toBe(`0${fichier.version}`);
+    expect(await cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.drive.lecturesDe(fichier.id, SMARTPHONE)).toBe(1);
+
+    // Version inférieure (aucun ordre n'est supposé) : relu aussi.
+    versionAnnoncee = () => '1';
+    expect(await cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(env.drive.lecturesDe(fichier.id, SMARTPHONE)).toBe(2);
+    expect((await metaDe(env.smartphone)).versionFichierPropre).toBe('1');
+
+    // Relectures sans effet : aucun dépôt, aucune écriture, aucune erreur.
+    expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
+    expect(cycle.etatMoteur().actionRequise).toBeUndefined();
   });
 });
