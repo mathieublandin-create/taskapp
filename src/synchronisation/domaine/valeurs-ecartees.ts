@@ -1,6 +1,6 @@
 import type { Marque } from '../../commun/domaine/marque';
 import { condensatSha256, encoderBase32Hex } from './condensat-sha256';
-import { estConnue } from './contexte-causal';
+import { contextesEgaux, estConnue, estConnueCausalement } from './contexte-causal';
 import { estRegistre, type Registre, type RegistreQuelconque } from './ecriture';
 import { comparerHlc, type Hlc } from './hlc';
 import {
@@ -11,7 +11,7 @@ import {
   type CleTexte,
   type RefElementMetier,
 } from './information';
-import { cibleDe } from './pierre-tombale';
+import { cibleDe, joindrePierresTombales } from './pierre-tombale';
 
 // ST-US-017 v0.5 §4.6, §6.6 ; DAT §4.2.1 (critère du contexte causal, pierre tombale étendue H-1, signalement unique).
 
@@ -130,8 +130,14 @@ export const fusionnerValeursEcartees = (
 /** Une écriture vue à la fusion ; `deRecu` : présente dans le fichier reçu (même clé, même HLC). */
 type Version = { readonly registre: RegistreQuelconque; readonly deRecu: boolean };
 
+/**
+ * Même HLC ; pour une pierre tombale, même contexte aussi (v0.8, n° 3 : une jointure locale S' de même HLC que la
+ * reçue S est examinée). Pour les autres champs, « même HLC » suffit (condition J3).
+ */
 const memeEcriture = (a: RegistreQuelconque | undefined, b: RegistreQuelconque): boolean =>
-  a !== undefined && comparerHlc(a.ecriture.hlc, b.ecriture.hlc) === 0;
+  a !== undefined &&
+  comparerHlc(a.ecriture.hlc, b.ecriture.hlc) === 0 &&
+  (b.cle.champ !== 'suppression' || contextesEgaux(a.ecriture.contexte, b.ecriture.contexte));
 
 /** Les écritures de `recu`, puis celles de `local` qui en diffèrent (les deux versions d'une clé). */
 const versionsDe = (local: RegistresDeLEtat, recu: RegistresDeLEtat): ReadonlyArray<Version> => [
@@ -209,21 +215,29 @@ const intituleConnu = (
     const registre = etat.registres.get(cle);
     return registre !== undefined &&
       estIntitule(registre) &&
-      estConnue(gagnante.ecriture, registre.ecriture)
+      estConnueCausalement(gagnante.ecriture, registre.ecriture)
       ? [registre]
       : [];
   });
   return plusGrande(connus)?.ecriture.valeur;
 };
 
-/** n° 3 : R écartée si aucune pierre tombale ne la connaît, paire examinée si D ou R vient du fichier reçu. */
+/**
+ * n° 3 : R écartée si aucune pierre tombale ne la connaît (`estConnueCausalement`, J1), paire examinée si D ou R vient
+ * du fichier reçu ; `gagnante` = jointure des pierres tombales (n° 3 b, même HLC que la plus récente). Aucune pierre
+ * tombale : rien d'écarté.
+ */
 const ecarteePar = (
   version: Version,
   tombes: ReadonlyArray<Version>,
 ): RegistreQuelconque | undefined => {
+  const [premiere, ...autres] = tombes;
   const examinee = version.deRecu || tombes.some((d) => d.deRecu);
-  const connue = tombes.some((d) => estConnue(d.registre.ecriture, version.registre.ecriture));
-  return examinee && !connue ? plusGrande(tombes.map((d) => d.registre)) : undefined;
+  const connue = tombes.some((d) =>
+    estConnueCausalement(d.registre.ecriture, version.registre.ecriture),
+  );
+  if (premiere === undefined || !examinee || connue) return undefined;
+  return autres.reduce((j, d) => joindrePierresTombales(j, d.registre), premiere.registre);
 };
 
 const suppressions = (

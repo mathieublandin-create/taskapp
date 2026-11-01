@@ -213,11 +213,24 @@ const ecrituresDe = (
   });
 };
 
+/**
+ * Histoire causale d'un appareil (B1c, J1) : il n'écrit rien sur un élément ni vers lui après l'avoir supprimé. Une
+ * telle écriture postérieure (seul cas réel : réparation RG-048) n'est pas connue de sa pierre tombale (DAT v0.11.9
+ * §4.2.1) ; elle n'est alors constatée que par l'autre appareil, et l'entrée lui revient par l'union (n° 5) : même
+ * ensemble final, mais détection non symétrique (UT-COMP-US-017-2-53, 57).
+ */
+const causale = (g: ReadonlyArray<Gabarit | undefined>): boolean => {
+  const avant = (tombe: number, ecritures: ReadonlyArray<number>) =>
+    ecritures.every((i) => (g[i]?.n ?? 0) <= (g[tombe]?.n ?? Number.POSITIVE_INFINITY));
+  return avant(2, [0, 1, 3]) && avant(5, [4]);
+};
+
 describe('detecterValeursEcartees : symétrie (DAT §4.2.1, « la détection ne dépend pas de l’ordre de réception »)', () => {
-  it('UT-COMP-US-017-2-06 le PC recevant le fichier du smartphone constate les mêmes entrées que l’inverse', () => {
+  it('UT-COMP-US-017-2-06 le PC recevant le fichier du smartphone constate les mêmes entrées que l’inverse (histoires causales)', () => {
     const gabarits = fc.array(gabarit, { minLength: 6, maxLength: 6 });
     fc.assert(
       fc.property(gabarits, gabarits, (gPc, gSmartphone) => {
+        fc.pre(causale(gPc) && causale(gSmartphone));
         const pc = etatFusionnable(ecrituresDe(PC, SMARTPHONE, gPc));
         const smartphone = etatFusionnable(ecrituresDe(SMARTPHONE, PC, gSmartphone));
         expect(detecterValeursEcartees(pc, smartphone)).toEqual(

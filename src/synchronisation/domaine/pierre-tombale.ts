@@ -2,12 +2,14 @@ import type { IdAppareil } from '../../commun/domaine/identifiants';
 import {
   CONTEXTE_VIDE,
   ajouterAuContexte,
+  contextesEgaux,
   fusionnerContextes,
   retirerAppareil,
   type ContexteCausal,
 } from './contexte-causal';
 import { estRegistre, type RegistreQuelconque } from './ecriture';
 import { registreDe, type EtatLocal } from './etat-local';
+import { comparerHlc } from './hlc';
 import { partiesDuLien, type RefElementMetier } from './information';
 
 // DAT §4.2.1 v0.10.1, H-1 (ST-socle-ecriture.md §6.4).
@@ -66,6 +68,36 @@ export const contexteDePierreTombale = (
     CONTEXTE_VIDE,
   );
   return retirerAppareil(fusion, auteur);
+};
+
+/**
+ * Jointure de deux pierres tombales de même clé (ST-US-017 v0.8 §6.6 n° 3 b ; DAT v0.11.9 §4.2.1) : valeur et HLC de
+ * la plus récente g, contexte J = max(Ĉ(a), Ĉ(b)) privé de l'auteur de g. Rend `a`, sinon `b`, s'il a déjà ce HLC et ce
+ * contexte (référence conservée : rien à écrire), sinon un nouveau registre. Précondition des appelants : même clé de
+ * champ `suppression`. Commutative (à l'égalité structurelle près), associative, idempotente ; ne crée aucun HLC.
+ */
+export const joindrePierresTombales = (
+  a: RegistreQuelconque,
+  b: RegistreQuelconque,
+): RegistreQuelconque => {
+  const g = comparerHlc(a.ecriture.hlc, b.ecriture.hlc) >= 0 ? a : b;
+  const joint = retirerAppareil(
+    fusionnerContextes(
+      ajouterAuContexte(a.ecriture.contexte, a.ecriture.hlc),
+      ajouterAuContexte(b.ecriture.contexte, b.ecriture.hlc),
+    ),
+    g.ecriture.hlc.appareil,
+  );
+  const conservee = [a, b].find(
+    (r) =>
+      comparerHlc(r.ecriture.hlc, g.ecriture.hlc) === 0 &&
+      contextesEgaux(r.ecriture.contexte, joint),
+  );
+  // Même clé et même valeur que g, seul le contexte change (même conversion que planifier-ecritures.ts).
+  return (
+    conservee ??
+    ({ cle: g.cle, ecriture: { ...g.ecriture, contexte: joint } } as RegistreQuelconque)
+  );
 };
 
 /** Objectif : aucun ; tâche : ses sous-tâches non supprimées (§6.5). */
