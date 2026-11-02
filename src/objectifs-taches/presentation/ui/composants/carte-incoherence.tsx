@@ -24,9 +24,11 @@ export type ProprietesCarteIncoherence = {
   readonly surAbandonnerSousTache?: ((id: IdTache) => Promise<IssueSaisie>) | undefined;
 };
 
+const ESPACE_INSECABLE = '\u00a0';
+
 /** Nom accessible d'un bouton tertiaire : son libellé suivi de la sous-tâche visée (guide §4.24, 2.4.6). */
 const nomAccessible = (libelleBouton: string, intitule: string): string =>
-  `${libelleBouton} : « ${intitule} »`;
+  `${libelleBouton}${ESPACE_INSECABLE}: «${ESPACE_INSECABLE}${intitule}${ESPACE_INSECABLE}»`;
 
 /** Issue d'une commande de la carte : refus affichés sous les boutons, confirmation habituelle sinon. */
 const useCommandeCarte = (retourFocus: RefObject<HTMLButtonElement | null>) => {
@@ -41,6 +43,27 @@ const useCommandeCarte = (retourFocus: RefObject<HTMLButtonElement | null>) => {
   return { refus, commande, lancer };
 };
 
+const BoutonTertiaire = ({
+  action,
+  libelleBouton,
+  intitule,
+  surClic,
+}: {
+  readonly action: 'TERMINER_SOUS_TACHE' | 'ABANDONNER_SOUS_TACHE';
+  readonly libelleBouton: string;
+  readonly intitule: string;
+  readonly surClic: () => void;
+}) => (
+  <button
+    type="button"
+    data-action={action}
+    aria-label={nomAccessible(libelleBouton, intitule)}
+    onClick={surClic}
+  >
+    {libelleBouton}
+  </button>
+);
+
 const BoutonsTertiaires = ({
   sousTache,
   surTerminer,
@@ -52,40 +75,84 @@ const BoutonsTertiaires = ({
 }) => (
   <>
     {surTerminer === undefined ? null : (
-      <button
-        type="button"
-        data-action="TERMINER_SOUS_TACHE"
-        aria-label={nomAccessible(LIBELLES_TACHES.terminerSousTache, sousTache.intitule)}
-        onClick={() => {
+      <BoutonTertiaire
+        action="TERMINER_SOUS_TACHE"
+        libelleBouton={LIBELLES_TACHES.terminerSousTache}
+        intitule={sousTache.intitule}
+        surClic={() => {
           surTerminer(sousTache.id);
         }}
-      >
-        {LIBELLES_TACHES.terminerSousTache}
-      </button>
+      />
     )}
     {surAbandonner === undefined ? null : (
-      <button
-        type="button"
-        data-action="ABANDONNER_SOUS_TACHE"
-        aria-label={nomAccessible(LIBELLES_TACHES.abandonnerSousTache, sousTache.intitule)}
-        onClick={surAbandonner}
-      >
-        {LIBELLES_TACHES.abandonnerSousTache}
-      </button>
+      <BoutonTertiaire
+        action="ABANDONNER_SOUS_TACHE"
+        libelleBouton={LIBELLES_TACHES.abandonnerSousTache}
+        intitule={sousTache.intitule}
+        surClic={surAbandonner}
+      />
     )}
   </>
 );
 
-export const CarteIncoherence = ({
+const BoutonPrincipal = ({
+  reference,
+  action,
+  surClic,
+}: {
+  readonly reference: RefObject<HTMLButtonElement | null>;
+  readonly action: Incoherence['actionPrincipale'];
+  readonly surClic: () => void;
+}) => (
+  <button ref={reference} type="button" data-action={action.action} onClick={surClic}>
+    {action.libelle}
+  </button>
+);
+
+const EnTeteCarte = ({
+  incoherence,
+  idTitre,
+}: {
+  readonly incoherence: Incoherence;
+  readonly idTitre: string;
+}) => (
+  <>
+    <h2 id={idTitre}>{incoherence.libelle}</h2>
+    <p>{incoherence.texte}</p>
+  </>
+);
+
+/** Gestes de la carte : refus et confirmation partagés par l'action principale et l'abandon de la sous-tâche. */
+const useGestesCarte = ({
   incoherence,
   surActionPrincipale,
-  surTerminerSousTache,
   surAbandonnerSousTache,
 }: ProprietesCarteIncoherence) => {
-  const idTitre = useId();
   const principal = useRef<HTMLButtonElement>(null);
   const { refus, commande, lancer } = useCommandeCarte(principal);
-  const { sousTache, actionPrincipale } = incoherence;
+  const { sousTache } = incoherence;
+  const abandonner =
+    sousTache === undefined || surAbandonnerSousTache === undefined
+      ? undefined
+      : () => {
+          lancer(() => surAbandonnerSousTache(sousTache.id));
+        };
+  return {
+    principal,
+    refus,
+    commande,
+    abandonner,
+    lancerPrincipal: () => {
+      lancer(surActionPrincipale);
+    },
+  };
+};
+
+export const CarteIncoherence = (proprietes: ProprietesCarteIncoherence) => {
+  const idTitre = useId();
+  const gestes = useGestesCarte(proprietes);
+  const { incoherence, surTerminerSousTache } = proprietes;
+  const { sousTache } = incoherence;
   return (
     <section
       data-message={incoherence.code}
@@ -93,33 +160,21 @@ export const CarteIncoherence = ({
       data-niveau="attention"
       aria-labelledby={idTitre}
     >
-      <h2 id={idTitre}>{incoherence.libelle}</h2>
-      <p>{incoherence.texte}</p>
-      <button
-        ref={principal}
-        type="button"
-        data-action={actionPrincipale.action}
-        onClick={() => {
-          lancer(surActionPrincipale);
-        }}
-      >
-        {actionPrincipale.libelle}
-      </button>
+      <EnTeteCarte incoherence={incoherence} idTitre={idTitre} />
+      <BoutonPrincipal
+        reference={gestes.principal}
+        action={incoherence.actionPrincipale}
+        surClic={gestes.lancerPrincipal}
+      />
       {sousTache === undefined ? null : (
         <BoutonsTertiaires
           sousTache={sousTache}
           surTerminer={surTerminerSousTache}
-          surAbandonner={
-            surAbandonnerSousTache === undefined
-              ? undefined
-              : () => {
-                  lancer(() => surAbandonnerSousTache(sousTache.id));
-                }
-          }
+          surAbandonner={gestes.abandonner}
         />
       )}
-      <MessagesRefus messages={refus} />
-      <ConfirmationCommande commande={commande} />
+      <MessagesRefus messages={gestes.refus} />
+      <ConfirmationCommande commande={gestes.commande} />
     </section>
   );
 };

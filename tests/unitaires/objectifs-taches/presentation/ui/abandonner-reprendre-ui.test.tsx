@@ -152,7 +152,9 @@ describe('Détail d’une tâche — abandon (ECR-007 C, D, D2, F)', () => {
     expect(within(boite).getByRole('button', { name: 'Abandonner' }).dataset['rouge']).toBe(
       'false',
     );
-    expect(document.activeElement).toBe(within(boite).getByRole('button', { name: 'Annuler' }));
+    await waitFor(() => {
+      expect(document.activeElement).toBe(within(boite).getByRole('button', { name: 'Annuler' }));
+    });
 
     await userEvent.keyboard('{Escape}');
 

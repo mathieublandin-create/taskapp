@@ -90,26 +90,26 @@ const afficher = (
   );
 };
 
+/** La carte rendue pour ce code ; échoue si elle est absente. */
+const carteDe = (code: 'ALR-003' | 'ALR-004'): HTMLElement => {
+  const carte = document.querySelector<HTMLElement>(`[data-message="${code}"]`);
+  if (carte === null) throw new Error(`Carte ${code} absente`);
+  return carte;
+};
+
 describe('Carte d’incohérence du détail (ST-US-024 v0.5 §6.6, DT-026)', () => {
   it('UT-COMP-US-024-11 la carte ALR-003 (puis ALR-004) est rendue avant les champs avec son titre et son texte ; data-variante seulement pour une variante ; l’action de fin du bas disparaît ; aucune carte sans incohérence', () => {
     const commandes = commandesEspionnees();
     afficher(modeleIncoherent('TERMINEE', [SECTION_A]), commandes);
-    const carte = document.querySelector<HTMLElement>('[data-message="ALR-003"]');
-    expect(carte).not.toBeNull();
-    expect(carte?.hasAttribute('data-variante')).toBe(false);
-    expect(carte?.getAttribute('role')).toBeNull();
-    expect(within(carte as HTMLElement).getByRole('heading').textContent).toBe(
-      'Incohérence avec une sous-tâche',
-    );
-    expect(carte?.textContent).toContain(
-      'Cette tâche est terminée, mais 1 sous-tâche est à faire.',
-    );
+    const carte = carteDe('ALR-003');
+    expect(carte.hasAttribute('data-variante')).toBe(false);
+    expect(carte.getAttribute('role')).toBeNull();
+    expect(within(carte).getByRole('heading').textContent).toBe('Incohérence avec une sous-tâche');
+    expect(carte.textContent).toContain('Cette tâche est terminée, mais 1 sous-tâche est à faire.');
     const champ = screen.getByText('Délai');
-    expect(
-      (carte as HTMLElement).compareDocumentPosition(champ) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(carte.compareDocumentPosition(champ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getAllByRole('button', { name: 'Rouvrir la tâche' })).toHaveLength(1);
-    expect(carte?.contains(screen.getByRole('button', { name: 'Rouvrir la tâche' }))).toBe(true);
+    expect(carte.contains(screen.getByRole('button', { name: 'Rouvrir la tâche' }))).toBe(true);
   });
 
   it('UT-COMP-US-024-11 variantes d’ALR-003 et ALR-004 ; sans incohérence, ni carte ni sous-tâche visée', () => {
@@ -157,7 +157,7 @@ describe('Carte d’incohérence du détail (ST-US-024 v0.5 §6.6, DT-026)', () 
   it('UT-COMP-US-024-13 une seule sous-tâche à faire : « Terminer » et « Abandonner la sous-tâche » visent son identifiant, après l’action principale, avec le nom accessible « … : « Section A » »', async () => {
     const commandes = commandesEspionnees();
     afficher(modeleIncoherent('TERMINEE', [SECTION_A]), commandes);
-    const carte = document.querySelector<HTMLElement>('[data-message="ALR-003"]') as HTMLElement;
+    const carte = carteDe('ALR-003');
     const boutons = within(carte).getAllByRole('button');
     expect(boutons.map((b) => b.getAttribute('data-action'))).toEqual([
       'ROUVRIR',
@@ -180,7 +180,7 @@ describe('Carte d’incohérence du détail (ST-US-024 v0.5 §6.6, DT-026)', () 
 
   it('UT-COMP-US-024-14 deux sous-tâches à faire ou plus : l’action principale seule ; commande absente : bouton correspondant non rendu', () => {
     afficher(modeleIncoherent('TERMINEE', [SECTION_A, SECTION_B]));
-    const carte = document.querySelector<HTMLElement>('[data-message="ALR-003"]') as HTMLElement;
+    const carte = carteDe('ALR-003');
     expect(
       within(carte)
         .getAllByRole('button')
@@ -190,7 +190,7 @@ describe('Carte d’incohérence du détail (ST-US-024 v0.5 §6.6, DT-026)', () 
 
     const { surTerminerSousTache: _t, ...sansTerminer } = commandesEspionnees();
     afficher(modeleIncoherent('TERMINEE', [SECTION_A]), sansTerminer);
-    const unique = document.querySelector<HTMLElement>('[data-message="ALR-003"]') as HTMLElement;
+    const unique = carteDe('ALR-003');
     expect(
       within(unique)
         .getAllByRole('button')
