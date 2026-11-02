@@ -1,32 +1,38 @@
-# Reprise de session (état au 2026-10-30)
+# Reprise de session (état au 2026-11-02)
 
-Fichier à lire en premier par Jarvis dans une session neuve. Le détail de l'historique est dans `docs/suivi-projet.md`, l'avancement dans `docs/etat-des-lieux.html`.
+Fichier à lire en premier par Jarvis dans une session neuve. Détail de l'historique : `docs/suivi-projet.md` ; avancement : `docs/etat-des-lieux.html` ; consommation : `docs/analyse-tokens.md` et `docs/bilan-tokens-lot1.md`.
 
 ## État du lot 1 (LOT-001)
-- Branche du lot : `lot/LOT-001` (dernière fusion : PR #8, DT-012, commit `90cd7d5`). Avancement : 42 % (38,5 j sur 91).
-- Rangs 0 à 3 fusionnés. DT-005, DT-007, DT-008 (CSP, DEC-041) et DT-012 (job `e2e` en CI) remboursées.
+- Branche du lot : `lot/LOT-001`. Avancement : **76 %** (69 j sur 91). Rangs 0 à 9 fusionnés (US-022, 001, 017 incr. 1 et 2, 023, 002, 024, 003, 025). Dettes DT-015, 017, 019 remboursées (PR #27).
+- **Limite d'usage** : le forfait du commanditaire était à 98 % de la limite hebdomadaire le 2026-11-02. Travailler par petits jalons : commit et push après chaque jalon vert, jamais plus de 2 agents opus en parallèle, pas de nouveau rang tant que la limite n'est pas levée. À la reprise, vérifier d'abord que l'usage est remis à zéro.
 
-## Travail en cours : reliquat du rang 3
-- Branche `us/US-017-reliquat-rang3`, poussée, commit `bcd6245` : **E10 terminée** par Anthony (tests UT-US-017-34 à 39, UT-US-001-36 et 37 ; 22 tests rouges attendus, squelettes dans `src/`). `pnpm verifier` passe.
-- **Reste, par Benjamin (sonnet), E12 sur cette branche** : DT-006 (composants du rang 1 en Ionic), DT-009 (magasin abonné à `DepotLocal.observer`), DT-011 (feuille ECR-011 `construireFeuilleSynchronisation` et `MEN-ATTENTE`), RC-R3-4, RC-DT8-1 (`toEqual(COMPOSANTS_IONIC)` dans `tests/e2e/csp.e2e.ts:67`).
-- Piège : Anthony a inscrit les 3 squelettes dans `tests/support/rangs/rangs-fichiers.json` au **rang 4** ; Benjamin doit les ramener au rang 3 (sinon UT-OUT-06 et « aucun orphelin » deviennent rouges).
-- Ensuite : pousser, ouvrir la PR vers `lot/LOT-001`, E13 par Anthony (sur le diff), annoncer « vous pouvez fusionner la PR #N » après CI verte. Puis rang 4 (US-023, Benjamin).
+## Rang 10 en cours (US-017, incrément 3 : contrôles du Drive, restauration, « Repartir de zéro », ERR-012)
+- E10 faite (Anthony), ST-US-017 v0.10.1, DAT v0.11.10 (Starck, conditions C1 à C9), textes de Steeve (guide v0.2.21, famille `RST-`).
+- Branche d'intégration `us/US-017-rang10` (avec R1 adaptateur Drive, R2 domaine des contrôles, R3 persistance, D1 affichage fusionnés). `RANG_COURANT=10` : 38 tests rouges en début de reprise (34 de R4, 4 de D2).
+- **R4 (Bruce, opus)** : cycle et cas d'usage de la restauration, sur `us/US-017-rang10` : à reprendre là où le dernier commit s'arrête (`git log`). Fichiers : `cycle-synchronisation.ts`, `ecriture-manifeste.ts`, `cas-usage/choisir-restauration.ts`.
+- **D2 (Benjamin)** : DT-026 (cartes ALR-003/004, `carte-incoherence.tsx`) et DT-029 (tests instables : cause racine commune à chercher), sur `us/US-017-rang10-d2`.
+- **D3 (Benjamin), à faire après R4 et D2** : composition, textes `RST-*` et `TST-RESTAUREE` (7 erreurs de catalogue attendues tant que non branchés), DT-028, DT-030 (case « Rouvrir » du filtre « Terminées »), DT-031 (`MEN-INCOHERENCE` sur la ligne), `rangCourant` à 10. Puis fusionner `lot/LOT-001` dans la branche (conflits possibles dans `codes.ts` et `catalogue.fr.ts`), PR en brouillon, E13 d'Anthony sur opus avec revue de convergence.
+- Puis rang 11 (US-017 incr. 4, 6 j), rang 12 (US-018, 6,5 j), rang 13 (US-031, 3,5 j), E13b, E14 (recette), E15 à E17.
 
-## À faire par le commanditaire
-- Ajouter le contrôle requis `e2e (CSP, navigateur réel)` à la protection de `lot/*` et `main` (DEC-029, RC-DT12-4).
+## Jalon testable après le rang 10 (décidé le 2026-11-02)
+- Le commanditaire a créé la page GitHub de recette et l'authentification Google (test technique) et vérifie les informations à me communiquer : adresse publique, option du DAT §7.4 bis, client OAuth Web (origines et redirection), écran de consentement en mode test avec son compte. Ne jamais demander ni stocker de secret.
+- À préparer après la fusion du rang 10 : workflow de construction et de déploiement de la recette (`VITE_ENV=recette`, `VITE_BASE_PATH`, `VITE_APP_ORIGIN`, identifiant client) avec une notice de pose pour l'organisation du commanditaire (hors du périmètre des agents) ; guide de test court de Pepper ; grille de retours que Jarvis transformera en anomalies (ANO-xxx).
+- Ce que le jalon ne couvre pas : hors ligne smartphone et PC (rangs 12 et 13), compatibilité de version et horloge (rang 11).
 
-## Questions ouvertes
-- Q-ST017-STE-1 (Steeve, non bloquante) : codes de catalogue pour la nature des modifications en attente ; texte d'`ERR-016` pour n = 0 ou 1. Et `BTN-ANNULER` (RC-R2-8 a).
-- Retirer `.claude/settings.local.json` du dépôt ? Guide de recette `donejuan-recette` avant l'E14. Vérification de la CSP sur Android et PC, flux GIS compris (PO-13, E14).
-- Avant la PR `lot/LOT-001` → `main` : le contrôle de couverture par fichier ne doit pas bloquer.
+## PR et branches ouvertes
+- PR #28 (bilan de tokens à produire à la clôture du lot 1 ; CI verte) : à fusionner par le commanditaire.
+- Branches de travail du rang 10 : `us/US-017-rang10`, `-r1`, `-r2`, `-r3`, `-d1`, `-d2` (R1 à R3 et D1 déjà fusionnés dans la branche d'intégration).
+- Questions ouvertes : Q-ST024-STE-1 (actions « Terminer / Abandonner la sous-tâche » avec 2 sous-tâches à faire), Q-ANT-E13-R9-1 (Starck, symétrie de détection à deux appareils) et Q-ANT-E13-R9-2 / DT-027 (deux déplacements sous le même parent signalés en conflit). Dettes à surveiller : DT-027, DT-028, DT-029 à DT-032.
 
-## Règles de conduite (DEC-040, OPT-1 à OPT-14)
-- Un agent neuf par sujet ; modèle imposé à chaque délégation ; au plus 2 agents opus en parallèle ; lectures ciblées ; E13 sur le diff.
-- Pas d'abonnement aux PR (lire la CI avec `GH_TOKEN= gh api`). Ouverture de PR et relevé de CI confiés à Friday (haiku) si disponible. Messages de 3 à 5 lignes.
-- État des lieux : modifier `docs/etat-des-lieux-avancement.json` puis `python3 docs/outils/maj-etat-des-lieux.py`, republier avec l'outil Artifact (`edits` ou fichier), url https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.
-- Chaque développeur a son worktree et sa branche et pousse sa seule branche (push simple, jamais `--force`, jamais `lot/*` ni `main`, OPT-17) ; Jarvis ouvre les PR en brouillon (OPT-16) ; l'utilisateur fusionne lui-même les PR. Aucun secret, aucune adresse e-mail dans le dépôt public.
+## Règles de conduite (DEC-040, OPT-1 à OPT-21)
+- Un agent neuf par sujet ; modèle imposé à chaque délégation ; au plus 2 agents opus en parallèle ; lectures ciblées ; E13 sur le diff ; E13 « bis » sur sonnet si les remarques sont mécaniques (OPT-18).
+- Un rang se découpe par couche (OPT-15), PR en brouillon jusqu'à l'E13 approuvée et la CI verte (OPT-16). Chaque développeur a son worktree et sa branche et pousse sa seule branche (push simple, jamais `--force`, jamais `lot/*` ni `main`, OPT-17) ; Jarvis ouvre les PR ; l'utilisateur fusionne lui-même. Le dossier principal reste sur `lot/LOT-001`, propre.
+- Pas d'abonnement aux PR : lire la CI avec `GH_TOKEN= gh api`. Messages de 3 à 5 lignes.
+- État des lieux : modifier `docs/etat-des-lieux-avancement.json` (champ `etape`, rang fusionné = 100 %), puis `python3 docs/outils/maj-etat-des-lieux.py`. Vérifier que TOUS les rangs fusionnés y sont marqués (le rang 7 avait été oublié le 2026-11-01).
+- Aucun secret, aucune adresse e-mail dans le dépôt public.
 
 ## Commandes utiles
 - `export PATH=$HOME/.local/node24/bin:$PATH`, `pnpm install --frozen-lockfile`, `pnpm verifier`, `pnpm test`, `TZ=UTC pnpm test:couverture`, `pnpm cucumber`, `pnpm build`.
-- `pnpm e2e` ; en local : `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome pnpm e2e`.
-- PR : `GH_TOKEN= gh api repos/mathieublandin-create/taskapp/pulls -X POST --input fichier.json`.
+- `RANG_COURANT=10 pnpm test` (rang en développement) ; `pnpm verifier:couverture-fichiers <rapport base> <racine base> origin/lot/LOT-001` (la couverture de la base se génère dans un worktree séparé sur `origin/lot/LOT-001`).
+- `pnpm e2e` ; en local : `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome pnpm e2e`.
+- PR : outils GitHub MCP (`create_pull_request`, `update_pull_request` avec `draft`).
