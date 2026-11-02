@@ -1,6 +1,7 @@
-import { nonImplemente } from '@non-implemente';
 import type { EtatReseau } from '../../../commun/application/ports/etat-reseau';
-import type { Resultat } from '../../../commun/domaine/resultat';
+import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
+import { decompterModificationsEnAttente } from '../../domaine/index-en-attente';
+import { PLAN_VIDE } from '../../domaine/planifier-ecritures';
 import type { CycleSynchronisation, IssueCycle } from '../cycle-synchronisation';
 import type { DepotLocal, ErreurDepotLocal } from '../ports/depot-local';
 
@@ -28,6 +29,28 @@ export type DependancesChoixRestauration = {
   readonly reseau: EtatReseau;
 };
 
+const AUCUNE_ALTERATION = echec<ErreurChoixRestauration>({ type: 'AucuneAlteration' });
+const RESEAU_INDISPONIBLE = echec<ErreurChoixRestauration>({ type: 'ReseauIndisponible' });
+
+/** Un choix n'a d'objet que si `ERR-012` est affiché (§8 n° 16). */
+const alterationAffichee = (cycle: CycleRestauration): boolean =>
+  cycle.etatMoteur().actionRequise === 'DONNEES_ABSENTES';
+
+/** Demande de restauration mémorisée ou oubliée : une transaction, plan vide (n° 9). */
+const memoriserDemande = (depot: DepotLocal, restaurationDemandee: boolean) =>
+  depot.appliquerSynchronisation((etat) => ({
+    plan: PLAN_VIDE(etat),
+    meta: { restaurationDemandee },
+  }));
+
+/** Refus communs à « Repartir de zéro » : `AucuneAlteration`, puis `ReseauIndisponible` (S22b, jamais mémorisé). */
+const refusRepartir = (
+  d: DependancesChoixRestauration,
+): Resultat<never, ErreurChoixRestauration> | undefined => {
+  if (!alterationAffichee(d.cycle)) return AUCUNE_ALTERATION;
+  return d.reseau.estConnecte() ? undefined : RESEAU_INDISPONIBLE;
+};
+
 /**
  * « Restaurer mes données » (n° 9) : refus `AucuneAlteration` ; sinon une transaction `appliquerSynchronisation`
  * (plan vide, `meta = { restaurationDemandee: true }`), puis : réseau coupé → `EN_ATTENTE_DU_RESEAU` (S20b, mention
@@ -37,10 +60,14 @@ export type DependancesChoixRestauration = {
 export class DemanderRestauration {
   constructor(private readonly dependances: DependancesChoixRestauration) {}
 
-  executer(): Promise<Resultat<'EN_ATTENTE_DU_RESEAU' | 'LANCEE', ErreurChoixRestauration>> {
-    return nonImplemente(
-      `DemanderRestauration.executer (${String(this.dependances.reseau.estConnecte())})`,
-    );
+  async executer(): Promise<Resultat<'EN_ATTENTE_DU_RESEAU' | 'LANCEE', ErreurChoixRestauration>> {
+    const { depot, cycle, reseau } = this.dependances;
+    if (!alterationAffichee(cycle)) return AUCUNE_ALTERATION;
+    const memorise = await memoriserDemande(depot, true);
+    if (!memorise.ok) return memorise;
+    if (!reseau.estConnecte()) return succes('EN_ATTENTE_DU_RESEAU');
+    await cycle.synchroniserMaintenant();
+    return succes('LANCEE');
   }
 }
 
@@ -52,7 +79,7 @@ export class AnnulerRestauration {
   constructor(private readonly dependances: Pick<DependancesChoixRestauration, 'depot'>) {}
 
   executer(): Promise<Resultat<undefined, ErreurDepotLocal>> {
-    return nonImplemente(`AnnulerRestauration.executer (${typeof this.dependances.depot})`);
+    return memoriserDemande(this.dependances.depot, false);
   }
 }
 
@@ -67,15 +94,18 @@ export class AnnulerRestauration {
 export class RepartirDeZero {
   constructor(private readonly dependances: DependancesChoixRestauration) {}
 
-  evaluer(): Promise<Resultat<{ readonly n: number }, ErreurChoixRestauration>> {
-    return nonImplemente(
-      `RepartirDeZero.evaluer (${String(this.dependances.reseau.estConnecte())})`,
-    );
+  async evaluer(): Promise<Resultat<{ readonly n: number }, ErreurChoixRestauration>> {
+    const refus = refusRepartir(this.dependances);
+    if (refus !== undefined) return refus;
+    const etat = await this.dependances.depot.lire();
+    if (!etat.ok) return etat;
+    return succes({ n: decompterModificationsEnAttente(etat.valeur.enAttente) });
   }
 
-  executer(): Promise<Resultat<undefined, ErreurChoixRestauration>> {
-    return nonImplemente(
-      `RepartirDeZero.executer (${String(this.dependances.reseau.estConnecte())})`,
-    );
+  async executer(): Promise<Resultat<undefined, ErreurChoixRestauration>> {
+    const refus = refusRepartir(this.dependances);
+    if (refus !== undefined) return refus;
+    const issue = await this.dependances.cycle.repartirDeZero();
+    return issue === 'TERMINE' ? succes(undefined) : echec({ type: 'EchecSynchronisation', issue });
   }
 }

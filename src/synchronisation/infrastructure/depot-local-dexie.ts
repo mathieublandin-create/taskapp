@@ -9,6 +9,7 @@ import type {
   IssueTransaction,
 } from '../application/ports/depot-local';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
+import { comparerHlc } from '../domaine/hlc';
 import { cleEnTexte } from '../domaine/information';
 import {
   META_INITIALE,
@@ -116,6 +117,18 @@ const planEstVide = (plan: PlanEcriture): boolean =>
   plan.evenementsAjoutes.length === 0 &&
   plan.enAttenteEcrites.length === 0 &&
   plan.enAttenteRetirees.length === 0;
+
+/**
+ * ST-US-017 v0.10.1 §6.7 n° 9 (2), n° 11 c (2) : un plan qui ne fait qu'avancer `dernierHlc` (HLC d'un choix, condition
+ * C3) n'est pas vide : `dernierHlc` est écrit, `version` augmente.
+ */
+const avanceDernierHlc = (avant: EtatLocal, plan: PlanEcriture): boolean => {
+  const apres = plan.etatApres.dernierHlc;
+  return (
+    apres !== undefined &&
+    (avant.dernierHlc === undefined || comparerHlc(apres, avant.dernierHlc) > 0)
+  );
+};
 
 const signalementsVides = (ajouts: AjoutsSignalements | undefined): boolean =>
   ajouts === undefined || (ajouts.valeursEcartees.length === 0 && ajouts.lectures.length === 0);
@@ -281,8 +294,8 @@ export class DepotLocalDexie implements DepotLocal {
   /**
    * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état, méta et signalements lus, calcul, puis plan, méta et
    * signalements écrits ensemble (v0.5 §4.6). La méta est fusionnée clé à clé ; `version`, `dernierHlc` et les
-   * observateurs ne changent que si le plan ou les signalements sont non vides. Une exception du calcul est propagée et
-   * rien n'est écrit.
+   * observateurs ne changent que si le plan ou les signalements sont non vides (v0.10.1 : un plan qui avance
+   * `dernierHlc` n'est pas vide). Une exception du calcul est propagée et rien n'est écrit.
    */
   async appliquerSynchronisation(
     calcul: (
@@ -423,7 +436,9 @@ export class DepotLocalDexie implements DepotLocal {
     }
     const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
     await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
-    if (planEstVide(plan) && signalementsVides(ajouts)) return succes({ valeur: undefined });
+    if (planEstVide(plan) && !avanceDernierHlc(etat.valeur, plan) && signalementsVides(ajouts)) {
+      return succes({ valeur: undefined });
+    }
     const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
     await this.ecrire(plan, etatApres);
     if (ajouts !== undefined) await this.ecrireSignalements(ajouts);

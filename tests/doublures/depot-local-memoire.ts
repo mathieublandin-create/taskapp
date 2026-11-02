@@ -5,6 +5,7 @@ import type {
   ErreurDepotLocal,
   IssueTransaction,
 } from '@src/synchronisation/application/ports/depot-local';
+import { comparerHlc } from '@src/synchronisation/domaine/hlc';
 import { cleEnTexte } from '@src/synchronisation/domaine/information';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '@src/synchronisation/domaine/etat-local';
 import {
@@ -50,7 +51,13 @@ export class StockageDepotEnMemoire {
     ajouts: AjoutsSignalements = AUCUN_AJOUT,
   ): void {
     this.meta = { ...this.meta, ...meta };
-    if (planEstVide(plan) && ajouts.valeursEcartees.length + ajouts.lectures.length === 0) return;
+    if (
+      planEstVide(plan) &&
+      !avanceDernierHlc(this.etat, plan) &&
+      ajouts.valeursEcartees.length + ajouts.lectures.length === 0
+    ) {
+      return;
+    }
     this.etat = appliquerPlan(this.etat, plan);
     this.signalements = {
       valeursEcartees: remplacerParIdentifiant(
@@ -110,6 +117,15 @@ const planEstVide = (plan: PlanEcriture): boolean =>
   plan.evenementsAjoutes.length === 0 &&
   plan.enAttenteEcrites.length === 0 &&
   plan.enAttenteRetirees.length === 0;
+
+/** Comme DepotLocalDexie (ST-US-017 v0.10.1 §6.7 n° 9) : un plan qui avance `dernierHlc` n'est pas vide. */
+const avanceDernierHlc = (avant: EtatLocal, plan: PlanEcriture): boolean => {
+  const apres = plan.etatApres.dernierHlc;
+  return (
+    apres !== undefined &&
+    (avant.dernierHlc === undefined || comparerHlc(apres, avant.dernierHlc) > 0)
+  );
+};
 
 const appliquerPlan = (etat: EtatLocal, plan: PlanEcriture): EtatLocal => {
   const registres = new Map(etat.registres);
