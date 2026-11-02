@@ -513,9 +513,8 @@ export class CycleSynchronisation implements SuiviCycle {
   async #observer(lu: Lu): Etape<Vue> {
     const { transport } = this.dependances;
     const { meta, etat } = lu;
-    // Première connexion (§6.3, inchangé) : dossier préparé ; il est mémorisé avec la décision.
-    const prepare =
-      meta.dossier === undefined ? await transport.preparerDossier() : succes(meta.dossier);
+    // Première connexion (§6.3, inchangé) : dossier préparé et mémorisé avant l'observation.
+    const prepare = await this.#dossier(meta);
     if (!prepare.ok) return prepare;
     const memorise = prepare.valeur;
     const dossiers = await transport.listerDossiers();
