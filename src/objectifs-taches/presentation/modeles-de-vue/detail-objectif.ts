@@ -7,6 +7,7 @@ import {
   mentionHeureParis,
   type MentionHeureParis,
 } from '../../../commun/presentation/modeles-de-vue/mention-heure-paris';
+import { formaterDate } from '../../../commun/presentation/format/date';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { DetailObjectif } from '../../application/requetes/consulter-detail-objectif';
 import type { ResumeObjectif, ResumeTache } from '../../application/requetes/resumes';
@@ -47,7 +48,14 @@ export type ModeleVueDetailObjectif = {
   /** Nom accessible de la barre de progression : celui de la ligne de l'objectif (guide §6.6.4). */
   readonly nomAccessible: LigneObjectif['nomAccessible'];
   readonly enRetard?: LigneObjectif['enRetard'];
-  readonly alerteDelai?: LigneObjectif['alerteDelai'];
+  /** ALR-007 : libellé court de la liste, et carte de la variante `detail` (ECR-003 E) tirée du catalogue. */
+  readonly alerteDelai?: NonNullable<LigneObjectif['alerteDelai']> & {
+    readonly carte: {
+      readonly titre: string;
+      readonly texte: string;
+      readonly action: string;
+    };
+  };
   readonly sousObjectifs: {
     readonly code: 'SEC-SOUS-OBJECTIFS';
     readonly libelle: string;
@@ -140,6 +148,30 @@ const sectionSousObjectifs = (
     .map((sous) => construireLigneObjectif(sous, aujourdhui)),
 });
 
+const modeleAlerteDelai = (
+  objectif: ResumeObjectif,
+  ligne: LigneObjectif,
+  aujourdhui: DateCalendaire,
+): Pick<ModeleVueDetailObjectif, 'alerteDelai'> => {
+  if (objectif.alerteDelai === undefined || ligne.alerteDelai === undefined) return {};
+  const variables = {
+    variante: 'detail',
+    date: ligne.delai.libelle,
+    parent: objectif.alerteDelai.parentIntitule,
+    dateParent: formaterDate(objectif.alerteDelai.delaiParent, aujourdhui),
+  };
+  return {
+    alerteDelai: {
+      ...ligne.alerteDelai,
+      carte: {
+        titre: libelle('ALR-007', variables),
+        texte: libelle('ALR-007', variables, 'texte'),
+        action: libelle('ALR-007', variables, 'action'),
+      },
+    },
+  };
+};
+
 export const construireDetailObjectif = (
   donnees: DetailObjectif,
   dependances: { readonly horloge: Horloge },
@@ -158,7 +190,7 @@ export const construireDetailObjectif = (
     progression: ligne.progression,
     nomAccessible: ligne.nomAccessible,
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
-    ...(ligne.alerteDelai === undefined ? {} : { alerteDelai: ligne.alerteDelai }),
+    ...modeleAlerteDelai(objectif, ligne, aujourdhui),
     sousObjectifs: sectionSousObjectifs(donnees.sousObjectifs, aujourdhui),
     taches: sectionsDeTaches(donnees, aujourdhui),
     ...(donnees.taches.length === 0

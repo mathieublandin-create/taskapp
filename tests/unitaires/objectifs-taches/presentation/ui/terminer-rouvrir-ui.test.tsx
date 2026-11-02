@@ -222,12 +222,14 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
     const id = await creerTache(banc, 'Rédiger');
     const magasin = creerMagasinTaches({ ...banc.services, planificateur });
     render(<EspaceTaches magasin={magasin} />);
-    const caseTerminer = await screen.findByRole('checkbox', { name: 'Terminer « Rédiger »' });
+    const caseTerminer = await screen.findByRole('checkbox', {
+      name: 'Terminer «\u00a0Rédiger\u00a0»',
+    });
 
     await userEvent.click(caseTerminer);
 
     await waitFor(() => {
-      const cochee = screen.getByRole('checkbox', { name: 'Terminer « Rédiger »' });
+      const cochee = screen.getByRole('checkbox', { name: 'Terminer «\u00a0Rédiger\u00a0»' });
       expect((cochee as HTMLInputElement).checked).toBe(true);
       expect((cochee as HTMLInputElement).disabled).toBe(true);
     });
@@ -244,7 +246,8 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
     });
     await waitFor(() => {
       expect(
-        screen.getByRole<HTMLInputElement>('checkbox', { name: 'Terminer « Rédiger »' }).disabled,
+        screen.getByRole<HTMLInputElement>('checkbox', { name: 'Terminer «\u00a0Rédiger\u00a0»' })
+          .disabled,
       ).toBe(false);
     });
     expect(
@@ -260,7 +263,7 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
     const magasin = creerMagasinTaches(banc.services);
     render(<EspaceTaches magasin={magasin} />);
     const caseTerminer = await screen.findByRole<HTMLInputElement>('checkbox', {
-      name: 'Terminer « Chapitre 1 »',
+      name: 'Terminer «\u00a0Chapitre 1\u00a0»',
     });
 
     await userEvent.click(caseTerminer);
@@ -339,7 +342,9 @@ describe('Espace des tâches — détail (ECR-007 A, G)', () => {
 
     const alerte = await screen.findByRole('alert');
     expect(alerte.textContent).toBe('Il reste 1 sous-tâche à terminer ou abandonner.');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Terminer « Section A »' }));
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Terminer «\u00a0Section A\u00a0»' }),
+    );
     await waitFor(() => {
       expect(screen.queryByText(/Il reste 1 sous-tâche/u)).toBeNull();
     });

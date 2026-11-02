@@ -83,7 +83,17 @@ export const CATALOGUE = {
     nomAccessible: 'Après le délai de l’objectif ({date})',
   },
   'ALR-006': { libelle: '{date} · après le délai de la tâche' },
-  'ALR-007': { libelle: '{date} · après « {parent} »' },
+  'ALR-007': {
+    libelle: '{date} · après « {parent} »',
+    variantes: {
+      detail: {
+        libelle: 'Délai postérieur à celui du parent',
+        texte:
+          'Le délai de ce sous-objectif ({date}) est après celui de « {parent} » ({dateParent}). Rien n’est bloqué.',
+        action: 'Changer le délai',
+      },
+    },
+  },
   'ALR-008': {
     libelle: 'Vos données ont été effacées',
     texte:
@@ -188,8 +198,14 @@ export const CATALOGUE = {
   'CNF-ABANDON-TACHE-CASCADE': {
     libelle: 'Abandonner « {element} » ?',
     texte:
-      'Ses {n} sous-tâches à faire seront abandonnées aussi. La sous-tâche déjà terminée reste terminée.',
+      '{n} sous-tâche{n:|s} à faire {n:sera abandonnée|seront abandonnées} aussi. {t} sous-tâche{t:|s} déjà terminée{t:|s} {t:reste terminée|restent terminées}. La tâche quitte vos tâches à faire. Vous la retrouverez dans « Abandonnées » et pourrez la reprendre.',
     action: 'Abandonner',
+    variantes: {
+      'sans-terminee': {
+        texte:
+          '{n} sous-tâche{n:|s} à faire {n:sera abandonnée|seront abandonnées} aussi. La tâche quitte vos tâches à faire. Vous la retrouverez dans « Abandonnées » et pourrez la reprendre.',
+      },
+    },
   },
   'CNF-AJOUT-SOUS-TACHE-TERMINEE': {
     libelle: 'Rouvrir « {element} » pour y ajouter une sous-tâche ?',
@@ -363,9 +379,31 @@ export const CATALOGUE = {
   'ETA-SOUS-TACHE-ABANDONNEE-AVANT': { libelle: 'Abandonnée avant la tâche' },
   'ETA-SOUS-TACHE-ABANDONNEE-AVEC': { libelle: 'Abandonnée avec la tâche' },
   'ETA-SOUS-TACHE-TERMINEE-AVANT': { libelle: 'Terminée avant l’abandon' },
-  'ETA-TACHE-A-FAIRE': { libelle: 'À faire' },
-  'ETA-TACHE-ABANDONNEE': { libelle: 'Abandonnée le {date}' },
-  'ETA-TACHE-TERMINEE': { libelle: 'Terminée le {date}' },
+  'ETA-TACHE-A-FAIRE': { libelle: 'À faire', nomAccessible: 'à faire' },
+  'ETA-TACHE-ABANDONNEE': { libelle: 'Abandonnée le {date}', nomAccessible: 'abandonnée' },
+  // Aucun texte visible : nom accessible de toute case ronde (guide §6.6.4, DT-019).
+  'ETA-TACHE-CASE': {
+    libelle: '',
+    nomAccessible: 'Terminer « {element} »',
+    variantes: { rouvrir: { nomAccessible: 'Rouvrir « {element} »' } },
+  },
+  // Aucun texte visible : nom accessible du bouton de la ligne. Chaque variante est une partie, jointe par « , »
+  // à la base, dans l'ordre du guide §6.6.4 (DT-017).
+  'ETA-TACHE-LIGNE': {
+    libelle: '',
+    nomAccessible: '{element}, {etat}, délai {date}',
+    variantes: {
+      retard: { nomAccessible: 'en retard' },
+      'alerte-objectif': { nomAccessible: 'après le délai de l’objectif' },
+      'alerte-tache': { nomAccessible: 'après le délai de la tâche parente' },
+      estimation: { nomAccessible: 'estimation {duree}' },
+      objectif: { nomAccessible: 'objectif « {objectif} »' },
+      objectifs: { nomAccessible: '{n} objectifs, dont « {objectif} »' },
+      'sous-taches': { nomAccessible: '{t} sous-tâche{t:|s} terminée{t:|s} sur {n}' },
+      incoherence: { nomAccessible: 'incohérence avec une sous-tâche' },
+    },
+  },
+  'ETA-TACHE-TERMINEE': { libelle: 'Terminée le {date}', nomAccessible: 'terminée' },
 
   // ---- États vides (§6.6.5)
   'EVD-BIENVENUE': {

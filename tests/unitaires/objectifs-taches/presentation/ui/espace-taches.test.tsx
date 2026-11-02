@@ -165,6 +165,7 @@ describe('Sections de tâches du détail d’un objectif (ECR-003 D)', () => {
         surRetour={vi.fn()}
         surOuvrirMenu={vi.fn()}
         surOuvrirSousObjectif={vi.fn()}
+        surChangerDelai={vi.fn()}
         surAjouterTache={surAjouterTache}
       />,
     );
@@ -181,6 +182,7 @@ describe('Sections de tâches du détail d’un objectif (ECR-003 D)', () => {
         surRetour={vi.fn()}
         surOuvrirMenu={vi.fn()}
         surOuvrirSousObjectif={vi.fn()}
+        surChangerDelai={vi.fn()}
       />,
     );
     await userEvent.click(screen.getByRole('button', { name: /^Chapitre 1, à faire/u }));

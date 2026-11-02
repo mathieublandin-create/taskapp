@@ -12,7 +12,7 @@
 | Maquettes | ECR-007 (A, H, I, J), ECR-003 D, ECR-002 ; guide v0.2.8 §4.22, §4.23, §6.6.9 |
 | Q-US traitées | Q-US-024-1, Q-US-024-2, Q-US-024-3, Q-US-001-2 (E8) ; hypothèse H-3 ; Q-US-001-6 (e) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-002 (rang 5) |
-| Version | 0.4 |
+| Version | 0.5 |
 | Statut | **Prête pour E10** (Q-US-001-6 (e) répondue) |
 | Auteur | Anthony |
 | Branche Git | `us/US-024-sous-taches` (rang 6) ; la partie RG-049 est livrée sur la branche de l'incrément 2 d'US-017 |
@@ -23,6 +23,7 @@
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
 | 0.2 | 2026-10-22 | Anthony | Réponse à Q-US-001-6 (e) (guide v0.2.9 §5.8) : section `SEC-SOUS-TACHES`, ordre de référence ; §4.5, §6.7, UT-US-024-23 ; statut levé |
 | 0.3 | 2026-10-31 | Anthony | E12 du rang 6, écart de rattachement signalé par Benjamin : UT-US-024-21, 22 et `incoherence.ts` restent au **rang 9** (§2.1, §3, §13, §15 ; `rangs-scenarios.json` : S20 à S22 au rang 9 ; LOT-001 « Ordre de réalisation »). `rangs-tests.json` et `rangs-fichiers.json` sont corrigés. Conduite à tenir pour le code déjà écrit (§15). Nom accessible de la case « Terminer » codé en constante, DT-019 (§4.5, §16). |
+| 0.5 | 2026-11-01 | Anthony | E13 de DT-015, DT-017, DT-019 (`docs/ceremonies/revue-code-LOT-001-catalogue-dt.md`, PR #27 ; guide v0.2.21 §6.6.4, Q-ANT-E12-R6-1) : `caseTerminer.nomAccessible` = `ETA-TACHE-CASE` (variante `rouvrir` pour une sous-tâche terminée) ; DT-019 remboursée ; UT-US-024-16 : espaces insécables du guide ; rendu de la case « Rouvrir » : DT-030 |
 | 0.4 | 2026-10-31 | Anthony | E13 du rang 6 (`docs/ceremonies/revue-code-LOT-001-rang6.md`, RC-US-024-2) : `LigneSousTache.delai` devient `LigneTache['delai']` (`{ date, libelle }`), la section affiche le libellé formaté et non la date ISO (§4.5). |
 
 ## 1. Résumé technique
@@ -106,8 +107,8 @@ readonly sousTaches?: {                                   // section SEC-SOUS-TA
   readonly code: 'SEC-SOUS-TACHES'; readonly libelle: string;   // « Sous-tâches » + compteur « {t} / {n} »
   readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: LigneTache['delai'];   /* { date, libelle } : libellé formaté affiché (v0.4, RC-US-024-2) */ readonly estimation: { readonly minutes: number; readonly libelle: string };
                                   readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'];
-                                  readonly nomAccessible: string;                       // « {intitulé}, {état en toutes lettres}, délai {date} » (+ « , en retard »), comme LigneTache (RL-LOT-001-S4)
-                                  readonly caseTerminer: { readonly nomAccessible: string } }>;   // « Terminer « {intitulé} » » (texte des maquettes ECR-003 D et ECR-005, sans code au §6.6 : constante du modèle de vue, DT-019) ; une seule liste, tous états, ordre de référence (§6.7)
+                                  readonly nomAccessible: string;                       // = LigneTache.nomAccessible (ETA-TACHE-LIGNE, ST-US-002 v0.5 §4.5 ; jamais de partie objectif) (RL-LOT-001-S4)
+                                  readonly caseTerminer: { readonly nomAccessible: string } }>;   // v0.5 : libelle('ETA-TACHE-CASE', { element }, 'nomAccessible') ; variante 'rouvrir' si la sous-tâche est terminée (guide §6.6.13) ; la case pleine « Rouvrir » n'est pas encore rendue par section-sous-taches.tsx (DT-030) ; une seule liste, tous états, ordre de référence (§6.7)
   readonly compteur: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string };   // « 1 / 3 »
 };
 readonly infoFinImpossible?: { readonly code: 'ALR-013'; readonly n: number; readonly libelle: string };   // n = sous-tâches à faire ; absent si n = 0
@@ -268,7 +269,7 @@ Composants `LockedField` (lecture de l'explication, non focalisable en saisie), 
 - **Concernée par Q-US-001-6 (e)** (ST-US-001 §16).
   - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (e) Oui** ; la proposition du §6.6.7 est retenue (une seule liste, tous états confondus, délai croissant, sans délai à la fin, création, intitulé). Code `SEC-SOUS-TACHES` créé. UT-US-024-23 peut être écrit en E10.
 - **Hypothèses** : H-3 et H-7 appliquées.
-- **Dette** : DT-019 (v0.3). Le nom accessible « Terminer « {intitulé} » » de la case d'une ligne de sous-tâche n'a pas de code au guide §6.6. Le texte des maquettes est codé en constante dans `detail-tache.ts` (repère `TODO(DT-019)`) ; UT-US-024-16 reste inchangé. **Q-ANT-E12-R6-1** (à Steeve, via Jarvis) : « Attribuez-vous au catalogue (§6.6) un code au gabarit « Terminer « {intitulé} » », commun à toutes les cases « Terminer » (lignes de tâche, ECR-003, ECR-005, ECR-007) ? Oui (code à préciser) / Non (la constante reste et la dette est acceptée durablement). » Point non bloquant pour le rang 6.
+- **Dette** : DT-019, **remboursée** (v0.5 : `ETA-TACHE-CASE`, guide v0.2.21 ; UT-US-024-16 attend les espaces insécables que `libelle()` place dans les guillemets, guide §6.6.1 « Typographie » : même texte, même force). Historique (v0.3) : Le nom accessible « Terminer « {intitulé} » » de la case d'une ligne de sous-tâche n'a pas de code au guide §6.6. Le texte des maquettes est codé en constante dans `detail-tache.ts` (repère `TODO(DT-019)`) ; UT-US-024-16 reste inchangé. **Q-ANT-E12-R6-1** (à Steeve, via Jarvis) : « Attribuez-vous au catalogue (§6.6) un code au gabarit « Terminer « {intitulé} » », commun à toutes les cases « Terminer » (lignes de tâche, ECR-003, ECR-005, ECR-007) ? Oui (code à préciser) / Non (la constante reste et la dette est acceptée durablement). » Point non bloquant pour le rang 6.
 
 ## 17. Checklist de complétude (avant E11)
 - [x] CA, RG, fichiers, signatures, erreurs, patterns, étapes.
