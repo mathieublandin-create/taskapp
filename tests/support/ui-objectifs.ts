@@ -137,9 +137,14 @@ export const renseigner = async (libelle: RegExp | string, texte: string): Promi
   });
 };
 
-/** Bouton d'une feuille d'actions ou d'une alerte Ionic (boutons natifs, hors DOM fantôme). */
+/**
+ * Choisit un bouton d'une feuille d'actions Ionic et attend sa fermeture : l'action choisie s'exécute à la fermeture
+ * (`onDidDismiss`), émise après la transition ; une assertion immédiate la précéderait (DT-029).
+ */
 export const choixDuMenu = async (texte: string): Promise<void> => {
+  const fermee = apresEvenement('ionActionSheetDidDismiss');
   await userEvent.click(await screen.findByRole('button', { name: texte }));
+  await fermee;
 };
 
 const ATTENTE_FERMETURE_MS = 150;
