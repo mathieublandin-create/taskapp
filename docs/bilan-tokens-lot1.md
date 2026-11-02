@@ -25,3 +25,17 @@ Hors rangs (à ventiler au bilan) : ANO-001 (≈ 530 k), dépendances de sécuri
 ## Bilan (à rédiger à la clôture du lot 1)
 
 À rédiger par Jarvis : classement des rangs par tokens par jour de devis, 3 plus efficaces et 3 moins efficaces avec ce qui a bien et mal marché, propositions chiffrées (gain, risque pour la qualité), évaluation du pilote Mistral AI.
+
+## Relevé `ccusage` du 2026-11-02 (13 h 56 UTC)
+
+Mesure objective de toute la session (session principale et sous-agents), `npx --yes ccusage@latest daily --breakdown`. Le coût est estimé au tarif public de l'API, ce n'est pas une facturation. Dates en UTC.
+
+| Jour | Tokens totaux | dont lecture de cache | Sortie | Coût estimé | opus / sonnet (coût) |
+|---|---|---|---|---|---|
+| 2026-10-30 | 172,6 M | 169,2 M | 0,76 M | 39,02 $ | 14,71 $ / 24,31 $ |
+| 2026-10-31 | 234,2 M | 227,1 M | 1,32 M | 73,87 $ | 43,46 $ / 30,41 $ |
+| 2026-11-01 | 249,5 M | 239,7 M | 1,42 M | 94,82 $ | 64,35 $ / 30,47 $ |
+| 2026-11-02 (partiel) | 37,2 M | 35,3 M | 0,15 M | 13,83 $ | 6,31 $ / 7,52 $ |
+| **Total** | **693,6 M** | **671,3 M (96,8 %)** | **3,64 M** | **221,55 $** | **128,83 $ (58 %) / 92,83 $ (42 %)** |
+
+Constats : 97 % des tokens sont des lectures de cache (le contexte relu à chaque appel d'outil) ; la sortie représente 0,5 % des tokens ; opus pèse 39 % des tokens mais 58 % du coût. Les « tokens rapportés » des agents (≈ 12,6 M cumulés au 2026-11-02) ne sont pas l'unité de `ccusage` (693,6 M) : le coût ressort à environ 17,6 $ par million de « tokens rapportés ». Cette équivalence sert de passerelle pour estimer le coût du travail restant.
