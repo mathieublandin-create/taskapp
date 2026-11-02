@@ -160,10 +160,17 @@ export class FauxDrive {
     const fichier = this.#trouver(id);
     if (fichier === undefined) throw new Error(`Fichier simulé inconnu : ${id}`);
     const compresse = fichier.mimeType === TYPE_GZIP;
-    const texte = Buffer.from(compresse ? gunzipSync(fichier.octets) : fichier.octets).toString(
-      'utf8',
-    );
-    const objet = JSON.parse(texte) as Record<string, unknown>;
+    let objet: Record<string, unknown>;
+    try {
+      const texte = Buffer.from(compresse ? gunzipSync(fichier.octets) : fichier.octets).toString(
+        'utf8',
+      );
+      objet = JSON.parse(texte) as Record<string, unknown>;
+    } catch {
+      // Fichier déjà illisible (UT-US-017-74, Q-BRU) : modifié à la main, il reste illisible, en nouvelle version.
+      this.#remplacer(fichier, new TextEncoder().encode('illisible, modifié à la main'));
+      return;
+    }
     objet['versionApplication'] = 'modifié à la main';
     const modifie = Buffer.from(JSON.stringify(objet), 'utf8');
     this.#remplacer(fichier, new Uint8Array(compresse ? gzipSync(modifie) : modifie));
