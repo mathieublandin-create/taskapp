@@ -4,7 +4,7 @@ Fichier à lire en premier par Jarvis dans une session neuve. Détail de l'histo
 
 ## État du lot 1 (LOT-001)
 - Branche du lot : `lot/LOT-001`. Avancement : **76 %** (69 j sur 91). Rangs 0 à 9 fusionnés (US-022, 001, 017 incr. 1 et 2, 023, 002, 024, 003, 025). Dettes DT-015, 017, 019 remboursées (PR #27).
-- **Limite d'usage** : le forfait du commanditaire était à 98 % de la limite hebdomadaire le 2026-11-02. Travailler par petits jalons : commit et push après chaque jalon vert, jamais plus de 2 agents opus en parallèle, pas de nouveau rang tant que la limite n'est pas levée. À la reprise, vérifier d'abord que l'usage est remis à zéro.
+- **Limite d'usage** : le forfait du commanditaire était à 98 % de la limite hebdomadaire le 2026-11-02. Travailler par petits jalons : commit et push après chaque jalon vert, jamais plus de 2 agents opus en parallèle, pas de nouveau rang tant que la limite n'est pas levée. **Remise à zéro annoncée par le commanditaire : vendredi 2026-11-06 à 15 h (heure de Paris).** Avant cette date, ne rien lancer (les agents consomment la limite). À la reprise, vérifier d'abord que l'usage est remis à zéro.
 
 ## Rang 10 en cours (US-017, incrément 3 : contrôles du Drive, restauration, « Repartir de zéro », ERR-012)
 - E10 faite (Anthony), ST-US-017 v0.10.1, DAT v0.11.10 (Starck, conditions C1 à C9), textes de Steeve (guide v0.2.21, famille `RST-`).
