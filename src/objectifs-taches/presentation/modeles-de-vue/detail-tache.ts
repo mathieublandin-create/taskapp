@@ -41,6 +41,8 @@ export type LigneSousTache = {
   };
 };
 
+export type ActionPrincipaleCarte = 'ROUVRIR' | 'REPRENDRE';
+
 export type ModeleVueDetailTache = {
   readonly id: IdTache;
   readonly intitule: string;
@@ -92,7 +94,11 @@ export type ModeleVueDetailTache = {
     readonly n: number;
     readonly libelle: string;
     readonly texte: string;
-  }; // rang 9
+    /** Action principale de la carte (ST-US-024 §6.6 n° 1) : `ALR-003` → ROUVRIR, `ALR-004` → REPRENDRE. */
+    readonly actionPrincipale: { readonly action: ActionPrincipaleCarte; readonly libelle: string };
+    /** Présente si et seulement si n = 1 (Q-ST024-STE-1 a) : cible des actions « Terminer / Abandonner la sous-tâche ». */
+    readonly sousTache?: { readonly id: IdTache; readonly intitule: string };
+  };
   readonly dateFin?: {
     readonly date: DateCalendaire;
     readonly libelle: string;
@@ -265,6 +271,21 @@ const CODE_INCOHERENCE: Readonly<Record<Incoherence['etatParent'], 'ALR-003' | '
   ABANDONNEE: 'ALR-004',
 };
 
+const ACTION_PRINCIPALE: Readonly<Record<Incoherence['etatParent'], ActionPrincipaleCarte>> = {
+  TERMINEE: 'ROUVRIR',
+  ABANDONNEE: 'REPRENDRE',
+};
+
+/** La sous-tâche visée par les actions tertiaires : l'unique sous-tâche à faire (Q-ST024-STE-1 a). */
+const sousTacheVisee = (
+  sousTachesAFaire: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string }>,
+): Pick<NonNullable<ModeleVueDetailTache['incoherence']>, 'sousTache'> => {
+  const [seule, ...autres] = sousTachesAFaire;
+  return seule === undefined || autres.length > 0
+    ? {}
+    : { sousTache: { id: seule.id, intitule: seule.intitule } };
+};
+
 const ESPACE_INSECABLE = '\u00a0';
 
 const LISTE_FRANCAISE = new Intl.ListFormat('fr', { style: 'long', type: 'conjunction' });
@@ -308,6 +329,11 @@ const incoherenceDeCarte = (
       n,
       libelle: libelle(code, gabarit),
       texte: libelle(code, gabarit, 'texte'),
+      actionPrincipale: {
+        action: ACTION_PRINCIPALE[etatParent],
+        libelle: libelle(code, gabarit, 'action'),
+      },
+      ...sousTacheVisee(sousTachesAFaire),
     },
   };
 };

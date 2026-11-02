@@ -68,13 +68,14 @@ const PageListe = ({
   );
 };
 
-/** Abandon, fin, réouverture et reprise de la tâche du détail, et case « Terminer » de ses sous-tâches. */
+/** Abandon, fin, réouverture et reprise de la tâche du détail, case « Terminer » de ses sous-tâches et abandon d'une sous-tâche (carte d'incohérence). */
 const commandesDeFin = (actions: ActionsMagasinTaches, id: IdTache) => ({
   surAbandonner: () => actions.abandonner(id),
   surTerminer: () => actions.terminer(id),
   surTerminerSousTache: (sousTacheId: IdTache) => void actions.terminer(sousTacheId),
   surRouvrir: () => actions.rouvrir(id),
   surReprendre: () => actions.reprendre(id),
+  surAbandonnerSousTache: (sousTacheId: IdTache) => actions.abandonner(sousTacheId),
 });
 
 const PageDetail = ({

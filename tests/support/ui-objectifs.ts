@@ -85,18 +85,25 @@ export const creerBancEcritureImpossible = (): BancObjectifs => {
 };
 
 /** Champ natif d'un composant Ionic (IonInput, IonTextarea) retrouvé par son libellé. */
-export const champ = async (
+const composantChamp = (
   libelle: RegExp | string,
-): Promise<HTMLInputElement | HTMLTextAreaElement> => {
-  const composant = await waitFor(() => {
+): Promise<HTMLIonInputElement | HTMLIonTextareaElement> =>
+  waitFor(() => {
     const trouve = Array.from(
-      document.querySelectorAll<HTMLElement & { label?: string }>('ion-input, ion-textarea'),
+      document.querySelectorAll<HTMLIonInputElement | HTMLIonTextareaElement>(
+        'ion-input, ion-textarea',
+      ),
     ).find((e) =>
       typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? ''),
     );
     if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
     return trouve;
   });
+
+export const champ = async (
+  libelle: RegExp | string,
+): Promise<HTMLInputElement | HTMLTextAreaElement> => {
+  const composant = await composantChamp(libelle);
   const natif = composant.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
   if (natif === null) throw new Error(`Champ natif « ${String(libelle)} » absent`);
   return natif;
@@ -116,28 +123,17 @@ export const cliquerBoutonIon = async (nom: string): Promise<void> => {
   await userEvent.click(await boutonIon(nom));
 };
 
-export const saisir = async (libelle: RegExp | string, texte: string): Promise<void> => {
-  const natif = await champ(libelle);
-  await userEvent.clear(natif);
-  if (texte !== '') await userEvent.type(natif, texte);
-};
-
 /**
  * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
- * touche par touche concourt avec le rendu contrôlé du champ et n'apporte rien à ce qui est vérifié ici.
+ * touche par touche (`userEvent.type`) concourt avec le rendu contrôlé du champ : sous charge, des caractères sont
+ * perdus ou permutés (DT-029) ; c'est donc le seul moyen de saisir dans les tests de composants Ionic.
  */
 export const renseigner = async (libelle: RegExp | string, texte: string): Promise<void> => {
-  const champ = await waitFor(() => {
-    const trouve = Array.from(document.querySelectorAll<HTMLIonInputElement>('ion-input')).find(
-      (e) => (typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? '')),
-    );
-    if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
-    return trouve;
-  });
-  champ.value = texte;
-  champ.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
+  const composant = await composantChamp(libelle);
+  composant.value = texte;
+  composant.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
   await waitFor(() => {
-    expect(champ.value).toBe(texte);
+    expect(composant.value).toBe(texte);
   });
 };
 

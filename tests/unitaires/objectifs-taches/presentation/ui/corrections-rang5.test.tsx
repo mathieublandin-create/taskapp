@@ -20,7 +20,7 @@ import {
   creerBancObjectifs,
   nettoyerDocument,
   ouvrir,
-  saisir,
+  renseigner,
 } from '@tests/support/ui-objectifs';
 
 afterEach(nettoyerDocument);
@@ -42,8 +42,8 @@ describe('SaisieRapide — première erreur sur l’estimation (RC-US-002-1)', (
       />,
     );
     await screen.findByRole('form', { name: 'Nouvelle tâche' });
-    await saisir('Intitulé', 'Relire');
-    await saisir(/^Délai/u, '2026-11-30');
+    await renseigner('Intitulé', 'Relire');
+    await renseigner(/^Délai/u, '2026-11-30');
     await cliquerBoutonIon('Ajouter');
 
     const estimation = await screen.findByRole('spinbutton');

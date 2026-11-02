@@ -649,6 +649,10 @@
       "debut": 7,
       "fin": 7
     },
+    "src/objectifs-taches/presentation/ui/composants/carte-incoherence.tsx": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/objectifs-taches/presentation/ui/composants/champ-detail.tsx": {
       "debut": 5,
       "fin": 5

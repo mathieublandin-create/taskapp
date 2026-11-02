@@ -154,14 +154,18 @@ describe('FeuilleObjectif (ECR-008 B, ECR-003 C)', () => {
 
     await cliquerBoutonIon('Créer l’objectif');
     await userEvent.type(await champ('Intitulé'), '{Enter}');
-    expect(surValider).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(surValider).toHaveBeenCalledTimes(1);
+    });
     terminer(FAITE);
     await waitFor(() => {
       expect(proprietes.surFermee).toHaveBeenCalledTimes(1);
     });
 
     await cliquerBoutonIon('Annuler');
-    expect(proprietes.surFermee).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(proprietes.surFermee).toHaveBeenCalledTimes(2);
+    });
     expect(surValider).toHaveBeenCalledTimes(1);
     await feuille.fermer();
   });
