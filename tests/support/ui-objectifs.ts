@@ -138,6 +138,12 @@ export const renseigner = async (libelle: RegExp | string, texte: string): Promi
 };
 
 /**
+ * Saisie dans un champ Ionic : depuis DT-029, synonyme de `renseigner` (la frappe touche par touche perd ou permute des
+ * caractères sous charge). Conservé pour les tests qui l'appellent (UT-COMP-US-001-190, ANO-003).
+ */
+export const saisir = renseigner;
+
+/**
  * Choisit un bouton d'une feuille d'actions Ionic et attend sa fermeture : l'action choisie s'exécute à la fermeture
  * (`onDidDismiss`), émise après la transition ; une assertion immédiate la précéderait (DT-029).
  */

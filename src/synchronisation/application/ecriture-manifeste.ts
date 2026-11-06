@@ -76,20 +76,36 @@ export const ecrireManifesteMonotone = async (
   );
   const [canonique] = presents;
   if (canonique === undefined) return creer(transport, p.dossier, cible);
-  const choix = p.mode === 'CHOIX';
+  const remplace = await remplacer(transport, p, presents, cible);
+  if (!remplace.ok) return remplace;
+  return verifier(transport, p.dossier, { id: canonique.element.id, contenu: cible });
+};
+
+/**
+ * Remplacement par la cible du canonique (le premier des présents) s'il en diffère et, en mode `CHOIX`, de chaque
+ * manifeste illisible ; un doublon lisible n'est jamais réécrit.
+ */
+const remplacer = async (
+  transport: TransportSynchro,
+  { dossier, mode }: { readonly dossier: IdFichierDrive; readonly mode: ModeEcritureManifeste },
+  presents: Releve['presents'],
+  cible: ContenuManifeste,
+): Ecriture<undefined> => {
+  const [canonique] = presents;
+  const choix = mode === 'CHOIX';
   for (const m of presents) {
     const aEcrire =
       m.contenu === undefined ? choix : m === canonique && !manifestesEgaux(m.contenu, cible);
     if (aEcrire) {
       const ecrit = await transport.ecrireManifeste({
-        dossier: p.dossier,
+        dossier,
         contenu: cible,
         fichierExistant: m.element.id,
       });
       if (!ecrit.ok) return ecrit;
     }
   }
-  return verifier(transport, p.dossier, { id: canonique.element.id, contenu: cible });
+  return succes(undefined);
 };
 
 /** Création ; si une création concurrente a donné un canonique plus ancien, jointure écrite dedans et doublon supprimé. */

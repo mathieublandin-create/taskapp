@@ -434,12 +434,20 @@ export class DepotLocalDexie implements DepotLocal {
     if (synchronisation.reinitialiser === true) {
       return this.reinitialiser(synchronisation, etat.valeur.version);
     }
+    return this.ecrireSynchronisation(synchronisation, etat.valeur);
+  }
+
+  /** Dans la transaction en cours : écrit la méta, puis le plan et les signalements ajoutés s'ils sont non vides. */
+  private async ecrireSynchronisation(
+    synchronisation: PlanSynchronisation,
+    etatAvant: EtatLocal,
+  ): Promise<IssueExecution<undefined, never>> {
     const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
     await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
-    if (planEstVide(plan) && !avanceDernierHlc(etat.valeur, plan) && signalementsVides(ajouts)) {
+    if (planEstVide(plan) && !avanceDernierHlc(etatAvant, plan) && signalementsVides(ajouts)) {
       return succes({ valeur: undefined });
     }
-    const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
+    const etatApres = { ...plan.etatApres, version: etatAvant.version + 1 };
     await this.ecrire(plan, etatApres);
     if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
     return succes({ valeur: undefined, etatApres });

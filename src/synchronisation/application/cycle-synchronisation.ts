@@ -34,7 +34,11 @@ import { PLAN_VIDE, type PlanEcriture } from '../domaine/planifier-ecritures';
 import { planifierSynchronisation } from '../domaine/planifier-synchronisation';
 import type { Signalements } from '../domaine/signalements';
 import { SCHEMA_VERSION } from '../domaine/version-schema';
-import { ecrireManifesteMonotone, type ModeEcritureManifeste } from './ecriture-manifeste';
+import {
+  ecrireManifesteMonotone,
+  type ManifesteEcrit,
+  type ModeEcritureManifeste,
+} from './ecriture-manifeste';
 import type { AccesGoogle, EtatAccesGoogle } from './ports/acces-google';
 import type { DepotLocal, ErreurDepotLocal } from './ports/depot-local';
 import type { EtatMoteur, SuiviCycle } from './ports/suivi-cycle';
@@ -121,6 +125,27 @@ const estIgnorable = (erreur: ErreurCycle): boolean =>
   erreur.type === 'FormatPlusRecent' ||
   erreur.type === 'RessourceIntrouvable';
 
+/** Erreur de lecture d'un fichier (switch exhaustif) : altération, omission ou erreur du cycle. */
+const lectureEnEchec = <T>(
+  erreur: ErreurTransport,
+): Resultat<LectureDrive<T> | undefined, ErreurTransport> => {
+  switch (erreur.type) {
+    case 'FichierIllisible':
+      return succes({ type: 'ILLISIBLE' });
+    case 'FormatPlusRecent':
+      return succes({ type: 'FORMAT_PLUS_RECENT', schemaVersion: erreur.schemaVersion });
+    case 'RessourceIntrouvable':
+      return succes(undefined);
+    case 'ReseauIndisponible':
+    case 'NonAutorise':
+    case 'DriveIndisponible':
+    case 'EspaceDrivePlein':
+    case 'ServeurIndisponible':
+    case 'JetonChangementsInvalide':
+      return echec(erreur);
+  }
+};
+
 /**
  * Lecture d'un fichier vue par le domaine (n° 2) : `FichierIllisible` → `ILLISIBLE`, `FormatPlusRecent` →
  * `FORMAT_PLUS_RECENT`, `RessourceIntrouvable` → undefined (omis) ; toute autre erreur est une erreur du cycle (§6.3,
@@ -130,16 +155,7 @@ const lectureDe = <T>(
   lu: Resultat<T, ErreurTransport>,
 ): Resultat<LectureDrive<T> | undefined, ErreurTransport> => {
   if (lu.ok) return succes({ type: 'LU', contenu: lu.valeur });
-  switch (lu.erreur.type) {
-    case 'FichierIllisible':
-      return succes({ type: 'ILLISIBLE' });
-    case 'FormatPlusRecent':
-      return succes({ type: 'FORMAT_PLUS_RECENT', schemaVersion: lu.erreur.schemaVersion });
-    case 'RessourceIntrouvable':
-      return succes(undefined);
-    default:
-      return echec(lu.erreur);
-  }
+  return lectureEnEchec(lu.erreur);
 };
 
 /** Plan du dépôt confirmé : entrées de l'index dont la dernière écriture est déposée (≤ x), retirées. */
@@ -176,9 +192,28 @@ const generationDe = (meta: MetaSynchronisation) => meta.generation ?? GENERATIO
 const definies = (meta: {
   readonly [K in keyof MetaSynchronisation]?: MetaSynchronisation[K] | undefined;
 }): Partial<MetaSynchronisation> =>
-  Object.fromEntries(
-    Object.entries(meta).filter(([, valeur]) => valeur !== undefined),
-  ) as Partial<MetaSynchronisation>;
+  Object.fromEntries(Object.entries(meta).filter(([, valeur]) => valeur !== undefined));
+
+/** Vue d'un Drive sans dossier « Done Juan » (n° 2) : rien n'est cherché. */
+const vueSansDossier = (lu: Lu): Vue => ({
+  lu,
+  dossier: undefined,
+  canonique: undefined,
+  inventaire: INVENTAIRE_VIDE,
+  observation: OBSERVATION_SANS_DOSSIER,
+  versionRelue: undefined,
+  jeton: undefined,
+});
+
+/** Manifeste écrit dans le canonique au déménagement (n° 14) : jointure des manifestes lus et de la génération. */
+const apportDuDemenagement = (
+  observation: ObservationDrive,
+  meta: MetaSynchronisation,
+): ContenuManifeste =>
+  observation.manifestes.reduce<ContenuManifeste>(
+    (cible, m) => (m.lecture.type === 'LU' ? fusionnerManifestes(cible, m.lecture.contenu) : cible),
+    { schemaVersion: SCHEMA_VERSION, generation: generationDe(meta) },
+  );
 
 /** Version d'un dépôt confirmé à mémoriser (n° 5 : seulement si elle est définie). */
 const versionDe = (depose: FichierDepose): Partial<MetaSynchronisation> =>
@@ -511,68 +546,94 @@ export class CycleSynchronisation implements SuiviCycle {
    * version est celle du dernier dépôt, C4), orphelins (C8), fichiers des autres appareils.
    */
   async #observer(lu: Lu): Etape<Vue> {
-    const { transport } = this.dependances;
-    const { meta, etat } = lu;
     // Première connexion (§6.3, inchangé) : dossier préparé et mémorisé avant l'observation.
-    const prepare = await this.#dossier(meta);
+    const prepare = await this.#dossier(lu.meta);
     if (!prepare.ok) return prepare;
     const memorise = prepare.valeur;
-    const dossiers = await transport.listerDossiers();
+    const dossiers = await this.dependances.transport.listerDossiers();
     if (!dossiers.ok) return dossiers;
     const canonique = dossiers.valeur[0]?.id;
-    if (canonique === undefined) {
-      return succes({
-        lu,
-        dossier: undefined,
-        canonique: undefined,
-        inventaire: INVENTAIRE_VIDE,
-        observation: OBSERVATION_SANS_DOSSIER,
-        versionRelue: undefined,
-        jeton: undefined,
-      });
-    }
+    if (canonique === undefined) return succes(vueSansDossier(lu));
     const bascule = !dossiers.valeur.some((d) => d.id === memorise);
-    const dossier = bascule ? canonique : memorise;
-    const inventaire = await transport.inventorierDossier(dossier);
+    return this.#observerDossier(lu, bascule ? canonique : memorise, canonique, bascule);
+  }
+
+  /** Observation d'un dossier présent (n° 2) : inventaire, changements (complets si `bascule`), puis lectures. */
+  async #observerDossier(
+    lu: Lu,
+    dossier: IdFichierDrive,
+    canonique: IdFichierDrive,
+    bascule: boolean,
+  ): Etape<Vue> {
+    const { meta } = lu;
+    const inventaire = await this.dependances.transport.inventorierDossier(dossier);
     if (!inventaire.ok) return inventaire;
     const complet = bascule || meta.inventaireAFaire === true;
     const changements = await this.#changements(dossier, complet ? undefined : meta.pageToken);
     if (!changements.ok) return changements;
-    const manifestes = await this.#lireTous(inventaire.valeur.manifestes, (id) =>
-      transport.lireContenuManifeste(id),
-    );
-    if (!manifestes.ok) return manifestes;
-    const propre = await this.#lireFichierPropre(inventaire.valeur.fichiers, meta);
-    if (!propre.ok) return propre;
-    const orphelins = await this.#lireTous(
-      inventaire.valeur.fichiers.filter(
-        (f) => f.appareil === etat.appareilId && f.id !== meta.fichierPropre,
-      ),
-      (id) => transport.lireFichierAppareil(id),
-    );
-    if (!orphelins.ok) return orphelins;
-    const autres = await this.#lireTous(
-      changements.valeur.fichiers.filter((f) => f.appareil !== etat.appareilId),
-      (id) => transport.lireFichierAppareil(id),
-      'FichierAppareilIgnore',
-    );
-    if (!autres.ok) return autres;
+    const lus = await this.#lireObservation(lu, inventaire.valeur, changements.valeur);
+    if (!lus.ok) return lus;
     return succes({
       lu,
       dossier,
       canonique,
       inventaire: inventaire.valeur,
+      observation: lus.valeur.observation,
+      versionRelue: lus.valeur.versionRelue,
+      jeton: changements.valeur.jeton,
+    });
+  }
+
+  /** Lectures, dans cet ordre (n° 2) : manifestes, fichier propre (C4), orphelins (C8), fichiers des autres appareils. */
+  async #lireObservation(
+    lu: Lu,
+    inventaire: InventaireDossier,
+    changements: Changements,
+  ): Etape<{ readonly observation: ObservationDrive; readonly versionRelue: string | undefined }> {
+    const { transport } = this.dependances;
+    const manifestes = await this.#lireTous(inventaire.manifestes, (id) =>
+      transport.lireContenuManifeste(id),
+    );
+    if (!manifestes.ok) return manifestes;
+    const propre = await this.#lireFichierPropre(inventaire.fichiers, lu.meta);
+    if (!propre.ok) return propre;
+    const appareils = await this.#lireAppareils(lu, inventaire, changements);
+    if (!appareils.ok) return appareils;
+    const { appareilId } = lu.etat;
+    return succes({
       observation: {
         dossierPresent: true,
         manifestes: manifestes.valeur,
         fichierPropre: propre.valeur.lecture,
-        autres: autres.valeur,
-        autresPresents: inventaire.valeur.fichiers.some((f) => f.appareil !== etat.appareilId),
-        orphelins: orphelins.valeur,
+        autres: appareils.valeur.autres,
+        autresPresents: inventaire.fichiers.some((f) => f.appareil !== appareilId),
+        orphelins: appareils.valeur.orphelins,
       },
       versionRelue: propre.valeur.version,
-      jeton: changements.valeur.jeton,
     });
+  }
+
+  /** Orphelins de cet appareil (C8, inventaire), puis fichiers des autres appareils (changements, n° 2). */
+  async #lireAppareils(
+    lu: Lu,
+    inventaire: InventaireDossier,
+    changements: Changements,
+  ): Etape<Pick<ObservationDrive, 'orphelins' | 'autres'>> {
+    const { meta, etat } = lu;
+    const lire = (id: IdFichierDrive) => this.dependances.transport.lireFichierAppareil(id);
+    const orphelins = await this.#lireTous(
+      inventaire.fichiers.filter(
+        (f) => f.appareil === etat.appareilId && f.id !== meta.fichierPropre,
+      ),
+      lire,
+    );
+    if (!orphelins.ok) return orphelins;
+    const autres = await this.#lireTous(
+      changements.fichiers.filter((f) => f.appareil !== etat.appareilId),
+      lire,
+      'FichierAppareilIgnore',
+    );
+    return autres.ok ? succes({ orphelins: orphelins.valeur, autres: autres.valeur }) : autres;
   }
 
   /** Dossier où écrire : le dossier courant, sinon un dossier préparé (n° 9 (3), n° 11 b et c). */
@@ -636,13 +697,30 @@ export class CycleSynchronisation implements SuiviCycle {
    * déménagement (n° 14), orphelins (C8).
    */
   async #synchroniser(vue: Vue, d: Synchroniser): Etape<Fin> {
-    const { meta } = vue.lu;
     const dossier = await this.#dossierOuPrepare(vue);
     if (!dossier.ok) return dossier;
     const fusion = await this.#fusionner(d.fusion, vue);
     if (!fusion.ok) return fusion;
-    const releve = definies({
-      ...this.#metaObservee(vue, dossier.valeur),
+    const memorise = await this.#memoriser(this.#releve(vue, d, dossier.valeur));
+    if (!memorise.ok) return memorise;
+    const manifeste = await this.#manifesteSynchronise(vue, d, dossier.valeur);
+    if (!manifeste.ok) return manifeste;
+    // Sans fusion écrite, la lecture du début suffit au dépôt : une écriture locale faite depuis a un HLC plus
+    // grand que `deposeJusquA` et reste en attente (DAT §4.1.5 bis).
+    const depose = await this.#deposer(
+      dossier.valeur,
+      { force: d.depotForce, fichierExistant: vue.lu.meta.fichierPropre },
+      fusion.valeur ? undefined : vue.lu,
+    );
+    if (!depose.ok) return depose;
+    return this.#demenagerPuisNettoyer(vue, dossier.valeur);
+  }
+
+  /** Méta relevée après les fusions (n° 5, n° 12) : observation, restauration connue (C1), demande, version relue. */
+  #releve(vue: Vue, d: Synchroniser, dossier: IdFichierDrive): Partial<MetaSynchronisation> {
+    const { meta } = vue.lu;
+    return definies({
+      ...this.#metaObservee(vue, dossier),
       restaurationConnue: this.#siChange(
         meta.restaurationConnue,
         restaurationConnueApres(meta.restaurationConnue, d.restaurationVue),
@@ -651,27 +729,24 @@ export class CycleSynchronisation implements SuiviCycle {
       versionFichierPropre:
         vue.observation.fichierPropre.type === 'LU' && !d.depotForce ? vue.versionRelue : undefined,
     });
-    const memorise = await this.#memoriser(releve);
-    if (!memorise.ok) return memorise;
+  }
+
+  /** Manifeste (n° 7) : écriture monotone si `manifesteAEcrire`, sinon le canonique lu ; mémorisé s'il a changé. */
+  async #manifesteSynchronise(vue: Vue, d: Synchroniser, dossier: IdFichierDrive): Etape {
     const manifeste =
       d.manifesteAEcrire === undefined
         ? succes(vue.inventaire.manifestes[0]?.id)
-        : await this.#ecrireManifeste(dossier.valeur, d.manifesteAEcrire, 'ORDINAIRE');
+        : await this.#ecrireManifeste(dossier, d.manifesteAEcrire, 'ORDINAIRE');
     if (!manifeste.ok) return manifeste;
-    const canonique = await this.#memoriser(
-      definies({ manifeste: this.#siChange(meta.manifeste, manifeste.valeur) }),
+    return this.#memoriser(
+      definies({ manifeste: this.#siChange(vue.lu.meta.manifeste, manifeste.valeur) }),
     );
-    if (!canonique.ok) return canonique;
-    // Sans fusion écrite, la lecture du début suffit au dépôt : une écriture locale faite depuis a un HLC plus
-    // grand que `deposeJusquA` et reste en attente (DAT §4.1.5 bis).
-    const depose = await this.#deposer(
-      dossier.valeur,
-      { force: d.depotForce, fichierExistant: meta.fichierPropre },
-      fusion.valeur ? undefined : vue.lu,
-    );
-    if (!depose.ok) return depose;
-    if (vue.canonique !== undefined && dossier.valeur !== vue.canonique) {
-      const demenage = await this.#demenager(vue, dossier.valeur, vue.canonique);
+  }
+
+  /** Déménagement si le dossier courant n'est pas le canonique (n° 14), puis orphelins (C8). */
+  async #demenagerPuisNettoyer(vue: Vue, dossier: IdFichierDrive): Etape<Fin> {
+    if (vue.canonique !== undefined && dossier !== vue.canonique) {
+      const demenage = await this.#demenager(vue, dossier, vue.canonique);
       if (!demenage.ok) return demenage;
     }
     return this.#supprimerOrphelins(vue);
@@ -683,7 +758,6 @@ export class CycleSynchronisation implements SuiviCycle {
    * manifeste (demandée : écriture monotone, mode « choix », restauration `h`) ; méta ; orphelins.
    */
   async #restaurer(vue: Vue, d: Restaurer): Etape<Fin> {
-    const { meta } = vue.lu;
     const fusion = await this.#fusionner(d.fusion, vue);
     if (!fusion.ok) return fusion;
     const h = d.motif === 'DEMANDEE' ? await this.#consommerHlc(vue) : succes(undefined);
@@ -700,29 +774,41 @@ export class CycleSynchronisation implements SuiviCycle {
       },
     });
     if (!depose.ok) return depose;
-    const restauration = h.valeur;
-    if (restauration === undefined) {
-      // Faite ailleurs (n° 8) : le manifeste n'est pas réécrit ; canonique et restauration connue mémorisés (C1).
-      const memorise = await this.#memoriser(
-        definies({
-          manifeste: this.#siChange(meta.manifeste, vue.inventaire.manifestes[0]?.id),
-          restaurationConnue: restaurationConnueApres(meta.restaurationConnue, d.restaurationVue),
-        }),
-      );
-      return memorise.ok ? this.#supprimerOrphelins(vue) : memorise;
-    }
+    const memorise =
+      h.valeur === undefined
+        ? await this.#restaurationVue(vue, d)
+        : await this.#restaurationChoisie(vue.lu.meta, dossier.valeur, h.valeur);
+    return memorise.ok ? this.#supprimerOrphelins(vue) : memorise;
+  }
+
+  /** Faite ailleurs (n° 8) : le manifeste n'est pas réécrit ; canonique et restauration connue mémorisés (C1). */
+  #restaurationVue(vue: Vue, d: Restaurer): Etape {
+    const { meta } = vue.lu;
+    return this.#memoriser(
+      definies({
+        manifeste: this.#siChange(meta.manifeste, vue.inventaire.manifestes[0]?.id),
+        restaurationConnue: restaurationConnueApres(meta.restaurationConnue, d.restaurationVue),
+      }),
+    );
+  }
+
+  /** Demandée (n° 9) : manifeste de la restauration `h` (écriture monotone, mode « choix »), puis méta. */
+  async #restaurationChoisie(
+    meta: MetaSynchronisation,
+    dossier: IdFichierDrive,
+    restauration: Hlc,
+  ): Etape {
     const manifeste = await this.#ecrireManifeste(
-      dossier.valeur,
+      dossier,
       { schemaVersion: SCHEMA_VERSION, generation: generationDe(meta), restauration },
       'CHOIX',
     );
     if (!manifeste.ok) return manifeste;
-    const memorise = await this.#memoriser({
+    return this.#memoriser({
       manifeste: manifeste.valeur,
       restaurationDemandee: false,
       restaurationConnue: restauration,
     });
-    return memorise.ok ? this.#supprimerOrphelins(vue) : memorise;
   }
 
   /**
@@ -787,11 +873,54 @@ export class CycleSynchronisation implements SuiviCycle {
     const g: GenerationNouvelle = { type: 'NOUVELLE', hlc: h.valeur };
     const dossier = await this.#dossierOuPrepare(vue.valeur);
     if (!dossier.ok) return dossier;
-    const { transport, versionApplication, horloge } = this.dependances;
-    const fichierExistant = this.#fichierPropreEnPlace(vue.valeur, dossier.valeur);
+    const ecrit = await this.#ecrireGeneration(vue.valeur, dossier.valeur, g);
+    if (!ecrit.ok) return ecrit;
+    const meta = this.#metaRepartir(dossier.valeur, g, ecrit.valeur);
+    const reinitialise = await this.dependances.depot.appliquerSynchronisation((e) =>
+      planReinitialisation(e, { meta, valeurs: [], dernierHlc: h.valeur }),
+    );
+    if (!reinitialise.ok) return reinitialise;
+    return this.#supprimerOrphelins(vue.valeur);
+  }
+
+  /**
+   * n° 11 c (6) : méta mémorisée par la réinitialisation : dossier, manifeste écrit et sa restauration (C2), G, fichier
+   * propre déposé et sa version, `deposeJusquA` = h, contact avec Drive daté.
+   */
+  #metaRepartir(
+    dossier: IdFichierDrive,
+    g: GenerationNouvelle,
+    ecrit: { readonly depose: FichierDepose; readonly manifeste: ManifesteEcrit },
+  ): Partial<MetaSynchronisation> {
+    return {
+      ...definies({
+        dossier,
+        manifeste: ecrit.manifeste.id,
+        generation: g,
+        restaurationConnue: ecrit.manifeste.contenu.restauration,
+        fichierPropre: ecrit.depose.id,
+        deposeJusquA: g.hlc,
+        dernierContactDrive: this.dependances.horloge.maintenant(),
+      }),
+      ...versionDe(ecrit.depose),
+      fusionNonDeposee: false,
+    };
+  }
+
+  /**
+   * n° 11 c (4) et (5) : fichier propre vide de G, en place s'il est présent (C7), non mémorisé ; puis manifeste
+   * (écriture monotone, mode « choix », C6).
+   */
+  async #ecrireGeneration(
+    vue: Vue,
+    dossier: IdFichierDrive,
+    g: GenerationNouvelle,
+  ): Etape<{ readonly depose: FichierDepose; readonly manifeste: ManifesteEcrit }> {
+    const { transport, versionApplication } = this.dependances;
+    const fichierExistant = this.#fichierPropreEnPlace(vue, dossier);
     const depose = await transport.deposerFichierAppareil({
-      dossier: dossier.valeur,
-      contenu: contenuAEnvoyer(ETAT_LOCAL_VIDE(lu.valeur.etat.appareilId), {
+      dossier,
+      contenu: contenuAEnvoyer(ETAT_LOCAL_VIDE(vue.lu.etat.appareilId), {
         versionApplication,
         generation: g,
       }),
@@ -799,29 +928,13 @@ export class CycleSynchronisation implements SuiviCycle {
     });
     if (!depose.ok) return depose;
     const manifeste = await ecrireManifesteMonotone(transport, {
-      dossier: dossier.valeur,
+      dossier,
       apport: { schemaVersion: SCHEMA_VERSION, generation: g },
       mode: 'CHOIX',
     });
-    if (!manifeste.ok) return manifeste;
-    const meta: Partial<MetaSynchronisation> = {
-      ...definies({
-        dossier: dossier.valeur,
-        manifeste: manifeste.valeur.id,
-        generation: g,
-        restaurationConnue: manifeste.valeur.contenu.restauration,
-        fichierPropre: depose.valeur.id,
-        deposeJusquA: h.valeur,
-        dernierContactDrive: horloge.maintenant(),
-      }),
-      ...versionDe(depose.valeur),
-      fusionNonDeposee: false,
-    };
-    const reinitialise = await this.dependances.depot.appliquerSynchronisation((e) =>
-      planReinitialisation(e, { meta, valeurs: [], dernierHlc: h.valeur }),
-    );
-    if (!reinitialise.ok) return reinitialise;
-    return this.#supprimerOrphelins(vue.valeur);
+    return manifeste.ok
+      ? succes({ depose: depose.valeur, manifeste: manifeste.valeur })
+      : manifeste;
   }
 
   // ------------------------------------------------------------------ Étapes
@@ -948,47 +1061,35 @@ export class CycleSynchronisation implements SuiviCycle {
   async #demenager(vue: Vue, ancien: IdFichierDrive, canonique: IdFichierDrive): Etape {
     const lu = await this.#lire();
     if (!lu.ok) return lu;
-    const { etat, meta, signalements } = lu.valeur;
-    const { transport, versionApplication, horloge, depot } = this.dependances;
-    const x = etat.dernierHlc;
-    const depose = await transport.deposerFichierAppareil({
+    const x = lu.valeur.etat.dernierHlc;
+    const depose = await this.dependances.transport.deposerFichierAppareil({
       dossier: canonique,
-      contenu: contenuAEnvoyer(etat, {
-        versionApplication,
-        generation: generationDe(meta),
-        signalements,
-      }),
+      contenu: this.#contenuPropre(lu.valeur),
     });
     if (!depose.ok) return depose;
-    const apport = vue.observation.manifestes.reduce<ContenuManifeste>(
-      (cible, m) =>
-        m.lecture.type === 'LU' ? fusionnerManifestes(cible, m.lecture.contenu) : cible,
-      { schemaVersion: SCHEMA_VERSION, generation: generationDe(meta) },
-    );
+    const apport = apportDuDemenagement(vue.observation, lu.valeur.meta);
     const manifeste = await this.#ecrireManifeste(canonique, apport, 'ORDINAIRE');
     if (!manifeste.ok) return manifeste;
-    const memorise = await depot.appliquerSynchronisation((e) => ({
-      plan: planRetrait(e, x),
-      meta: {
-        ...definies({ deposeJusquA: x }),
-        ...versionDe(depose.valeur),
-        dossier: canonique,
-        fichierPropre: depose.valeur.id,
-        manifeste: manifeste.valeur,
-        inventaireAFaire: true,
-        fusionNonDeposee: false,
-        dernierContactDrive: horloge.maintenant(),
-      },
-    }));
+    const memorise = await this.#confirmerDepot(x, depose.valeur, {
+      dossier: canonique,
+      manifeste: manifeste.valeur,
+      inventaireAFaire: true,
+    });
     if (!memorise.ok) return memorise;
-    if (meta.fichierPropre !== undefined) await this.#mettreALaCorbeille(meta.fichierPropre);
-    const inventaire = await transport.inventorierDossier(ancien);
+    const ancienPropre = lu.valeur.meta.fichierPropre;
+    if (ancienPropre !== undefined) await this.#mettreALaCorbeille(ancienPropre);
+    await this.#quitterDossier(ancien);
+    return succes(undefined);
+  }
+
+  /** Nouvel inventaire du dossier quitté (n° 14) : vide de tout fichier d'appareil, il est mis à la corbeille. */
+  async #quitterDossier(ancien: IdFichierDrive): Promise<void> {
+    const inventaire = await this.dependances.transport.inventorierDossier(ancien);
     if (!inventaire.ok) {
       this.#consigner('DossierQuitteConserve', inventaire.erreur.type);
     } else if (inventaire.valeur.fichiers.length === 0) {
       await this.#mettreALaCorbeille(ancien);
     }
-    return succes(undefined);
   }
 
   /**
@@ -1080,31 +1181,47 @@ export class CycleSynchronisation implements SuiviCycle {
   ): Etape {
     const lu = lecture === undefined ? await this.#lire() : succes(lecture);
     if (!lu.ok) return lu;
-    const { etat, meta, signalements } = lu.valeur;
+    const { etat, meta } = lu.valeur;
     if (!options.force && !doitDeposer(etat, meta)) return succes(undefined);
     const x = etat.dernierHlc;
-    const { transport, versionApplication, horloge, depot } = this.dependances;
-    const depose = await transport.deposerFichierAppareil({
+    const depose = await this.dependances.transport.deposerFichierAppareil({
       dossier,
-      contenu: contenuAEnvoyer(etat, {
-        versionApplication,
-        generation: generationDe(meta),
-        signalements,
-      }),
+      contenu: this.#contenuPropre(lu.valeur),
       ...(options.fichierExistant === undefined
         ? {}
         : { fichierExistant: options.fichierExistant }),
     });
     if (!depose.ok) return depose;
-    return depot.appliquerSynchronisation((e) => ({
+    return this.#confirmerDepot(x, depose.valeur, options.meta);
+  }
+
+  /** Contenu du fichier propre (§6.2) : état lu, génération mémorisée et signalements. */
+  #contenuPropre({ etat, meta, signalements }: Lu): ContenuFichierAppareil {
+    return contenuAEnvoyer(etat, {
+      versionApplication: this.dependances.versionApplication,
+      generation: generationDe(meta),
+      signalements,
+    });
+  }
+
+  /**
+   * Dépôt confirmé (ENF-T-07), en une transaction : entrées déposées (≤ x) retirées, `deposeJusquA` avancé, fichier
+   * propre et sa version (n° 5) mémorisés avec `meta`, fusion déposée, contact avec Drive daté.
+   */
+  #confirmerDepot(
+    x: Hlc | undefined,
+    depose: FichierDepose,
+    meta: Partial<MetaSynchronisation> | undefined,
+  ): Etape {
+    return this.dependances.depot.appliquerSynchronisation((e) => ({
       plan: planRetrait(e, x),
       meta: {
-        ...options.meta,
+        ...meta,
         ...definies({ deposeJusquA: x }),
-        ...versionDe(depose.valeur),
-        fichierPropre: depose.valeur.id,
+        ...versionDe(depose),
+        fichierPropre: depose.id,
         fusionNonDeposee: false,
-        dernierContactDrive: horloge.maintenant(),
+        dernierContactDrive: this.dependances.horloge.maintenant(),
       },
     }));
   }
