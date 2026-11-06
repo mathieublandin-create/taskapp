@@ -485,7 +485,9 @@ export const CATALOGUE = {
     libelle: 'Restauration demandée. Elle sera faite au retour du réseau.',
     action: 'Annuler la demande',
     variantes: {
-      'en-ligne': { libelle: 'Restauration demandée. Elle sera faite à la prochaine synchronisation.' },
+      'en-ligne': {
+        libelle: 'Restauration demandée. Elle sera faite à la prochaine synchronisation.',
+      },
     },
   },
   'RST-PLUS-TARD': {

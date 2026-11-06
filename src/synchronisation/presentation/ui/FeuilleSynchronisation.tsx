@@ -1,5 +1,6 @@
 import { IonCard, IonCardContent, IonCardTitle } from '@ionic/react';
 import type { ReactElement } from 'react';
+import { CarteChoixRestauration, type ProprietesChoixRestauration } from './ChoixRestauration';
 import type {
   ActionCarteFeuille,
   CarteErreurFeuille,
@@ -12,6 +13,8 @@ export type ProprietesFeuilleSynchronisation = {
   readonly vue: ModeleVueFeuilleSynchronisation;
   readonly surSynchroniser: () => void;
   readonly surActionCarte: (action: ActionCarteFeuille) => void;
+  /** Carte `ERR-012` de la section « Erreurs qui demandent une action » ; présente tant que l'erreur dure. */
+  readonly choixRestauration?: ProprietesChoixRestauration;
 };
 
 const ID_ATTENTE = 'feuille-synchronisation-attente';
@@ -83,6 +86,7 @@ export const FeuilleSynchronisation = ({
   vue,
   surSynchroniser,
   surActionCarte,
+  choixRestauration,
 }: ProprietesFeuilleSynchronisation): ReactElement => (
   <section>
     {vue.dernierEchange === undefined ? null : (
@@ -96,5 +100,6 @@ export const FeuilleSynchronisation = ({
     {vue.cartes.map((carte) => (
       <CarteErreur key={carte.message} carte={carte} surActionCarte={surActionCarte} />
     ))}
+    {choixRestauration === undefined ? null : <CarteChoixRestauration {...choixRestauration} />}
   </section>
 );

@@ -29,6 +29,12 @@ import {
 import { CoffreJetonsMemoire } from '../compte/infrastructure/coffre-jetons-memoire';
 import { GestionEspacesIndexedDb } from '../compte/infrastructure/espaces/gestion-espaces-indexeddb';
 import type { NomEnvironnement } from '../compte/infrastructure/espaces/nom-espace';
+import {
+  AnnulerRestauration,
+  DemanderRestauration,
+  RepartirDeZero,
+  type ErreurChoixRestauration,
+} from '../synchronisation/application/cas-usage/choisir-restauration';
 import { MarquerCommeLue } from '../synchronisation/application/cas-usage/marquer-comme-lue';
 import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
 import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
@@ -56,6 +62,8 @@ import {
   elementsEnAttenteDetailles,
   type ElementEnAttente,
 } from '../synchronisation/domaine/elements-en-attente';
+import { resumerCopieLocale, type CopieLocale } from '../synchronisation/domaine/copie-locale';
+import type { Hlc } from '../synchronisation/domaine/hlc';
 import { compterALire } from '../synchronisation/domaine/lectures';
 import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartees';
 import {
@@ -92,6 +100,12 @@ export type AdaptateursApplication = {
   readonly surFermetureImposee: () => void;
   /** Ouvre `url` dans un nouvel onglet (`noopener,noreferrer`) ; seul `main.tsx` touche à `window.open`. */
   readonly ouvrirOnglet: (url: string) => void;
+};
+
+/** Ce que le choix RG-044 affiche : demande mémorisée et copie de l'appareil (ST-US-017 v0.10 §6.7 n° 17). */
+export type ChoixRestaurationLu = {
+  readonly restaurationDemandee: boolean;
+  readonly copie: CopieLocale;
 };
 
 export type Application = {
@@ -135,6 +149,22 @@ export type Application = {
    * (l'abonnement vaut aussi pour les espaces ouverts après lui).
    */
   readonly observerSynchronisation: (rappel: () => void) => Annulation;
+  /** Choix d'`ERR-012` ; undefined sans espace ou si la lecture échoue. */
+  readonly lireChoixRestauration: () => Promise<ChoixRestaurationLu | undefined>;
+  /** Restauration connue de l'espace si c'est cet appareil qui l'a faite (déclencheur de `TST-RESTAUREE`, n° 9). */
+  readonly lireRestaurationFaiteIci: () => Promise<Hlc | undefined>;
+  /** « Restaurer mes données » : mémorisée, exécutée par le cycle. Sans espace : `AucuneAlteration`. */
+  readonly demanderRestauration: () => Promise<
+    Resultat<'EN_ATTENTE_DU_RESEAU' | 'LANCEE', ErreurChoixRestauration>
+  >;
+  /** « Annuler la demande » ; sans effet, et sans erreur, sans espace. */
+  readonly annulerRestauration: () => Promise<Resultat<undefined, ErreurDepotLocal>>;
+  /** « Repartir de zéro… » : `n` modifications perdues, ou un refus. Sans espace : `AucuneAlteration`. */
+  readonly evaluerRepartirDeZero: () => Promise<
+    Resultat<{ readonly n: number }, ErreurChoixRestauration>
+  >;
+  /** « Repartir de zéro » confirmé. Sans espace : `AucuneAlteration`. */
+  readonly repartirDeZero: () => Promise<Resultat<undefined, ErreurChoixRestauration>>;
   /** Ouvre Google Drive dans un nouvel onglet (action de la carte ERR-011). */
   readonly ouvrirGoogleDrive: () => void;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
@@ -196,6 +226,32 @@ const marquerCommeLueDans = async (
   espace === undefined
     ? succes(undefined)
     : new MarquerCommeLue({ depot: espace.depot, horloge }).executer(ids);
+
+const SANS_ESPACE = echec<ErreurChoixRestauration>({ type: 'AucuneAlteration' });
+
+const choixRestaurationDe = async (
+  espace: EspaceOuvert | undefined,
+): Promise<ChoixRestaurationLu | undefined> => {
+  if (espace === undefined) return undefined;
+  const etat = await espace.depot.lire();
+  const meta = await espace.depot.lireMeta();
+  if (!etat.ok || !meta.ok) return undefined;
+  return {
+    restaurationDemandee: meta.valeur.restaurationDemandee === true,
+    copie: resumerCopieLocale(etat.valeur),
+  };
+};
+
+const restaurationFaiteIciDe = async (
+  espace: EspaceOuvert | undefined,
+): Promise<Hlc | undefined> => {
+  if (espace === undefined) return undefined;
+  const etat = await espace.depot.lire();
+  const meta = await espace.depot.lireMeta();
+  if (!etat.ok || !meta.ok) return undefined;
+  const connue = meta.valeur.restaurationConnue;
+  return connue?.appareil === etat.valeur.appareilId ? connue : undefined;
+};
 
 const URL_GOOGLE_DRIVE = 'https://drive.google.com/';
 
@@ -403,6 +459,37 @@ const assemblerNonRetenues = (a: AdaptateursApplication, n: Noyau) => ({
     marquerCommeLueDans(n.espace(), a.horloge, ids),
 });
 
+/** Geste sur l'espace ouvert ; `sansEspace` est son issue quand aucun espace n'est ouvert. */
+const surEspace =
+  <T>(n: Noyau, sansEspace: T, geste: (espace: EspaceOuvert) => Promise<T>): (() => Promise<T>) =>
+  async () => {
+    const espace = n.espace();
+    return espace === undefined ? sansEspace : geste(espace);
+  };
+
+/** Choix de restauration d'`ERR-012` (ST-US-017 v0.10 §6.7 n° 9, 11, 17) : un cas d'usage par geste, sur l'espace ouvert. */
+const assemblerRestauration = (a: AdaptateursApplication, n: Noyau) => {
+  const dependances = (espace: EspaceOuvert) => ({
+    depot: espace.depot,
+    cycle: espace.cycle,
+    reseau: a.reseau,
+  });
+  return {
+    lireChoixRestauration: () => choixRestaurationDe(n.espace()),
+    lireRestaurationFaiteIci: () => restaurationFaiteIciDe(n.espace()),
+    demanderRestauration: surEspace(n, SANS_ESPACE, (e) =>
+      new DemanderRestauration(dependances(e)).executer(),
+    ),
+    annulerRestauration: surEspace(n, succes(undefined), (e) =>
+      new AnnulerRestauration(dependances(e)).executer(),
+    ),
+    evaluerRepartirDeZero: surEspace(n, SANS_ESPACE, (e) =>
+      new RepartirDeZero(dependances(e)).evaluer(),
+    ),
+    repartirDeZero: surEspace(n, SANS_ESPACE, (e) => new RepartirDeZero(dependances(e)).executer()),
+  };
+};
+
 /** ST-US-017 §3.1 n° 16 : l'indicateur lit le cycle de l'espace ouvert. */
 const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
   const masquage = new MasquageRappel();
@@ -419,6 +506,7 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
     lireElementsEnAttente: () => elementsEnAttenteDe(n.espace()),
     lireDernierContact: () => dernierContactDe(n.espace()),
     ...assemblerNonRetenues(a, n),
+    ...assemblerRestauration(a, n),
     synchroniserMaintenant: async () => {
       await n.espace()?.cycle.synchroniserMaintenant();
     },

@@ -74,6 +74,34 @@ export type ConfirmationRepartirDeZero = {
   readonly actionLibelle: string;
 };
 
+/** Libellé générique de l'en-tête de la feuille (guide §6.6.4 : « Fermer »), sans code de catalogue (comme « Annuler »). */
+export const LIBELLE_FERMER = 'Fermer';
+
+/** Textes du composant selon le réseau : la mention de la demande dit « au retour du réseau » ou « à la prochaine synchronisation ». */
+export const construireTextesChoixRestauration = (
+  reseau: EtatSynchronisationAffichable['reseau'],
+): TextesChoixRestauration => ({
+  titreFeuille: libelle('SYN-ACTION'),
+  fermer: LIBELLE_FERMER,
+  phraseRestaurer: libelle('RST-RESTAURER'),
+  restaurationEnCours: libelle('RST-RESTAURATION-EN-COURS'),
+  mentionDemandee: libelle('RST-DEMANDEE', reseau === 'CONNECTE' ? { variante: 'en-ligne' } : {}),
+  annulerDemande: libelle('RST-DEMANDEE', {}, 'action'),
+  repartirDeZero: libelle('ERR-012', {}, 'actionSecondaire'),
+  phraseRepartirDeZero: libelle('RST-REPARTIR-ZERO'),
+  repartirDeZeroIndisponible: libelle('RST-REPARTIR-INDISPONIBLE'),
+  deciderPlusTard: libelle('ERR-012', {}, 'fermeture'),
+  phraseDeciderPlusTard: libelle('RST-PLUS-TARD'),
+});
+
+/** Confirmation de « Repartir de zéro » : la phrase des modifications perdues n'existe que si `n ≥ 1` (variante `perte`). */
+export const construireConfirmationRepartirDeZero = (n: number): ConfirmationRepartirDeZero => ({
+  code: 'CNF-REPARTIR-ZERO',
+  titre: libelle('CNF-REPARTIR-ZERO'),
+  texte: libelle('CNF-REPARTIR-ZERO', n > 0 ? { n, variante: 'perte' } : {}, 'texte'),
+  actionLibelle: libelle('CNF-REPARTIR-ZERO', {}, 'action'),
+});
+
 /**
  * Modèle de vue d'`ERR-012` et de son choix (n° 16) : `undefined` si `etat.actionRequise ≠ DONNEES_ABSENTES`
  * (« aucun choix entre restaurer et repartir de zéro n'est demandé ») ; sinon le modèle ci-dessus.

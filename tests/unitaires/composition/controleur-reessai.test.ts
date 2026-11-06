@@ -31,6 +31,7 @@ import {
   ReseauFixe,
 } from '../../support/compte/doublures-compte';
 import { instant } from '../../support/valeurs';
+import { RESTAURATION_ABSENTE } from '../../support/synchronisation/restauration-absente';
 
 class EspacesInstables extends EspacesEnMemoire {
   ouvertureImpossible = true;
@@ -79,6 +80,7 @@ const preparer = () => {
     synchroniserMaintenant: () => Promise.resolve(),
     observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => undefined,
+    ...RESTAURATION_ABSENTE,
     seConnecter: new SeConnecter({
       ...{ reseau, fournisseur, espaces, memoireSession, session },
       preparation: new PreparationSimulee(),
