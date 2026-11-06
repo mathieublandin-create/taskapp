@@ -113,6 +113,14 @@ describe('Cycle de la tranche B3 : journalisation de C2 et ordre de lecture des 
       journal: [],
     };
     valeurDe(await transportPc.deposerFichierAppareil({ dossier, contenu }));
+    // Manifeste écrit par le PC (première connexion, ST-US-017 v0.10.1 §6.7 n° 7) : sans lui, le cycle suivant du
+    // smartphone, qui attend alors son fichier propre, constaterait une altération (n° 4, ERR-012).
+    valeurDe(
+      await transportPc.ecrireManifeste({
+        dossier,
+        contenu: { schemaVersion: 1, generation: { type: 'INITIALE' } },
+      }),
+    );
 
     expect(await smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
 

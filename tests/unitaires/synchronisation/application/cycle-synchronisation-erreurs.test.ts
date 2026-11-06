@@ -43,7 +43,8 @@ type MethodeEnPanne =
   | 'listerFichiersAppareils'
   | 'changements'
   | 'lireFichierAppareil'
-  | 'lireManifeste';
+  | 'lireManifeste'
+  | 'lireContenuManifeste';
 
 /** Transport qui rend, une fois, l'erreur programmée pour une méthode ; compte les lectures de fichier. */
 const transportAvecPannes = (reel: TransportSynchro) => {
@@ -72,7 +73,8 @@ const transportAvecPannes = (reel: TransportSynchro) => {
     ecrireManifeste: (p) => reel.ecrireManifeste(p),
     listerDossiers: () => reel.listerDossiers(),
     inventorierDossier: (dossier) => reel.inventorierDossier(dossier),
-    lireContenuManifeste: (id) => reel.lireContenuManifeste(id),
+    lireContenuManifeste: (id) =>
+      panne('lireContenuManifeste', () => reel.lireContenuManifeste(id)),
     supprimerFichier: (id) => reel.supprimerFichier(id),
   };
   return { transport, pannes, lectures };
@@ -271,7 +273,7 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
     },
   );
 
-  it('UT-COMP-US-017-39 lecture du manifeste en 5xx : aucun dépôt ni manifeste mémorisé, fusions conservées (jeton mémorisé après elles, §6.3 v0.3.1) ; la reprise mémorise le manifeste et dépose', async () => {
+  it('UT-COMP-US-017-39 lecture du manifeste en 5xx pendant l’observation (ST-US-017 v0.10.1 §6.7 n° 2, 12 ; §8 n° 14) : jamais une altération, rien de fusionné, mémorisé ni écrit ; la reprise mémorise le manifeste, fusionne et dépose', async () => {
     const env = preparer();
     const pc = env.appareil(PC, '02');
     await creer(pc, 1);
@@ -279,16 +281,22 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
     const smartphone = env.appareil(SMARTPHONE, '01');
     const enPanne = env.cycleEnPanne(smartphone);
     await creer(smartphone, 2);
-    enPanne.pannes.set('lireManifeste', { type: 'ServeurIndisponible' });
+    const metaAvant = await meta(smartphone);
+    enPanne.pannes.set('lireContenuManifeste', { type: 'ServeurIndisponible' });
 
     expect(await enPanne.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
 
+    // L'observation précède toute fusion et toute écriture (n° 12) ; une erreur de transport n'est pas une altération.
+    expect(enPanne.pannes.has('lireContenuManifeste')).toBe(false);
+    expect(enPanne.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(enPanne.cycle.etatMoteur().cycle).toBe('RETENTATIVE');
     const apresEchec = await meta(smartphone);
     expect(apresEchec.manifeste).toBeUndefined();
     expect(apresEchec.fichierPropre).toBeUndefined();
-    expect(apresEchec.fusionNonDeposee).toBe(true);
+    expect(apresEchec.pageToken).toBe(metaAvant.pageToken);
+    expect(apresEchec.fusionNonDeposee).toBe(metaAvant.fusionNonDeposee);
     expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(0);
-    expect(await objectifs(smartphone)).toBe(2);
+    expect(await objectifs(smartphone)).toBe(1);
     expect(await enAttente(smartphone)).toBe(1);
 
     await env.avancer(MINUTE, enPanne.cycle);
@@ -297,6 +305,7 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
     expect(apresReprise.manifeste).toBeDefined();
     expect(apresReprise.fichierPropre).toBeDefined();
     expect(apresReprise.fusionNonDeposee).toBe(false);
+    expect(await objectifs(smartphone)).toBe(2);
     expect(await enAttente(smartphone)).toBe(0);
   });
 
