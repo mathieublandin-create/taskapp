@@ -6,8 +6,6 @@ import type { CopieLocale } from '../../domaine/copie-locale';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 
 // ST-US-017 v0.10 §4.7, §6.7 n° 16 ; ECR-011 E (maquette), guide §4.25 (OptionCard), §6.6.8 (ERR-012, Q-US-017-11).
-// Textes hors catalogue (cartes d'option, « Décider plus tard », mention et lien de la demande hors ligne) :
-// Q-ST017-STE-4 ; seuls les éléments testés ici sont figés.
 
 export type EntreeChoixRestauration = {
   readonly etat: Pick<EtatSynchronisationAffichable, 'actionRequise' | 'reseau'>;
@@ -41,7 +39,7 @@ export type ModeleVueChoixRestauration = {
 
 /**
  * Textes du composant `ChoixRestauration` (guide §6.6.4, famille `RST-`, et parties d'`ERR-012`) : le composant n'écrit
- * aucun texte. Construits par la composition (D3, `TODO(D3-RST)` : les codes `RST-*` n'existent pas encore au catalogue).
+ * aucun texte. Construits par la composition.
  */
 export type TextesChoixRestauration = {
   /** `libelle('SYN-ACTION')` : titre de la feuille. */
@@ -89,12 +87,18 @@ export const construireChoixRestauration = ({
 }: EntreeChoixRestauration): ModeleVueChoixRestauration | undefined => {
   if (etat.actionRequise !== 'DONNEES_ABSENTES') return undefined;
   const anciennete = formaterAnciennete(copie.derniereMiseAJour ?? maintenant, maintenant);
+  const copieVide = copie.objectifs === 0 && copie.taches === 0;
   return {
     code: 'ERR-012',
     titre: libelle('ERR-012'),
     texte: libelle(
       'ERR-012',
-      { objectifs: copie.objectifs, taches: copie.taches, anciennete },
+      {
+        objectifs: copie.objectifs,
+        taches: copie.taches,
+        anciennete,
+        ...(copieVide ? { variante: 'copie-vide' } : {}),
+      },
       'texte',
     ),
     propose: !decisionReportee,

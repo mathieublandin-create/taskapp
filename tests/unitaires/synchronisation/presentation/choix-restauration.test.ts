@@ -83,15 +83,10 @@ describe('construireChoixRestauration (ST-US-017 v0.10 §6.7 n° 16)', () => {
     expect(reporte?.propose).toBe(false);
   });
 
-  it('UT-US-017-72 copie vide (aucune information) : 0 objectif, 0 tâche, ancienneté « à l’instant »', () => {
+  it('UT-US-017-72 copie vide (aucun objectif ni aucune tâche) : variante `copie-vide` d’ERR-012, sans ancienneté (guide §6.6.8, v0.2.21)', () => {
     const vue = construireChoixRestauration(entree({ copie: { objectifs: 0, taches: 0 } }));
-    expect(vue?.texte).toBe(
-      libelle(
-        'ERR-012',
-        { objectifs: 0, taches: 0, anciennete: formaterAnciennete(MAINTENANT, MAINTENANT) },
-        'texte',
-      ),
-    );
+    expect(vue?.texte).toBe(libelle('ERR-012', { variante: 'copie-vide' }, 'texte'));
+    expect(vue?.texte).toContain('n’en garde aucun objectif ni aucune tâche');
   });
 });
 
