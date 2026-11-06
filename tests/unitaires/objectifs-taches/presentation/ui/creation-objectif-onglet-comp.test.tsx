@@ -4,7 +4,6 @@
  * complémentaire : le geste « Créer un objectif » de la liste n'appelle pas la création de tâche.
  */
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { creerMagasinTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-taches';
