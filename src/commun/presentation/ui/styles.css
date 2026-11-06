@@ -285,3 +285,68 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
 .champ-detail-nom {
   font-weight: 600;
 }
+
+/* Mise en page de l'application (guide §2.2, §4.14) : l'espace occupe la hauteur de l'écran, le contenu défile dans
+   `ion-content`, la barre d'onglets reste en bas, au-dessus du « + » flottant de la vue (zone du pouce). */
+.espace-application {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.espaces {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.espaces-contenu {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.barre-onglets {
+  display: flex;
+  border-top: 1px solid var(--dj-bord);
+  background: var(--ion-background-color, #fff);
+}
+
+.barre-onglets button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  min-width: 44px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.barre-onglets button[aria-current='page'] {
+  color: var(--dj-accent);
+  font-weight: 700;
+}
+
+/* « + » flottant : le libellé visible précède le bouton rond (guide §4.14 : cibles d'au moins 44 px). */
+.bouton-flottant {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bouton-flottant-etiquette {
+  padding: 12px 16px;
+  border-radius: 24px;
+  background: var(--ion-background-color, #fff);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  font-weight: 600;
+  white-space: nowrap;
+}
