@@ -97,3 +97,14 @@ Questions telles qu'elles ont été posées :
 - **Q-TOK-1** : adopter les optimisations OPT-1 à OPT-8 ? *Reco : oui.* OPT-2 suppose que vous lanciez désormais la session avec `claude --agent jarvis`.
 - **Q-TOK-2** : créer le profil « développeur cœur de données et synchronisation » (opus) et le profil « outillage et CI » (haiku), en gardant Benjamin (sonnet) sur le fonctionnel et l'interface ? *Reco : oui.* Choisissez les deux noms, ou laissez Jarvis en proposer.
 - **Q-TOK-3** : appliquer ce découpage dès le rang 0 en cours ? *Reco : non.* Benjamin termine le rang 0, qui est déjà bien avancé. Le nouveau profil prend le rang 1, et l'outillage restant est confié au profil outillage.
+
+
+## Piste Mistral AI (ajout du 2026-11-02)
+
+Question du commanditaire : confier du travail à un modèle Mistral AI (forfait existant) pour économiser des tokens Claude.
+
+- **Prérequis à confirmer par le commanditaire** : ce que le forfait couvre réellement (abonnement de chat, ou accès API / outil en ligne de commande pour le code). Un abonnement de chat ne donne pas forcément de crédits d'API, et l'organisation actuelle ne délègue qu'à des agents Claude.
+- **Faisabilité technique** : un développeur Claude devrait appeler un outil externe (script d'API ou CLI de Mistral) via le terminal. Cela déplace le coût plutôt qu'il ne le supprime : le développeur Claude relit toujours le résultat et l'intègre.
+- **Tâches candidates** (faible risque, bornées, vérifiables par des tests rouges existants) : tranches d'interface et d'étapes Cucumber des rangs (profil « D » de Benjamin), rédaction de tests complémentaires de couverture, mises à jour de documents mécaniques. À éviter : noyau de fusion, spécifications, revues E13, conception.
+- **Risque pour la qualité** : les rangs 5 à 9 montrent que les reprises coûtent cher (corrections E13 de 40 à 140 k tokens chacune). Un modèle moins fiable sur les conventions du projet peut perdre plus qu'il n'économise.
+- **Protocole de pilote proposé** : une tranche d'interface d'un rang du lot 2, mêmes tests rouges et mêmes consignes ; mesurer tokens Claude économisés contre tokens des tours de revue et reprises ; décision à l'issue du bilan de `docs/bilan-tokens-lot1.md`.
