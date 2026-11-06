@@ -72,4 +72,7 @@ export const LIBELLES_TACHES = {
   terminerTache: 'Terminer la tâche',
   rouvrirTache: 'Rouvrir la tâche',
   reprendreTache: 'Reprendre la tâche',
+  // TODO(Q-ST024-STE-1) : sans code au catalogue (guide §6.6.9, maquette ECR-007 H) jusqu'à la réponse de Steeve (b).
+  terminerSousTache: 'Terminer la sous-tâche',
+  abandonnerSousTache: 'Abandonner la sous-tâche',
 } as const;

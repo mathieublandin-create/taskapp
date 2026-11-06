@@ -17,7 +17,7 @@ import {
   creerBancObjectifs,
   nettoyerDocument,
   ouvrir,
-  saisir,
+  renseigner,
   type BancObjectifs,
 } from '@tests/support/ui-objectifs';
 
@@ -47,12 +47,12 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
     expect(await screen.findByRole('form', { name: 'Nouvel objectif' })).toBeTruthy();
     expect(registreSaisie.saisieEnCours()).toBe(false);
-    await saisir('Intitulé', '  Publier le guide  ');
+    await renseigner('Intitulé', '  Publier le guide  ');
     await waitFor(() => {
       expect(registreSaisie.saisieEnCours()).toBe(true);
     });
-    await saisir('Description (facultative)', 'Version 1');
-    await saisir('Délai (facultatif)', '2026-12-15');
+    await renseigner('Description (facultative)', 'Version 1');
+    await renseigner('Délai (facultatif)', '2026-12-15');
     await cliquerBoutonIon('Créer l’objectif');
 
     await screen.findByRole('heading', { level: 1, name: 'Publier le guide' });
@@ -72,7 +72,7 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     const banc = creerBancObjectifs();
     afficher(banc);
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
-    await saisir('Description (facultative)', 'À garder');
+    await renseigner('Description (facultative)', 'À garder');
 
     await cliquerBoutonIon('Créer l’objectif');
 
@@ -92,7 +92,7 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     const banc = creerBancObjectifs();
     afficher(banc);
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
-    await saisir('Intitulé', 'Abandonné');
+    await renseigner('Intitulé', 'Abandonné');
     await waitFor(() => {
       expect(registreSaisie.saisieEnCours()).toBe(true);
     });
@@ -106,7 +106,7 @@ describe('Création d’un objectif (ECR-008 B, US-001 CA-1, CA-2, CA-5)', () =>
     expect(valeurDe(await banc.services.consulterObjectifs.executer()).objectifs).toHaveLength(0);
 
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
-    await saisir('Intitulé', 'Par Entrée');
+    await renseigner('Intitulé', 'Par Entrée');
     await userEvent.type(await champ('Intitulé'), '{Enter}');
     await screen.findByRole('heading', { level: 1, name: 'Par Entrée' });
   });
@@ -150,7 +150,7 @@ describe('Menu « … » de l’objectif (ECR-003 C, US-001 CA-5, CA-9)', () => 
 
     expect(await screen.findByRole('form', { name: 'Renommer l’objectif' })).toBeTruthy();
     expect((await champ('Intitulé')).value).toBe('Ancien nom');
-    await saisir('Intitulé', 'Nouveau nom');
+    await renseigner('Intitulé', 'Nouveau nom');
     await cliquerBoutonIon('Enregistrer');
 
     await screen.findByRole('heading', { level: 1, name: 'Nouveau nom' });
@@ -162,7 +162,7 @@ describe('Menu « … » de l’objectif (ECR-003 C, US-001 CA-5, CA-9)', () => 
     await ouvrirDetail(banc, 'Reste');
     await ouvrirMenu();
     await choisirOuvrantUneFeuille('Renommer l’objectif');
-    await saisir('Intitulé', '');
+    await renseigner('Intitulé', '');
 
     await cliquerBoutonIon('Enregistrer');
 
@@ -175,13 +175,13 @@ describe('Menu « … » de l’objectif (ECR-003 C, US-001 CA-5, CA-9)', () => 
     await ouvrirDetail(banc, 'Guide');
     await ouvrirMenu();
     await choisirOuvrantUneFeuille('Modifier la description');
-    await saisir('Description (facultative)', 'Nouvelle description');
+    await renseigner('Description (facultative)', 'Nouvelle description');
     await cliquerBoutonIon('Enregistrer');
     await screen.findByText('Nouvelle description', { selector: 'p' });
 
     await ouvrirMenu();
     await choisirOuvrantUneFeuille('Changer le délai');
-    await saisir('Délai (facultatif)', '2026-12-22');
+    await renseigner('Délai (facultatif)', '2026-12-22');
     await cliquerBoutonIon('Enregistrer');
     await screen.findByText('Délai : 22 déc.');
 
@@ -222,7 +222,7 @@ describe('Erreur d’enregistrement (ERR-014)', () => {
     const banc = creerBancEcritureImpossible();
     afficher(banc);
     await ouvrir('Modal', () => cliquerBoutonIon('Créer un objectif'));
-    await saisir('Intitulé', 'Perdu ?');
+    await renseigner('Intitulé', 'Perdu ?');
 
     await cliquerBoutonIon('Créer l’objectif');
 
