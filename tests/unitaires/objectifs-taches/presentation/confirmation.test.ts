@@ -61,12 +61,14 @@ describe('construireConfirmation (conventions.md §8.6, guide §6.6.7)', () => {
       tacheId: idTache(1),
       intitule: 'Refaire le logo',
       sousTachesAbandonnees: 0,
+      sousTachesTerminees: 0,
     });
     const enCascade = construireConfirmation({
       type: 'ABANDON_TACHE',
       tacheId: idTache(2),
       intitule: 'Chapitre 1',
       sousTachesAbandonnees: 2,
+      sousTachesTerminees: 1,
     });
 
     expect(sansSousTache).toMatchObject({
@@ -75,7 +77,7 @@ describe('construireConfirmation (conventions.md §8.6, guide §6.6.7)', () => {
     });
     expect(enCascade).toMatchObject({
       code: 'CNF-ABANDON-TACHE-CASCADE',
-      variables: { element: 'Chapitre 1', n: 2 },
+      variables: { element: 'Chapitre 1', n: 2, t: 1 },
     });
   });
 

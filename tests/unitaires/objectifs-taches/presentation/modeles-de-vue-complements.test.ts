@@ -80,19 +80,44 @@ describe('construireConfirmation — confirmations des rangs suivants (guide §6
       tacheId: T,
       intitule: 'Chapitre 1',
       sousTachesAbandonnees: 0,
+      sousTachesTerminees: 0,
     });
     const cascade = construireConfirmation({
       type: 'ABANDON_TACHE',
       tacheId: T,
       intitule: 'Chapitre 1',
       sousTachesAbandonnees: 3,
+      sousTachesTerminees: 0,
     });
 
     expect(simple.code).toBe('CNF-ABANDON-TACHE');
     expect(simple.texte).toContain('Vous la retrouverez dans');
     expect(cascade.code).toBe('CNF-ABANDON-TACHE-CASCADE');
-    expect(cascade.texte).toContain('Ses 3 sous-tâches à faire seront abandonnées aussi');
+    expect(cascade.texte).toBe(
+      '3 sous-tâches à faire seront abandonnées aussi. La tâche quitte vos tâches à faire. Vous la retrouverez dans «\u00a0Abandonnées\u00a0» et pourrez la reprendre.',
+    );
     expect(cascade.actionLibelle).toBe('Abandonner');
+  });
+
+  it('UT-COMP-US-025-16 ABANDON_TACHE — la cascade écrit en entier les nombres accordés et le rappel de reprise (guide §6.6.7)', () => {
+    const texte = (n: number, t: number) =>
+      construireConfirmation({
+        type: 'ABANDON_TACHE',
+        tacheId: T,
+        intitule: 'Chapitre 1',
+        sousTachesAbandonnees: n,
+        sousTachesTerminees: t,
+      }).texte;
+    const fin =
+      'La tâche quitte vos tâches à faire. Vous la retrouverez dans «\u00a0Abandonnées\u00a0» et pourrez la reprendre.';
+
+    expect(texte(2, 1)).toBe(
+      `2 sous-tâches à faire seront abandonnées aussi. 1 sous-tâche déjà terminée reste terminée. ${fin}`,
+    );
+    expect(texte(1, 2)).toBe(
+      `1 sous-tâche à faire sera abandonnée aussi. 2 sous-tâches déjà terminées restent terminées. ${fin}`,
+    );
+    expect(texte(1, 0)).toBe(`1 sous-tâche à faire sera abandonnée aussi. ${fin}`);
   });
 
   it('UT-COMP-US-001-13 REPRISE_SOUS_TACHE — nomme la sous-tâche et la tâche parente, bouton « Reprendre les deux »', () => {
@@ -172,6 +197,12 @@ describe('construireDetailObjectif — niveau, description, retard et alerte', (
     expect(detail.description).toBe('Version 1');
     expect(detail.enRetard).toMatchObject({ code: 'MEN-EN-RETARD' });
     expect(detail.alerteDelai).toMatchObject({ code: 'ALR-007', parent: 'Guide' });
+    expect(detail.alerteDelai?.carte).toEqual({
+      titre: 'Délai postérieur à celui du parent',
+      texte:
+        'Le délai de ce sous-objectif (1 oct.) est après celui de «\u00a0Guide\u00a0» (1 sept.). Rien n’est bloqué.',
+      action: 'Changer le délai',
+    });
     expect(detail.progression).toBe(25);
     expect(detail.nomAccessible).toContain('Publier le guide, En cours, 1 tâches sur 4 terminées');
   });

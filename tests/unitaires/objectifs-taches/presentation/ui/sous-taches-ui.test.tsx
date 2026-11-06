@@ -267,7 +267,7 @@ describe('SectionSousTaches (ECR-007 A, guide §5.8 e)', () => {
     expect(within(section).getAllByRole('listitem')).toHaveLength(2);
     expect(within(section).getAllByText('20 nov.')).toHaveLength(2);
     const caseTerminer = within(section).getByRole('checkbox', {
-      name: 'Terminer « Section B »',
+      name: 'Terminer «\u00a0Section B\u00a0»',
     });
     expect((caseTerminer as HTMLInputElement).disabled).toBe(true);
     expect(within(section).queryByRole('checkbox', { name: /Section A/u })).toBeNull();
@@ -288,7 +288,9 @@ describe('SectionSousTaches (ECR-007 A, guide §5.8 e)', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Terminer « Section A »' }));
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Terminer «\u00a0Section A\u00a0»' }),
+    );
 
     expect(surTerminer).toHaveBeenCalledWith(id);
   });

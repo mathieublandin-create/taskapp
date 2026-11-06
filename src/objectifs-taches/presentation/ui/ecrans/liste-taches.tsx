@@ -1,6 +1,7 @@
-import { IonContent, IonFab, IonFabButton, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { BoutonFlottant } from '../../../../commun/presentation/ui/bouton-flottant';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import type {
@@ -108,14 +109,6 @@ const EnTeteListe = () => (
   </IonHeader>
 );
 
-const BoutonCreer = ({ surCreer }: { readonly surCreer: () => void }) => (
-  <IonFab slot="fixed" vertical="bottom" horizontal="end">
-    <IonFabButton aria-label={LIBELLES_TACHES.ajouterTache} onClick={surCreer}>
-      +
-    </IonFabButton>
-  </IonFab>
-);
-
 export const ListeTaches = ({
   modele,
   surCreer,
@@ -141,7 +134,7 @@ export const ListeTaches = ({
           surTerminer={surTerminer}
           retenues={retenues}
         />
-        <BoutonCreer surCreer={surCreer} />
+        <BoutonFlottant libelle={LIBELLES_TACHES.ajouterTache} surClic={surCreer} />
       </IonContent>
     </>
   );

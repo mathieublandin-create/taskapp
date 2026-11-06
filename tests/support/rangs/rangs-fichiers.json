@@ -137,6 +137,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/commun/presentation/ui/bouton-flottant.tsx": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/commun/presentation/ui/etat-vide.tsx": {
       "debut": 2,
       "fin": 2
@@ -724,6 +728,10 @@
     "src/objectifs-taches/presentation/ui/ecrans/espace-taches.tsx": {
       "debut": 5,
       "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espaces.tsx": {
+      "debut": 9,
+      "fin": 9
     },
     "src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx": {
       "debut": 2,

@@ -145,6 +145,14 @@ const liaisonTaches = (
         },
       };
 
+/** Liaison du détail : tâches, et « Changer le délai » de la carte d'ALR-007, qui ouvre la feuille du délai. */
+const liaisonDetail = (taches: LiaisonTaches | undefined, geste: Geste) => ({
+  ...liaisonTaches(taches, geste),
+  surChangerDelai: () => {
+    geste.ouvrirFeuille('DELAI');
+  },
+});
+
 const Page = ({ ecran, liste, detail, actions, geste, taches }: ProprietesPage) => {
   if (ecran.type === 'LISTE' && liste !== undefined) {
     return (
@@ -167,7 +175,7 @@ const Page = ({ ecran, liste, detail, actions, geste, taches }: ProprietesPage) 
         surAjouterSousObjectif={() => {
           geste.ouvrirFeuille('CREATION_SOUS_OBJECTIF');
         }}
-        {...liaisonTaches(taches, geste)}
+        {...liaisonDetail(taches, geste)}
       />
     );
   }
