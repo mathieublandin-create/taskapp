@@ -4,6 +4,8 @@ import { defineConfig } from '@playwright/test';
 // servi en statique (`vite preview`). Les variables VITE_* sont des valeurs de test, sans secret ni accès à Google.
 const PORT = 4173;
 const ORIGINE = `http://localhost:${String(PORT)}`;
+const PORT_HARNAIS = 4174;
+const ORIGINE_HARNAIS = `http://localhost:${String(PORT_HARNAIS)}`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -19,16 +21,25 @@ export default defineConfig({
       ? {}
       : { launchOptions: { executablePath: process.env['PLAYWRIGHT_CHROMIUM_EXECUTABLE'] } }),
   },
-  webServer: {
-    command: `pnpm build && pnpm exec vite preview --port ${String(PORT)} --strictPort`,
-    url: ORIGINE,
-    reuseExistingServer: process.env['CI'] !== 'true',
-    timeout: 120_000,
-    env: {
-      VITE_ENV: 'recette',
-      VITE_BASE_PATH: '/',
-      VITE_APP_ORIGIN: ORIGINE,
-      VITE_GOOGLE_WEB_CLIENT_ID: 'test.apps.googleusercontent.com',
+  webServer: [
+    {
+      command: `pnpm build && pnpm exec vite preview --port ${String(PORT)} --strictPort`,
+      url: ORIGINE,
+      reuseExistingServer: process.env['CI'] !== 'true',
+      timeout: 120_000,
+      env: {
+        VITE_ENV: 'recette',
+        VITE_BASE_PATH: '/',
+        VITE_APP_ORIGIN: ORIGINE,
+        VITE_GOOGLE_WEB_CLIENT_ID: 'test.apps.googleusercontent.com',
+      },
     },
-  },
+    // Harnais de l'écran connecté (tests/support/harnais/) : servi par vite, hors du build de production.
+    {
+      command: `pnpm exec vite --port ${String(PORT_HARNAIS)} --strictPort`,
+      url: ORIGINE_HARNAIS,
+      reuseExistingServer: process.env['CI'] !== 'true',
+      timeout: 120_000,
+    },
+  ],
 });

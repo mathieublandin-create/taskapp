@@ -1,6 +1,7 @@
-import { IonContent, IonFab, IonFabButton, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import type { IdObjectif } from '../../../../commun/domaine/identifiants';
+import { BoutonFlottant } from '../../../../commun/presentation/ui/bouton-flottant';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import type { LigneObjectif } from '../../modeles-de-vue/ligne-objectif';
@@ -105,11 +106,7 @@ export const ListeObjectifs = ({ modele, surCreer, surOuvrir }: ProprietesListeO
         {sectionAtteints === undefined ? null : (
           <SectionAtteints section={sectionAtteints} surOuvrir={surOuvrir} />
         )}
-        <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton aria-label={LIBELLES_OBJECTIFS.creerObjectif} onClick={surCreer}>
-            +
-          </IonFabButton>
-        </IonFab>
+        <BoutonFlottant libelle={LIBELLES_OBJECTIFS.creerObjectif} surClic={surCreer} />
       </IonContent>
     </>
   );
