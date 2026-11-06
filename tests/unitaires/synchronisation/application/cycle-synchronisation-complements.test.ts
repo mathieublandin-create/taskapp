@@ -25,7 +25,15 @@ import {
   ReseauCommandable,
   type AppareilCycle,
 } from '@tests/support/synchronisation/appareil-cycle';
-import { ecart, idObjectif, instant, MINUTE, PC, SMARTPHONE } from '@tests/support/valeurs';
+import {
+  ecart,
+  idObjectif,
+  instant,
+  MINUTE,
+  PC,
+  SMARTPHONE,
+  TROISIEME,
+} from '@tests/support/valeurs';
 
 const preparer = () => {
   const temps = new TempsSimule(instant('2026-10-21T08:00:00.000Z'));
@@ -132,23 +140,45 @@ describe('CycleSynchronisation, compléments (ST-US-017 §6.3, §6.4)', () => {
     expect(avertissements(smartphone)).toContain('SynchronisationEchec');
   });
 
-  it('UT-COMP-US-017-15 un fichier d’un autre appareil illisible ou un manifeste altéré sont ignorés et journalisés, sans arrêter le cycle', async () => {
+  it('UT-COMP-US-017-15 un fichier d’un autre appareil illisible est ignoré et journalisé, sans arrêter le cycle ; un manifeste illisible est une altération (ERR-012), attendu ou non : rien n’est fusionné ni écrit (ST-US-017 v0.10.1 §6.7 n° 4, 6, 12)', async () => {
     const env = preparer();
     const pc = env.appareil(PC, '02');
     await creer(pc, 1);
     await pc.cycle.synchroniserMaintenant();
-    env.drive
-      .fichiers()
-      .filter((f) => f.appProperties['donejuan'] !== 'dossier' && f.nom !== 'LISEZ-MOI.txt')
-      .forEach((f) => {
-        env.drive.modifierFichierALaMain(f.id);
-      });
+    const fichiersDe = (role: string) =>
+      env.drive.fichiers().filter((f) => !f.supprime && f.appProperties['donejuan'] === role);
+    fichiersDe('appareil').forEach((f) => {
+      env.drive.modifierFichierALaMain(f.id);
+    });
     const smartphone = env.appareil(SMARTPHONE, '01');
 
+    // Fichier d'un autre appareil illisible, manifeste intact : ignoré sans message (n° 6).
     expect(await smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
-
-    expect(avertissements(smartphone)).toEqual(['FichierAppareilIgnore', 'ManifesteIgnore']);
+    expect(avertissements(smartphone)).toEqual(['FichierAppareilIgnore']);
+    expect(smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
     expect(valeurDe(await smartphone.service.lire()).objectifs.size).toBe(0);
+
+    // Manifeste illisible : altération sur l'appareil qui l'attend comme sur un nouvel appareil (n° 4, 12).
+    const manifestes = fichiersDe('manifeste');
+    expect(manifestes).toHaveLength(1);
+    manifestes.forEach((f) => {
+      env.drive.modifierFichierALaMain(f.id);
+    });
+    const troisieme = env.appareil(TROISIEME, '03');
+    const ecritures = [env.drive.ecrituresPar(SMARTPHONE), env.drive.ecrituresPar(TROISIEME)];
+    const metaAvant = valeurDe(await smartphone.depot.lireMeta());
+
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    expect(await troisieme.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    expect(smartphone.cycle.etatMoteur().actionRequise).toBe('DONNEES_ABSENTES');
+    expect(troisieme.cycle.etatMoteur().actionRequise).toBe('DONNEES_ABSENTES');
+    expect([env.drive.ecrituresPar(SMARTPHONE), env.drive.ecrituresPar(TROISIEME)]).toEqual(
+      ecritures,
+    );
+    expect(valeurDe(await smartphone.depot.lireMeta())).toEqual(metaAvant);
+    expect(valeurDe(await troisieme.service.lire()).objectifs.size).toBe(0);
+    expect(avertissements(smartphone)).not.toContain('ManifesteIgnore');
   });
 
   it('UT-COMP-US-017-16 dépôt interrompu par le réseau : échec transitoire, au repos, sans tentative ni action', async () => {
