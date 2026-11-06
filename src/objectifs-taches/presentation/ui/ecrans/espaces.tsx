@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
+import type { RefElementMetier } from '../../../../synchronisation';
 import { EspaceObjectifs } from './espace-objectifs';
 import { EspaceTaches } from './espace-taches';
 import { creerMagasinObjectifsTaches } from '../etat/magasin-objectifs-taches';
@@ -8,11 +8,6 @@ import { LIBELLES_OBJECTIFS, LIBELLES_TACHES } from '../libelles-ui';
 
 // Espaces « Tâches » et « Objectifs » et barre d'onglets en bas (guide §2.2 et §4.14). Extrait de main.tsx pour être
 // monté tel quel par le harnais des tests de navigateur (tests/support/harnais/).
-/** Élément demandé par « Voir … » de la section « À lire » (même forme que `RefElementMetier`). */
-type RefElementMetier =
-  | { readonly type: 'OBJECTIF'; readonly id: IdObjectif }
-  | { readonly type: 'TACHE'; readonly id: IdTache };
-
 /** Services des deux espaces (satisfait par `ObjectifsTaches` de la composition). */
 type ObjectifsTaches = Parameters<typeof creerMagasinObjectifsTaches>[0] &
   Parameters<typeof creerMagasinTaches>[0];

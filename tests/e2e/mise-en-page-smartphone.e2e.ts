@@ -2,9 +2,10 @@
 // harnais tests/support/harnais/ (session simulée). Guide d'ergonomie §2.2 et §4.14 : barre d'onglets en bas, « + » dans
 // la zone du pouce, contenu défilant dans la hauteur de l'écran.
 import { expect, test, type Page } from '@playwright/test';
+import { ORIGINE_HARNAIS } from '../support/harnais/port';
 
 const HAUTEUR = 844;
-const HARNAIS = 'http://localhost:4174/tests/support/harnais/ecran-connecte.html';
+const HARNAIS = `${ORIGINE_HARNAIS}/tests/support/harnais/ecran-connecte.html`;
 
 test.use({ viewport: { width: 390, height: HAUTEUR }, hasTouch: true });
 

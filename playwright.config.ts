@@ -1,11 +1,10 @@
 import { defineConfig } from '@playwright/test';
+import { ORIGINE_HARNAIS, PORT_HARNAIS } from './tests/support/harnais/port';
 
 // conventions.md §11.12 : parcours Playwright hors Cucumber (tests/e2e/), Chromium, sur le build de production
 // servi en statique (`vite preview`). Les variables VITE_* sont des valeurs de test, sans secret ni accès à Google.
 const PORT = 4173;
 const ORIGINE = `http://localhost:${String(PORT)}`;
-const PORT_HARNAIS = 4174;
-const ORIGINE_HARNAIS = `http://localhost:${String(PORT_HARNAIS)}`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
