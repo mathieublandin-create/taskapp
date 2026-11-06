@@ -1,4 +1,5 @@
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { libelle } from '../../../../commun/presentation/messages/libelle';
 import type { LigneTache } from '../../modeles-de-vue/ligne-tache';
 
 // TaskRow (guide §4.2) : intitulé, métadonnées (délai, estimation, objectifs, sous-tâches) et mentions « en retard » et
@@ -10,6 +11,8 @@ export type ProprietesLigneTache = {
   readonly surOuvrir: (ligne: LigneTache) => void;
   /** Sans cette propriété, la case « Terminer » n'est pas affichée (écran qui ne sait pas terminer). */
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  /** Sans cette propriété, la case « Rouvrir » du filtre « Terminées » n'est pas affichée (DT-030). */
+  readonly surRouvrir?: ((id: IdTache) => void) | undefined;
   /** Tâche tout juste terminée, dont la ligne reste affichée quelques secondes : case cochée et inactive. */
   readonly retenue?: boolean;
 };
@@ -39,6 +42,23 @@ const MetaLigne = ({ ligne }: { readonly ligne: LigneTache }) => (
     {ligne.enRetard === undefined ? null : (
       <strong data-code={ligne.enRetard.code}>{ligne.enRetard.libelle}</strong>
     )}
+    {ligne.incoherence === undefined ? null : (
+      <MentionIncoherence incoherence={ligne.incoherence} />
+    )}
+  </span>
+);
+
+/** Marqueur « Incohérence » (guide §6.6.4) : triangle décoratif et mot, jamais la couleur seule (DT-031). */
+const MentionIncoherence = ({
+  incoherence,
+}: {
+  readonly incoherence: NonNullable<LigneTache['incoherence']>;
+}) => (
+  <span className="ligne-tache-incoherence" data-code={incoherence.code}>
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 3 22 21H2Z" fill="none" stroke="currentColor" strokeWidth="2" />
+    </svg>
+    {libelle(incoherence.code)}
   </span>
 );
 
@@ -86,6 +106,25 @@ const CaseTerminerLigne = ({
     />
   );
 
+/** Case ronde pleine « Rouvrir » d'une tâche terminée (ETA-TACHE-CASE, variante `rouvrir`). */
+const CaseRouvrirLigne = ({
+  ligne,
+  surRouvrir,
+}: {
+  readonly ligne: LigneTache;
+  readonly surRouvrir: ProprietesLigneTache['surRouvrir'];
+}) =>
+  ligne.caseRouvrir === undefined || surRouvrir === undefined ? null : (
+    <input
+      type="checkbox"
+      aria-label={ligne.caseRouvrir.nomAccessible}
+      checked
+      onChange={() => {
+        surRouvrir(ligne.id);
+      }}
+    />
+  );
+
 /** Tâche abandonnée (guide §4.2) : cercle barré décoratif, l'état est dit par le nom accessible de la ligne. */
 const IconeAbandonnee = () => (
   <svg
@@ -103,7 +142,20 @@ const IconeAbandonnee = () => (
 
 const CODE_ETAT_ABANDONNEE: LigneTache['etat']['code'] = 'ETA-TACHE-ABANDONNEE';
 
-const BoutonLigne = ({ ligne, surOuvrir }: Pick<ProprietesLigneTache, 'ligne' | 'surOuvrir'>) => {
+const CODE_ETAT_TERMINEE: LigneTache['etat']['code'] = 'ETA-TACHE-TERMINEE';
+
+/** Intitulé barré dès le geste « Terminer », y compris pendant le maintien de 3 s (guide §4.2, DT-030). */
+const Intitule = ({ ligne, barre }: { readonly ligne: LigneTache; readonly barre: boolean }) => (
+  <span className="ligne-tache-intitule" {...(barre ? { 'data-barre': true } : {})}>
+    {ligne.intitule}
+  </span>
+);
+
+const BoutonLigne = ({
+  ligne,
+  surOuvrir,
+  retenue,
+}: Pick<ProprietesLigneTache, 'ligne' | 'surOuvrir'> & { readonly retenue: boolean }) => {
   const idAttente = `attente-${ligne.id}`;
   return (
     <button
@@ -117,7 +169,7 @@ const BoutonLigne = ({ ligne, surOuvrir }: Pick<ProprietesLigneTache, 'ligne' | 
     >
       <span className="ligne-tache-texte" aria-hidden="true">
         {ligne.etat.code === CODE_ETAT_ABANDONNEE ? <IconeAbandonnee /> : null}
-        <span className="ligne-tache-intitule">{ligne.intitule}</span>
+        <Intitule ligne={ligne} barre={retenue || ligne.etat.code === CODE_ETAT_TERMINEE} />
         <MetaLigne ligne={ligne} />
         <Alertes alertes={ligne.alertes} />
       </span>
@@ -131,10 +183,12 @@ export const LigneTacheUi = ({
   niveau = 'TACHE',
   surOuvrir,
   surTerminer,
+  surRouvrir,
   retenue = false,
 }: ProprietesLigneTache) => (
   <li className="ligne-tache" data-niveau={niveau}>
     <CaseTerminerLigne ligne={ligne} retenue={retenue} surTerminer={surTerminer} />
-    <BoutonLigne ligne={ligne} surOuvrir={surOuvrir} />
+    <CaseRouvrirLigne ligne={ligne} surRouvrir={surRouvrir} />
+    <BoutonLigne ligne={ligne} surOuvrir={surOuvrir} retenue={retenue} />
   </li>
 );

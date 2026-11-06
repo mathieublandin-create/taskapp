@@ -33,14 +33,20 @@ const basculerRattachement = (
     : actions.rattacher(id, objectifId));
 };
 
-/** Refus de la case « Terminer » d'une ligne : effacé au geste suivant, alimenté par l'issue de la commande. */
+/** Refus des cases « Terminer » et « Rouvrir » d'une ligne : effacé au geste suivant, alimenté par l'issue de la commande. */
 const useRefusDeLaListe = (actions: ActionsMagasinTaches) => {
   const [refus, setRefus] = useState<ReadonlyArray<MessageRefus>>([]);
   const terminer = async (id: IdTache): Promise<void> => {
     setRefus([]);
     setRefus(messagesDeIssue(await actions.terminer(id)));
   };
-  return { refus, terminer };
+  const rouvrir = async (id: IdTache): Promise<void> => {
+    setRefus([]);
+    const issue = await actions.rouvrir(id);
+    // Une ligne de la liste est une tâche sans parente : aucune confirmation (CNF-ROUVRIR-SOUS-TACHE) n'y est demandée.
+    if (issue.type !== 'CONFIRMATION_REQUISE') setRefus(messagesDeIssue(issue));
+  };
+  return { refus, terminer, rouvrir };
 };
 
 const PageListe = ({
@@ -52,7 +58,7 @@ const PageListe = ({
   readonly liste: ModeleVueListeTaches;
   readonly surCreer: () => void;
 }) => {
-  const { refus, terminer } = useRefusDeLaListe(etat.actions);
+  const { refus, terminer, rouvrir } = useRefusDeLaListe(etat.actions);
   return (
     <ListeTaches
       modele={liste}
@@ -60,6 +66,7 @@ const PageListe = ({
       surCreer={surCreer}
       surOuvrir={(id) => void etat.actions.ouvrirDetail(id)}
       surTerminer={(id) => void terminer(id)}
+      surRouvrir={(id) => void rouvrir(id)}
       retenues={etat.termineesRecentes}
       refus={refus}
       surFiltrerEtat={(filtre) => void etat.actions.filtrerEtat(filtre)}

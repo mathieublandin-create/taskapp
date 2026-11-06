@@ -114,6 +114,18 @@
   margin: 0;
 }
 
+/* Intitulé barré dès le geste « Terminer », y compris pendant le maintien de 3 s (guide §4.2, DT-030). */
+.ligne-tache-intitule[data-barre] {
+  text-decoration: line-through;
+}
+
+.ligne-tache-incoherence {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
 .ligne-objectif[data-niveau='SOUS_OBJECTIF'] button,
 .ligne-tache[data-niveau='SOUS_TACHE'] button {
   padding-inline-start: 44px;

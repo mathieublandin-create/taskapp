@@ -49,6 +49,8 @@ export type LigneTache = {
   readonly nomAccessible: string;
   /** Case « Terminer » (ST-US-003 §4.5) : présente ssi la tâche est à faire. */
   readonly caseTerminer?: { readonly nomAccessible: string };
+  /** Case pleine « Rouvrir » (guide §6.6.13, DT-030) : présente ssi la tâche est terminée. */
+  readonly caseRouvrir?: { readonly nomAccessible: string };
 };
 
 const CODES_ETAT = {
@@ -93,6 +95,11 @@ export const nomAccessibleCase = (intitule: string, action: 'TERMINER' | 'ROUVRI
 const modeleCaseTerminer = (resume: ResumeTache): Pick<LigneTache, 'caseTerminer'> =>
   resume.cycleDeVie.etat === 'A_FAIRE'
     ? { caseTerminer: { nomAccessible: nomAccessibleCase(resume.intitule, 'TERMINER') } }
+    : {};
+
+const modeleCaseRouvrir = (resume: ResumeTache): Pick<LigneTache, 'caseRouvrir'> =>
+  resume.cycleDeVie.etat === 'TERMINEE'
+    ? { caseRouvrir: { nomAccessible: nomAccessibleCase(resume.intitule, 'ROUVRIR') } }
     : {};
 
 const partie = (variante: string, variables: VariablesLibelle = {}): string =>
@@ -206,6 +213,7 @@ export const construireLigneTache = (
     ...modeleIncoherence(resume),
     ...modeleAttente(resume),
     ...modeleCaseTerminer(resume),
+    ...modeleCaseRouvrir(resume),
     nomAccessible: nomAccessible(resume, affiches, aujourdhui),
   };
 };
