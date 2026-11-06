@@ -59,3 +59,15 @@
 ## 6. Suite
 
 Benjamin lève RC-ANO-002-003-1 et RC-ANO-002-003-2 (RC-6 s'il passe dans la zone). Je ne contrôle ensuite que ces remarques. La recette (E14) confirme ou rouvre ANO-002 et ANO-003.
+
+## 7. Revue 2 (2026-11-06, commit 0c8227c, différentiel depuis 1e8af7c)
+
+**Verdict : Approuvé.** Aucun nouveau défaut ; aucune remarque devenue majeure.
+
+| Remarque | Statut | Constat |
+|---|---|---|
+| RC-ANO-002-003-1 | Levée | `tests/unitaires/objectifs-taches/presentation/ui/espaces-comp.test.tsx` (UT-COMP-US-002-191) couvre `aria-current` (présent et absent), la bascule des onglets, « Voir … » d'une tâche et d'un objectif (onglet et titre du détail), et `surOuvrirTache` depuis un objectif. Assertions Ionic dans `waitFor` / `findBy*` (CR-72b) ; aucun test existant modifié. Le test passe sur les jobs CI Pacific/Auckland et America/New_York (207 fichiers verts, pas d'erreur de seuil) ; le job UTC était encore en cours à la lecture. Le chiffre annoncé (94,11 % lignes, 80 % branches) n'apparaît pas dans les journaux CI (pas de tableau de couverture) : non vérifié par moi, le seuil CI tient. |
+| RC-ANO-002-003-2 | Levée | `espaces.tsx` importe `RefElementMetier` depuis `../../../../synchronisation` ; copie supprimée. Même import que `etat/issues.ts` ; le job `qualite` (`pnpm architecture`, dependency-cruiser) est vert. |
+| RC-ANO-002-003-6 | Levée | `tests/support/harnais/port.ts` est la source unique, importée par `playwright.config.ts` et `mise-en-page-smartphone.e2e.ts`. Job `e2e` vert. |
+| RC-ANO-002-003-5 | Inchangée | Q-ANT-E13-ANO-2 reste à Steeve (E14). |
+| DT-033, DT-034, DT-035 | Inchangées | Non traitées, conformément à la demande. |
