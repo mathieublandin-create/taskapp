@@ -51,6 +51,8 @@ export class MondeDoneJuan extends World {
   readonly fichiersAlteres = new Map<NomAppareil, string>();
   /** Vrai sous `@ANO-001` : l'indicateur est lu dans la vue affichée du contrôleur (ST-US-017 §12.4). */
   lectureAffichee = false;
+  /** Type (`Context`, `Action`, `Outcome`) de l'étape en cours, lu par le crochet `BeforeStep` (ST-US-017 §12.6 R4). */
+  typeEtape: string | undefined;
 }
 
 setWorldConstructor(MondeDoneJuan);

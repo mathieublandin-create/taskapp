@@ -175,8 +175,9 @@ const MESSAGE_DONNEES_ABSENTES = 'ERR-012';
 
 /**
  * ST-US-017 §12.6 n° R4 : « Étant donné que sur le smartphone, le message d'erreur "ERR-012" est affiché » est la même
- * phrase que l'assertion (« Et que » est un mot-clé Gherkin). Tant qu'`ERR-012` n'est pas affiché, l'appareil échange
- * une fois avec le Drive pour le constater ; hors ligne, le réseau est rétabli le temps de l'échange, puis recoupé
+ * phrase que l'assertion (« Et que » est un mot-clé Gherkin) ; le crochet `BeforeStep` les distingue par le type de
+ * l'étape. Pour une précondition (`Context`) seulement, tant qu'`ERR-012` n'est pas affiché, l'appareil échange
+ * une fois avec le Drive pour le constater ; une assertion (`Outcome`) lit seulement la vue ; hors ligne, le réseau est rétabli le temps de l'échange, puis recoupé
  * (ERR-012 interdit toute écriture : rien n'est changé).
  */
 const constaterDonneesAbsentes = async (appareil: AppareilSimule): Promise<void> => {
@@ -190,9 +191,15 @@ const constaterDonneesAbsentes = async (appareil: AppareilSimule): Promise<void>
 // n° 21 : message de la feuille porté par l'indicateur (ERR-011 au rang 3, ERR-012 au rang 10).
 etapeAssertion(
   /^le message d'erreur "([^"]*)" (est|n'est pas) affiché$/,
-  async ({ appareil }, code, forme) => {
+  async ({ monde, appareil }, code, forme) => {
     const messageAffiche = async () => (await indicateurDe(appareil))?.messageFeuille;
-    if (forme === 'est' && code === MESSAGE_DONNEES_ABSENTES && (await messageAffiche()) !== code) {
+    const precondition = monde.typeEtape === 'Context';
+    if (
+      precondition &&
+      forme === 'est' &&
+      code === MESSAGE_DONNEES_ABSENTES &&
+      (await messageAffiche()) !== code
+    ) {
       await constaterDonneesAbsentes(appareil);
     }
     const message = await messageAffiche();
