@@ -48,6 +48,6 @@ describe('Corrections du rang 5 — ligne de tâche', () => {
       date('2026-10-25'),
     );
 
-    expect(ligne.incoherence).toEqual({ code: 'MEN-INCOHERENCE' });
+    expect(ligne.incoherence).toEqual({ code: 'MEN-INCOHERENCE', libelle: 'Incohérence' });
   });
 });

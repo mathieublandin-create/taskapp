@@ -39,7 +39,7 @@ export type LigneTache = {
     readonly nonAbandonnees: number;
     readonly libelle: string;
   };
-  readonly incoherence?: { readonly code: 'MEN-INCOHERENCE' };
+  readonly incoherence?: { readonly code: 'MEN-INCOHERENCE'; readonly libelle: string };
   /** ST-US-017 §4.5 : modification de la tâche non encore enregistrée dans le Drive. */
   readonly attente?: {
     readonly code: 'MEN-ATTENTE';
@@ -173,7 +173,9 @@ const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'e
     : {};
 
 const modeleIncoherence = (resume: ResumeTache): Pick<LigneTache, 'incoherence'> =>
-  resume.incoherence === undefined ? {} : { incoherence: { code: 'MEN-INCOHERENCE' } };
+  resume.incoherence === undefined
+    ? {}
+    : { incoherence: { code: 'MEN-INCOHERENCE', libelle: libelle('MEN-INCOHERENCE') } };
 
 const modeleAttente = (resume: ResumeTache): Pick<LigneTache, 'attente'> => {
   const mention = mentionAttenteSi(resume.enAttente);

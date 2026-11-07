@@ -1,5 +1,4 @@
 import type { IdTache } from '../../../../commun/domaine/identifiants';
-import { libelle } from '../../../../commun/presentation/messages/libelle';
 import type { LigneTache } from '../../modeles-de-vue/ligne-tache';
 
 // TaskRow (guide §4.2) : intitulé, métadonnées (délai, estimation, objectifs, sous-tâches) et mentions « en retard » et
@@ -58,7 +57,7 @@ const MentionIncoherence = ({
     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M12 3 22 21H2Z" fill="none" stroke="currentColor" strokeWidth="2" />
     </svg>
-    {libelle(incoherence.code)}
+    {incoherence.libelle}
   </span>
 );
 
