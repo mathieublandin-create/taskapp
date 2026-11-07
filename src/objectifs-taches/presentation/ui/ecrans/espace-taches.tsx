@@ -42,9 +42,8 @@ const useRefusDeLaListe = (actions: ActionsMagasinTaches) => {
   };
   const rouvrir = async (id: IdTache): Promise<void> => {
     setRefus([]);
-    const issue = await actions.rouvrir(id);
     // Une ligne de la liste est une tâche sans parente : aucune confirmation (CNF-ROUVRIR-SOUS-TACHE) n'y est demandée.
-    if (issue.type !== 'CONFIRMATION_REQUISE') setRefus(messagesDeIssue(issue));
+    setRefus(messagesDeIssue(await actions.rouvrir(id)));
   };
   return { refus, terminer, rouvrir };
 };

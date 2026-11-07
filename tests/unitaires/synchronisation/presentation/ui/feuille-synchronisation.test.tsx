@@ -6,6 +6,10 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ModeleVueFeuilleSynchronisation } from '@src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation';
+import type {
+  ModeleVueChoixRestauration,
+  TextesChoixRestauration,
+} from '@src/synchronisation/presentation/modeles-de-vue/choix-restauration';
 import { FeuilleSynchronisation } from '@src/synchronisation/presentation/ui/FeuilleSynchronisation';
 
 afterEach(cleanup);
@@ -142,5 +146,58 @@ describe('FeuilleSynchronisation (ECR-011, section « Synchronisation »)', () =
     expect(plein.textContent).toContain('Votre Google Drive est plein');
     await userEvent.click(within(plein).getByRole('button', { name: 'Ouvrir Google Drive' }));
     expect(surActionCarte).toHaveBeenLastCalledWith('OUVRIR_GOOGLE_DRIVE');
+  });
+
+  it('UT-COMP-US-017-3-20 FeuilleSynchronisation — la carte ERR-012 et son choix de restauration ne sont présentes qu’avec un choix à faire', () => {
+    const vue: ModeleVueChoixRestauration = {
+      code: 'ERR-012',
+      titre: 'Titre d’essai',
+      texte: 'Texte d’essai',
+      propose: true,
+      restaurer: { libelle: 'Restaurer d’essai', disponible: true },
+      repartirDeZero: { disponible: true },
+      deciderPlusTard: { disponible: true },
+    };
+    const textes: TextesChoixRestauration = {
+      titreFeuille: 'Feuille',
+      fermer: 'Fermer',
+      phraseRestaurer: 'Phrase 1',
+      restaurationEnCours: 'En cours',
+      mentionDemandee: 'Demandée',
+      annulerDemande: 'Annuler la demande',
+      repartirDeZero: 'Repartir',
+      phraseRepartirDeZero: 'Phrase 2',
+      repartirDeZeroIndisponible: 'Indisponible',
+      deciderPlusTard: 'Plus tard',
+      phraseDeciderPlusTard: 'Phrase 3',
+    };
+    const proprietes = {
+      vue,
+      textes,
+      surRestaurer: vi.fn(() => Promise.resolve()),
+      surAnnulerDemande: vi.fn(),
+      evaluerRepartirDeZero: vi.fn(() => Promise.resolve(undefined)),
+      surRepartirDeZero: vi.fn(() => Promise.resolve()),
+      surDeciderPlusTard: vi.fn(),
+    };
+    const { container, rerender } = render(
+      <FeuilleSynchronisation
+        vue={HORS_LIGNE_SANS_ATTENTE}
+        surSynchroniser={vi.fn()}
+        surActionCarte={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('[data-message="ERR-012"]')).toBeNull();
+
+    rerender(
+      <FeuilleSynchronisation
+        vue={HORS_LIGNE_SANS_ATTENTE}
+        surSynchroniser={vi.fn()}
+        surActionCarte={vi.fn()}
+        choixRestauration={proprietes}
+      />,
+    );
+
+    expect(container.querySelector('[data-message="ERR-012"]')).not.toBeNull();
   });
 });
