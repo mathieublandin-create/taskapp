@@ -23,7 +23,7 @@ const depotSur = (fabrique: IDBFactory) =>
 const generation: Generation = { type: 'NOUVELLE', hlc: h(5, SMARTPHONE) };
 
 describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
-  it('UT-COMP-US-017-3-1 une base version 3 existante, sans clé de l’incrément 3, est lue sans perte avec les valeurs initiales ; la version reste 3', async () => {
+  it('UT-COMP-US-017-3-117 une base version 3 existante, sans clé de l’incrément 3, est lue sans perte avec les valeurs initiales ; la version reste 3', async () => {
     const fabrique = new IDBFactory();
     const existante = new Dexie(NOM, { indexedDB: fabrique });
     existante.version(3).stores({
@@ -56,7 +56,7 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     relue.close();
   });
 
-  it('UT-COMP-US-017-3-2 les cinq clés de méta de l’incrément 3 et l’intituleElement d’une ligne DONNEES_EFFACEES font l’aller-retour', async () => {
+  it('UT-COMP-US-017-3-118 les cinq clés de méta de l’incrément 3 et l’intituleElement d’une ligne DONNEES_EFFACEES font l’aller-retour', async () => {
     const fabrique = new IDBFactory();
     const depot = depotSur(fabrique);
     const effacee: ValeurEcartee = {
@@ -99,7 +99,7 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     relu.fermer();
   });
 
-  it('UT-COMP-US-017-3-4 reinitialiser sans signalements : tables vidées, clés de synchronisation retirées, valeurs initiales', async () => {
+  it('UT-COMP-US-017-3-120 reinitialiser sans signalements : tables vidées, clés de synchronisation retirées, valeurs initiales', async () => {
     const fabrique = new IDBFactory();
     const depot = depotSur(fabrique);
     const sansTitre: ValeurEcartee = {
@@ -130,7 +130,7 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     depot.fermer();
   });
 
-  it('UT-COMP-US-017-3-5 une ligne de méta étrangère (nom non textuel) est ignorée à la lecture de l’état et de la méta', async () => {
+  it('UT-COMP-US-017-3-121 une ligne de méta étrangère (nom non textuel) est ignorée à la lecture de l’état et de la méta', async () => {
     const fabrique = new IDBFactory();
     const depot = depotSur(fabrique);
     valeurDe(await depot.lire());
@@ -145,7 +145,7 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     relu.fermer();
   });
 
-  it('UT-COMP-US-017-3-3 une clé de méta de l’incrément 3 illisible donne DonneesLocalesIllisibles', async () => {
+  it('UT-COMP-US-017-3-119 une clé de méta de l’incrément 3 illisible donne DonneesLocalesIllisibles', async () => {
     const fabrique = new IDBFactory();
     const depot = depotSur(fabrique);
     valeurDe(await depot.lire());
