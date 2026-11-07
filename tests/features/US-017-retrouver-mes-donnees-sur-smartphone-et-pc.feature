@@ -600,8 +600,8 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   @US-017 @RG-044 @LOT-001
   Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
-    Étant donné un objectif "Publier le guide" de délai 2026-12-15
-    Et que le Drive est momentanément indisponible
+    Étant donné que le Drive est momentanément indisponible
+    Et un objectif "Publier le guide" de délai 2026-12-15
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, le message d'erreur "ERR-012" n'est pas affiché
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
