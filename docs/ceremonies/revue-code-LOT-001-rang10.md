@@ -8,7 +8,7 @@
 | Auteurs | Bruce : R1 (adaptateur Drive), R2 (domaine des contrôles), R3 (persistance, format), R4 (cycle, cas d'usage, `ecriture-manifeste.ts`), compléments de couverture (UT-COMP-US-017-3-101 à 116). Benjamin : D1 (copie locale, modèle de vue et composant du choix), D2 (DT-026, DT-029), D3a (composition, catalogue, `TST-RESTAUREE`, DT-028), D3b (étapes Cucumber, `rangCourant`), DT-030, DT-031. Starck (DAT v0.11.10), Steeve (guide v0.2.21). |
 | Périmètre | Différentiel `origin/lot/LOT-001...origin/us/US-017-rang10` : 105 fichiers, + 10 407, − 370 |
 | Référentiel | ST-US-017 v0.10.2 (§3.5, §4.7, §6.7 n° 1 à 17, §8 n° 12 à 16, §12.6, §13.5, §15.2), ST-US-024 v0.5 (DT-026), DAT v0.11.10 §4.2.2 (conditions C1 à C9 de Starck), guide d'ergonomie v0.2.21, `checklist-revue-code.md`, revue du rang 9 |
-| Passage | 1 |
+| Passage | 2 (voir §9) |
 
 ## 1. Contrôles exécutés
 
@@ -137,3 +137,20 @@ Aucun code de `src/` ni aucun test n'est modifié.
 | RC-US-017-16 | Suggestion | Bruce | Non |
 
 Les remarques de Bruce sont mécaniques (un import, un renommage d'identifiants) : selon OPT-18, elles peuvent être confiées à un agent sur sonnet. Le cœur de synchronisation lui-même n'est pas à reprendre. La nouvelle revue portera seulement sur ces remarques et sur le différentiel, avec une CI verte sur les 6 jobs.
+
+## 9. Passage 2 : différentiel `2c8308f..31251c2` (OPT-18, sonnet)
+
+Revue limitée aux remarques ouvertes (RC-US-017-12 à 17). CI de `31251c2` : verte sur les 6 jobs (`push` et `pull_request`). Aucun fichier de `src/` n'est modifié par ce passage.
+
+| Remarque | Contrôle | Statut |
+|---|---|---|
+| RC-US-017-12 | `surPresentationModale()` (`tests/support/ui-objectifs.ts:126-139`) est posée **avant** le rendu et attendue après `findByRole('form')`, avant `renseigner` : l'écoute précède l'événement, donc aucune course. Focus et délais inchangés, l'assertion de focus est conservée. **Étendue aux autres tests ?** Non nécessaire : le défaut ne touche que les tests qui renseignent, valident, puis vérifient le focus sur le champ, dans une modale rendue ouverte d'emblée. Les autres (UT-COMP-US-001-61 en tête, même forme) ouvrent par `ouvrir('Modal', …)`, qui attend déjà `ionModalDidPresent` ; `sous-taches-ui.test.tsx:242` vérifie le focus après une alerte, non après la présentation. **Aucune dette à inscrire** (DT-029 inchangée). | **Levée** |
+| RC-US-017-13 | `BeforeStep` (`hooks.ts:20-22`) pose `typeEtape` ; `monde.ts:55` le déclare ; le repli n'est appliqué que si `monde.typeEtape === 'Context'` (`etat-affiche.steps.ts:196`). Une assertion (`Outcome`) lit seulement la vue. Limite acceptée : un état `Unknown` ou une précondition hors `Context` (étape « Et que » après un « Quand ») n'aurait pas le repli ; aucun scénario n'est dans ce cas, et le cucumber est vert. | **Levée** |
+| RC-US-017-14 | `libelle` est rempli par `modeleIncoherence` et lu par le composant ; l'import de `libelle` est retiré de `ligne-tache.tsx`. **UT-US-024-22 (`liste-taches.test.ts:215`) : modification confirmée.** `toEqual` est strict : ajouter `libelle: 'Incohérence'` est la conséquence nécessaire du nouveau champ ; la valeur est celle du catalogue (`catalogue.fr.ts:470`), et l'assertion n'est pas affaiblie (elle contrôle maintenant le texte). Même ajustement accepté dans `corrections-rang5.test.ts:51`. | **Levée** |
+| RC-US-017-15 | L'adaptateur importe `comparerCanonique` de `domaine/manifeste` ; la copie locale est supprimée. | **Levée** |
+| RC-US-017-16 | **Arbitrage : non retenue, sans dette.** Test seul, garde elle-même inatteignable ; le risque est qu'un remaniement fasse passer le test pour une autre raison, il est faible et ne justifie pas une entrée au registre. Pas de changement de registre (reste v0.34). | **Close (acceptée)** |
+| RC-US-017-17 | UT-COMP-US-017-3-1 à 5 renommés 3-117 à 121 ; libellés et assertions inchangés ; plus de collision avec 3-01 à 05. | **Levée** |
+
+Remarque nouvelle, non bloquante : **RC-US-017-18** (suggestion, `tests/support/ui-objectifs.ts:126`) : `surPresentationModale` duplique `apresEvenement('ionModalDidPresent')`. Facultatif, à faire au prochain passage dans ce fichier : `export const surPresentationModale = () => apresEvenement('ionModalDidPresent')`. Pas d'entrée au registre.
+
+**Verdict du passage 2 : Approuvé.** Aucun bloquant. L'approbation vaut pour la fusion de la PR #33 ; les dettes DT-026, DT-028 et DT-031 sont remboursées à cette fusion, DT-029 reste « En cours » (critère des 50 exécutions non mesuré), DT-036 reste ouverte (ST incrément 4 avant l'E12 du rang 11).
