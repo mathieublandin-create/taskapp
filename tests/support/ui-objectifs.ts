@@ -124,6 +124,22 @@ export const cliquerBoutonIon = async (nom: string): Promise<void> => {
 };
 
 /**
+ * Écoute `ionModalDidPresent` : à appeler **avant** d'ouvrir la modale, puis à attendre une fois qu'elle l'est. La
+ * modale prend le focus à la fin de sa présentation ; renseigner et valider avant ferait reprendre le focus au champ
+ * invalide (RC-US-017-12).
+ */
+export const surPresentationModale = (): Promise<void> =>
+  new Promise<void>((resoudre) => {
+    document.addEventListener(
+      'ionModalDidPresent',
+      () => {
+        resoudre();
+      },
+      { once: true },
+    );
+  });
+
+/**
  * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
  * touche par touche (`userEvent.type`) concourt avec le rendu contrôlé du champ : sous charge, des caractères sont
  * perdus ou permutés (DT-029) ; c'est donc le seul moyen de saisir dans les tests de composants Ionic.
