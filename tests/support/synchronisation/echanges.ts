@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import type { AppareilSimule } from '../banc/appareil-simule';
 import type { MondeDoneJuan } from '../monde';
 import type { ContexteEtape } from '../prefixes';
-import { ligneObjectifDe, memoriserObjectif, objectifsDe } from '../objectifs';
+import { ligneObjectifDe, memoriserObjectif, objectifsDe, resoudreObjectif } from '../objectifs';
 import { ligneTacheDe, memoriserTache, resoudreTache } from '../taches';
 import { date } from '../valeurs';
 
@@ -106,4 +106,19 @@ export const verifierTacheNonEnregistree = async (
 ): Promise<void> => {
   const ligne = await ligneTacheDe(monde, appareil, intitule);
   assert.equal(ligne.attente?.code, 'MEN-ATTENTE', `« ${intitule} » est déjà enregistrée`);
+};
+
+/** Renomme l'objectif par le cas d'usage de l'appareil et mémorise son nouvel intitulé ; échec si refusé. */
+export const renommerObjectifAuPasse = async (
+  monde: MondeDoneJuan,
+  appareil: AppareilSimule,
+  intitule: string,
+  nouveau: string,
+): Promise<void> => {
+  const objectifId = await resoudreObjectif(monde, appareil, intitule);
+  const resultat = await (
+    await objectifsDe(appareil)
+  ).renommerObjectif.executer({ objectifId, intitule: nouveau });
+  assert.ok(resultat.ok, `Renommage de « ${intitule} » refusé : ${JSON.stringify(resultat)}`);
+  memoriserObjectif(monde, nouveau.trim(), objectifId);
 };

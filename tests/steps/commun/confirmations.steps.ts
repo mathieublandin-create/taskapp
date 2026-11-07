@@ -84,3 +84,8 @@ Then(
     });
   },
 );
+
+// ST-US-017 §12.6 n° R6 : forme nue, pour la confirmation de « Repartir de zéro » (CNF-REPARTIR-ZERO).
+Then('une confirmation est demandée', function (this: MondeDoneJuan) {
+  assert.equal(confirmationAffichee(this)?.code, 'CNF-REPARTIR-ZERO');
+});

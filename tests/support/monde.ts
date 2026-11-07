@@ -17,6 +17,7 @@ import type {
 import type { NomAppareil } from './banc/appareil-simule';
 import { BancSynchro } from './banc/banc-synchro';
 import type { CommandeEnAttente } from './commandes-en-attente';
+import type { PhotoDrive } from './synchronisation/alteration-drive';
 import type { SaisieSousTacheEnCours } from './construction-taches';
 import { References } from './references';
 
@@ -44,6 +45,10 @@ export class MondeDoneJuan extends World {
   instantDerniereAction: Instant | undefined;
   /** URL des requêtes `fetch` tentées : aucune n'est admise (ST-US-022 §12.3). */
   readonly requetesInterdites: Array<string> = [];
+  /** Drive photographié à la dernière altération hors application (ST-US-017 §12.6 n° R1, R2, R13, R14). */
+  photoDrive: PhotoDrive | undefined;
+  /** Fichier de données de chaque appareil modifié à la main dans le Drive (identifiant du fichier). */
+  readonly fichiersAlteres = new Map<NomAppareil, string>();
   /** Vrai sous `@ANO-001` : l'indicateur est lu dans la vue affichée du contrôleur (ST-US-017 §12.4). */
   lectureAffichee = false;
 }

@@ -45,6 +45,14 @@ export class FauxGoogle {
     });
   }
 
+  /** Fin de l'indisponibilité : les Drive existants et ceux créés ensuite répondent de nouveau (US-017 S23). */
+  driveRedevientDisponible(): void {
+    this.#indisponible = false;
+    this.#drives.forEach((drive) => {
+      drive.retablir();
+    });
+  }
+
   retirerAcces(nom: NomCompte): void {
     this.#accesRetire.add(nom);
   }

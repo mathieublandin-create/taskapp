@@ -4,9 +4,18 @@ import { Given, Then, When } from '@cucumber/cucumber';
 import { connecter } from '../../support/compte/etapes-compte';
 import { convertirAppareil, FRAGMENT_APPAREIL, FRAGMENT_DATE } from '../../support/conversions';
 import type { MondeDoneJuan } from '../../support/monde';
+import type { NomAppareil } from '../../support/banc/appareil-simule';
 import { ecart } from '../../support/valeurs';
+import {
+  driveDesAppareils,
+  photographier,
+  verifierFichierAltereIntact,
+  verifierRienReecrit,
+} from '../../support/synchronisation/alteration-drive';
 import { FILTRES_ETAT } from '../../support/taches';
 import { creerObjectifEnregistre } from '../../support/synchronisation/echanges';
+import { resoudreObjectif } from '../../support/objectifs';
+import type { FauxDrive } from '../../doublures/faux-drive';
 import {
   etatMetierDansEspace,
   etatMetierDuDrive,
@@ -28,6 +37,11 @@ Given(
 
 Given('(que )le Drive est momentanément indisponible', function (this: MondeDoneJuan) {
   this.banc.google.driveMomentanementIndisponible();
+});
+
+// ST-US-017 §12.6 n° R12 : fin de l'indisponibilité momentanée (S23).
+When('le Drive redevient disponible', function (this: MondeDoneJuan) {
+  this.banc.google.driveRedevientDisponible();
 });
 
 Given(
@@ -256,5 +270,72 @@ When(
       await this.banc.avancerTemps(UNE_MINUTE);
     }
     assert.equal(await enAttente(), 0, "Des modifications attendent encore après l'interruption");
+  },
+);
+
+// ---------------------------------------------------------------- Altérations hors application (ST-US-017 §12.6 n° R1 à R2, R13, R14)
+
+/** Altération faite par un tiers : le banc est au repos, puis le Drive est photographié (références de R13 et R14). */
+const alterer = async (
+  monde: MondeDoneJuan,
+  alteration: (drive: FauxDrive) => void,
+): Promise<void> => {
+  await monde.banc.attendreCycles();
+  const drive = driveDesAppareils(monde);
+  alteration(drive);
+  monde.photoDrive = photographier(drive);
+};
+
+Given(
+  /^(?:que )?les données de l'application ont été (supprimées|rendues illisibles) dans le Drive, en dehors de l'application$/,
+  async function (this: MondeDoneJuan, alteration: string) {
+    await alterer(this, (drive) => {
+      if (alteration === 'supprimées') drive.supprimerDonnees();
+      else drive.rendreDonneesIllisibles();
+    });
+  },
+);
+
+/** Fichier de données de l'appareil, tel qu'il est déposé dans le Drive. */
+const fichierDeLAppareil = (monde: MondeDoneJuan, drive: FauxDrive, nom: NomAppareil) => {
+  const fichier = drive.fichierDe(monde.banc.appareil(nom).appareilId);
+  assert.ok(fichier, `Aucun fichier de données du ${nom} dans le Drive`);
+  return fichier;
+};
+
+Given(
+  "(que )le fichier de données du {appareil} a été modifié à la main dans le Drive, en dehors de l'application, et reste lisible",
+  async function (this: MondeDoneJuan, nom: NomAppareil) {
+    await alterer(this, (drive) => {
+      const { id } = fichierDeLAppareil(this, drive, nom);
+      drive.modifierFichierALaMain(id);
+      this.fichiersAlteres.set(nom, id);
+    });
+  },
+);
+
+Given(
+  new RegExp(
+    `^(?:que )?dans le fichier de données du (${FRAGMENT_APPAREIL}), le délai de l'objectif ${TEXTE} a été changé à la main en ${DATE}, le fichier restant lisible$`,
+  ),
+  async function (this: MondeDoneJuan, nomAppareil: string, intitule: string, delai: string) {
+    const nom = convertirAppareil(nomAppareil);
+    const objectifId = await resoudreObjectif(this, this.banc.appareil(nom), intitule);
+    await alterer(this, (drive) => {
+      const { id } = fichierDeLAppareil(this, drive, nom);
+      drive.modifierDelaiALaMain(id, objectifId, delai);
+      this.fichiersAlteres.set(nom, id);
+    });
+  },
+);
+
+Then("rien n'a été réécrit dans le Drive", function (this: MondeDoneJuan) {
+  verifierRienReecrit(this);
+});
+
+Then(
+  "le fichier de données du {appareil} n'a pas été réécrit dans le Drive",
+  function (this: MondeDoneJuan, nom: NomAppareil) {
+    verifierFichierAltereIntact(this, nom);
   },
 );

@@ -171,11 +171,31 @@ etapeAssertion(
   },
 );
 
-// n° 21 : message de la feuille porté par l'indicateur (ERR-011 au rang 3).
+const MESSAGE_DONNEES_ABSENTES = 'ERR-012';
+
+/**
+ * ST-US-017 §12.6 n° R4 : « Étant donné que sur le smartphone, le message d'erreur "ERR-012" est affiché » est la même
+ * phrase que l'assertion (« Et que » est un mot-clé Gherkin). Tant qu'`ERR-012` n'est pas affiché, l'appareil échange
+ * une fois avec le Drive pour le constater ; hors ligne, le réseau est rétabli le temps de l'échange, puis recoupé
+ * (ERR-012 interdit toute écriture : rien n'est changé).
+ */
+const constaterDonneesAbsentes = async (appareil: AppareilSimule): Promise<void> => {
+  const horsLigne = !appareil.reseau.estConnecte();
+  if (horsLigne) appareil.reseau.retablir();
+  await appareil.assurerOuverte();
+  await appareil.echangerAvecLeDrive();
+  if (horsLigne) appareil.reseau.couper();
+};
+
+// n° 21 : message de la feuille porté par l'indicateur (ERR-011 au rang 3, ERR-012 au rang 10).
 etapeAssertion(
   /^le message d'erreur "([^"]*)" (est|n'est pas) affiché$/,
   async ({ appareil }, code, forme) => {
-    const message = (await indicateurDe(appareil))?.messageFeuille;
+    const messageAffiche = async () => (await indicateurDe(appareil))?.messageFeuille;
+    if (forme === 'est' && code === MESSAGE_DONNEES_ABSENTES && (await messageAffiche()) !== code) {
+      await constaterDonneesAbsentes(appareil);
+    }
+    const message = await messageAffiche();
     if (forme === 'est') assert.equal(message, code);
     else assert.notEqual(message, code);
   },

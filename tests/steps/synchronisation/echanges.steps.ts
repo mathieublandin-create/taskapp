@@ -14,6 +14,7 @@ import {
   creerObjectifEnregistre,
   enregistrerDansLeDrive,
   modifierDelaiTacheAuPasse,
+  renommerObjectifAuPasse,
   renommerTacheAuPasse,
   verifierNonEnregistre,
   verifierTacheNonEnregistree,
@@ -110,6 +111,14 @@ etapeContexte(
     if (nonEnregistre !== undefined) {
       await verifierTacheNonEnregistree(monde, appareil, String(intitule));
     }
+  },
+);
+
+// ST-US-017 §12.6 n° R3 : opération au passé, sans dépôt (l'appareil peut être hors ligne).
+etapeContexte(
+  new RegExp(`^l'utilisateur a renommé l'objectif ${TEXTE} en ${TEXTE}$`),
+  async ({ monde, appareil }, intitule, nouveau) => {
+    await renommerObjectifAuPasse(monde, appareil, String(intitule), String(nouveau));
   },
 );
 
