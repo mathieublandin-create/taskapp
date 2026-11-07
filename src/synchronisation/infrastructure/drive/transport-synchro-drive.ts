@@ -14,6 +14,7 @@ import type {
   TransportSynchro,
 } from '../../application/ports/transport-synchro';
 import type { ContenuFichierAppareil, ContenuManifeste } from '../../domaine/contenu-fichier';
+import { comparerCanonique } from '../../domaine/manifeste';
 import {
   decoderFichierAppareil,
   decoderManifeste,
@@ -100,10 +101,6 @@ const elementDrive = (fichier: unknown): ElementDrive | undefined => {
   const cree = Instant.depuisIso(texte(champ(fichier, 'createdTime')) ?? '');
   return id === undefined || !cree.ok ? undefined : { id, creeA: cree.valeur };
 };
-
-/** Ordre canonique (§6.7 n° 13) : `creeA`, puis `id`. */
-const comparerCanonique = (a: ElementDrive, b: ElementDrive): number =>
-  a.creeA - b.creeA || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 /** Littéral de chaîne de la requête `q` de Drive v3 : `\` et `'` échappés par `\` (RC-R3-6). */
 export const litteralRequeteDrive = (valeur: string): string =>
