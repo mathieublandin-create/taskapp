@@ -214,6 +214,10 @@ const lecturesDe = (o: ObservationDrive): Lus => {
   };
 };
 
+/** Contenus des manifestes lus valides, dans l'ordre canonique (n° 13 ; jointure du déménagement, n° 14). */
+export const manifestesLus = (o: ObservationDrive): ReadonlyArray<ContenuManifeste> =>
+  lecturesDe(o).manifestes;
+
 /** n° 6 : autres fichiers valides de la génération de l'appareil, dans l'ordre lu ; les autres sont ignorés. */
 const fusionnablesDe = (o: ObservationDrive, generation: Generation): Fusionnables => {
   const aFusionner: Array<ContenuFichierAppareil> = [];

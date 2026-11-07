@@ -3,7 +3,6 @@ import type { Horloge } from '../../commun/application/ports/horloge';
 import type { JournalTechnique } from '../../commun/application/ports/journal-technique';
 import type { Annulation, Planificateur } from '../../commun/application/ports/planificateur';
 import type { SourceAleatoire } from '../../commun/application/ports/source-aleatoire';
-import { assertNever } from '../../commun/domaine/assert-never';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
 import { Instant } from '../../commun/domaine/temps/instant';
 import { delaiAvantTentative, TENTATIVES_AVANT_ABANDON } from '../../infrastructure-google';
@@ -12,6 +11,7 @@ import {
   controlerDrive,
   GENERATION_INITIALE,
   hlcPlancherDesChoix,
+  manifestesLus,
   restaurationConnueApres,
   situationDe,
   type DecisionControle,
@@ -210,8 +210,8 @@ const apportDuDemenagement = (
   observation: ObservationDrive,
   meta: MetaSynchronisation,
 ): ContenuManifeste =>
-  observation.manifestes.reduce<ContenuManifeste>(
-    (cible, m) => (m.lecture.type === 'LU' ? fusionnerManifestes(cible, m.lecture.contenu) : cible),
+  manifestesLus(observation).reduce<ContenuManifeste>(
+    (cible, lu) => fusionnerManifestes(cible, lu),
     { schemaVersion: SCHEMA_VERSION, generation: generationDe(meta) },
   );
 
@@ -427,8 +427,6 @@ export class CycleSynchronisation implements SuiviCycle {
         return this.#arret('DONNEES_ABSENTES', 'DONNEES_ALTEREES');
       case 'FORMAT_PLUS_RECENT':
         return this.#arret('FORMAT_PLUS_RECENT', 'FORMAT_PLUS_RECENT');
-      default:
-        return assertNever(resultat.valeur);
     }
   }
 
@@ -519,8 +517,6 @@ export class CycleSynchronisation implements SuiviCycle {
         return this.#restaurer(vue.valeur, decision);
       case 'SYNCHRONISER':
         return this.#synchroniser(vue.valeur, decision);
-      default:
-        return assertNever(decision);
     }
   }
 
