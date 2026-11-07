@@ -190,6 +190,7 @@ describe('Cycle de la tranche B3 : journalisation de C2 et ordre de lecture des 
       observer: (rappel) => smartphone.depot.observer(rappel),
       lireMeta: () => smartphone.depot.lireMeta(),
       appliquerSynchronisation: (calcul) => smartphone.depot.appliquerSynchronisation(calcul),
+      lireInconnus: () => smartphone.depot.lireInconnus(),
       lireSignalements: async () => {
         const lus = await smartphone.depot.lireSignalements();
         if (!ecrite) {

@@ -17,6 +17,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/application/ports/observateur-echanges-google.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/commun/application/ports/planificateur.ts": {
       "debut": 0,
       "fin": 0
@@ -52,6 +56,10 @@
     "src/commun/domaine/temps/date-calendaire.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/commun/domaine/temps/date-http.ts": {
+      "debut": 11,
+      "fin": 11
     },
     "src/commun/domaine/temps/ecart-temps.ts": {
       "debut": 0,
@@ -793,6 +801,10 @@
       "debut": 0,
       "fin": 3
     },
+    "src/synchronisation/application/ports/mise-a-jour-application.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/application/ports/suivi-cycle.ts": {
       "debut": 1,
       "fin": 1
@@ -813,6 +825,10 @@
       "debut": 9,
       "fin": 9
     },
+    "src/synchronisation/application/service-etat-local-consultation-seule.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/application/service-etat-local-transactionnel.ts": {
       "debut": 0,
       "fin": 0
@@ -820,6 +836,10 @@
     "src/synchronisation/application/service-etat-local.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/application/suivi-horloge.ts": {
+      "debut": 11,
+      "fin": 11
     },
     "src/synchronisation/domaine/condensat-sha256.ts": {
       "debut": 9,
@@ -840,6 +860,10 @@
     "src/synchronisation/domaine/copie-locale.ts": {
       "debut": 10,
       "fin": 10
+    },
+    "src/synchronisation/domaine/correction-horloge.ts": {
+      "debut": 11,
+      "fin": 11
     },
     "src/synchronisation/domaine/depot.ts": {
       "debut": 3,
@@ -888,6 +912,10 @@
     "src/synchronisation/domaine/identifiant-evenement.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/inconnus.ts": {
+      "debut": 11,
+      "fin": 11
     },
     "src/synchronisation/domaine/index-en-attente.ts": {
       "debut": 0,
@@ -955,7 +983,7 @@
     },
     "src/synchronisation/infrastructure/depot-local-dexie.ts": {
       "debut": 0,
-      "fin": 3
+      "fin": 11
     },
     "src/synchronisation/infrastructure/drive/compression.ts": {
       "debut": 3,
@@ -977,9 +1005,13 @@
       "debut": 1,
       "fin": 10
     },
+    "src/synchronisation/infrastructure/mise-a-jour-service-worker.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
       "debut": 0,
-      "fin": 0
+      "fin": 11
     },
     "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
       "debut": 1,

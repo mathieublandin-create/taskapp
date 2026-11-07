@@ -1,3 +1,4 @@
+import { nonImplemente } from '@non-implemente';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import { succes, type Resultat } from '@src/commun/domaine/resultat';
 import type {
@@ -13,6 +14,7 @@ import {
   type MetaSynchronisation,
   type PlanSynchronisation,
 } from '@src/synchronisation/domaine/meta-synchronisation';
+import type { Inconnus } from '@src/synchronisation/domaine/inconnus';
 import type { PlanEcriture } from '@src/synchronisation/domaine/planifier-ecritures';
 import {
   SIGNALEMENTS_VIDES,
@@ -186,6 +188,13 @@ export class DepotLocalEnMemoire implements DepotLocal {
 
   lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
     return Promise.resolve(succes(this.stockage.signalements));
+  }
+
+  /** ST-US-017 v0.11 §4.8 (rang 11) : complétée par Bruce en tranche H2 (CT-DEPOT-16 à 18). */
+  lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    return Promise.resolve(
+      nonImplemente(`DepotLocalEnMemoire.lireInconnus (${this.stockage.appareilId})`),
+    );
   }
 
   appliquerSynchronisation(

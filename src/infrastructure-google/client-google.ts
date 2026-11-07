@@ -1,3 +1,5 @@
+import type { Horloge } from '../commun/application/ports/horloge';
+import type { ObservateurEchangesGoogle } from '../commun/application/ports/observateur-echanges-google';
 import { echec, succes, type Resultat } from '../commun/domaine/resultat';
 
 // DAT §4.4.5 ; ST-US-022 §6.8. Erreurs traduites ; aucune exception de fetch ne sort de l'infrastructure.
@@ -67,6 +69,14 @@ export type DependancesClientGoogle = {
   /** Jeton courant (coffre) ; jamais journalisé. */
   readonly lireJeton: () => string | undefined;
   readonly fetch: typeof fetch;
+  /**
+   * ST-US-017 v0.11 §6.8 n° 1 (rang 11, tranche H3) : chaque réponse HTTP reçue (réussie ou non) est signalée à
+   * `observateur.surReponse` avec `horloge.monotone()` et `horloge.maintenant()` lus juste avant `fetch`,
+   * `horloge.monotone()` lu à la réception, et l'en-tête `Date` ; rien sans réponse (exception de `fetch`). Les deux
+   * sont fournis ensemble par la composition ; absents : aucune mesure.
+   */
+  readonly horloge?: Horloge;
+  readonly observateur?: ObservateurEchangesGoogle;
 };
 
 const lireCorps = async (

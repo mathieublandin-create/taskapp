@@ -29,8 +29,15 @@ export type LigneSousTache = {
    * (code `ETA-TACHE-LIGNE`, guide §6.6.4).
    */
   readonly nomAccessible: string;
-  /** Case « Terminer » de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). */
-  readonly caseTerminer: { readonly nomAccessible: string };
+  /**
+   * Case de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). ST-US-024 v0.7 §4.5 (DT-030, rang 11) :
+   * `action` = `TERMINER` (à faire, case vide), `ROUVRIR` (terminée, case pleine) ; absente pour une sous-tâche
+   * abandonnée (aucune case rendue).
+   */
+  readonly caseTerminer: {
+    readonly nomAccessible: string;
+    readonly action?: 'TERMINER' | 'ROUVRIR';
+  };
   /** Sous-tâches d'une tâche parente abandonnée (ST-US-025 §6.4). */
   readonly etiquette?: {
     readonly code:

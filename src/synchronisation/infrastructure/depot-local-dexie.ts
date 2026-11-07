@@ -1,3 +1,4 @@
+import { nonImplemente } from '@non-implemente';
 import Dexie from 'dexie';
 import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
 import { ErreurProgrammation } from '../../commun/domaine/erreur-programmation';
@@ -9,6 +10,7 @@ import type {
   IssueTransaction,
 } from '../application/ports/depot-local';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
+import type { Inconnus } from '../domaine/inconnus';
 import { comparerHlc } from '../domaine/hlc';
 import { cleEnTexte } from '../domaine/information';
 import {
@@ -289,6 +291,14 @@ export class DepotLocalDexie implements DepotLocal {
     } catch (erreur) {
       return this.traduire(erreur);
     }
+  }
+
+  /**
+   * ST-US-017 v0.11 §4.8, §5.1 (rang 11, tranche H2) : tables `registresInconnus` et `evenementsInconnus` (base
+   * version 4), lues dans une transaction `r`, triées comme `Inconnus` ; ligne illisible → DonneesLocalesIllisibles.
+   */
+  lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    return nonImplemente(`DepotLocalDexie.lireInconnus (${String(this.ferme)})`);
   }
 
   /**

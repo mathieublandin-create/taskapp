@@ -13,8 +13,16 @@ import type { ElementDrive, ErreurTransport, TransportSynchro } from './ports/tr
  */
 export type ModeEcritureManifeste = 'ORDINAIRE' | 'CHOIX';
 
-/** Manifeste canonique après l'écriture, et son contenu relu. */
-export type ManifesteEcrit = { readonly id: IdFichierDrive; readonly contenu: ContenuManifeste };
+/**
+ * Manifeste canonique après l'écriture, et son contenu relu. v0.11 (DT-036, ST-US-017 §6.8 n° 19) :
+ * `doublonNonSupprime` = doublon créé par cet appareil (création concurrente) dont la mise à la corbeille a échoué ;
+ * l'écriture réussit quand même, le cycle l'inscrit dans `aMettreALaCorbeille` (au lieu de rendre l'erreur).
+ */
+export type ManifesteEcrit = {
+  readonly id: IdFichierDrive;
+  readonly contenu: ContenuManifeste;
+  readonly doublonNonSupprime?: IdFichierDrive;
+};
 
 type Releve = {
   /** Manifestes présents, en ordre canonique, avec leur contenu s'il est lisible. */
