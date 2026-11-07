@@ -4,7 +4,7 @@
  * ST-US-022 §12.3 : `fetch` est remplacé par un enregistreur qui échoue (aucune requête réelle) ; les connexions
  * IndexedDB des appareils sont fermées en fin de scénario.
  */
-import { After, Before } from '@cucumber/cucumber';
+import { After, Before, BeforeStep } from '@cucumber/cucumber';
 import type { MondeDoneJuan } from './monde';
 
 const fetchOrigine = globalThis.fetch;
@@ -15,6 +15,10 @@ Before(function (this: MondeDoneJuan) {
     this.requetesInterdites.push(url);
     return Promise.reject(new Error(`Requête réseau interdite dans les scénarios : ${url}`));
   };
+});
+
+BeforeStep(function (this: MondeDoneJuan, { pickleStep }) {
+  this.typeEtape = pickleStep.type;
 });
 
 Before({ tags: '@ANO-001' }, function (this: MondeDoneJuan) {

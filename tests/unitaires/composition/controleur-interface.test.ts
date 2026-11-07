@@ -31,6 +31,7 @@ import {
   ReseauFixe,
 } from '../../support/compte/doublures-compte';
 import { instant } from '../../support/valeurs';
+import { RESTAURATION_ABSENTE } from '../../support/synchronisation/restauration-absente';
 
 /** Espaces dont l'ouverture ou la suppression peut échouer (IndexedDB indisponible, quota, corruption). */
 class EspacesFaillibles extends EspacesEnMemoire {
@@ -84,6 +85,7 @@ const preparer = ({ enAttente = 0, connecte = true }: Options = {}) => {
     synchroniserMaintenant: () => Promise.resolve(),
     observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => undefined,
+    ...RESTAURATION_ABSENTE,
     seConnecter: new SeConnecter({
       ...{ reseau, fournisseur, espaces, memoireSession, session },
       preparation: new PreparationSimulee(),

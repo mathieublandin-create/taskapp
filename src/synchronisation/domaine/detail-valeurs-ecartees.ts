@@ -231,7 +231,7 @@ const conserveeDe = (etat: EtatLocal, v: ValeurEcartee): Conservee => {
 };
 
 const intituleDeLElement = (etat: EtatLocal, v: ValeurEcartee, element: RefElementMetier) =>
-  v.motif === 'SUPPRESSION' && v.intituleElement !== undefined
+  (v.motif === 'SUPPRESSION' || v.motif === 'DONNEES_EFFACEES') && v.intituleElement !== undefined
     ? v.intituleElement
     : intituleCourant(etat, element);
 
@@ -255,9 +255,19 @@ const detaillerUne = (
   };
 };
 
+/**
+ * `ALR-008` n'est affichée que sur l'appareil qui découvre le choix fait ailleurs, `ALR-014` que sur celui dont la
+ * modification est perdue : une entrée `DONNEES_EFFACEES` n'est détaillée que par l'auteur de l'écriture écartée
+ * (ST-US-017 v0.10 §6.7 n° 10 d, guide §6.6.9).
+ */
+const estDetaillee = (etat: EtatLocal, v: ValeurEcartee): boolean =>
+  v.motif !== 'DONNEES_EFFACEES' || v.ecartee.ecriture.hlc.appareil === etat.appareilId;
+
 /** Une entrée par valeur écartée de `signalements`, lues comprises ; ordre non garanti (§6.6 n° 12). */
 export const detaillerValeursEcartees = (
   etat: EtatLocal,
   signalements: Signalements,
 ): ReadonlyArray<ValeurEcarteeDetaillee> =>
-  [...signalements.valeursEcartees.values()].map((v) => detaillerUne(etat, signalements, v));
+  [...signalements.valeursEcartees.values()]
+    .filter((v) => estDetaillee(etat, v))
+    .map((v) => detaillerUne(etat, signalements, v));

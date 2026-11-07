@@ -18,11 +18,17 @@ import { Racine } from './compte/presentation/ui/Racine';
 import { SectionCompte } from './compte/presentation/ui/SectionCompte';
 import { SuppressionBloquee } from './compte/presentation/ui/SuppressionBloquee';
 import { EcransObjectifs, useNavigation } from './objectifs-taches/presentation/ui/ecrans/espaces';
-import type { ControleurInterface } from './composition/controleur-interface';
+import type {
+  ChoixRestaurationAffichable,
+  ControleurInterface,
+} from './composition/controleur-interface';
+import type { ProprietesChoixRestauration } from './synchronisation/presentation/ui/ChoixRestauration';
 import { demarrerWeb } from './composition/web';
 import { appareilDepuisAgent } from './commun/presentation/format/appareil';
 import { Toast } from './commun/presentation/ui/toast';
 import { FeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
+import { FeuilleChoixRestauration } from './synchronisation/presentation/ui/ChoixRestauration';
+import { useFocusFinALire } from './synchronisation/presentation/ui/focus-fin-a-lire';
 import { Bandeau } from './synchronisation/presentation/ui/Bandeau';
 import { ModificationsNonRetenues } from './synchronisation/presentation/ui/ModificationsNonRetenues';
 import type { RefElementMetier } from './synchronisation';
@@ -75,11 +81,13 @@ const ALire = ({
 /** Indicateur et bandeau de synchronisation, présents avec l'état de synchronisation. */
 const IndicateurEtBandeau = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  const refIndicateur = useFocusFinALire<HTMLDivElement>(vue.nonRetenues !== undefined);
   return (
     <>
       {vue.indicateur === undefined ? null : (
         <IndicateurSynchronisation
           vue={vue.indicateur}
+          refElement={refIndicateur}
           surReprendre={() => void controleur.reprendre()}
         />
       )}
@@ -95,6 +103,20 @@ const IndicateurEtBandeau = ({ controleur }: { readonly controleur: ControleurIn
   );
 };
 
+/** Gestes du choix d'`ERR-012` vers le contrôleur ; `surRestaurer` et `surRepartirDeZero` ne rejettent pas. */
+const proprietesChoix = (
+  controleur: ControleurInterface,
+  { vue, textes }: ChoixRestaurationAffichable,
+): ProprietesChoixRestauration => ({
+  vue,
+  textes,
+  surRestaurer: controleur.demanderRestauration,
+  surAnnulerDemande: () => void controleur.annulerRestauration(),
+  evaluerRepartirDeZero: controleur.evaluerRepartirDeZero,
+  surRepartirDeZero: controleur.repartirDeZero,
+  surDeciderPlusTard: () => void controleur.deciderPlusTard(),
+});
+
 /** Indicateur, bandeau, section « À lire » et feuille de synchronisation (ECR-011). */
 const EtatSynchronisation = ({
   controleur,
@@ -104,6 +126,10 @@ const EtatSynchronisation = ({
   readonly surVoir: (element: RefElementMetier) => void;
 }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  const choix =
+    vue.choixRestauration === undefined
+      ? undefined
+      : proprietesChoix(controleur, vue.choixRestauration);
   return (
     <>
       <IndicateurEtBandeau controleur={controleur} />
@@ -113,8 +139,10 @@ const EtatSynchronisation = ({
           vue={vue.feuille}
           surSynchroniser={() => void controleur.synchroniser()}
           surActionCarte={(a) => void controleur.actionCarte(a)}
+          {...(choix === undefined ? {} : { choixRestauration: choix })}
         />
       )}
+      {choix === undefined ? null : <FeuilleChoixRestauration {...choix} />}
     </>
   );
 };

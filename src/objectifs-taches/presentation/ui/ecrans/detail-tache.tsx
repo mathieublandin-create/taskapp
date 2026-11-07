@@ -15,9 +15,13 @@ import { libelle } from '../../../../commun/presentation/messages/libelle';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { ActionTache } from '../../../domaine/types-actions';
-import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
+import type {
+  ActionPrincipaleCarte,
+  ModeleVueDetailTache,
+} from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { ActionFin } from '../composants/action-fin';
+import { CarteIncoherence } from '../composants/carte-incoherence';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
 import { ConfirmationCommande, useCommandeConfirmee } from '../composants/commande-confirmee';
 import { MessagesRefus } from '../composants/messages-refus';
@@ -50,6 +54,8 @@ export type ProprietesDetailTache = {
   readonly surTerminerSousTache?: (id: IdTache) => void;
   readonly surRouvrir?: () => Promise<IssueSaisie>;
   readonly surReprendre?: () => Promise<IssueSaisie>;
+  /** Carte d'incohérence (ECR-007 H) : « Abandonner la sous-tâche » ; la confirmation habituelle de l'abandon s'applique. */
+  readonly surAbandonnerSousTache?: (id: IdTache) => Promise<IssueSaisie>;
 };
 
 type Edition = 'DELAI' | 'ESTIMATION' | 'OBJECTIFS' | 'INTITULE' | undefined;
@@ -351,6 +357,39 @@ const EnTete = ({ modele }: { readonly modele: ModeleVueDetailTache }) => (
   </>
 );
 
+/** La commande de l'écran derrière l'action principale de la carte d'incohérence (absente : l'écran ne la sait pas faire). */
+const commandePrincipale = (
+  proprietes: ProprietesDetailTache,
+  action: ActionPrincipaleCarte,
+): (() => Promise<IssueSaisie>) | undefined => {
+  const commandes: Readonly<Record<ActionPrincipaleCarte, ProprietesDetailTache['surRouvrir']>> = {
+    ROUVRIR: proprietes.surRouvrir,
+    REPRENDRE: proprietes.surReprendre,
+  };
+  return commandes[action];
+};
+
+const carteRendue = (modele: ModeleVueDetailTache, proprietes: ProprietesDetailTache): boolean =>
+  modele.incoherence !== undefined &&
+  commandePrincipale(proprietes, modele.incoherence.actionPrincipale.action) !== undefined;
+
+/** Carte d'incohérence en tête (ECR-007 H) ; elle remplace l'action de fin du bas du détail (une seule action principale). */
+const CarteEnTete = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => {
+  const { incoherence } = modele;
+  const surActionPrincipale =
+    incoherence === undefined
+      ? undefined
+      : commandePrincipale(proprietes, incoherence.actionPrincipale.action);
+  return incoherence === undefined || surActionPrincipale === undefined ? null : (
+    <CarteIncoherence
+      incoherence={incoherence}
+      surActionPrincipale={surActionPrincipale}
+      surTerminerSousTache={proprietes.surTerminerSousTache}
+      surAbandonnerSousTache={proprietes.surAbandonnerSousTache}
+    />
+  );
+};
+
 const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => (
   <>
     {modele.sousTaches === undefined ? null : (
@@ -365,18 +404,21 @@ const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =>
         {LIBELLES_TACHES.ajouterSousTache}
       </button>
     ) : null}
-    <ActionFin
-      modele={modele}
-      surTerminer={proprietes.surTerminer}
-      surRouvrir={proprietes.surRouvrir}
-      surReprendre={proprietes.surReprendre}
-    />
+    {carteRendue(modele, proprietes) ? null : (
+      <ActionFin
+        modele={modele}
+        surTerminer={proprietes.surTerminer}
+        surRouvrir={proprietes.surRouvrir}
+        surReprendre={proprietes.surReprendre}
+      />
+    )}
   </>
 );
 
 const CorpsDetail = ({ modele, proprietes, editeur }: ProprietesChamp) => (
   <IonContent>
     <EnTete modele={modele} />
+    <CarteEnTete modele={modele} proprietes={proprietes} />
     {editeur.edition === 'INTITULE' ? (
       <EditeurIntitule
         valeur={modele.intitule}

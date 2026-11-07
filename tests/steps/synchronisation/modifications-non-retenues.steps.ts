@@ -92,6 +92,15 @@ etapeAssertion(
   },
 );
 
+// ST-US-017 §12.6 n° R11 : carte `ALR-008` de la section « À lire » (données effacées par « repartir de zéro »).
+etapeAssertion(/^l'alerte "ALR-008" est affichée$/, async ({ appareil }) => {
+  assert.equal(
+    (await appareil.vueAffichee()).nonRetenues?.donneesEffacees?.code,
+    'ALR-008',
+    `Alerte ALR-008 absente sur le ${appareil.nom}`,
+  );
+});
+
 // ---------------------------------------------------------------- Construction au banc (N4)
 
 const reglerEcartDeTemps = async (monde: MondeDoneJuan): Promise<void> => {

@@ -536,7 +536,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     # E8, Q-US-017-8 a) : une ligne par modification perdue, groupée sous l'alerte ALR-008 (code ALR-014), non comptée parmi les informations à lire.
     Et sur le PC, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue        | valeur conservée          |
-      | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+      | Publier le guide pratique | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
     Et sur le PC, l'indicateur de synchronisation ne signale aucune information à lire
 
   @US-017 @RG-044 @LOT-001
@@ -581,7 +581,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
     Et sur le PC, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue        | valeur conservée                    |
-      | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+      | Publier le guide pratique | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
 
   @US-017 @RG-044 @LOT-001
   Scénario: S22d — La question laissée en attente sur l'autre appareil disparaît d'elle-même après « Repartir de zéro »
@@ -600,8 +600,8 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   @US-017 @RG-044 @LOT-001
   Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
-    Étant donné un objectif "Publier le guide" de délai 2026-12-15
-    Et que le Drive est momentanément indisponible
+    Étant donné que le Drive est momentanément indisponible
+    Et un objectif "Publier le guide" de délai 2026-12-15
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, le message d'erreur "ERR-012" n'est pas affiché
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"

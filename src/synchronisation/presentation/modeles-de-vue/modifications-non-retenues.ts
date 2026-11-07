@@ -175,9 +175,13 @@ const intituleCite = (valeur: ValeurSignalee): string => {
   throw new ErreurProgrammation(`La valeur « ${valeur.type} » ne cite aucun intitulé`);
 };
 
-/** Titre d'une ligne `ALR-014` : « Délai de « Annexe » ». */
+/** Titre d'une ligne `ALR-014` : « Délai de « Annexe » » ; variante `sans-element` (intitulé inconnu) : « Délai ». */
 export const titreDonneeEffacee = (ligne: LigneDonneeEffacee): string =>
-  libelle('ALR-014', { information: nomInformation(ligne.information), element: ligne.element });
+  libelle('ALR-014', {
+    information: nomInformation(ligne.information),
+    element: ligne.element,
+    ...(ligne.element === '' ? { variante: 'sans-element' } : {}),
+  });
 
 /** Texte d'une ligne `ALR-014` : « Votre valeur « 1 déc. » n'a pas été conservée. » */
 export const texteDonneeEffacee = (ligne: LigneDonneeEffacee, contexte: ContexteTextes): string =>

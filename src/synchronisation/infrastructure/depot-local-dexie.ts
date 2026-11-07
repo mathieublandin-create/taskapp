@@ -9,8 +9,13 @@ import type {
   IssueTransaction,
 } from '../application/ports/depot-local';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
+import { comparerHlc } from '../domaine/hlc';
 import { cleEnTexte } from '../domaine/information';
-import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
+import {
+  META_INITIALE,
+  type MetaSynchronisation,
+  type PlanSynchronisation,
+} from '../domaine/meta-synchronisation';
 import type { PlanEcriture } from '../domaine/planifier-ecritures';
 import type { AjoutsSignalements, Signalements } from '../domaine/signalements';
 import {
@@ -26,6 +31,7 @@ import {
   encoderLecture,
   encoderMeta,
   encoderMetaSynchronisation,
+  NOMS_META_SYNCHRONISATION,
   encoderRegistre,
   encoderValeurEcartee,
 } from './stockage-local/schemas';
@@ -59,6 +65,8 @@ export type OptionsOuvertureEspace = {
 };
 
 const TABLES_SIGNALEMENTS = ['valeursEcartees', 'lectures'];
+/** Tables vidées par `reinitialiser` (la méta est traitée à part). */
+const TABLES_VIDEES = ['registres', 'journal', 'enAttente', ...TABLES_SIGNALEMENTS];
 const TABLES = ['registres', 'journal', 'enAttente', 'meta', ...TABLES_SIGNALEMENTS];
 
 type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
@@ -109,6 +117,18 @@ const planEstVide = (plan: PlanEcriture): boolean =>
   plan.evenementsAjoutes.length === 0 &&
   plan.enAttenteEcrites.length === 0 &&
   plan.enAttenteRetirees.length === 0;
+
+/**
+ * ST-US-017 v0.10.1 §6.7 n° 9 (2), n° 11 c (2) : un plan qui ne fait qu'avancer `dernierHlc` (HLC d'un choix, condition
+ * C3) n'est pas vide : `dernierHlc` est écrit, `version` augmente.
+ */
+const avanceDernierHlc = (avant: EtatLocal, plan: PlanEcriture): boolean => {
+  const apres = plan.etatApres.dernierHlc;
+  return (
+    apres !== undefined &&
+    (avant.dernierHlc === undefined || comparerHlc(apres, avant.dernierHlc) > 0)
+  );
+};
 
 const signalementsVides = (ajouts: AjoutsSignalements | undefined): boolean =>
   ajouts === undefined || (ajouts.valeursEcartees.length === 0 && ajouts.lectures.length === 0);
@@ -274,8 +294,8 @@ export class DepotLocalDexie implements DepotLocal {
   /**
    * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état, méta et signalements lus, calcul, puis plan, méta et
    * signalements écrits ensemble (v0.5 §4.6). La méta est fusionnée clé à clé ; `version`, `dernierHlc` et les
-   * observateurs ne changent que si le plan ou les signalements sont non vides. Une exception du calcul est propagée et
-   * rien n'est écrit.
+   * observateurs ne changent que si le plan ou les signalements sont non vides (v0.10.1 : un plan qui avance
+   * `dernierHlc` n'est pas vide). Une exception du calcul est propagée et rien n'est écrit.
    */
   async appliquerSynchronisation(
     calcul: (
@@ -407,20 +427,70 @@ export class DepotLocalDexie implements DepotLocal {
     if (!meta.ok) return meta;
     const signalements = await this.signalements();
     if (!signalements.ok) return signalements;
-    let synchronisation: PlanSynchronisation;
+    const synchronisation = this.proteger(
+      () => calcul(etat.valeur, meta.valeur, signalements.valeur),
+      surveillance,
+    );
+    if (synchronisation.reinitialiser === true) {
+      return this.reinitialiser(synchronisation, etat.valeur.version);
+    }
+    return this.ecrireSynchronisation(synchronisation, etat.valeur);
+  }
+
+  /** Dans la transaction en cours : écrit la méta, puis le plan et les signalements ajoutés s'ils sont non vides. */
+  private async ecrireSynchronisation(
+    synchronisation: PlanSynchronisation,
+    etatAvant: EtatLocal,
+  ): Promise<IssueExecution<undefined, never>> {
+    const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
+    await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
+    if (planEstVide(plan) && !avanceDernierHlc(etatAvant, plan) && signalementsVides(ajouts)) {
+      return succes({ valeur: undefined });
+    }
+    const etatApres = { ...plan.etatApres, version: etatAvant.version + 1 };
+    await this.ecrire(plan, etatApres);
+    if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
+    return succes({ valeur: undefined, etatApres });
+  }
+
+  /**
+   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14), dans la transaction en cours : vide les tables d'état et de signalements,
+   * REMPLACE les clés de synchronisation de la méta par `{ ...META_INITIALE, ...meta }`, écrit l'état vide
+   * (`appareilId`, `dernierHlc`, `correctionHorloge` de `plan.etatApres`, version + 1) puis les signalements.
+   */
+  private async reinitialiser(
+    synchronisation: PlanSynchronisation,
+    versionAvant: number,
+  ): Promise<IssueExecution<undefined, never>> {
+    const etatApres: EtatLocal = {
+      ...synchronisation.plan.etatApres,
+      version: versionAvant + 1,
+      registres: new Map(),
+      journal: new Map(),
+      enAttente: new Map(),
+    };
+    await Promise.all(TABLES_VIDEES.map((table) => this.base.table(table).clear()));
+    await this.base.table('meta').bulkDelete([...NOMS_META_SYNCHRONISATION]);
+    await this.base
+      .table('meta')
+      .bulkPut([
+        ...encoderMetaSynchronisation({ ...META_INITIALE, ...synchronisation.meta }),
+        ...encoderMeta(etatApres),
+      ]);
+    if (synchronisation.signalements !== undefined) {
+      await this.ecrireSignalements(synchronisation.signalements);
+    }
+    return succes({ valeur: undefined, etatApres });
+  }
+
+  /** Appelle le calcul de l'appelant ; une exception est mémorisée (pour être propagée telle quelle) puis relancée. */
+  private proteger<T>(calcul: () => T, surveillance: Surveillance): T {
     try {
-      synchronisation = calcul(etat.valeur, meta.valeur, signalements.valeur);
+      return calcul();
     } catch (exception) {
       if (exception instanceof Error) surveillance.exception = exception;
       throw exception;
     }
-    const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
-    await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
-    if (planEstVide(plan) && signalementsVides(ajouts)) return succes({ valeur: undefined });
-    const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
-    await this.ecrire(plan, etatApres);
-    if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
-    return succes({ valeur: undefined, etatApres });
   }
 
   private calculer<T, E extends { readonly type: string }>(

@@ -39,7 +39,7 @@ export type LigneTache = {
     readonly nonAbandonnees: number;
     readonly libelle: string;
   };
-  readonly incoherence?: { readonly code: 'MEN-INCOHERENCE' };
+  readonly incoherence?: { readonly code: 'MEN-INCOHERENCE'; readonly libelle: string };
   /** ST-US-017 §4.5 : modification de la tâche non encore enregistrée dans le Drive. */
   readonly attente?: {
     readonly code: 'MEN-ATTENTE';
@@ -49,6 +49,8 @@ export type LigneTache = {
   readonly nomAccessible: string;
   /** Case « Terminer » (ST-US-003 §4.5) : présente ssi la tâche est à faire. */
   readonly caseTerminer?: { readonly nomAccessible: string };
+  /** Case pleine « Rouvrir » (guide §6.6.13, DT-030) : présente ssi la tâche est terminée. */
+  readonly caseRouvrir?: { readonly nomAccessible: string };
 };
 
 const CODES_ETAT = {
@@ -93,6 +95,11 @@ export const nomAccessibleCase = (intitule: string, action: 'TERMINER' | 'ROUVRI
 const modeleCaseTerminer = (resume: ResumeTache): Pick<LigneTache, 'caseTerminer'> =>
   resume.cycleDeVie.etat === 'A_FAIRE'
     ? { caseTerminer: { nomAccessible: nomAccessibleCase(resume.intitule, 'TERMINER') } }
+    : {};
+
+const modeleCaseRouvrir = (resume: ResumeTache): Pick<LigneTache, 'caseRouvrir'> =>
+  resume.cycleDeVie.etat === 'TERMINEE'
+    ? { caseRouvrir: { nomAccessible: nomAccessibleCase(resume.intitule, 'ROUVRIR') } }
     : {};
 
 const partie = (variante: string, variables: VariablesLibelle = {}): string =>
@@ -166,7 +173,9 @@ const modeleEnRetard = (resume: ResumeTache, delai: string): Pick<LigneTache, 'e
     : {};
 
 const modeleIncoherence = (resume: ResumeTache): Pick<LigneTache, 'incoherence'> =>
-  resume.incoherence === undefined ? {} : { incoherence: { code: 'MEN-INCOHERENCE' } };
+  resume.incoherence === undefined
+    ? {}
+    : { incoherence: { code: 'MEN-INCOHERENCE', libelle: libelle('MEN-INCOHERENCE') } };
 
 const modeleAttente = (resume: ResumeTache): Pick<LigneTache, 'attente'> => {
   const mention = mentionAttenteSi(resume.enAttente);
@@ -206,6 +215,7 @@ export const construireLigneTache = (
     ...modeleIncoherence(resume),
     ...modeleAttente(resume),
     ...modeleCaseTerminer(resume),
+    ...modeleCaseRouvrir(resume),
     nomAccessible: nomAccessible(resume, affiches, aujourdhui),
   };
 };

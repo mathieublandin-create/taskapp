@@ -4,6 +4,7 @@ import { IdAppareil, IdObjectif, IdTache } from '../../../commun/domaine/identif
 import { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 import { DateCalendaire } from '../../../commun/domaine/temps/date-calendaire';
 import { Instant } from '../../../commun/domaine/temps/instant';
+import type { Generation } from '../../domaine/contenu-fichier';
 import type { ContexteCausal } from '../../domaine/contexte-causal';
 import type { RegistreQuelconque } from '../../domaine/ecriture';
 import type { EtatLocal } from '../../domaine/etat-local';
@@ -469,6 +470,7 @@ const ligneValeurEcartee = z.discriminatedUnion('motif', [
     motif: z.literal('DONNEES_EFFACEES'),
     ecartee: colonnesRegistre,
     generation: hlcStocke,
+    intituleElement: z.string().optional(),
   }),
 ]);
 
@@ -494,7 +496,13 @@ export const encoderValeurEcartee = (valeur: ValeurEcartee): object => {
           : { intituleElement: valeur.intituleElement }),
       };
     case 'DONNEES_EFFACEES':
-      return { ...commun, generation: encoderHlc(valeur.generation) };
+      return {
+        ...commun,
+        generation: encoderHlc(valeur.generation),
+        ...(valeur.intituleElement === undefined
+          ? {}
+          : { intituleElement: valeur.intituleElement }),
+      };
   }
 };
 
@@ -516,7 +524,13 @@ export const decoderValeurEcartee = (ligne: unknown): ValeurEcartee | undefined 
   const ecartee = lireRegistreSignale(v.ecartee);
   if (ecartee === undefined) return undefined;
   if (v.motif === 'DONNEES_EFFACEES') {
-    return { id: v.id, motif: v.motif, ecartee, generation: v.generation };
+    return {
+      id: v.id,
+      motif: v.motif,
+      ecartee,
+      generation: v.generation,
+      ...(v.intituleElement === undefined ? {} : { intituleElement: v.intituleElement }),
+    };
   }
   const gagnante = lireRegistreSignale(v.gagnante);
   if (gagnante === undefined) return undefined;
@@ -595,6 +609,17 @@ const idFichierDrive = z
   .transform((id) => id as IdFichierDrive);
 
 /** Une ligne par clé ; une clé absente garde sa valeur initiale (META_INITIALE). */
+const generationStockee = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('INITIALE') }),
+  z.object({ type: z.literal('NOUVELLE'), hlc: hlcStocke }),
+]);
+
+const encoderGeneration = (generation: Generation): object =>
+  generation.type === 'INITIALE'
+    ? { type: 'INITIALE' }
+    : { type: 'NOUVELLE', hlc: encoderHlc(generation.hlc) };
+
+/** Clés de synchronisation de la méta (incrément 3 compris) : `reinitialiser` les remplace toutes. */
 const SCHEMAS_META_SYNCHRONISATION: ReadonlyArray<readonly [keyof MetaSynchronisation, z.ZodType]> =
   [
     ['dossier', idFichierDrive],
@@ -604,28 +629,50 @@ const SCHEMAS_META_SYNCHRONISATION: ReadonlyArray<readonly [keyof MetaSynchronis
     ['pageToken', z.string()],
     ['dernierContactDrive', instantIso],
     ['fusionNonDeposee', z.boolean()],
+    ['generation', generationStockee],
+    ['versionFichierPropre', z.string()],
+    ['restaurationDemandee', z.boolean()],
+    ['restaurationConnue', hlcStocke],
+    ['inventaireAFaire', z.boolean()],
   ];
+
+/** Noms des lignes `meta` de synchronisation, à retirer par `reinitialiser`. */
+export const NOMS_META_SYNCHRONISATION: ReadonlyArray<keyof MetaSynchronisation> =
+  SCHEMAS_META_SYNCHRONISATION.map(([nom]) => nom);
+
+/**
+ * Valeur stockée de chaque clé : table exhaustive (une clé ajoutée à `MetaSynchronisation` sans encodeur ne
+ * compile pas), chaque encodeur ne recevant que la valeur définie de sa clé.
+ */
+const ENCODEURS_META: {
+  readonly [K in keyof MetaSynchronisation]-?: (
+    valeur: NonNullable<MetaSynchronisation[K]>,
+  ) => unknown;
+} = {
+  dossier: (v) => v,
+  fichierPropre: (v) => v,
+  manifeste: (v) => v,
+  deposeJusquA: encoderHlc,
+  pageToken: (v) => v,
+  dernierContactDrive: (v) => Instant.enIso(v),
+  fusionNonDeposee: (v) => v,
+  generation: encoderGeneration,
+  versionFichierPropre: (v) => v,
+  restaurationDemandee: (v) => v,
+  restaurationConnue: encoderHlc,
+  inventaireAFaire: (v) => v,
+};
 
 /** Lignes `meta` des clés présentes dans `meta` (les autres restent telles quelles). */
 export const encoderMetaSynchronisation = (
   meta: Partial<MetaSynchronisation>,
-): ReadonlyArray<LigneMeta> => [
-  ...(meta.dossier === undefined ? [] : [{ nom: 'dossier', valeur: meta.dossier }]),
-  ...(meta.fichierPropre === undefined
-    ? []
-    : [{ nom: 'fichierPropre', valeur: meta.fichierPropre }]),
-  ...(meta.manifeste === undefined ? [] : [{ nom: 'manifeste', valeur: meta.manifeste }]),
-  ...(meta.deposeJusquA === undefined
-    ? []
-    : [{ nom: 'deposeJusquA', valeur: encoderHlc(meta.deposeJusquA) }]),
-  ...(meta.pageToken === undefined ? [] : [{ nom: 'pageToken', valeur: meta.pageToken }]),
-  ...(meta.dernierContactDrive === undefined
-    ? []
-    : [{ nom: 'dernierContactDrive', valeur: Instant.enIso(meta.dernierContactDrive) }]),
-  ...(meta.fusionNonDeposee === undefined
-    ? []
-    : [{ nom: 'fusionNonDeposee', valeur: meta.fusionNonDeposee }]),
-];
+): ReadonlyArray<LigneMeta> =>
+  NOMS_META_SYNCHRONISATION.flatMap((nom) => {
+    const valeur = meta[nom];
+    // Valeur définie de la clé `nom` : son encodeur est celui de la table.
+    const encoder = ENCODEURS_META[nom] as (v: unknown) => unknown;
+    return valeur === undefined ? [] : [{ nom, valeur: encoder(valeur) }];
+  });
 
 /** Relit les clés de synchronisation de la table `meta` ; undefined si l'une d'elles est invalide. */
 export const decoderMetaSynchronisation = (

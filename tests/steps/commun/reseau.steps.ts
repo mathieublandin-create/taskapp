@@ -30,6 +30,11 @@ When(
   },
 );
 
+// ST-US-017 §12.6 n° R12 : coupure sans saisie en cours (US-017 S22b) ; l'état affiché suit le changement de réseau.
+When('le réseau est coupé sur le {appareil}', function (this: MondeDoneJuan, nom: NomAppareil) {
+  this.banc.appareil(nom).reseau.couper();
+});
+
 // ST-US-017 §12.1 n° 5 : le réseau est rétabli, puis le cycle qu'il déclenche est attendu.
 const retablirLeReseau = async function (
   this: MondeDoneJuan,

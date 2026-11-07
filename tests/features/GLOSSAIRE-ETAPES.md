@@ -192,6 +192,7 @@ Les colonnes `opération` des `Exemples` ne prennent que ces formes. Les colonne
 | Valeurs d'état (assertions `l'état de … est "X"`) (v1.2, Q-US-017-9) | tâche : à faire ; terminée ; abandonnée — objectif : en cours ; atteint ; à décliner en tâches |
 | `information` (tableau des modifications non retenues) (v1.2, Q-US-017-8) | intitulé ; description ; délai ; estimation ; objectifs ; parent ; état ; création |
 | `valeur non retenue` et `valeur conservée` (même tableau) | une valeur de l'information (date, durée, intitulé, état) ; ou une valeur spéciale : `sous <objectif>` (placement) ; `sous-tâche de <tâche>` (création) ; `tâche supprimée` ; `objectif supprimé` ; `supprimée avec la tâche <tâche>` ; `placement annulé` ; `données effacées (repartir de zéro)` |
+| Colonne `élément` d'une ligne `données effacées (repartir de zéro)` (v1.x, Q-ST017-PEP-4 a) | intitulé **courant** de l'élément au moment de l'effacement (celui que l'utilisateur voit sur l'appareil), et non son intitulé d'avant la modification perdue ; dans S21 et S22c : `Publier le guide pratique` |
 | Correspondance avec le catalogue (guide §6.6.9) | valeur conservée ordinaire → `ALR-009` (RG-036) ; `tâche supprimée`, `objectif supprimé`, `supprimée avec la tâche <tâche>` → `ALR-010` (RG-047) ; `placement annulé` → `ALR-011` (RG-048) ; `données effacées (repartir de zéro)` → `ALR-014`, une ligne par modification perdue, groupée sous la carte `ALR-008`, non comptée parmi les informations à lire |
 
 ## 9. Codes de motif (connexion et refus)

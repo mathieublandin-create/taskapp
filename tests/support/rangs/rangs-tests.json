@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "CT-DEPOT-1[4-9]\\b",
+      "rang": 10
+    },
+    {
       "motif": "CT-DEPOT-1[2-9]\\b",
       "rang": 9
     },
@@ -42,6 +46,14 @@
       "rang": 2
     },
     {
+      "motif": "UT-COMP-US-017-3-\\d+",
+      "rang": 10
+    },
+    {
+      "motif": "UT-COMP-DT-03[01]-\\d+",
+      "rang": 10
+    },
+    {
       "motif": "UT-COMP-US-017-2-\\d+",
       "rang": 9
     },
@@ -74,6 +86,10 @@
       "rang": 3
     },
     {
+      "motif": "CT-TRANS-1[1-9]\\b",
+      "rang": 10
+    },
+    {
       "motif": "CT-TRANS-\\d+",
       "rang": 3
     },
@@ -94,8 +110,16 @@
       "rang": 5
     },
     {
+      "motif": "UT-COMP-US-024-1[1-9]\\b",
+      "rang": 10
+    },
+    {
       "motif": "UT-COMP-US-024-\\d+",
       "rang": 6
+    },
+    {
+      "motif": "UT-US-024-2[4-9]\\b",
+      "rang": 10
     },
     {
       "motif": "UT-US-024-2[12]\\b",

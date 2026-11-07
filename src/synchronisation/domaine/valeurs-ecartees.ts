@@ -53,8 +53,16 @@ export type ValeurEcartee =
     })
   /** RG-048 : déplacement annulé ; `gagnante` = registre `parent` écrit par la réparation (`ALR-011`). */
   | (Commune & { readonly motif: 'PLACEMENT_ANNULE'; readonly gagnante: RegistreQuelconque })
-  /** RG-044 b (incrément 3) : modification perdue par « repartir de zéro » (`ALR-014`, groupée sous `ALR-008`). */
-  | (Commune & { readonly motif: 'DONNEES_EFFACEES'; readonly generation: Hlc });
+  /**
+   * RG-044 b (incrément 3) : modification perdue par « repartir de zéro » (`ALR-014`, groupée sous `ALR-008`).
+   * `generation` : HLC de la nouvelle génération ; `intituleElement` : intitulé de l'élément dans l'état effacé
+   * (ST-US-017 v0.10 §6.7 n° 10 ; l'état ne le contient plus après l'effacement).
+   */
+  | (Commune & {
+      readonly motif: 'DONNEES_EFFACEES';
+      readonly generation: Hlc;
+      readonly intituleElement?: string;
+    });
 
 export type MotifValeurEcartee = ValeurEcartee['motif'];
 

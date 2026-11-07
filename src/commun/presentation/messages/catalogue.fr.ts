@@ -143,6 +143,7 @@ export const CATALOGUE = {
   'ALR-014': {
     libelle: '{information} de « {element} »',
     texte: 'Votre valeur « {valeur} » n’a pas été conservée.',
+    variantes: { 'sans-element': { libelle: '{information}' } },
   },
   'ALR-015': {
     libelle: 'Vos données ne sont pas protégées',
@@ -219,8 +220,15 @@ export const CATALOGUE = {
   },
   'CNF-REPARTIR-ZERO': {
     libelle: 'Effacer toutes vos données sur vos deux appareils ?',
-    texte: '{n} modification{n:|s} faite{n:|s} ici et pas encore enregistrée{n:|s} seront perdues.',
+    texte:
+      'Vos objectifs et vos tâches seront effacés de cet appareil, puis de votre autre appareil à sa prochaine synchronisation. Vous recommencerez avec un espace vide.',
     action: 'Tout effacer',
+    variantes: {
+      perte: {
+        texte:
+          'Vos objectifs et vos tâches seront effacés de cet appareil, puis de votre autre appareil à sa prochaine synchronisation. Vous recommencerez avec un espace vide. {n} modification{n:|s} faite{n:|s} ici et pas encore enregistrée{n:|s} {n:sera perdue|seront perdues}.',
+      },
+    },
   },
   'CNF-REPRENDRE-SOUS-TACHE': {
     libelle: 'Reprendre « {element} » ?',
@@ -291,10 +299,18 @@ export const CATALOGUE = {
     action: 'Ouvrir Google Drive',
   },
   'ERR-012': {
-    libelle: 'Vos données ne sont plus dans votre Google Drive',
+    libelle: 'Vos données ne sont plus utilisables dans votre Google Drive',
     texte:
-      'Le dossier « Done Juan » a été supprimé ou ne peut plus être lu. Cet appareil en garde une copie : {objectifs} objectif{objectifs:|s}, {taches} tâche{taches:|s}, dernière mise à jour {anciennete}. Rien n’est effacé ni modifié tant que vous n’avez pas choisi.',
+      'Le dossier « Done Juan » ou l’un de ses fichiers a été supprimé, abîmé ou modifié en dehors de l’application. Cet appareil en garde une copie : {objectifs} objectif{objectifs:|s}, {taches} tâche{taches:|s}, dernière mise à jour {anciennete}. Rien n’est effacé ni modifié tant que vous n’avez pas choisi.',
     action: 'Restaurer mes données',
+    actionSecondaire: 'Repartir de zéro…',
+    fermeture: 'Décider plus tard',
+    variantes: {
+      'copie-vide': {
+        texte:
+          'Le dossier « Done Juan » ou l’un de ses fichiers a été supprimé, abîmé ou modifié en dehors de l’application. Cet appareil n’en garde aucun objectif ni aucune tâche. Rien n’est effacé ni modifié tant que vous n’avez pas choisi.',
+      },
+    },
   },
   'ERR-013': {
     libelle: 'Consultation seule',
@@ -464,6 +480,31 @@ export const CATALOGUE = {
     variantes: { 'plus-recentes': { libelle: 'Plus récentes d’abord' } },
   },
 
+  // ---- Choix de restauration (§6.6.4, famille RST-)
+  'RST-DEMANDEE': {
+    libelle: 'Restauration demandée. Elle sera faite au retour du réseau.',
+    action: 'Annuler la demande',
+    variantes: {
+      'en-ligne': {
+        libelle: 'Restauration demandée. Elle sera faite à la prochaine synchronisation.',
+      },
+    },
+  },
+  'RST-PLUS-TARD': {
+    libelle:
+      'Vous pouvez continuer à travailler. Ce choix reste accessible depuis « Action requise ».',
+  },
+  'RST-REPARTIR-INDISPONIBLE': { libelle: 'Disponible au retour du réseau.' },
+  'RST-REPARTIR-ZERO': {
+    libelle:
+      'Efface toutes vos données, ici et sur votre autre appareil. Vous recommencez avec un espace vide.',
+  },
+  'RST-RESTAURATION-EN-COURS': { libelle: 'Restauration…' },
+  'RST-RESTAURER': {
+    libelle:
+      'Vos données sont recréées dans votre Google Drive à partir de cet appareil, puis retrouvées sur votre autre appareil.',
+  },
+
   // ---- Titres de section (§6.6.4)
   'SEC-MODIFS-EFFACEES': {
     libelle: 'Voir les {n} modifications',
@@ -552,6 +593,7 @@ export const CATALOGUE = {
     libelle: '{n} modification{n:|s} n’{n:a|ont} pas été retenue{n:|s} · Voir',
     action: 'Voir',
   },
+  'TST-RESTAUREE': { libelle: 'Vos données sont de nouveau dans votre Google Drive.' },
   'TST-SAISIE-A-TERMINER': {
     libelle: 'Terminez votre saisie, puis reprenez la synchronisation.',
   },

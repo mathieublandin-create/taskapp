@@ -3,6 +3,7 @@
  * Exécutée sur DepotLocalDexie (fake-indexeddb) et sur la doublure DepotLocalEnMemoire (ST-US-017 §12.3).
  * CT-DEPOT-08 à 11 : méthodes de l'incrément 1 d'US-017 (lireMeta, appliquerSynchronisation).
  * CT-DEPOT-12, 13 : signalements de l'incrément 2 (lireSignalements, ST-US-017 v0.5 §4.6), rang 9.
+ * CT-DEPOT-14, 15 : réinitialisation et HLC d'un choix de l'incrément 3 (ST-US-017 v0.10.2 §4.2, §4.7), rang 10.
  * Identifiants : CT-DEPOT-nn. Les cas « erreur de la base » et « espace non ouvert » sont couverts
  * par les tests d'intégration de l'adaptateur (ST-socle-ecriture.md §14).
  * Précision E10 : les observateurs de l'instance qui écrit sont appelés après la validation et au plus
@@ -13,6 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { echec, succes } from '@src/commun/domaine/resultat';
 import type { DepotLocal } from '@src/synchronisation/application/ports/depot-local';
 import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
+import type { Hlc } from '@src/synchronisation/domaine/hlc';
 import {
   META_INITIALE,
   type IdFichierDrive,
@@ -393,6 +395,103 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
       );
       expect(relus.lectures).toEqual([]);
       expect(valeurDe(await second().lire()).version).toBe(2);
+    });
+
+    it('CT-DEPOT-14 appliquerSynchronisation avec reinitialiser — vide l’état et les signalements, garde appareil, dernierHlc et correction, remplace la méta, écrit les nouveaux signalements ; version + 1, observateurs (ST-US-017 v0.10 §4.7)', async () => {
+      const { premier, second } = fabriquer();
+      const generation = { type: 'NOUVELLE', hlc: hSignalement(9, SMARTPHONE) } as const;
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: planAjoutant(etat, {
+            registres: [creation, intitule],
+            evenements: [evenement],
+            enAttente: [entreeEnAttente],
+            dernierHlc: h,
+          }),
+          meta: { dossier: DOSSIER, fichierPropre: FICHIER, deposeJusquA: h, pageToken: 'jeton' },
+          signalements: { valeursEcartees: [conflit(1, 'B')], lectures: [lecture] },
+        })),
+      );
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      const effacee: ValeurEcartee = {
+        id: idArbitraire(5),
+        motif: 'DONNEES_EFFACEES',
+        ecartee: intitule,
+        generation: generation.hlc,
+        intituleElement: 'Publier le guide',
+      };
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => ({
+          plan: {
+            ...planVide(etat),
+            etatApres: {
+              ...etat,
+              registres: new Map(),
+              journal: new Map(),
+              enAttente: new Map(),
+            },
+          },
+          meta: { dossier: DOSSIER, generation, fusionNonDeposee: true },
+          signalements: { valeursEcartees: [effacee], lectures: [] },
+          reinitialiser: true,
+        })),
+      );
+
+      const autre = second();
+      const relu = valeurDe(await autre.lire());
+      expect(relu.version).toBe(2);
+      expect(relu.appareilId).toBe(SMARTPHONE);
+      expect(relu.dernierHlc).toEqual(h);
+      expect(relu.registres.size + relu.journal.size + relu.enAttente.size).toBe(0);
+      expect(valeurDe(await autre.lireMeta())).toEqual({
+        dossier: DOSSIER,
+        generation,
+        fusionNonDeposee: true,
+      });
+      expect(enTableaux(valeurDe(await autre.lireSignalements()))).toEqual({
+        valeursEcartees: [effacee],
+        lectures: [],
+      });
+      expect(appels).toBe(1);
+    });
+
+    it('CT-DEPOT-15 appliquerSynchronisation — un plan qui ne fait qu’avancer dernierHlc (HLC d’un choix) est écrit : version + 1, observateurs, relu par une autre instance ; un dernierHlc égal ou inférieur n’écrit rien et ne recule jamais (ST-US-017 v0.10.2 §4.2, §6.7 n° 9 (2), n° 11 c (2))', async () => {
+      const { premier, second } = fabriquer();
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      const avancerA = (cible: Hlc) =>
+        premier.appliquerSynchronisation((etat) => ({
+          plan: { ...planVide(etat), etatApres: { ...etat, dernierHlc: cible } },
+          meta: {},
+        }));
+
+      valeurDe(await avancerA(h));
+
+      const relu = valeurDe(await second().lire());
+      expect(relu.version).toBe(1);
+      expect(relu.dernierHlc).toEqual(h);
+      expect(relu.registres.size + relu.journal.size + relu.enAttente.size).toBe(0);
+      expect(appels).toBe(1);
+
+      valeurDe(await avancerA(h));
+      valeurDe(await avancerA(hlc('2026-10-21T07:00:00.000Z', 0, SMARTPHONE)));
+
+      const inchange = valeurDe(await second().lire());
+      expect(inchange.version).toBe(1);
+      expect(inchange.dernierHlc).toEqual(h);
+      expect(appels).toBe(1);
+
+      const suivant = hlc('2026-10-21T09:00:00.000Z', 0, SMARTPHONE);
+      valeurDe(await avancerA(suivant));
+      const avance = valeurDe(await second().lire());
+      expect(avance.version).toBe(2);
+      expect(avance.dernierHlc).toEqual(suivant);
+      expect(appels).toBe(2);
     });
   });
 };

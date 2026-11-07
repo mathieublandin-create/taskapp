@@ -291,7 +291,7 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
     expect(magasin.getState().finAnnulable).toBeUndefined();
   });
 
-  it('UT-COMP-US-003-07 une tâche terminée n’a pas de case ; une liste sans action « terminer » n’en affiche pas', async () => {
+  it('UT-COMP-US-003-07 une tâche terminée n’a pas de case « Terminer » mais la case « Rouvrir » (DT-030)', async () => {
     const banc = creerBancObjectifs();
     const id = await creerTache(banc, 'Rédiger');
     await terminer(banc, id);
@@ -301,7 +301,8 @@ describe('Espace des tâches — liste (ECR-002 L1, L4)', () => {
 
     await screen.findByRole('button', { name: /^Rédiger, terminée/u });
 
-    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /^Terminer/u })).toBeNull();
+    expect(screen.getByRole('checkbox', { name: /^Rouvrir/u })).toBeTruthy();
   });
 });
 

@@ -377,6 +377,10 @@ export class AppareilSimule {
       deposerFichierAppareil: (p) => appeler((t) => t.deposerFichierAppareil(p)),
       lireManifeste: (d) => appeler((t) => t.lireManifeste(d)),
       ecrireManifeste: (p) => appeler((t) => t.ecrireManifeste(p)),
+      listerDossiers: () => appeler((t) => t.listerDossiers()),
+      inventorierDossier: (d) => appeler((t) => t.inventorierDossier(d)),
+      lireContenuManifeste: (id) => appeler((t) => t.lireContenuManifeste(id)),
+      supprimerFichier: (id) => appeler((t) => t.supprimerFichier(id)),
     };
   }
 

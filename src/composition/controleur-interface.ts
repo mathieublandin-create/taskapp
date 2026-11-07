@@ -1,3 +1,4 @@
+import type { Instant } from '../commun/domaine/temps/instant';
 import type { Horloge } from '../commun/application/ports/horloge';
 import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartees';
 import type { Annulation } from '../commun/application/ports/planificateur';
@@ -32,6 +33,14 @@ import {
   type ModeleVueBandeau,
 } from '../synchronisation/presentation/modeles-de-vue/bandeau';
 import {
+  construireChoixRestauration,
+  construireConfirmationRepartirDeZero,
+  construireTextesChoixRestauration,
+  type ConfirmationRepartirDeZero,
+  type ModeleVueChoixRestauration,
+  type TextesChoixRestauration,
+} from '../synchronisation/presentation/modeles-de-vue/choix-restauration';
+import {
   construireIndicateur,
   type ModeleVueIndicateur,
 } from '../synchronisation/presentation/modeles-de-vue/indicateur-synchronisation';
@@ -44,11 +53,16 @@ import {
   type ActionCarteFeuille,
   type ModeleVueFeuilleSynchronisation,
 } from '../synchronisation/presentation/modeles-de-vue/feuille-synchronisation';
+import { comparerHlc, type Hlc } from '../synchronisation/domaine/hlc';
 import type { Application } from './application';
 import type { ObjectifsTaches } from './objectifs-taches';
 
-/** Toasts du rang 1 : geste refusé pendant une saisie (guide §6.6.6) ; espace local inaccessible (ST §8 n° 12, ERR-014). */
-export type ToastInterface = 'TST-SAISIE-A-TERMINER' | 'TST-ERREUR-ENREGISTREMENT';
+/**
+ * Toasts : geste refusé pendant une saisie (guide §6.6.6) ; espace local inaccessible (ST §8 n° 12, ERR-014) ;
+ * restauration demandée exécutée par cet appareil (ST-US-017 v0.10 §6.7 n° 9).
+ */
+export type ToastInterface =
+  'TST-SAISIE-A-TERMINER' | 'TST-ERREUR-ENREGISTREMENT' | 'TST-RESTAUREE';
 
 /** Ce que le contrôleur utilise de l'application assemblée. */
 export type ApplicationInterface = Pick<
@@ -67,7 +81,22 @@ export type ApplicationInterface = Pick<
   | 'synchroniserMaintenant'
   | 'observerSynchronisation'
   | 'ouvrirGoogleDrive'
+  | 'lireChoixRestauration'
+  | 'lireRestaurationFaiteIci'
+  | 'demanderRestauration'
+  | 'annulerRestauration'
+  | 'evaluerRepartirDeZero'
+  | 'repartirDeZero'
 >;
+
+/** Choix d'`ERR-012` : modèle de vue et textes (la mention de la demande dépend du réseau). */
+export type ChoixRestaurationAffichable = {
+  readonly vue: ModeleVueChoixRestauration;
+  readonly textes: TextesChoixRestauration;
+};
+
+const estEchecEcritureLocale = (r: Resultat<unknown, { readonly type: string }>): boolean =>
+  !r.ok && r.erreur.type === 'EcritureLocaleImpossible';
 
 const estEspaceInaccessible = (r: Resultat<unknown, { readonly type: string }>): boolean =>
   !r.ok && r.erreur.type === 'EspaceInaccessible';
@@ -85,6 +114,8 @@ export type VueInterface = {
   readonly nonRetenues?: ModeleVueModificationsNonRetenues;
   /** Jour de référence des dates de la section « À lire » (année affichée si elle diffère, guide §6.6.1). */
   readonly aujourdhui?: DateCalendaire;
+  /** Choix d'`ERR-012` (carte de la feuille et feuille de choix) ; absent sans `DONNEES_ABSENTES`. */
+  readonly choixRestauration?: ChoixRestaurationAffichable;
   readonly bandeau?: ModeleVueBandeau;
   readonly confirmation?: ModeleVueConfirmationCompte;
   readonly suppressionBloquee?: { readonly enCours: boolean };
@@ -97,13 +128,17 @@ type Etat = {
   confirmation?: { readonly vue: ConfirmationCompte; readonly suite: () => Promise<void> };
   suppressionBloquee?: { enCours: boolean };
   toast?: ToastInterface;
+  /** « Décider plus tard » choisi pendant cette ouverture d'`ERR-012` (remis à faux quand `ERR-012` disparaît). */
+  decisionReportee: boolean;
+  /** Présent tant qu'`ERR-012` est affiché : restauration connue faite ici avant le choix (base du toast `TST-RESTAUREE`). */
+  choixAffiche?: { readonly restaureeIci: Hlc | undefined };
   /** Geste à rejouer par le bouton « Réessayer » du toast ERR-014 (DT-007). */
   reessai?: () => Promise<void>;
 };
 
 export class ControleurInterface {
   #vue: VueInterface;
-  readonly #etat: Etat = { enCours: false };
+  readonly #etat: Etat = { enCours: false, decisionReportee: false };
   readonly #observateurs = new Set<() => void>();
   readonly #rafraichissements = new Set<Promise<void>>();
 
@@ -148,6 +183,9 @@ export class ControleurInterface {
   async #calculerVue(): Promise<void> {
     const session = this.application.session.etat();
     const etatSynchro = await this.application.consulterEtat();
+    if (etatSynchro === undefined) this.#oublierChoixRestauration();
+    const synchronisation =
+      etatSynchro === undefined ? {} : await this.#synchronisation(etatSynchro);
     const { confirmation, suppressionBloquee, toast } = this.#etat;
     this.#vue = {
       racine: construireRacine(session),
@@ -155,7 +193,7 @@ export class ControleurInterface {
       ...(session.type === 'OUVERTE'
         ? { compte: construireSectionCompte({ adresse: session.identite.adresse }) }
         : {}),
-      ...(etatSynchro === undefined ? {} : await this.#synchronisation(etatSynchro)),
+      ...synchronisation,
       ...(confirmation === undefined
         ? {}
         : { confirmation: construireConfirmationCompte(confirmation.vue) }),
@@ -282,6 +320,53 @@ export class ControleurInterface {
     else await this.synchroniser();
   };
 
+  /** « Restaurer mes données » : mémorisée, exécutée par le cycle ; un échec d'écriture locale est signalé (ERR-014). */
+  readonly demanderRestauration = async (): Promise<void> => {
+    this.#effacerToast();
+    const r = await this.application.demanderRestauration();
+    this.#signalerEcritureLocale(r, this.demanderRestauration);
+    await this.rafraichir();
+  };
+
+  /** « Annuler la demande » : sans confirmation ni toast (rien n'est perdu). */
+  readonly annulerRestauration = async (): Promise<void> => {
+    this.#effacerToast();
+    const r = await this.application.annulerRestauration();
+    this.#signalerEcritureLocale(r, this.annulerRestauration);
+    await this.rafraichir();
+  };
+
+  /** « Repartir de zéro… » : la confirmation à afficher, ou `undefined` si le choix n'a plus d'objet (vue rafraîchie). */
+  readonly evaluerRepartirDeZero = async (): Promise<ConfirmationRepartirDeZero | undefined> => {
+    const r = await this.application.evaluerRepartirDeZero();
+    if (r.ok) return construireConfirmationRepartirDeZero(r.valeur.n);
+    await this.rafraichir();
+    return undefined;
+  };
+
+  /** « Repartir de zéro » confirmé ; un refus ou un échec laisse `ERR-012` affiché, rien n'est effacé localement. */
+  readonly repartirDeZero = async (): Promise<void> => {
+    this.#effacerToast();
+    const r = await this.application.repartirDeZero();
+    this.#signalerEcritureLocale(r, this.repartirDeZero);
+    await this.rafraichir();
+  };
+
+  /** « Décider plus tard », « Fermer » et Échap sur la feuille de choix : rien n'est écrit. */
+  readonly deciderPlusTard = async (): Promise<void> => {
+    this.#etat.decisionReportee = true;
+    await this.rafraichir();
+  };
+
+  #signalerEcritureLocale(
+    r: Resultat<unknown, { readonly type: string }>,
+    rejeu: () => Promise<void>,
+  ): void {
+    if (!estEchecEcritureLocale(r)) return;
+    this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
+    this.#etat.reessai = rejeu;
+  }
+
   #connexion(): ModeleVueConnexion {
     const { dernierEchec, enCours } = this.#etat;
     return construireEcranConnexion(
@@ -292,7 +377,10 @@ export class ControleurInterface {
   async #synchronisation(
     etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
   ): Promise<
-    Pick<VueInterface, 'indicateur' | 'bandeau' | 'feuille' | 'nonRetenues' | 'aujourdhui'>
+    Pick<
+      VueInterface,
+      'indicateur' | 'bandeau' | 'feuille' | 'nonRetenues' | 'aujourdhui' | 'choixRestauration'
+    >
   > {
     const maintenant = this.horloge.maintenant();
     const bandeau = construireBandeau(etat, maintenant);
@@ -306,13 +394,61 @@ export class ControleurInterface {
     const lu = await this.application.lireModificationsNonRetenues();
     const nonRetenues =
       lu === undefined ? undefined : construireModificationsNonRetenues(lu.valeurs);
+    const choixRestauration = await this.#choixRestauration(etat, maintenant);
     return {
       indicateur: construireIndicateur(etat),
       feuille,
       aujourdhui: jourDeReference(maintenant),
+      ...(choixRestauration === undefined ? {} : { choixRestauration }),
       ...(nonRetenues === undefined ? {} : { nonRetenues }),
       ...(bandeau === undefined ? {} : { bandeau }),
     };
+  }
+
+  /** Choix d'`ERR-012` tant que `DONNEES_ABSENTES` ; à sa disparition, `TST-RESTAUREE` si cet appareil a restauré. */
+  async #choixRestauration(
+    etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
+    maintenant: Instant,
+  ): Promise<ChoixRestaurationAffichable | undefined> {
+    if (etat.actionRequise !== 'DONNEES_ABSENTES') {
+      await this.#cloreChoixRestauration();
+      return undefined;
+    }
+    const lu = await this.application.lireChoixRestauration();
+    if (lu === undefined) return undefined;
+    this.#etat.choixAffiche ??= { restaureeIci: await this.application.lireRestaurationFaiteIci() };
+    const vue = construireChoixRestauration({
+      etat,
+      ...lu,
+      decisionReportee: this.#etat.decisionReportee,
+      maintenant,
+    });
+    return vue === undefined
+      ? undefined
+      : { vue, textes: construireTextesChoixRestauration(etat.reseau) };
+  }
+
+  /** Sans espace ouvert : le choix en cours d'un compte ne se reporte pas sur le suivant. */
+  #oublierChoixRestauration(): void {
+    this.#etat.decisionReportee = false;
+    delete this.#etat.choixAffiche;
+  }
+
+  /**
+   * `ERR-012` n'est plus affiché : « Décider plus tard » est oublié ; toast `TST-RESTAUREE` si la restauration connue
+   * a changé et vient de cet appareil (pas de toast quand l'autre appareil a restauré, ni quand « repartir de zéro »
+   * l'emporte : ST-US-017 v0.10 §6.7 n° 9, guide §6.6.6).
+   */
+  async #cloreChoixRestauration(): Promise<void> {
+    const avant = this.#etat.choixAffiche;
+    this.#etat.decisionReportee = false;
+    if (avant === undefined) return;
+    delete this.#etat.choixAffiche;
+    const apres = await this.application.lireRestaurationFaiteIci();
+    if (apres === undefined) return;
+    if (avant.restaureeIci === undefined || comparerHlc(apres, avant.restaureeIci) !== 0) {
+      this.#etat.toast = 'TST-RESTAUREE';
+    }
   }
 
   async #seDeconnecter(): Promise<void> {

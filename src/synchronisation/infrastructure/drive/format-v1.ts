@@ -199,7 +199,13 @@ const encoderValeurEcartee = (valeur: ValeurEcartee, indices: Indices): object =
           : { intituleElement: valeur.intituleElement }),
       };
     case 'DONNEES_EFFACEES':
-      return { ...commun, generation: encoderHlc(valeur.generation, indices) };
+      return {
+        ...commun,
+        generation: encoderHlc(valeur.generation, indices),
+        ...(valeur.intituleElement === undefined
+          ? {}
+          : { intituleElement: valeur.intituleElement }),
+      };
   }
 };
 
@@ -336,7 +342,14 @@ const assemblerDonneesEffacees = (
 ): ValeurEcartee | 'IGNORE' | undefined => {
   if (brute.generation === undefined || ecartee === undefined) return undefined;
   if (ecartee === 'IGNORE') return 'IGNORE';
-  return { id: brute.id, motif: 'DONNEES_EFFACEES', ecartee, generation: brute.generation };
+  const { id, generation, intituleElement } = brute;
+  return {
+    id,
+    motif: 'DONNEES_EFFACEES',
+    ecartee,
+    generation,
+    ...(intituleElement === undefined ? {} : { intituleElement }),
+  };
 };
 
 /** Entrées `CONFLIT`, `SUPPRESSION`, `PLACEMENT_ANNULE` : `gagnante` exigée. */

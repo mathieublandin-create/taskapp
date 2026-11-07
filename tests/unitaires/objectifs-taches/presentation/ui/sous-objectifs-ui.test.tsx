@@ -17,7 +17,7 @@ import {
   creerBancObjectifs,
   nettoyerDocument,
   ouvrir,
-  saisir,
+  renseigner,
   type BancObjectifs,
 } from '@tests/support/ui-objectifs';
 
@@ -150,7 +150,7 @@ describe('Sous-objectifs dans l’espace des objectifs (ECR-003 D, E ; ECR-008 A
     await ouvrirDetail(/^Publier le guide/, 'Publier le guide');
 
     await ouvrir('Modal', () => cliquerBoutonIon('Ajouter'));
-    await saisir('Intitulé', 'Version imprimable');
+    await renseigner('Intitulé', 'Version imprimable');
     await cliquerBoutonIon('Créer le sous-objectif');
 
     const section = (await screen.findByRole('heading', { name: 'Sous-objectifs' })).parentElement;

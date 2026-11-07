@@ -85,18 +85,25 @@ export const creerBancEcritureImpossible = (): BancObjectifs => {
 };
 
 /** Champ natif d'un composant Ionic (IonInput, IonTextarea) retrouvé par son libellé. */
-export const champ = async (
+const composantChamp = (
   libelle: RegExp | string,
-): Promise<HTMLInputElement | HTMLTextAreaElement> => {
-  const composant = await waitFor(() => {
+): Promise<HTMLIonInputElement | HTMLIonTextareaElement> =>
+  waitFor(() => {
     const trouve = Array.from(
-      document.querySelectorAll<HTMLElement & { label?: string }>('ion-input, ion-textarea'),
+      document.querySelectorAll<HTMLIonInputElement | HTMLIonTextareaElement>(
+        'ion-input, ion-textarea',
+      ),
     ).find((e) =>
       typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? ''),
     );
     if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
     return trouve;
   });
+
+export const champ = async (
+  libelle: RegExp | string,
+): Promise<HTMLInputElement | HTMLTextAreaElement> => {
+  const composant = await composantChamp(libelle);
   const natif = composant.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
   if (natif === null) throw new Error(`Champ natif « ${String(libelle)} » absent`);
   return natif;
@@ -116,34 +123,50 @@ export const cliquerBoutonIon = async (nom: string): Promise<void> => {
   await userEvent.click(await boutonIon(nom));
 };
 
-export const saisir = async (libelle: RegExp | string, texte: string): Promise<void> => {
-  const natif = await champ(libelle);
-  await userEvent.clear(natif);
-  if (texte !== '') await userEvent.type(natif, texte);
-};
+/**
+ * Écoute `ionModalDidPresent` : à appeler **avant** d'ouvrir la modale, puis à attendre une fois qu'elle l'est. La
+ * modale prend le focus à la fin de sa présentation ; renseigner et valider avant ferait reprendre le focus au champ
+ * invalide (RC-US-017-12).
+ */
+export const surPresentationModale = (): Promise<void> =>
+  new Promise<void>((resoudre) => {
+    document.addEventListener(
+      'ionModalDidPresent',
+      () => {
+        resoudre();
+      },
+      { once: true },
+    );
+  });
 
 /**
  * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
- * touche par touche concourt avec le rendu contrôlé du champ et n'apporte rien à ce qui est vérifié ici.
+ * touche par touche (`userEvent.type`) concourt avec le rendu contrôlé du champ : sous charge, des caractères sont
+ * perdus ou permutés (DT-029) ; c'est donc le seul moyen de saisir dans les tests de composants Ionic.
  */
 export const renseigner = async (libelle: RegExp | string, texte: string): Promise<void> => {
-  const champ = await waitFor(() => {
-    const trouve = Array.from(document.querySelectorAll<HTMLIonInputElement>('ion-input')).find(
-      (e) => (typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? '')),
-    );
-    if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
-    return trouve;
-  });
-  champ.value = texte;
-  champ.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
+  const composant = await composantChamp(libelle);
+  composant.value = texte;
+  composant.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
   await waitFor(() => {
-    expect(champ.value).toBe(texte);
+    expect(composant.value).toBe(texte);
   });
 };
 
-/** Bouton d'une feuille d'actions ou d'une alerte Ionic (boutons natifs, hors DOM fantôme). */
+/**
+ * Saisie dans un champ Ionic : depuis DT-029, synonyme de `renseigner` (la frappe touche par touche perd ou permute des
+ * caractères sous charge). Conservé pour les tests qui l'appellent (UT-COMP-US-001-190, ANO-003).
+ */
+export const saisir = renseigner;
+
+/**
+ * Choisit un bouton d'une feuille d'actions Ionic et attend sa fermeture : l'action choisie s'exécute à la fermeture
+ * (`onDidDismiss`), émise après la transition ; une assertion immédiate la précéderait (DT-029).
+ */
 export const choixDuMenu = async (texte: string): Promise<void> => {
+  const fermee = apresEvenement('ionActionSheetDidDismiss');
   await userEvent.click(await screen.findByRole('button', { name: texte }));
+  await fermee;
 };
 
 const ATTENTE_FERMETURE_MS = 150;

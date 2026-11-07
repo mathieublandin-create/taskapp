@@ -25,6 +25,8 @@ export type ProprietesListeTaches = {
   readonly surOuvrir: (id: IdTache) => void;
   /** Case « Terminer » de chaque ligne ; `retenues` : lignes tout juste terminées, encore affichées. */
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  /** Case « Rouvrir » de chaque ligne terminée (filtre « Terminées », DT-030). */
+  readonly surRouvrir?: ((id: IdTache) => void) | undefined;
   readonly retenues?: ReadonlyArray<IdTache> | undefined;
   /** Refus (ERR-035) du dernier geste « Terminer », annoncé sous les filtres (ST-US-003 §4.5). */
   readonly refus?: ReadonlyArray<MessageRefus> | undefined;
@@ -82,10 +84,11 @@ const Lignes = ({
   lignes,
   surOuvrir,
   surTerminer,
+  surRouvrir,
   retenues = [],
 }: {
   readonly lignes: ModeleVueListeTaches['lignes'];
-} & Pick<ProprietesListeTaches, 'surOuvrir' | 'surTerminer' | 'retenues'>) => (
+} & Pick<ProprietesListeTaches, 'surOuvrir' | 'surTerminer' | 'surRouvrir' | 'retenues'>) => (
   <ul className="liste-taches">
     {lignes.map((ligne) => (
       <LigneTacheUi
@@ -95,6 +98,7 @@ const Lignes = ({
           surOuvrir(l.id);
         }}
         surTerminer={surTerminer}
+        surRouvrir={surRouvrir}
         retenue={retenues.includes(ligne.id)}
       />
     ))}
@@ -109,31 +113,18 @@ const EnTeteListe = () => (
   </IonHeader>
 );
 
-export const ListeTaches = ({
-  modele,
-  surCreer,
-  surOuvrir,
-  surTerminer,
-  retenues,
-  refus = [],
-  ...filtres
-}: ProprietesListeTaches) => {
+export const ListeTaches = ({ modele, surCreer, refus = [], ...autres }: ProprietesListeTaches) => {
   useRaccourciCreation(surCreer);
   const { etatVide, mentionHeureParis } = modele;
   return (
     <>
       <EnTeteListe />
       <IonContent>
-        <Filtres modele={modele} {...filtres} />
+        <Filtres modele={modele} {...autres} />
         <MessagesRefus messages={refus} />
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
         {etatVide === undefined ? null : <EtatVide code={etatVide.code} surAction={surCreer} />}
-        <Lignes
-          lignes={modele.lignes}
-          surOuvrir={surOuvrir}
-          surTerminer={surTerminer}
-          retenues={retenues}
-        />
+        <Lignes lignes={modele.lignes} {...autres} />
         <BoutonFlottant libelle={LIBELLES_TACHES.ajouterTache} surClic={surCreer} />
       </IonContent>
     </>
