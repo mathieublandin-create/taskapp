@@ -1,6 +1,7 @@
 import type { ContenuFichierAppareil, Generation } from './contenu-fichier';
 import type { EtatLocal } from './etat-local';
 import { comparerHlc, type Hlc } from './hlc';
+import type { Inconnus } from './inconnus';
 import type { IndexEnAttente } from './index-en-attente';
 import type { MetaSynchronisation } from './meta-synchronisation';
 import { SIGNALEMENTS_VIDES, type Signalements } from './signalements';
@@ -20,6 +21,8 @@ export const contenuAEnvoyer = (
     readonly generation: Generation;
     /** ST-US-017 v0.5 §5.2 (incrément 2, tranche B2) : recopiés s'ils sont non vides, triés par identifiant. */
     readonly signalements?: Signalements;
+    /** ST-US-017 v0.11 §6.8 n° 14 (incrément 4, tranche H4) : recopiés tels quels (`inconnus`) s'ils sont non vides. */
+    readonly inconnus?: Inconnus;
   },
 ): ContenuFichierAppareil => {
   const { valeursEcartees, lectures } = p.signalements ?? SIGNALEMENTS_VIDES;

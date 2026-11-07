@@ -5,15 +5,15 @@
 | Élément | Valeur |
 |---|---|
 | US | [US-024](../01-specification-fonctionnelle/user-stories/US-024-decomposer-une-tache-en-sous-taches.md), état du 2026-10-21 (validée, DEC-018) |
-| Lot | [LOT-001](../lots/LOT-001.md) — rang de réalisation : **6** / 13 ; partie RG-049 (incohérences) : **rang 9**, avec l'incrément 2 d'US-017 ; carte `InconsistencyCard` et ses actions (DT-026) : **rang 10**, tranche D2 de ST-US-017 §15.2 |
+| Lot | [LOT-001](../lots/LOT-001.md) — rang de réalisation : **6** / 13 ; partie RG-049 (incohérences) : **rang 9**, avec l'incrément 2 d'US-017 ; carte `InconsistencyCard` et ses actions (DT-026) : **rang 10**, tranche D2 de ST-US-017 §15.2 ; case « Rouvrir » d'une sous-tâche (DT-030, reliquat) : **rang 11**, tranche D4 de ST-US-017 §15.3 |
 | Fichier `.feature` | [`tests/features/US-024-decomposer-une-tache-en-sous-taches.feature`](../../tests/features/US-024-decomposer-une-tache-en-sous-taches.feature), 25 scénarios |
 | RG couvertes | RG-003, RG-023, RG-026, RG-028, RG-029, RG-045, RG-046, RG-047 (via ST-US-017 incrément 2), RG-049, RG-050 |
 | DAT / ADR | DAT v0.10.1 (§4.2 « suppressions », « incohérences d'état », §6.1, §6.2) ; ADR-003, ADR-010 |
 | Maquettes | ECR-007 (A, H, I, J), ECR-003 D, ECR-002 ; guide v0.2.8 §4.22, §4.23, §6.6.9 |
 | Q-US traitées | Q-US-024-1, Q-US-024-2, Q-US-024-3, Q-US-001-2 (E8) ; hypothèse H-3 ; Q-US-001-6 (e) (réponse de Steeve, guide v0.2.9 §5.8) |
 | Prérequis | ST-US-002 (rang 5) |
-| Version | 0.5 |
-| Statut | **v0.6 : complétion pour DT-026 (rang 10)**, E10 livrée (UT-US-024-24 en rouge) ; Q-ST024-STE-1 ouverte, non bloquante pour le cas d'une seule sous-tâche à faire |
+| Version | 0.7 |
+| Statut | **v0.7 : DT-030 (reliquat), case « Rouvrir » d'une sous-tâche terminée (rang 11, tranche D4 de ST-US-017 §15.3), E10 livrée (UT-US-024-25 à 27 en rouge)** ; **v0.6 : complétion pour DT-026 (rang 10)**, E10 livrée (UT-US-024-24 en rouge) ; Q-ST024-STE-1 ouverte, non bloquante pour le cas d'une seule sous-tâche à faire |
 | Auteur | Anthony |
 | Branche Git | `us/US-024-sous-taches` (rang 6) ; la partie RG-049 est livrée sur la branche de l'incrément 2 d'US-017 |
 
@@ -25,6 +25,7 @@
 | 0.3 | 2026-10-31 | Anthony | E12 du rang 6, écart de rattachement signalé par Benjamin : UT-US-024-21, 22 et `incoherence.ts` restent au **rang 9** (§2.1, §3, §13, §15 ; `rangs-scenarios.json` : S20 à S22 au rang 9 ; LOT-001 « Ordre de réalisation »). `rangs-tests.json` et `rangs-fichiers.json` sont corrigés. Conduite à tenir pour le code déjà écrit (§15). Nom accessible de la case « Terminer » codé en constante, DT-019 (§4.5, §16). |
 | 0.5 | 2026-11-01 | Anthony | E13 de DT-015, DT-017, DT-019 (`docs/ceremonies/revue-code-LOT-001-catalogue-dt.md`, PR #27 ; guide v0.2.21 §6.6.4, Q-ANT-E12-R6-1) : `caseTerminer.nomAccessible` = `ETA-TACHE-CASE` (variante `rouvrir` pour une sous-tâche terminée) ; DT-019 remboursée ; UT-US-024-16 : espaces insécables du guide ; rendu de la case « Rouvrir » : DT-030 |
 | 0.6 | 2026-11-01 | Anthony | **DT-026** (E13 du rang 9, décision 6 ; échéance : rang 10, tranche D2 de ST-US-017 §15.2) : carte d'incohérence d'ECR-007 H. §3 n° 8 (`carte-incoherence.tsx`, `espace-taches.tsx`) ; §4.5 : champs `actionPrincipale` et `sousTache` du modèle de vue, propriétés de `CarteIncoherence`, `surAbandonnerSousTache` de `ProprietesDetailTache`, emplacement (en tête, `ActionFin` masquée, maquette ECR-007 H) ; §6.6 : règles des actions ; §13 : **UT-US-024-24** livré en rouge ; §14 : UT-COMP-US-024-11 à 15 attendus de Benjamin ; §16 : **Q-ST024-STE-1** (Steeve). |
+| 0.7 | 2026-11-07 | Anthony | **DT-030, reliquat** (E13 du rang 10, décision 2 ; guide v0.2.21 §6.6.4 `ETA-TACHE-CASE` variante `rouvrir`, §6.6.7 `CNF-ROUVRIR-SOUS-TACHE` ; maquette ECR-007 A) : case pleine « Rouvrir » d'une sous-tâche terminée dans la section « Sous-tâches » du détail de sa tâche parente. §3 n° 11 ; §4.5 (`caseTerminer.action`, `surRouvrir` de `SectionSousTaches`, `surRouvrirSousTache` de `ProprietesDetailTache`) ; §6.8 (règles) ; §13 : **UT-US-024-25 à 27** livrés en rouge ; UT-COMP-US-024-07 modifié (lacune DT-030, sans affaiblissement) ; règles de rang `UT-US-024-(?:2[5-9]\|3\d)` et `UT-COMP-US-024-2\d` → 11. L'en-tête de la v0.6 n'avait pas été mis à jour (« 0.5 ») : corrigé. |
 | 0.4 | 2026-10-31 | Anthony | E13 du rang 6 (`docs/ceremonies/revue-code-LOT-001-rang6.md`, RC-US-024-2) : `LigneSousTache.delai` devient `LigneTache['delai']` (`{ date, libelle }`), la section affiche le libellé formaté et non la date ISO (§4.5). |
 
 ## 1. Résumé technique
@@ -72,6 +73,7 @@
 | 8 | `src/objectifs-taches/presentation/ui/ecrans/detail-tache.tsx`, `composants/saisie-rapide.tsx` (variante sous-tâche) ; **rang 10 (v0.5, DT-026)** : `composants/carte-incoherence.tsx` (nouveau, inscrit par Benjamin dans `rangs-fichiers.json`, `debut = fin = 10`), `ecrans/detail-tache.tsx`, `ecrans/espace-taches.tsx` (`commandesDeFin`), `ui/libelles-ui.ts` (constantes provisoires, §4.5) | UI | Modifier / Créer | Section « Sous-tâches », `LockedField` ; `InconsistencyCard` et ses actions (§4.5, §6.6) |
 | 9 | `src/composition/web.ts`, `src/objectifs-taches/index.ts` | Composition | Modifier | Enregistrement |
 | 10 | `tests/steps/objectifs-taches/taches.steps.ts`, `refus.steps.ts` ; `tests/support/construction-taches.ts` | Test | Modifier | §12 ; colonne « tâche parente » des tableaux |
+| 11 | **v0.7 (DT-030, rang 11, tranche D4)** : `src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts` (`caseTerminer.action`), `ui/composants/section-sous-taches.tsx` (case « Rouvrir »), `ui/ecrans/detail-tache.tsx` (`surRouvrirSousTache`, confirmation, focus), `ui/ecrans/espace-taches.tsx` (`commandesDeFin`) ; aucun autre fichier | Modèle de vue, UI | Modifier | §4.5, §6.8 |
 
 ## 4. Interfaces et signatures
 ### 4.1 Domaine
@@ -109,7 +111,7 @@ readonly sousTaches?: {                                   // section SEC-SOUS-TA
   readonly lignes: ReadonlyArray<{ readonly id: IdTache; readonly intitule: string; readonly delai: LigneTache['delai'];   /* { date, libelle } : libellé formaté affiché (v0.4, RC-US-024-2) */ readonly estimation: { readonly minutes: number; readonly libelle: string };
                                   readonly etat: LigneTache['etat']; readonly enRetard?: LigneTache['enRetard']; readonly alertes: LigneTache['alertes'];
                                   readonly nomAccessible: string;                       // = LigneTache.nomAccessible (ETA-TACHE-LIGNE, ST-US-002 v0.5 §4.5 ; jamais de partie objectif) (RL-LOT-001-S4)
-                                  readonly caseTerminer: { readonly nomAccessible: string } }>;   // v0.5 : libelle('ETA-TACHE-CASE', { element }, 'nomAccessible') ; variante 'rouvrir' si la sous-tâche est terminée (guide §6.6.13) ; la case pleine « Rouvrir » n'est pas encore rendue par section-sous-taches.tsx (DT-030) ; une seule liste, tous états, ordre de référence (§6.7)
+                                  readonly caseTerminer: { readonly nomAccessible: string; readonly action?: 'TERMINER' | 'ROUVRIR' } }>;   // v0.5 : libelle('ETA-TACHE-CASE', { element }, 'nomAccessible') ; variante 'rouvrir' si la sous-tâche est terminée (guide §6.6.13) ; v0.7 (DT-030) : action TERMINER (à faire), ROUVRIR (terminée), absente (abandonnée), §6.8 ; une seule liste, tous états, ordre de référence (§6.7)
   readonly compteur: { readonly terminees: number; readonly nonAbandonnees: number; readonly libelle: string };   // « 1 / 3 »
 };
 readonly infoFinImpossible?: { readonly code: 'ALR-013'; readonly n: number; readonly libelle: string };   // n = sous-tâches à faire ; absent si n = 0
@@ -136,6 +138,10 @@ export type ProprietesCarteIncoherence = {
 export const CarteIncoherence: (p: ProprietesCarteIncoherence) => JSX.Element;
 // ecrans/detail-tache.tsx — ProprietesDetailTache (ajout)
 readonly surAbandonnerSousTache?: (id: IdTache) => Promise<IssueSaisie>;   // espace-taches.tsx, commandesDeFin : (id) => actions.abandonner(id)
+// v0.7, DT-030 (rang 11) — composants/section-sous-taches.tsx, ProprietesSectionSousTaches (ajout ; type livré en E10)
+readonly surRouvrir?: ((id: IdTache) => void) | undefined;                // absente : case « Rouvrir » rendue désactivée
+// ecrans/detail-tache.tsx — ProprietesDetailTache (ajout)
+readonly surRouvrirSousTache?: (id: IdTache) => Promise<IssueSaisie>;     // espace-taches.tsx, commandesDeFin : (id) => actions.rouvrir(id)
 ```
 | Écran | Maquette | Codes | Actions → cas d'usage |
 |---|---|---|---|
@@ -198,6 +204,13 @@ S10 : 3 h saisies, Section A 1 h 30 → 1 h 30 recopiée, puis modifiable (2 h).
 
 ### 6.7 Ordre des sous-tâches dans le détail (guide v0.2.9 §5.8 e, réponse à Q-US-001-6)
 Une seule liste, section `SEC-SOUS-TACHES` (« Sous-tâches » + compteur « {t} / {n} »), tous états confondus, triée par `comparerOrdreReference` (ST-US-001 §6.6 : délai croissant, création, intitulé, id). Une sous-tâche terminée ou abandonnée reste à sa place : la progression se lit sur la liste entière. Le même ordre s'applique aux sous-tâches affichées sous leur tâche parente dans le détail d'un objectif (ST-US-002 §6.6).
+
+### 6.8 Case « Rouvrir » d'une sous-tâche terminée (v0.7, DT-030 reliquat, rang 11)
+1. **Modèle** (`construireLigneSousTache`) : `caseTerminer.action` = `TERMINER` si la sous-tâche est à faire, `ROUVRIR` si elle est terminée, **absente** si elle est abandonnée (sa reprise passe par son détail, ST-US-025) ; `nomAccessible` inchangé (`ETA-TACHE-CASE`, variante `rouvrir` si terminée). UT-US-024-25.
+2. **Composant** (`SectionSousTaches`, `CaseTerminer`) : `action` absente → aucune case ; `TERMINER` → case vide (inchangé : active si `surTerminer`, sinon `disabled`) ; `ROUVRIR` → `<input type="checkbox" checked>` (case ronde pleine, même style que la ligne « Terminées » de la liste, DT-030 partie liste), nom accessible = `nomAccessible`, `disabled` si `surRouvrir` est absente, sinon `onChange` → `surRouvrir(ligne.id)` ; l'état coché ne change pas localement (il suit le modèle recalculé). UT-US-024-26.
+3. **Écran** (`DetailTache`, `SousTaches`) : `surRouvrir` de la section = `(id) => void commande.lancer(() => surRouvrirSousTache(id))`, avec un **second** `useCommandeConfirmee` (distinct de celui d'`ActionFin`) dont le retour du focus vise la case activée (référence mémorisée au clic) ; `ConfirmationCommande` rendue sous la section ; l'issue `REFUSEE` est affichée par `MessagesRefus` sous la section (même rendu que pour `ActionFin`), sans déplacer le focus. `espace-taches.tsx`, `commandesDeFin` : `surRouvrirSousTache: (sousTacheId) => actions.rouvrir(sousTacheId)`. UT-US-024-27.
+4. **Règle métier inchangée** (ST-US-003 §6, `RouvrirTache`) : tâche parente à faire → réouverture sans confirmation ; tâche parente terminée → `CONFIRMATION_REQUISE` `CNF-ROUVRIR-SOUS-TACHE` (« Rouvrir aussi « {tâche parente} » ? », « Rouvrir les deux ») ; « Annuler » ne change rien et rend le focus à la case ; confirmer rouvre les deux. Aucun nouveau code ni texte.
+5. **Hors périmètre** : intitulé barré d'une sous-tâche terminée dans la section (le guide ne le demande que pour la liste, §4.2) ; consultation seule (ST-US-017 §6.8 n° 9) : la case suit la règle commune (inerte, toast).
 
 ## 7. Intégration Google
 Sans objet.
@@ -272,10 +285,13 @@ Agrégations en O(nombre de sous-tâches).
 | UT-US-024-22 | `…/presentation/liste-taches.test.ts`, `detail-tache.test.ts` (rang 9) | modèles de vue | `MEN-INCOHERENCE` sur la ligne ; `ALR-003` / `ALR-004` avec n dans le détail | RG-049 | NI |
 | UT-US-024-23 | `…/presentation/detail-tache.test.ts` | `construireDetailTache` | section `SEC-SOUS-TACHES` avec compteur ; une seule liste, tous états, ordre de référence ; une sous-tâche terminée garde sa place | Guide v0.2.9 §5.8 e (Q-US-001-6) | NI |
 | UT-US-024-24 (v0.5, rang 10) | `…/presentation/detail-tache-carte-incoherence.test.ts` (3 cas) | `construireDetailTache` | `actionPrincipale` ROUVRIR (`ALR-003`) et REPRENDRE (`ALR-004`), libellés du catalogue ; `sousTache` si une seule sous-tâche à faire ; absente pour deux ou plus | RG-049, DT-026, §6.6 n° 1 | Assertion (livré en rouge le 2026-11-01) |
+| UT-US-024-25 (v0.7, rang 11) | `tests/unitaires/objectifs-taches/presentation/ui/rouvrir-sous-tache-ui.test.tsx` | `construireDetailTache` | action de la case : `TERMINER`, `ROUVRIR` (noms accessibles du catalogue), absente pour une sous-tâche abandonnée | DT-030, §6.8 n° 1 | Assertion |
+| UT-US-024-26 (v0.7, rang 11) | idem | `SectionSousTaches` | case cochée « Rouvrir « … » », désactivée sans `surRouvrir`, active sinon (identifiant transmis) ; aucune case pour une abandonnée | DT-030, §6.8 n° 2 | Assertion |
+| UT-US-024-27 (v0.7, rang 11) | idem (2 cas) | `EspaceTaches` | tâche parente à faire : réouverture sans confirmation ; tâche parente terminée : `CNF-ROUVRIR-SOUS-TACHE`, « Annuler » (focus rendu à la case), « Rouvrir les deux » | DT-030, §6.8 n° 3, 4 ; ST-US-003 CA-9 | Assertion |
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-024`.
 
-**Rattachement (v0.5)** : `rangs-tests.json` porte `UT-US-024-2[4-9]\b` → 10 (avant `UT-US-024-2[12]\b` → 9) et `UT-COMP-US-024-1[1-9]\b` → 10 (avant `UT-COMP-US-024-\d+` → 6).
+**Rattachement (v0.7)** : `UT-US-024-(?:2[5-9]|3\d)\b` → 11 (avant `UT-US-024-2[4-9]\b`) et `UT-COMP-US-024-2\d\b` → 11 (tests de composant complémentaires de Benjamin pour DT-030, identifiants à partir de 20). **UT-COMP-US-024-07 modifié en E10** : l'absence de case pour une sous-tâche terminée (lacune DT-030) devient « case absente ou désactivée » ; il reste vert au rang 10. **Rattachement (v0.5)** : `rangs-tests.json` porte `UT-US-024-2[4-9]\b` → 10 (avant `UT-US-024-2[12]\b` → 9) et `UT-COMP-US-024-1[1-9]\b` → 10 (avant `UT-COMP-US-024-\d+` → 6).
 
 **Précisions de l'E10 (2026-10-22)** : `new CreerSousTache(service, generateur)` ; `construireFormulaireSousTache(detail: DetailTache)` ; les lignes de sous-tâches du détail sont de type `LigneSousTache` (`detail-tache.ts`). UT-US-024-21 et 22 (rang 9) sont écrits et rouges dès maintenant.
 
@@ -308,6 +324,7 @@ Steeve contrôle la carte en E14 (critère de DT-026).
   - **Réponse de Steeve (E9, 2026-10-22, guide v0.2.9 §5.8) : (e) Oui** ; la proposition du §6.6.7 est retenue (une seule liste, tous états confondus, délai croissant, sans délai à la fin, création, intitulé). Code `SEC-SOUS-TACHES` créé. UT-US-024-23 peut être écrit en E10.
 - **Hypothèses** : H-3 et H-7 appliquées.
 - **Q-ST024-STE-1 (v0.5, à Steeve via Jarvis ; non bloquante pour une seule sous-tâche à faire, à répondre avant la fin de D2)** — Carte `ALR-003` / `ALR-004` d'ECR-007 H (DT-026). a) Avec **deux sous-tâches à faire ou plus**, « Terminer la sous-tâche » et « Abandonner la sous-tâche » (au singulier dans le guide §6.6.9 et la maquette) : 1) ne sont pas proposées, seule l'action principale reste ; les sous-tâches se traitent dans la section « Sous-tâches » juste dessous ★ ; 2) visent la première sous-tâche à faire en ordre de référence ; 3) la carte liste chaque sous-tâche à faire avec ses deux actions. b) Codes du catalogue pour ces deux libellés (aujourd'hui sans code) : 1) parties nommées `actionTerminer` et `actionAbandonner` des codes `ALR-003` et `ALR-004` ★ ; 2) codes `TXT-` partagés (§6.6.12) ; 3) constantes durables (dette acceptée). Les tests livrés suivent a) 1) ; jusqu'à la réponse à b), les libellés sont des constantes `TODO(Q-ST024-STE-1)` (§6.6 n° 5).
+- **DT-030** (registre, P1, reliquat) : spécifié en v0.7 (§3 n° 11, §4.5, §6.8, §13 : UT-US-024-25 à 27) ; réalisation par Benjamin au rang 11 (tranche D4 de ST-US-017 §15.3), avant l'E13b ; contrôle par Steeve en E14.
 - **DT-026** (registre, P2) : complétion faite en v0.5 (§3, §4.5, §6.6, §13, §14) ; réalisation par Benjamin au rang 10 (tranche D2), au plus tard avant l'E13b de LOT-001.
 - **Dette** : DT-019, **remboursée** (v0.5 : `ETA-TACHE-CASE`, guide v0.2.21 ; UT-US-024-16 attend les espaces insécables que `libelle()` place dans les guillemets, guide §6.6.1 « Typographie » : même texte, même force). Historique (v0.3) : Le nom accessible « Terminer « {intitulé} » » de la case d'une ligne de sous-tâche n'a pas de code au guide §6.6. Le texte des maquettes est codé en constante dans `detail-tache.ts` (repère `TODO(DT-019)`) ; UT-US-024-16 reste inchangé. **Q-ANT-E12-R6-1** (à Steeve, via Jarvis) : « Attribuez-vous au catalogue (§6.6) un code au gabarit « Terminer « {intitulé} » », commun à toutes les cases « Terminer » (lignes de tâche, ECR-003, ECR-005, ECR-007) ? Oui (code à préciser) / Non (la constante reste et la dette est acceptée durablement). » Point non bloquant pour le rang 6.
 
@@ -316,3 +333,4 @@ Steeve contrôle la carte en E14 (critère de DT-026).
 - [x] Tests du §13 en phase rouge (E10, 2026-10-22 : 32 cas) ; UT 21 et 22 rattachés au rang 9.
 - [x] Q-US-001-6 (e) répondue (Steeve, guide v0.2.9 §5.8).
 - [x] v0.5 (DT-026) : carte d'ECR-007 H spécifiée (modèle, composant, emplacement, actions, textes), UT-US-024-24 en rouge, UT-COMP-US-024-11 à 15 attendus ; Q-ST024-STE-1 ouverte.
+- [x] v0.7 (DT-030, reliquat) : case « Rouvrir » d'une sous-tâche spécifiée (§6.8), UT-US-024-25 à 27 en rouge, tranche D4 du rang 11.

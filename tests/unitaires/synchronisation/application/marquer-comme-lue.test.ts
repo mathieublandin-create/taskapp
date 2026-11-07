@@ -80,6 +80,7 @@ describe('MarquerCommeLue (RG-056 b)', () => {
       observer: () => () => undefined,
       lireMeta: () => Promise.resolve(illisible),
       lireSignalements: () => Promise.resolve(illisible),
+      lireInconnus: () => Promise.resolve(illisible),
       appliquerSynchronisation: () => Promise.resolve(illisible),
     };
     expect(

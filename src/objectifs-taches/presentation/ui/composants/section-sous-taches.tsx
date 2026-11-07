@@ -12,6 +12,8 @@ export type ProprietesSectionSousTaches = {
   readonly section: SectionSousTaches;
   readonly surOuvrir: (id: IdTache) => void;
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  /** ST-US-024 v0.7 §4.5 (DT-030, rang 11) : case pleine « Rouvrir » d'une sous-tâche terminée ; absente : case désactivée. */
+  readonly surRouvrir?: ((id: IdTache) => void) | undefined;
 };
 
 const CODE_ETAT_A_FAIRE: LigneSousTache['etat']['code'] = 'ETA-TACHE-A-FAIRE';

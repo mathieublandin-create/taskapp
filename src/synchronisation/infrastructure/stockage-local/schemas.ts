@@ -1,3 +1,4 @@
+import { nonImplemente } from '@non-implemente';
 import { z } from 'zod';
 import { Duree } from '../../../commun/domaine/duree';
 import { IdAppareil, IdObjectif, IdTache } from '../../../commun/domaine/identifiants';
@@ -661,6 +662,10 @@ const ENCODEURS_META: {
   restaurationDemandee: (v) => v,
   restaurationConnue: encoderHlc,
   inventaireAFaire: (v) => v,
+  // ST-US-017 v0.11 §5.1 (rang 11, tranche H2) : à compléter avec leurs schémas de lecture ; méta d'appareil, absentes
+  // de la liste des clés retirées par `reinitialiser` (CLES_META_APPAREIL, CT-DEPOT-17).
+  mesuresHorloge: (v) => nonImplemente(`encoder mesuresHorloge (${String(v.length)})`),
+  aMettreALaCorbeille: (v) => nonImplemente(`encoder aMettreALaCorbeille (${String(v.length)})`),
 };
 
 /** Lignes `meta` des clés présentes dans `meta` (les autres restent telles quelles). */

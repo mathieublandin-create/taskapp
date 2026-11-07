@@ -111,6 +111,7 @@ export const cycleEnPanne = (
     lireMeta: () =>
       enPanne('depot', 'lireMeta') ? Promise.resolve(ECRITURE_IMPOSSIBLE) : vrai.lireMeta(),
     lireSignalements: () => vrai.lireSignalements(),
+    lireInconnus: () => vrai.lireInconnus(),
     appliquer: (calcul) => vrai.appliquer(calcul),
     observer: (rappel) => vrai.observer(rappel),
     appliquerSynchronisation: (calcul) =>

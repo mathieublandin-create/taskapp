@@ -1,8 +1,10 @@
 import type { Marque } from '../../commun/domaine/marque';
+import type { EcartTemps } from '../../commun/domaine/temps/ecart-temps';
 import type { Instant } from '../../commun/domaine/temps/instant';
 import type { Generation } from './contenu-fichier';
 import type { Hlc } from './hlc';
 import type { IdEvenement } from './identifiant-evenement';
+import type { Inconnus } from './inconnus';
 import type { PlanEcriture } from './planifier-ecritures';
 import type { AjoutsSignalements } from './signalements';
 
@@ -35,7 +37,31 @@ export type MetaSynchronisation = {
   readonly restaurationConnue?: Hlc;
   /** Le prochain cycle refait un inventaire complet (bascule ou déménagement de dossier, n° 12, n° 14). */
   readonly inventaireAFaire?: boolean;
+  // ---- Incrément 4 (ST-US-017 v0.11 §5.1, §6.8) : méta d'appareil, conservées par `reinitialiser` (CLES_META_APPAREIL).
+  /** n° 2 : les NOMBRE_MESURES_HORLOGE dernières mesures retenues (ms, ordre d'arrivée) ; absente ≡ aucune. */
+  readonly mesuresHorloge?: ReadonlyArray<EcartTemps>;
+  /**
+   * n° 18 à 21 (DT-036) : mises à la corbeille en échec, reprises en fin de cycle `SYNCHRONISER` ou `RESTAURER` ;
+   * ordre d'inscription, sans doublon ; absente ≡ vide.
+   */
+  readonly aMettreALaCorbeille?: ReadonlyArray<ElementACorbeille>;
 };
+
+/**
+ * DT-036 (n° 18) : `FICHIER` : fichier d'appareil ou manifeste de cet appareil à mettre à la corbeille ;
+ * `DOSSIER_QUITTE` : dossier quitté au déménagement (n° 14), mis à la corbeille seulement s'il ne contient plus aucun
+ * fichier d'appareil (condition C5).
+ */
+export type ElementACorbeille = {
+  readonly type: 'FICHIER' | 'DOSSIER_QUITTE';
+  readonly id: IdFichierDrive;
+};
+
+/** Clés de méta propres à l'appareil, conservées par `reinitialiser` (n° 6, n° 21) : ni le Drive ni la génération ne les invalident. */
+export const CLES_META_APPAREIL = [
+  'mesuresHorloge',
+  'aMettreALaCorbeille',
+] as const satisfies ReadonlyArray<keyof MetaSynchronisation>;
 
 export const META_INITIALE: MetaSynchronisation = { fusionNonDeposee: false };
 
@@ -57,4 +83,10 @@ export type PlanSynchronisation = {
    * `signalements`. Observateurs prévenus. Absent ≡ faux.
    */
   readonly reinitialiser?: true;
+  /**
+   * ST-US-017 v0.11 §6.8 n° 14 (incrément 4) : registres et entrées de journal inconnus écrits (ajout ou remplacement
+   * par clé ou identifiant) dans la même transaction ; absent ou vide ≡ aucun. Avec `reinitialiser`, écrits après
+   * l'effacement des tables.
+   */
+  readonly inconnus?: Inconnus;
 };

@@ -78,6 +78,7 @@ const instrumenter = (a: AppareilCycle, remplace: Partial<DepotLocal>): DepotLoc
   lireMeta: () => a.depot.lireMeta(),
   appliquerSynchronisation: (calcul) => a.depot.appliquerSynchronisation(calcul),
   lireSignalements: () => a.depot.lireSignalements(),
+  lireInconnus: () => a.depot.lireInconnus(),
   ...remplace,
 });
 
