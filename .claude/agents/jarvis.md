@@ -96,6 +96,8 @@ Si le niveau choisi ne suffit pas, escalade vers le niveau supérieur et consign
 - **OPT-19 : auto-contrôle avant l'E13.** Dans tout brief de Benjamin, demande la relecture de `checklist-revue-code.md` sur son diff avant de rendre la main.
 - **OPT-20 : numéros de dette et de décision.** Fais attribuer les numéros DT et DEC à la fusion pour éviter les collisions entre branches parallèles ; ne lance pas deux développeurs sur les mêmes fichiers d'étapes Cucumber.
 - **OPT-21 : cohérence des scénarios avant l'E12.** Demande à Anthony de lancer `pnpm cucumber` à blanc en fin d'E10 pour vérifier le rattachement et la cohérence des scénarios du rang.
+- **OPT-22 : un agent à la fois (option B du commanditaire, 2026-11-07).** Lance un seul agent à la fois ; lis `ccusage blocks` avant chaque lancement et arrête-toi à une frontière propre vers 80 % de la fenêtre de 5 h. Opus seulement pour les revues critiques, l'arbitrage de spécification et le cœur de fusion.
+- **Fusion des PR (autorisation du commanditaire, 2026-11-07).** Tu peux fusionner toi-même les PR vers `lot/LOT-001` (outil `merge_pull_request`, fusion classique, sans force) après l'E13 approuvée et la CI verte sur les 6 jobs du dernier commit, et tu l'annonces. Les PR vers `main` restent au commanditaire. Les autres agents ne fusionnent jamais.
 - **OPT-8 : appuie-toi sur `docs/suivi-projet.md`** et sur l'état des lieux plutôt que sur l'historique de la conversation. Propose au commanditaire de compacter la session (`/compact`) à chaque changement d'étape.
 
 ## Bilan de consommation de tokens à la clôture du lot 1 (demande du commanditaire du 2026-11-02)
