@@ -2,6 +2,7 @@ import type { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 import type { Instant } from '../../../commun/domaine/temps/instant';
 import { formaterAnciennete, formaterHeure } from '../../../commun/presentation/format/heure';
 import { libelle } from '../../../commun/presentation/messages/libelle';
+import { estHorlogeDereglee } from '../../domaine/correction-horloge';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 import { comparerLignesFeuille, type LigneFeuilleOrdonnable } from './ordre-feuille';
 
@@ -138,11 +139,24 @@ const modeleCartes = (
   nombreLignes: number,
 ): ReadonlyArray<CarteErreurFeuille> => {
   if (etat.actionRequise === 'DRIVE_PLEIN') return [carte('ERR-011', 'OUVRIR_GOOGLE_DRIVE', {})];
+  if (etat.actionRequise === 'FORMAT_PLUS_RECENT') return [carte('ERR-013', 'METTRE_A_JOUR', {})];
   if (etat.actionRequise === 'ECHEC_PERSISTANT') {
     return [carte('ERR-016', 'REESSAYER_MAINTENANT', { n: nombreLignes })];
   }
   return [];
 };
+
+/** RG-057 bis / ALR-001 : seul l'appareil qui mesure l'affiche ; ni action, ni fermeture, aucun blocage. */
+const modeleAlerteHorloge = (correction: EcartTemps | undefined) =>
+  correction !== undefined && estHorlogeDereglee(correction)
+    ? {
+        alerteHorloge: {
+          code: 'ALR-001' as const,
+          titre: libelle('ALR-001'),
+          texte: libelle('ALR-001', {}, 'texte'),
+        },
+      }
+    : {};
 
 export const construireFeuilleSynchronisation = (
   e: EntreeFeuilleSynchronisation,
@@ -152,4 +166,5 @@ export const construireFeuilleSynchronisation = (
   ...modeleHorsLigne(e.etat),
   bouton: modeleBouton(e.etat),
   cartes: modeleCartes(e.etat, e.elementsEnAttente.length),
+  ...modeleAlerteHorloge(e.correctionHorloge),
 });

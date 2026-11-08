@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type {
   IssueMiseAJour,
   MiseAJourApplication,
@@ -26,6 +25,9 @@ export type DependancesMiseAJourServiceWorker = {
   readonly recharger: () => void;
 };
 
+/** Message traité par le service worker (rang 12) : active la version en attente. */
+const MESSAGE_ACTIVATION = { type: 'SKIP_WAITING' } as const;
+
 /**
  * `mettreAJour()` : enregistrement absent → AUCUNE_VERSION ; `await update()` (exception → ECHEC) ; `waiting` nul →
  * AUCUNE_VERSION ; sinon abonnement `controllerchange` (une fois) → `recharger()`, puis
@@ -34,7 +36,19 @@ export type DependancesMiseAJourServiceWorker = {
 export class MiseAJourServiceWorker implements MiseAJourApplication {
   constructor(private readonly dependances: DependancesMiseAJourServiceWorker) {}
 
-  mettreAJour(): Promise<IssueMiseAJour> {
-    return nonImplemente(`MiseAJourServiceWorker.mettreAJour (${typeof this.dependances})`);
+  async mettreAJour(): Promise<IssueMiseAJour> {
+    const { conteneur, recharger } = this.dependances;
+    if (conteneur === undefined) return 'AUCUNE_VERSION';
+    try {
+      const enregistrement = await conteneur.getRegistration();
+      if (enregistrement === undefined) return 'AUCUNE_VERSION';
+      await enregistrement.update();
+      if (enregistrement.waiting === null) return 'AUCUNE_VERSION';
+      conteneur.addEventListener('controllerchange', recharger, { once: true });
+      enregistrement.waiting.postMessage(MESSAGE_ACTIVATION);
+      return 'RECHARGEMENT_LANCE';
+    } catch {
+      return 'ECHEC';
+    }
   }
 }
