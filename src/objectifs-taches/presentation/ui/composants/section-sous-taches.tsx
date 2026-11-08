@@ -1,7 +1,8 @@
-import { useId } from 'react';
+import { useId, type ChangeEvent } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
 import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
+import type { Focalisable } from './commande-confirmee';
 
 // Section « Sous-tâches » du détail d'une tâche (ECR-007 A, guide v0.2.9 §5.8 e) : une seule liste, tous états, dans
 // l'ordre du modèle de vue ; une sous-tâche terminée ou abandonnée garde sa place. La case « Terminer » n'est active que
@@ -15,6 +16,11 @@ export type ProprietesSectionSousTaches = {
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
   /** ST-US-024 v0.7 §4.5 (DT-030, rang 11) : case pleine « Rouvrir » d'une sous-tâche terminée ; absente : case désactivée. */
   readonly surRouvrir?: ((id: IdTache) => void) | undefined;
+  /**
+   * Reçoit la case « Rouvrir » activée, prise sur l'événement (Safari ne la focalise pas au pointeur, WCAG 2.4.3),
+   * juste avant `surRouvrir` : l'écran lui rend le focus après « Annuler ».
+   */
+  readonly surCaseRouvrirActivee?: ((caseActivee: Focalisable) => void) | undefined;
 };
 
 const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
@@ -36,10 +42,12 @@ const CaseTerminer = ({
   ligne,
   surTerminer,
   surRouvrir,
+  surCaseRouvrirActivee,
 }: {
   readonly ligne: LigneSousTache;
   readonly surTerminer: ProprietesSectionSousTaches['surTerminer'];
   readonly surRouvrir: ProprietesSectionSousTaches['surRouvrir'];
+  readonly surCaseRouvrirActivee: ProprietesSectionSousTaches['surCaseRouvrirActivee'];
 }) => {
   const { garder, attributsAction } = useConsultationSeule();
   const { action, nomAccessible } = ligne.caseTerminer;
@@ -53,7 +61,8 @@ const CaseTerminer = ({
       checked={rouvrir}
       disabled={commande === undefined}
       {...attributsAction}
-      onChange={garder(() => {
+      onChange={garder((evenement: ChangeEvent<HTMLInputElement>) => {
+        if (rouvrir) surCaseRouvrirActivee?.(evenement.currentTarget);
         commande?.(ligne.id);
       })}
     />
@@ -78,11 +87,17 @@ const LigneSousTacheUi = ({
   surOuvrir,
   surTerminer,
   surRouvrir,
+  surCaseRouvrirActivee,
 }: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => {
   const idEtiquette = `etiquette-${ligne.id}`;
   return (
     <li className="ligne-tache" data-niveau="SOUS_TACHE">
-      <CaseTerminer ligne={ligne} surTerminer={surTerminer} surRouvrir={surRouvrir} />
+      <CaseTerminer
+        ligne={ligne}
+        surTerminer={surTerminer}
+        surRouvrir={surRouvrir}
+        surCaseRouvrirActivee={surCaseRouvrirActivee}
+      />
       <button
         type="button"
         aria-label={ligne.nomAccessible}
@@ -109,6 +124,7 @@ export const SectionSousTaches = ({
   surOuvrir,
   surTerminer,
   surRouvrir,
+  surCaseRouvrirActivee,
 }: ProprietesSectionSousTaches) => {
   const idTitre = useId();
   return (
@@ -124,6 +140,7 @@ export const SectionSousTaches = ({
             surOuvrir={surOuvrir}
             surTerminer={surTerminer}
             surRouvrir={surRouvrir}
+            surCaseRouvrirActivee={surCaseRouvrirActivee}
           />
         ))}
       </ul>

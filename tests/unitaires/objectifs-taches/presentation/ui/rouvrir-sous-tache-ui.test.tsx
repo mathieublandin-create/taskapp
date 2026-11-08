@@ -1,9 +1,9 @@
 /**
  * Case « Rouvrir » d'une sous-tâche terminée dans le détail de sa tâche parente (DT-030, reliquat ; ST-US-024 v0.7
  * §4.5, §6.8 ; guide §6.6.4 `ETA-TACHE-CASE` variante `rouvrir`, §6.6.7 `CNF-ROUVRIR-SOUS-TACHE` ; maquette ECR-007 A).
- * UT-US-024-25 à 27 (rang 11, tranche D4).
+ * UT-US-024-25 à 27 (rang 11, tranche D4) ; UT-COMP-US-017-4-82 (focus sans focalisation au pointeur).
  */
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IdTache } from '@src/commun/domaine/identifiants';
@@ -160,5 +160,28 @@ describe('Détail d’une tâche parente : rouvrir une sous-tâche (ECR-007 A, C
     expect(
       valeurDe(await banc.services.consulterDetailTache.executer(parente)).tache.cycleDeVie.etat,
     ).toBe('A_FAIRE');
+  });
+
+  it('UT-COMP-US-017-4-82 « Annuler » rend le focus à la case même si elle n’avait pas le focus au changement (Safari, pointeur)', async () => {
+    const banc = creerBancObjectifs();
+    const parente = await creerTache(banc, 'Chapitre 1');
+    const a = await creerSousTache(banc, parente, 'Section A');
+    await terminer(banc, a);
+    await terminer(banc, parente);
+    const magasin = creerMagasinTaches(banc.services);
+    await magasin.getState().actions.ouvrirDetail(parente);
+    render(<EspaceTaches magasin={magasin} />);
+    const nom = 'Rouvrir \u00ab\u00a0Section A\u00a0\u00bb';
+    const caseARouvrir = screen.getByRole('checkbox', { name: nom });
+    expect(document.activeElement).not.toBe(caseARouvrir);
+
+    fireEvent.click(caseARouvrir);
+    const boite = await screen.findByRole('alertdialog');
+    await userEvent.click(within(boite).getByRole('button', { name: 'Annuler' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+    expect(document.activeElement).toBe(screen.getByRole('checkbox', { name: nom }));
   });
 });

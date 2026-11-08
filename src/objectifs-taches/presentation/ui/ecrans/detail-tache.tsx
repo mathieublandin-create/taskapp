@@ -428,7 +428,7 @@ const CarteEnTete = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =
 
 /**
  * Réouverture d'une sous-tâche depuis sa case (ST-US-024 v0.7 §6.8) : confirmation distincte de celle de l'action de
- * fin ; le focus revient à la case activée, mémorisée au clic (la case garde son élément d'un état à l'autre).
+ * fin ; le focus revient à la case activée, mémorisée depuis l'événement (la case garde son élément d'un état à l'autre).
  */
 const useReouvertureSousTache = (
   surRouvrirSousTache: ProprietesDetailTache['surRouvrirSousTache'],
@@ -442,11 +442,13 @@ const useReouvertureSousTache = (
     surRouvrirSousTache === undefined
       ? undefined
       : (id: IdTache): void => {
-          caseActivee.current = document.activeElement as HTMLElement | null;
           setRefus([]);
           void commande.lancer(() => surRouvrirSousTache(id));
         };
-  return { commande, refus, rouvrir };
+  const memoriserCase = (caseDeLaLigne: Focalisable): void => {
+    caseActivee.current = caseDeLaLigne;
+  };
+  return { commande, refus, rouvrir, memoriserCase };
 };
 
 const AjouterSousTache = ({ surClic }: { readonly surClic: () => void }) => {
@@ -468,6 +470,7 @@ const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =>
           surOuvrir={proprietes.surOuvrirSousTache}
           surTerminer={proprietes.surTerminerSousTache}
           surRouvrir={reouverture.rouvrir}
+          surCaseRouvrirActivee={reouverture.memoriserCase}
         />
       )}
       <MessagesRefus messages={reouverture.refus} />
