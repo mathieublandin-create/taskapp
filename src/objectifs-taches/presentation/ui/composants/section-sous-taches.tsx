@@ -1,6 +1,8 @@
-import { useId } from 'react';
+import { useId, type ChangeEvent } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
+import type { Focalisable } from './commande-confirmee';
 
 // Section « Sous-tâches » du détail d'une tâche (ECR-007 A, guide v0.2.9 §5.8 e) : une seule liste, tous états, dans
 // l'ordre du modèle de vue ; une sous-tâche terminée ou abandonnée garde sa place. La case « Terminer » n'est active que
@@ -12,9 +14,14 @@ export type ProprietesSectionSousTaches = {
   readonly section: SectionSousTaches;
   readonly surOuvrir: (id: IdTache) => void;
   readonly surTerminer?: ((id: IdTache) => void) | undefined;
+  /** ST-US-024 v0.7 §4.5 (DT-030, rang 11) : case pleine « Rouvrir » d'une sous-tâche terminée ; absente : case désactivée. */
+  readonly surRouvrir?: ((id: IdTache) => void) | undefined;
+  /**
+   * Reçoit la case « Rouvrir » activée, prise sur l'événement (Safari ne la focalise pas au pointeur, WCAG 2.4.3),
+   * juste avant `surRouvrir` : l'écran lui rend le focus après « Annuler ».
+   */
+  readonly surCaseRouvrirActivee?: ((caseActivee: Focalisable) => void) | undefined;
 };
-
-const CODE_ETAT_A_FAIRE: LigneSousTache['etat']['code'] = 'ETA-TACHE-A-FAIRE';
 
 const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
   <span className="ligne-tache-meta" aria-hidden="true">
@@ -34,21 +41,33 @@ const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
 const CaseTerminer = ({
   ligne,
   surTerminer,
+  surRouvrir,
+  surCaseRouvrirActivee,
 }: {
   readonly ligne: LigneSousTache;
   readonly surTerminer: ProprietesSectionSousTaches['surTerminer'];
-}) =>
-  ligne.etat.code === CODE_ETAT_A_FAIRE ? (
+  readonly surRouvrir: ProprietesSectionSousTaches['surRouvrir'];
+  readonly surCaseRouvrirActivee: ProprietesSectionSousTaches['surCaseRouvrirActivee'];
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  const { action, nomAccessible } = ligne.caseTerminer;
+  if (action === undefined) return null;
+  const rouvrir = action === 'ROUVRIR';
+  const commande = rouvrir ? surRouvrir : surTerminer;
+  return (
     <input
       type="checkbox"
-      aria-label={ligne.caseTerminer.nomAccessible}
-      checked={false}
-      disabled={surTerminer === undefined}
-      onChange={() => {
-        surTerminer?.(ligne.id);
-      }}
+      aria-label={nomAccessible}
+      checked={rouvrir}
+      disabled={commande === undefined}
+      {...attributsAction}
+      onChange={garder((evenement: ChangeEvent<HTMLInputElement>) => {
+        if (rouvrir) surCaseRouvrirActivee?.(evenement.currentTarget);
+        commande?.(ligne.id);
+      })}
     />
-  ) : null;
+  );
+};
 
 /** Étiquette d'une sous-tâche d'une tâche parente abandonnée (ECR-007 F) : lue avec la ligne, jamais la couleur seule. */
 const Etiquette = ({
@@ -63,29 +82,46 @@ const Etiquette = ({
   </span>
 );
 
+const BoutonOuvrirSousTache = ({
+  ligne,
+  idEtiquette,
+  surOuvrir,
+}: {
+  readonly ligne: LigneSousTache;
+  readonly idEtiquette: string;
+  readonly surOuvrir: ProprietesSectionSousTaches['surOuvrir'];
+}) => (
+  <button
+    type="button"
+    aria-label={ligne.nomAccessible}
+    {...(ligne.etiquette === undefined ? {} : { 'aria-describedby': idEtiquette })}
+    data-etat={ligne.etat.code}
+    onClick={() => {
+      surOuvrir(ligne.id);
+    }}
+  >
+    <span className="ligne-tache-intitule" aria-hidden="true">
+      {ligne.intitule}
+    </span>
+    <MetaLigne ligne={ligne} />
+  </button>
+);
+
 const LigneSousTacheUi = ({
   ligne,
   surOuvrir,
-  surTerminer,
+  ...actions
 }: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => {
   const idEtiquette = `etiquette-${ligne.id}`;
   return (
     <li className="ligne-tache" data-niveau="SOUS_TACHE">
-      <CaseTerminer ligne={ligne} surTerminer={surTerminer} />
-      <button
-        type="button"
-        aria-label={ligne.nomAccessible}
-        {...(ligne.etiquette === undefined ? {} : { 'aria-describedby': idEtiquette })}
-        data-etat={ligne.etat.code}
-        onClick={() => {
-          surOuvrir(ligne.id);
-        }}
-      >
-        <span className="ligne-tache-intitule" aria-hidden="true">
-          {ligne.intitule}
-        </span>
-        <MetaLigne ligne={ligne} />
-      </button>
+      <CaseTerminer
+        ligne={ligne}
+        surTerminer={actions.surTerminer}
+        surRouvrir={actions.surRouvrir}
+        surCaseRouvrirActivee={actions.surCaseRouvrirActivee}
+      />
+      <BoutonOuvrirSousTache ligne={ligne} idEtiquette={idEtiquette} surOuvrir={surOuvrir} />
       {ligne.etiquette === undefined ? null : (
         <Etiquette etiquette={ligne.etiquette} id={idEtiquette} />
       )}
@@ -97,6 +133,8 @@ export const SectionSousTaches = ({
   section,
   surOuvrir,
   surTerminer,
+  surRouvrir,
+  surCaseRouvrirActivee,
 }: ProprietesSectionSousTaches) => {
   const idTitre = useId();
   return (
@@ -111,6 +149,8 @@ export const SectionSousTaches = ({
             ligne={ligne}
             surOuvrir={surOuvrir}
             surTerminer={surTerminer}
+            surRouvrir={surRouvrir}
+            surCaseRouvrirActivee={surCaseRouvrirActivee}
           />
         ))}
       </ul>

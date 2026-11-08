@@ -1,6 +1,7 @@
 import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { BoutonFlottant } from '../../../../commun/presentation/ui/bouton-flottant';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
@@ -44,8 +45,9 @@ const estRaccourciCreation = (evenement: globalThis.KeyboardEvent): boolean =>
   !estSaisieDeTexte(evenement.target);
 
 /** La touche N ouvre la saisie rapide (guide §5.3), sauf pendant une saisie de texte. */
-const useRaccourciCreation = (surCreer: () => void): void => {
+const useRaccourciCreation = (surCreer: (() => void) | undefined): void => {
   useEffect(() => {
+    if (surCreer === undefined) return undefined;
     const surTouche = (evenement: globalThis.KeyboardEvent): void => {
       if (!estRaccourciCreation(evenement)) return;
       evenement.preventDefault();
@@ -114,7 +116,10 @@ const EnTeteListe = () => (
 );
 
 export const ListeTaches = ({ modele, surCreer, refus = [], ...autres }: ProprietesListeTaches) => {
-  useRaccourciCreation(surCreer);
+  // En consultation seule (RG-058), ni « + », ni état vide actionnable, ni raccourci : la saisie rapide disparaît.
+  const { actif } = useConsultationSeule();
+  const creation = actif ? undefined : surCreer;
+  useRaccourciCreation(creation);
   const { etatVide, mentionHeureParis } = modele;
   return (
     <>
@@ -123,9 +128,16 @@ export const ListeTaches = ({ modele, surCreer, refus = [], ...autres }: Proprie
         <Filtres modele={modele} {...autres} />
         <MessagesRefus messages={refus} />
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
-        {etatVide === undefined ? null : <EtatVide code={etatVide.code} surAction={surCreer} />}
+        {etatVide === undefined ? null : (
+          <EtatVide
+            code={etatVide.code}
+            {...(creation === undefined ? {} : { surAction: creation })}
+          />
+        )}
         <Lignes lignes={modele.lignes} {...autres} />
-        <BoutonFlottant libelle={LIBELLES_TACHES.ajouterTache} surClic={surCreer} />
+        {creation === undefined ? null : (
+          <BoutonFlottant libelle={LIBELLES_TACHES.ajouterTache} surClic={creation} />
+        )}
       </IonContent>
     </>
   );

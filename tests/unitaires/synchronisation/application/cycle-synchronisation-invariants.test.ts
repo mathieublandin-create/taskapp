@@ -124,6 +124,7 @@ describe('Cas limites du cycle (ST-US-017 v0.10.2 §6.7)', () => {
     const depot: DepotLocal = {
       lire: () => vrai.lire(),
       lireSignalements: () => vrai.lireSignalements(),
+      lireInconnus: () => vrai.lireInconnus(),
       appliquer: (calcul) => vrai.appliquer(calcul),
       observer: (rappel) => vrai.observer(rappel),
       lireMeta: async () => {

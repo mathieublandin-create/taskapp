@@ -12,8 +12,13 @@ import { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { IssueOuverture } from '@src/compte/application/cas-usage/ouvrir-application';
 import type { JetonAcces } from '@src/compte/application/ports/coffre-jetons';
 import type { RetourGoogle } from '@src/compte/application/ports/fournisseur-auth';
+import { REPRISE_ACCUEIL } from '@src/compte/application/ports/memoire-redirection';
 import { BaseTechnique, MemoireRedirectionDexie } from '@src/compte/infrastructure/base-technique';
-import { assemblerApplication, type Application } from '@src/composition/application';
+import {
+  assemblerApplication,
+  RelaisEchangesGoogle,
+  type Application,
+} from '@src/composition/application';
 import { ControleurInterface, type VueInterface } from '@src/composition/controleur-interface';
 import type { Annulation } from '@src/commun/application/ports/planificateur';
 import { echec, type Resultat } from '@src/commun/domaine/resultat';
@@ -35,6 +40,7 @@ import { FauxFournisseurAuth } from '../../doublures/faux-fournisseur-auth';
 import type { FauxGoogle } from '../../doublures/faux-google';
 import { GenerateurIdentifiantsSequentiel } from '../../doublures/generateur-identifiants-sequentiel';
 import { HorlogeSimulee } from '../../doublures/horloge-simulee';
+import { MiseAJourSimulee } from '../../doublures/mise-a-jour-simulee';
 import { JournalTechniqueMemoire } from '../../doublures/journal-technique-memoire';
 import { ReseauSimule } from '../../doublures/reseau-simule';
 import { SourceAleatoireDeterministe } from '../../doublures/source-aleatoire-deterministe';
@@ -90,6 +96,12 @@ export class AppareilSimule {
   readonly fabrique = new IDBFactory();
   readonly fournisseur: FauxFournisseurAuth;
   readonly avis = new AvisOngletsEnMemoire();
+  /** Échanges de cet appareil avec Google (mesure de l'horloge, ST-US-017 v0.11 §12.7). */
+  readonly echangesGoogle = new RelaisEchangesGoogle(this.journalTechnique);
+  /** « Mettre à jour » de cet appareil (appels comptés sur toute la durée du scénario). */
+  readonly miseAJour = new MiseAJourSimulee();
+  /** URL ouvertes dans un nouvel onglet par cet appareil. */
+  readonly onglets: Array<string> = [];
   /** Vrai : le retour de la prochaine redirection d'ouverture est différé (« la session Google a expiré »). */
   retourDiffere = false;
   /** Fermetures imposées par une autre connexion (versionchange), observées par les scénarios. */
@@ -101,6 +113,12 @@ export class AppareilSimule {
   /** Contrôleur de l'interface de l'instance ouverte (vue affichée, ANO-001, ST-US-017 §12.4). */
   private controleurInstance: ControleurInterface | undefined;
   private annulerReseau: Annulation | undefined;
+  /**
+   * Vrai : l'appareil rallumé hors ligne retrouve son accès à Google au retour du réseau, sans geste (écart signalé à
+   * Anthony : S12d n'a pas de geste de reconnexion, et la PWA n'en fait pas seule).
+   */
+  private reconnexionAuRetourDuReseau = false;
+  private reconnexion: Promise<void> | undefined;
   /** Réponses du Drive retenues pendant l'ouverture, jusqu'à l'instantané. */
   private porteDrive: Promise<void> = Promise.resolve();
 
@@ -199,6 +217,16 @@ export class AppareilSimule {
     this.instance = undefined;
   }
 
+  /** Le prochain retour du réseau renouvelle l'accès à Google de cette instance (S12d, `le … a été éteint puis rallumé`). */
+  seReconnecterAuRetourDuReseau(): void {
+    this.reconnexionAuRetourDuReseau = true;
+  }
+
+  /** Reconnexion lancée par le retour du réseau, tant qu'elle n'est pas terminée. */
+  reconnexionEnCours(): Promise<void> | undefined {
+    return this.reconnexion;
+  }
+
   /** Contrôleur de l'interface de l'application ouverte ; erreur si elle est fermée. */
   get controleur(): ControleurInterface {
     if (this.controleurInstance === undefined) {
@@ -224,8 +252,12 @@ export class AppareilSimule {
     this.espaceOuvert().cycle.definirPremierPlan(false);
   }
 
-  /** Comme le `visibilitychange` de `web.ts` : page de nouveau visible (un cycle est lancé). */
-  revenirAuPremierPlan(): void {
+  /**
+   * Comme le `visibilitychange` de `web.ts` : page de nouveau visible ; le saut d'horloge est contrôlé avant que le
+   * cycle soit lancé (ST-US-017 v0.11 §6.8 n° 3).
+   */
+  async revenirAuPremierPlan(): Promise<void> {
+    await this.application.controlerHorloge();
     this.espaceOuvert().cycle.definirPremierPlan(true);
   }
 
@@ -249,6 +281,11 @@ export class AppareilSimule {
 
   get service(): ServiceEtatLocal {
     return this.espaceOuvert().service;
+  }
+
+  /** Identité de cet appareil auprès du Drive simulé (écritures, format connu), distincte de l'`appareilId` de l'espace. */
+  get identifiantDrive(): IdAppareil {
+    return IDENTIFIANTS_APPAREILS[this.nom];
   }
 
   /** `appareilId` de l'espace ouvert (né avec l'espace). */
@@ -321,7 +358,10 @@ export class AppareilSimule {
       this.instance = instance;
       const controleur = new ControleurInterface(instance, this.horloge, instance.objectifs);
       this.controleurInstance = controleur;
-      this.annulerReseau = this.reseau.surChangement(() => void controleur.rafraichir());
+      this.annulerReseau = this.reseau.surChangement((connecte) => {
+        void controleur.rafraichir();
+        if (connecte && this.reconnexionAuRetourDuReseau) this.reconnecter(instance);
+      });
       instance.session.observer((etat) => {
         if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
       });
@@ -334,6 +374,17 @@ export class AppareilSimule {
       this.porteDrive = Promise.resolve();
       await this.attendreCycle();
     }
+  }
+
+  /** Geste de reconnexion (« Reprendre la synchronisation ») joué au retour du réseau, une seule fois. */
+  private reconnecter(instance: Application): void {
+    this.reconnexionAuRetourDuReseau = false;
+    this.reconnexion = instance.reprendreSession
+      .executer(REPRISE_ACCUEIL)
+      .then(() => undefined)
+      .finally(() => {
+        this.reconnexion = undefined;
+      });
   }
 
   /** Racine et objectifs affichés, lus sur les seules données locales (aucune réponse du Drive n'est passée). */
@@ -356,9 +407,10 @@ export class AppareilSimule {
       const identite = this.fournisseur.identiteDuJetonEnMemoire();
       const nom = identite === undefined ? undefined : google.nomDe(identite);
       if (nom === undefined) return undefined;
-      return google.drive(nom).transportPour(IDENTIFIANTS_APPAREILS[this.nom], {
+      return google.drive(nom).transportPour(this.identifiantDrive, {
         reseau: this.reseau,
         accesAccorde: () => google.accesAccorde(nom),
+        echanges: { horloge: this.horloge, observateur: this.echangesGoogle },
       });
     };
     /** Appel retenu jusqu'à l'instantané d'ouverture, puis adressé au Drive du compte du jeton. */
@@ -399,11 +451,15 @@ export class AppareilSimule {
       gardeSaisie: { saisieEnCours: () => false },
       fournisseur: () => this.fournisseur,
       transport: () => this.transportBanc(),
+      echangesGoogle: this.echangesGoogle,
+      miseAJour: this.miseAJour,
       versionApplication: VERSION_APPLICATION_BANC,
       surFermetureImposee: () => {
         this.fermeturesImposees += 1;
       },
-      ouvrirOnglet: () => undefined,
+      ouvrirOnglet: (url) => {
+        this.onglets.push(url);
+      },
     });
   }
 }

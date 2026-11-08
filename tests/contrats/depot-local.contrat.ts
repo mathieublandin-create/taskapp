@@ -4,6 +4,8 @@
  * CT-DEPOT-08 à 11 : méthodes de l'incrément 1 d'US-017 (lireMeta, appliquerSynchronisation).
  * CT-DEPOT-12, 13 : signalements de l'incrément 2 (lireSignalements, ST-US-017 v0.5 §4.6), rang 9.
  * CT-DEPOT-14, 15 : réinitialisation et HLC d'un choix de l'incrément 3 (ST-US-017 v0.10.2 §4.2, §4.7), rang 10.
+ * CT-DEPOT-16 à 18 : correction d'horloge, méta d'appareil, éléments inconnus de l'incrément 4 (ST-US-017 v0.11 §4.8,
+ * §5.1), rang 11.
  * Identifiants : CT-DEPOT-nn. Les cas « erreur de la base » et « espace non ouvert » sont couverts
  * par les tests d'intégration de l'adaptateur (ST-socle-ecriture.md §14).
  * Précision E10 : les observateurs de l'instance qui écrit sont appelés après la validation et au plus
@@ -15,9 +17,11 @@ import { echec, succes } from '@src/commun/domaine/resultat';
 import type { DepotLocal } from '@src/synchronisation/application/ports/depot-local';
 import type { EvenementJournal } from '@src/synchronisation/domaine/evenement-journal';
 import type { Hlc } from '@src/synchronisation/domaine/hlc';
+import type { Inconnus } from '@src/synchronisation/domaine/inconnus';
 import {
   META_INITIALE,
   type IdFichierDrive,
+  type MetaSynchronisation,
 } from '@src/synchronisation/domaine/meta-synchronisation';
 import type { Signalements } from '@src/synchronisation/domaine/signalements';
 import type { ValeurEcartee } from '@src/synchronisation/domaine/valeurs-ecartees';
@@ -492,6 +496,186 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
       expect(avance.version).toBe(2);
       expect(avance.dernierHlc).toEqual(suivant);
       expect(appels).toBe(2);
+    });
+
+    it('CT-DEPOT-16 appliquerSynchronisation — un plan qui ne change que correctionHorloge est écrit (version + 1, observateurs, relu ailleurs) ; une correction égale n’écrit pas l’état mais la méta (mesuresHorloge) l’est (ST-US-017 v0.11 §4.8, §6.8 n° 2)', async () => {
+      const { premier, second } = fabriquer();
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      const corriger = (ms: number, mesures: ReadonlyArray<number>) =>
+        premier.appliquerSynchronisation((etat) => ({
+          plan: { ...planVide(etat), etatApres: { ...etat, correctionHorloge: ecart(ms) } },
+          meta: { mesuresHorloge: mesures.map(ecart) },
+        }));
+
+      valeurDe(await corriger(90_000_000, [90_000_000]));
+      const relu = valeurDe(await second().lire());
+      expect(relu.version).toBe(1);
+      expect(relu.correctionHorloge).toBe(90_000_000);
+      expect(valeurDe(await second().lireMeta()).mesuresHorloge).toEqual([90_000_000]);
+      expect(appels).toBe(1);
+
+      valeurDe(await corriger(90_000_000, [90_000_000, 90_000_400]));
+      expect(valeurDe(await second().lire()).version).toBe(1);
+      expect(valeurDe(await second().lireMeta()).mesuresHorloge).toEqual([90_000_000, 90_000_400]);
+      expect(appels).toBe(1);
+
+      valeurDe(await corriger(-1_000, [-1_000]));
+      expect(valeurDe(await second().lire())).toMatchObject({
+        version: 2,
+        correctionHorloge: -1_000,
+      });
+      expect(appels).toBe(2);
+    });
+
+    it('CT-DEPOT-17 appliquerSynchronisation avec reinitialiser — les clés de méta d’appareil (mesuresHorloge, aMettreALaCorbeille) et la correction sont conservées, sauf si la nouvelle méta les fournit (ST-US-017 v0.11 §5.1, §6.8 n° 6, n° 21)', async () => {
+      const { premier, second } = fabriquer();
+      const corbeille = [
+        { type: 'FICHIER', id: FICHIER },
+        { type: 'DOSSIER_QUITTE', id: DOSSIER },
+      ] as const;
+      valeurDe(
+        await premier.appliquerSynchronisation((etat) => {
+          const plan = planAjoutant(etat, { registres: [creation], dernierHlc: h });
+          return {
+            plan: { ...plan, etatApres: { ...plan.etatApres, correctionHorloge: ecart(5_000) } },
+            meta: {
+              dossier: DOSSIER,
+              fichierPropre: FICHIER,
+              mesuresHorloge: [ecart(5_000)],
+              aMettreALaCorbeille: corbeille,
+            },
+          };
+        }),
+      );
+      const reinitialiser = (meta: Partial<MetaSynchronisation>) =>
+        premier.appliquerSynchronisation((etat) => ({
+          plan: {
+            ...planVide(etat),
+            etatApres: { ...etat, registres: new Map(), journal: new Map(), enAttente: new Map() },
+          },
+          meta,
+          reinitialiser: true,
+        }));
+
+      valeurDe(await reinitialiser({ dossier: DOSSIER, fusionNonDeposee: true }));
+      expect(valeurDe(await second().lireMeta())).toEqual({
+        ...META_INITIALE,
+        dossier: DOSSIER,
+        fusionNonDeposee: true,
+        mesuresHorloge: [5_000],
+        aMettreALaCorbeille: corbeille,
+      });
+      expect(valeurDe(await second().lire()).correctionHorloge).toBe(5_000);
+
+      valeurDe(await reinitialiser({ dossier: DOSSIER, aMettreALaCorbeille: [] }));
+      expect(valeurDe(await second().lireMeta())).toEqual({
+        ...META_INITIALE,
+        dossier: DOSSIER,
+        mesuresHorloge: [5_000],
+        aMettreALaCorbeille: [],
+      });
+    });
+
+    it('CT-DEPOT-18 appliquerSynchronisation et lireInconnus — éléments inconnus écrits (ajout ou remplacement par clé et identifiant), relus triés par une autre instance, version + 1 et observateurs ; vidés par reinitialiser, puis ceux du plan écrits (ST-US-017 v0.11 §4.8, §5.1)', async () => {
+      const { premier, second } = fabriquer();
+      let appels = 0;
+      premier.observer(() => {
+        appels += 1;
+      });
+      const registreInconnu = (champ: string, valeur: unknown, hl: Hlc) => ({
+        type: 'OBJECTIF',
+        id: O,
+        champ,
+        valeur,
+        hlc: hl,
+      });
+      const h2 = hlc('2026-10-21T09:00:00.000Z', 0, SMARTPHONE);
+      const ecrire = (inconnus: Inconnus, reinitialiser = false) =>
+        premier.appliquerSynchronisation((etat) => ({
+          plan: reinitialiser
+            ? {
+                ...planVide(etat),
+                etatApres: {
+                  ...etat,
+                  registres: new Map(),
+                  journal: new Map(),
+                  enAttente: new Map(),
+                },
+              }
+            : planVide(etat),
+          meta: {},
+          inconnus,
+          ...(reinitialiser ? { reinitialiser: true as const } : {}),
+        }));
+      const evenementInconnu = { id: 'evt-futur', hlc: h, brut: { type: 'ETIQUETAGE', x: 1 } };
+
+      valeurDe(
+        await ecrire({
+          registres: [registreInconnu('importance', 3, h), registreInconnu('couleur', { r: 1 }, h)],
+          evenements: [evenementInconnu],
+        }),
+      );
+      expect(valeurDe(await second().lireInconnus())).toEqual({
+        registres: [registreInconnu('couleur', { r: 1 }, h), registreInconnu('importance', 3, h)],
+        evenements: [evenementInconnu],
+      });
+      expect(valeurDe(await second().lire()).version).toBe(1);
+      expect(appels).toBe(1);
+
+      valeurDe(await ecrire({ registres: [registreInconnu('importance', 4, h2)], evenements: [] }));
+      expect(valeurDe(await second().lireInconnus()).registres).toEqual([
+        registreInconnu('couleur', { r: 1 }, h),
+        registreInconnu('importance', 4, h2),
+      ]);
+
+      valeurDe(await ecrire({ registres: [], evenements: [] }, true));
+      expect(valeurDe(await second().lireInconnus())).toEqual({ registres: [], evenements: [] });
+      valeurDe(
+        await ecrire({ registres: [registreInconnu('importance', 5, h2)], evenements: [] }, true),
+      );
+      expect(valeurDe(await second().lireInconnus())).toEqual({
+        registres: [registreInconnu('importance', 5, h2)],
+        evenements: [],
+      });
+    });
+
+    it('CT-DEPOT-19 lireInconnus — registres et entrées écrits dans le désordre, en deux transactions, relus par une autre instance triés par cleInconnue et par id en unités de code (« B » avant « a ») (ST-US-017 v0.11 §4.8, §6.8 n° 12 ; RC-US-017-20)', async () => {
+      const { premier, second } = fabriquer();
+      const registreInconnu = (champ: string) => ({
+        type: 'OBJECTIF',
+        id: O,
+        champ,
+        valeur: champ,
+        hlc: h,
+      });
+      const evenementInconnu = (id: string) => ({ id, hlc: h, brut: { type: 'ETIQUETAGE', id } });
+      const ecrire = (inconnus: Inconnus) =>
+        premier.appliquerSynchronisation((etat) => ({ plan: planVide(etat), meta: {}, inconnus }));
+
+      valeurDe(
+        await ecrire({
+          registres: [registreInconnu('b')],
+          evenements: [evenementInconnu('evt-b')],
+        }),
+      );
+      valeurDe(
+        await ecrire({
+          registres: [registreInconnu('a'), registreInconnu('B')],
+          evenements: [evenementInconnu('evt-a'), evenementInconnu('evt-B')],
+        }),
+      );
+
+      expect(valeurDe(await second().lireInconnus())).toEqual({
+        registres: [registreInconnu('B'), registreInconnu('a'), registreInconnu('b')],
+        evenements: [
+          evenementInconnu('evt-B'),
+          evenementInconnu('evt-a'),
+          evenementInconnu('evt-b'),
+        ],
+      });
     });
   });
 };

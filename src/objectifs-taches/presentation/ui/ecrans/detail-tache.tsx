@@ -12,6 +12,7 @@ import { useRef, useState, type RefObject } from 'react';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { libelle } from '../../../../commun/presentation/messages/libelle';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { ActionTache } from '../../../domaine/types-actions';
@@ -23,7 +24,11 @@ import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { ActionFin } from '../composants/action-fin';
 import { CarteIncoherence } from '../composants/carte-incoherence';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
-import { ConfirmationCommande, useCommandeConfirmee } from '../composants/commande-confirmee';
+import {
+  ConfirmationCommande,
+  useCommandeConfirmee,
+  type Focalisable,
+} from '../composants/commande-confirmee';
 import { MessagesRefus } from '../composants/messages-refus';
 import { PucesObjectif } from '../composants/puces-objectif';
 import { SectionSousTaches } from '../composants/section-sous-taches';
@@ -54,6 +59,8 @@ export type ProprietesDetailTache = {
   readonly surTerminerSousTache?: (id: IdTache) => void;
   readonly surRouvrir?: () => Promise<IssueSaisie>;
   readonly surReprendre?: () => Promise<IssueSaisie>;
+  /** ST-US-024 v0.7 §6.8 (DT-030) : case « Rouvrir » d'une sous-tâche terminée ; confirmée si la tâche parente est terminée. */
+  readonly surRouvrirSousTache?: (id: IdTache) => Promise<IssueSaisie>;
   /** Carte d'incohérence (ECR-007 H) : « Abandonner la sous-tâche » ; la confirmation habituelle de l'abandon s'applique. */
   readonly surAbandonnerSousTache?: (id: IdTache) => Promise<IssueSaisie>;
 };
@@ -92,11 +99,40 @@ const Menu = ({
   />
 );
 
-const BoutonEnregistrer = ({ surClic }: { readonly surClic: () => void }) => (
-  <button type="button" onClick={surClic}>
-    {LIBELLES_TACHES.enregistrer}
-  </button>
-);
+const BoutonEnregistrer = ({ surClic }: { readonly surClic: () => void }) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button type="button" {...attributsAction} onClick={garder(surClic)}>
+      {LIBELLES_TACHES.enregistrer}
+    </button>
+  );
+};
+
+/** Champ de saisie d'un éditeur : en lecture seule en consultation seule, la tentative de saisie affiche le toast. */
+const ChampSaisie = ({
+  nom,
+  valeur,
+  type,
+  surChanger,
+}: {
+  readonly nom: string;
+  readonly valeur: string;
+  readonly type?: 'date';
+  readonly surChanger: (valeur: string) => void;
+}) => {
+  const { attributsChamp } = useConsultationSeule();
+  return (
+    <input
+      {...(type === undefined ? {} : { type })}
+      aria-label={nom}
+      {...attributsChamp}
+      value={valeur}
+      onChange={(e) => {
+        surChanger(e.target.value);
+      }}
+    />
+  );
+};
 
 const EditeurDelai = ({
   valeur,
@@ -111,13 +147,11 @@ const EditeurDelai = ({
   const delai = DateCalendaire.depuisTexte(texte);
   return (
     <>
-      <input
+      <ChampSaisie
         type="date"
-        aria-label={LIBELLES_TACHES.champDelai}
-        value={texte}
-        onChange={(e) => {
-          setTexte(e.target.value);
-        }}
+        nom={LIBELLES_TACHES.champDelai}
+        valeur={texte}
+        surChanger={setTexte}
       />
       <BoutonEnregistrer
         surClic={() => {
@@ -141,13 +175,7 @@ const EditeurIntitule = ({
   const [texte, setTexte] = useState(valeur);
   return (
     <>
-      <input
-        aria-label={LIBELLES_TACHES.renommage}
-        value={texte}
-        onChange={(e) => {
-          setTexte(e.target.value);
-        }}
-      />
+      <ChampSaisie nom={LIBELLES_TACHES.renommage} valeur={texte} surChanger={setTexte} />
       <BoutonEnregistrer
         surClic={() => {
           surValider(texte);
@@ -193,20 +221,28 @@ const Barre = ({
   readonly surRetour: () => void;
   readonly surMenu: () => void;
   readonly refMenu: RefObject<HTMLIonButtonElement | null>;
-}) => (
-  <IonHeader>
-    <IonToolbar>
-      <IonButtons slot="start">
-        <IonButton onClick={surRetour}>{LIBELLES_TACHES.retourListe}</IonButton>
-      </IonButtons>
-      <IonButtons slot="end">
-        <IonButton ref={refMenu} aria-label={LIBELLES_TACHES.menuActions} onClick={surMenu}>
-          …
-        </IonButton>
-      </IonButtons>
-    </IonToolbar>
-  </IonHeader>
-);
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <IonHeader>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonButton onClick={surRetour}>{LIBELLES_TACHES.retourListe}</IonButton>
+        </IonButtons>
+        <IonButtons slot="end">
+          <IonButton
+            ref={refMenu}
+            aria-label={LIBELLES_TACHES.menuActions}
+            {...attributsAction}
+            onClick={garder(surMenu)}
+          >
+            …
+          </IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+  );
+};
 
 /** Éditeur ouvert et refus de sa dernière commande. */
 type EtatEditeur = {
@@ -390,30 +426,69 @@ const CarteEnTete = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =
   );
 };
 
-const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => (
-  <>
-    {modele.sousTaches === undefined ? null : (
-      <SectionSousTaches
-        section={modele.sousTaches}
-        surOuvrir={proprietes.surOuvrirSousTache}
-        surTerminer={proprietes.surTerminerSousTache}
-      />
-    )}
-    {modele.actions.includes('CREER_SOUS_TACHE') ? (
-      <button type="button" onClick={proprietes.surAjouterSousTache}>
-        {LIBELLES_TACHES.ajouterSousTache}
-      </button>
-    ) : null}
-    {carteRendue(modele, proprietes) ? null : (
-      <ActionFin
-        modele={modele}
-        surTerminer={proprietes.surTerminer}
-        surRouvrir={proprietes.surRouvrir}
-        surReprendre={proprietes.surReprendre}
-      />
-    )}
-  </>
-);
+/**
+ * Réouverture d'une sous-tâche depuis sa case (ST-US-024 v0.7 §6.8) : confirmation distincte de celle de l'action de
+ * fin ; le focus revient à la case activée, mémorisée depuis l'événement (la case garde son élément d'un état à l'autre).
+ */
+const useReouvertureSousTache = (
+  surRouvrirSousTache: ProprietesDetailTache['surRouvrirSousTache'],
+) => {
+  const caseActivee = useRef<Focalisable | null>(null);
+  const [refus, setRefus] = useState<ReadonlyArray<MessageRefus>>([]);
+  const commande = useCommandeConfirmee(caseActivee, (issue) => {
+    setRefus(messagesDeIssue(issue));
+  });
+  const rouvrir =
+    surRouvrirSousTache === undefined
+      ? undefined
+      : (id: IdTache): void => {
+          setRefus([]);
+          void commande.lancer(() => surRouvrirSousTache(id));
+        };
+  const memoriserCase = (caseDeLaLigne: Focalisable): void => {
+    caseActivee.current = caseDeLaLigne;
+  };
+  return { commande, refus, rouvrir, memoriserCase };
+};
+
+const AjouterSousTache = ({ surClic }: { readonly surClic: () => void }) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button type="button" {...attributsAction} onClick={garder(surClic)}>
+      {LIBELLES_TACHES.ajouterSousTache}
+    </button>
+  );
+};
+
+const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => {
+  const reouverture = useReouvertureSousTache(proprietes.surRouvrirSousTache);
+  return (
+    <>
+      {modele.sousTaches === undefined ? null : (
+        <SectionSousTaches
+          section={modele.sousTaches}
+          surOuvrir={proprietes.surOuvrirSousTache}
+          surTerminer={proprietes.surTerminerSousTache}
+          surRouvrir={reouverture.rouvrir}
+          surCaseRouvrirActivee={reouverture.memoriserCase}
+        />
+      )}
+      <MessagesRefus messages={reouverture.refus} />
+      <ConfirmationCommande commande={reouverture.commande} />
+      {modele.actions.includes('CREER_SOUS_TACHE') ? (
+        <AjouterSousTache surClic={proprietes.surAjouterSousTache} />
+      ) : null}
+      {carteRendue(modele, proprietes) ? null : (
+        <ActionFin
+          modele={modele}
+          surTerminer={proprietes.surTerminer}
+          surRouvrir={proprietes.surRouvrir}
+          surReprendre={proprietes.surReprendre}
+        />
+      )}
+    </>
+  );
+};
 
 const CorpsDetail = ({ modele, proprietes, editeur }: ProprietesChamp) => (
   <IonContent>

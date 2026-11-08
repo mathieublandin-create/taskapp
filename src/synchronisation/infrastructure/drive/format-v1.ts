@@ -13,6 +13,14 @@ import { trierParIdentifiant } from '../../domaine/depot';
 import type { RegistreQuelconque } from '../../domaine/ecriture';
 import type { EvenementJournal } from '../../domaine/evenement-journal';
 import type { Hlc } from '../../domaine/hlc';
+import {
+  fusionnerInconnus,
+  INCONNUS_VIDES,
+  sontVides,
+  type EvenementInconnu,
+  type Inconnus,
+  type RegistreInconnu,
+} from '../../domaine/inconnus';
 import type {
   CleInformation,
   CycleDeVie,
@@ -76,6 +84,11 @@ const hlcsDeLEvenement = (e: EvenementJournal): ReadonlyArray<Hlc> => [
     : []),
 ];
 
+const hlcsDuRegistreInconnu = (r: RegistreInconnu): ReadonlyArray<Hlc> => [
+  r.hlc,
+  ...Object.values(r.contexte ?? {}),
+];
+
 const hlcsDeLaValeurEcartee = (v: ValeurEcartee): ReadonlyArray<Hlc> => [
   ...hlcsDuRegistre(v.ecartee),
   ...(v.motif === 'DONNEES_EFFACEES' ? [v.generation] : hlcsDuRegistre(v.gagnante)),
@@ -83,7 +96,8 @@ const hlcsDeLaValeurEcartee = (v: ValeurEcartee): ReadonlyArray<Hlc> => [
 
 /**
  * Table des appareils cités par les HLC (écritures, contextes, placements, journal, génération, et, depuis l'incrément 2,
- * valeurs écartées et lectures : ST-US-017 v0.5 §5.2), triée.
+ * valeurs écartées et lectures : ST-US-017 v0.5 §5.2 ; depuis l'incrément 4, HLC et contextes des éléments inconnus :
+ * v0.11 §6.8 n° 12), triée.
  */
 const tableDesAppareils = (contenu: ContenuFichierAppareil): ReadonlyArray<IdAppareil> => {
   const hlcs = [
@@ -92,6 +106,8 @@ const tableDesAppareils = (contenu: ContenuFichierAppareil): ReadonlyArray<IdApp
     ...(contenu.generation.type === 'NOUVELLE' ? [contenu.generation.hlc] : []),
     ...(contenu.valeursEcartees ?? []).flatMap(hlcsDeLaValeurEcartee),
     ...(contenu.lectures ?? []).map((l) => l.hlc),
+    ...(contenu.inconnus?.registres ?? []).flatMap(hlcsDuRegistreInconnu),
+    ...(contenu.inconnus?.evenements ?? []).map((e) => e.hlc),
   ];
   const cites = new Set(hlcs.map((h) => h.appareil));
   return [...cites].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
@@ -178,6 +194,26 @@ const encoderEvenement = (evenement: EvenementJournal, indices: Indices): object
   };
 };
 
+/** n° 12 : registre inconnu sous la forme d'un registre connu ; `valeur` telle quelle, `contexte` omis s'il est vide. */
+const encoderRegistreInconnu = (r: RegistreInconnu, indices: Indices): object => {
+  const contexte = r.contexte ?? {};
+  return {
+    type: r.type,
+    id: r.id,
+    champ: r.champ,
+    valeur: r.valeur,
+    hlc: encoderHlc(r.hlc, indices),
+    ...(Object.keys(contexte).length > 0 ? { contexte: encoderContexte(contexte, indices) } : {}),
+  };
+};
+
+/** n° 12 : entrée inconnue réécrite `{ ...brut, id, hlc }`. */
+const encoderEvenementInconnu = (e: EvenementInconnu, indices: Indices): object => ({
+  ...e.brut,
+  id: e.id,
+  hlc: encoderHlc(e.hlc, indices),
+});
+
 /** §5.2 : `{ id, motif, ecartee, gagnante?, generation?, intituleElement? }`, registres sous la forme de `registres`. */
 const encoderValeurEcartee = (valeur: ValeurEcartee, indices: Indices): object => {
   const commun = {
@@ -232,14 +268,22 @@ export const encoderFichierAppareil = async (
 ): Promise<Uint8Array> => {
   const appareils = tableDesAppareils(contenu);
   const indices: Indices = new Map(appareils.map((a, i) => [a, i]));
+  const inconnus = contenu.inconnus ?? INCONNUS_VIDES;
   const texte = await sceller({
     appareil: { id: contenu.appareil, plateforme: PLATEFORME },
     appareils,
     generation: encoderGeneration(contenu.generation, (h) => encoderHlc(h, indices)),
-    journal: contenu.journal.map((e) => encoderEvenement(e, indices)),
+    // n° 12 : les inconnus suivent les éléments connus, dans l'ordre de `contenu` (l'encodeur ne trie pas ces tableaux).
+    journal: [
+      ...contenu.journal.map((e) => encoderEvenement(e, indices)),
+      ...inconnus.evenements.map((e) => encoderEvenementInconnu(e, indices)),
+    ],
     // §5.2 (incrément 2) : les deux tableaux sont toujours écrits, vides compris, triés par identifiant.
     lectures: trierParIdentifiant(contenu.lectures ?? []).map((l) => encoderLecture(l, indices)),
-    registres: contenu.registres.map((r) => encoderRegistre(r, indices)),
+    registres: [
+      ...contenu.registres.map((r) => encoderRegistre(r, indices)),
+      ...inconnus.registres.map((r) => encoderRegistreInconnu(r, indices)),
+    ],
     schemaVersion: contenu.schemaVersion,
     valeursEcartees: trierParIdentifiant(contenu.valeursEcartees ?? []).map((v) =>
       encoderValeurEcartee(v, indices),
@@ -299,15 +343,32 @@ const verifierEmpreinte = async (objet: Record<string, unknown>): Promise<boolea
 type RegistreBrut = z.output<SchemasFichierV1['fichier']>['registres'][number];
 type ValeurEcarteeBrute = z.output<SchemasFichierV1['valeurEcartee']>;
 
-/** Registre relu ; 'IGNORE' pour un type ou un champ inconnu (§5.3), undefined s'il est invalide. */
+/** Registre d'un type ou d'un champ inconnu de cette version (n° 12), conservé tel quel. */
+type Inconnu = { readonly inconnu: RegistreInconnu };
+
+const registreInconnu = (brut: RegistreBrut): Inconnu => {
+  const contexte = brut.contexte ?? {};
+  return {
+    inconnu: {
+      type: brut.type,
+      id: brut.id,
+      champ: brut.champ,
+      valeur: brut.valeur,
+      hlc: brut.hlc,
+      ...(Object.keys(contexte).length > 0 ? { contexte } : {}),
+    },
+  };
+};
+
+/** Registre relu ; `{ inconnu }` pour un type ou un champ inconnu (§5.3, n° 12), undefined s'il est invalide. */
 const lireRegistre = (
   schemas: SchemasFichierV1,
   brut: RegistreBrut,
-): RegistreQuelconque | 'IGNORE' | undefined => {
-  if (!TYPES_ELEMENT.has(brut.type)) return 'IGNORE';
+): RegistreQuelconque | Inconnu | undefined => {
+  if (!TYPES_ELEMENT.has(brut.type)) return registreInconnu(brut);
   const type = brut.type as TypeElement;
   const schema = schemaDeValeurV1(schemas, type, brut.champ);
-  if (schema === undefined) return 'IGNORE';
+  if (schema === undefined) return registreInconnu(brut);
   const id = lireIdElementV1(type, brut.id);
   const valeur = schema.safeParse(brut.valeur);
   if (id === undefined || !valeur.success) return undefined;
@@ -316,6 +377,14 @@ const lireRegistre = (
     cle,
     ecriture: { valeur: valeur.data, hlc: brut.hlc, contexte: brut.contexte ?? {} },
   } as RegistreQuelconque;
+};
+
+const estRegistreInconnu = (lu: RegistreQuelconque | Inconnu): lu is Inconnu => 'inconnu' in lu;
+
+/** Registre d'une valeur écartée : un registre inconnu n'est pas conservé (H-12) et fait ignorer l'entrée. */
+const lireRegistreSignale = (schemas: SchemasFichierV1, brut: RegistreBrut): RegistreLu => {
+  const lu = lireRegistre(schemas, brut);
+  return lu !== undefined && estRegistreInconnu(lu) ? 'IGNORE' : lu;
 };
 
 /** Lit chaque élément ; undefined dès qu'un élément est invalide, les éléments ignorés étant écartés. */
@@ -360,7 +429,8 @@ const assemblerAvecGagnante = (
   ecartee: RegistreLu,
 ): ValeurEcartee | 'IGNORE' | undefined => {
   const { id, intituleElement } = brute;
-  const gagnante = brute.gagnante === undefined ? undefined : lireRegistre(schemas, brute.gagnante);
+  const gagnante =
+    brute.gagnante === undefined ? undefined : lireRegistreSignale(schemas, brute.gagnante);
   if (ecartee === undefined || gagnante === undefined) return undefined;
   if (ecartee === 'IGNORE' || gagnante === 'IGNORE') return 'IGNORE';
   // Exhaustif sans `default` (TS2366), comme `encoderValeurEcartee`.
@@ -390,7 +460,7 @@ const lireValeurEcartee = (
   if (!estMotifV1(motif)) return 'IGNORE';
   const brute = schemas.valeurEcartee.safeParse(brut);
   if (!brute.success) return undefined;
-  const ecartee = lireRegistre(schemas, brute.data.ecartee);
+  const ecartee = lireRegistreSignale(schemas, brute.data.ecartee);
   return motif === 'DONNEES_EFFACEES'
     ? assemblerDonneesEffacees(brute.data, ecartee)
     : assemblerAvecGagnante(schemas, motif, brute.data, ecartee);
@@ -425,7 +495,69 @@ const lireSignalements = (
   };
 };
 
-/** Validation Zod puis lecture des registres et du journal (types et champs inconnus ignorés). */
+type EntreeJournalBrute = z.output<SchemasFichierV1['fichier']>['journal'][number];
+type EvenementInconnuLu = { readonly inconnu: EvenementInconnu };
+
+const estEvenementInconnu = (lu: EvenementJournal | EvenementInconnuLu): lu is EvenementInconnuLu =>
+  'inconnu' in lu;
+
+/**
+ * n° 12 : entrée d'un type inconnu ; conservée (sans ses clés `id` et `hlc`) si `id` est un texte non vide et `hlc` un
+ * HLC valide de la table du fichier, ignorée sinon (UT-COMP-US-017-31).
+ */
+const lireEvenementInconnu = (
+  schemas: SchemasFichierV1,
+  brut: EntreeJournalBrute,
+): EvenementInconnuLu | 'IGNORE' => {
+  const { id, hlc, ...reste } = brut;
+  const lu = schemas.enteteEvenementInconnu.safeParse({ id, hlc });
+  return lu.success ? { inconnu: { id: lu.data.id, hlc: lu.data.hlc, brut: reste } } : 'IGNORE';
+};
+
+/** Registres connus et inconnus séparés ; undefined si l'un d'eux est invalide. */
+const lireRegistres = (
+  schemas: SchemasFichierV1,
+  bruts: ReadonlyArray<RegistreBrut>,
+):
+  | { connus: ReadonlyArray<RegistreQuelconque>; inconnus: ReadonlyArray<RegistreInconnu> }
+  | undefined => {
+  const lus = lireTout(bruts, (brut) => lireRegistre(schemas, brut));
+  if (lus === undefined) return undefined;
+  return {
+    connus: lus.flatMap((lu) => (estRegistreInconnu(lu) ? [] : [lu])),
+    inconnus: lus.flatMap((lu) => (estRegistreInconnu(lu) ? [lu.inconnu] : [])),
+  };
+};
+
+/** Entrées connues et inconnues séparées ; undefined si une entrée d'un type connu est invalide. */
+const lireJournal = (
+  schemas: SchemasFichierV1,
+  bruts: ReadonlyArray<EntreeJournalBrute>,
+):
+  | { connus: ReadonlyArray<EvenementJournal>; inconnus: ReadonlyArray<EvenementInconnu> }
+  | undefined => {
+  const lus = lireTout(bruts, (brut) =>
+    TYPES_EVENEMENT.has(brut.type)
+      ? lireEvenementV1(schemas, brut)
+      : lireEvenementInconnu(schemas, brut),
+  );
+  if (lus === undefined) return undefined;
+  return {
+    connus: lus.flatMap((lu) => (estEvenementInconnu(lu) ? [] : [lu])),
+    inconnus: lus.flatMap((lu) => (estEvenementInconnu(lu) ? [lu.inconnu] : [])),
+  };
+};
+
+/** n° 12 : `inconnus` présent si et seulement si non vide, trié (registres par `cleInconnue`, entrées par `id`). */
+const assemblerInconnus = (
+  registres: ReadonlyArray<RegistreInconnu>,
+  evenements: ReadonlyArray<EvenementInconnu>,
+): Pick<ContenuFichierAppareil, 'inconnus'> => {
+  const inconnus: Inconnus = fusionnerInconnus(INCONNUS_VIDES, { registres, evenements });
+  return sontVides(inconnus) ? {} : { inconnus };
+};
+
+/** Validation Zod puis lecture des registres et du journal (types et champs inconnus conservés à part, n° 12). */
 const lireContenu = (
   objet: Record<string, unknown>,
 ): Resultat<ContenuFichierAppareil, ErreurLecture> => {
@@ -434,10 +566,8 @@ const lireContenu = (
   const schemas = schemasFichierV1(table.data.appareils);
   const lu = schemas.fichier.safeParse(objet);
   if (!lu.success) return illisible('SCHEMA');
-  const registres = lireTout(lu.data.registres, (brut) => lireRegistre(schemas, brut));
-  const journal = lireTout(lu.data.journal, (brut) =>
-    TYPES_EVENEMENT.has(brut.type) ? lireEvenementV1(schemas, brut) : 'IGNORE',
-  );
+  const registres = lireRegistres(schemas, lu.data.registres);
+  const journal = lireJournal(schemas, lu.data.journal);
   const signalements = lireSignalements(schemas, lu.data);
   if (registres === undefined || journal === undefined || signalements === undefined) {
     return illisible('SCHEMA');
@@ -447,9 +577,10 @@ const lireContenu = (
     versionApplication: lu.data.versionApplication,
     generation: lu.data.generation,
     appareil: lu.data.appareil.id,
-    registres,
-    journal,
+    registres: registres.connus,
+    journal: journal.connus,
     ...signalements,
+    ...assemblerInconnus(registres.inconnus, journal.inconnus),
   });
 };
 

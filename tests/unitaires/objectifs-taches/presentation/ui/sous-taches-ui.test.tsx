@@ -270,7 +270,10 @@ describe('SectionSousTaches (ECR-007 A, guide §5.8 e)', () => {
       name: 'Terminer «\u00a0Section B\u00a0»',
     });
     expect((caseTerminer as HTMLInputElement).disabled).toBe(true);
-    expect(within(section).queryByRole('checkbox', { name: /Section A/u })).toBeNull();
+    // ST-US-024 v0.7 (DT-030, rang 11) : la sous-tâche terminée porte la case pleine « Rouvrir », désactivée tant que
+    // l'écran ne sait pas rouvrir (UT-US-024-26) ; avant le rang 11, aucune case n'était rendue.
+    const caseRouvrir = within(section).queryByRole('checkbox', { name: /Section A/u });
+    expect(caseRouvrir === null || (caseRouvrir as HTMLInputElement).disabled).toBe(true);
     await userEvent.click(within(section).getByRole('button', { name: /^Section A, terminée/u }));
     expect(surOuvrir).toHaveBeenCalledWith(fait);
   });

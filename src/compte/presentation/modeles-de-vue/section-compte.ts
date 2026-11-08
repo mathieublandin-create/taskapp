@@ -1,3 +1,5 @@
+import type { Fuseau } from '../../../commun/domaine/temps/fuseau';
+import { FUSEAU_REFERENCE } from '../../../commun/domaine/temps/fuseau-reference';
 import { libelle } from '../../../commun/presentation/messages/libelle';
 import type { AdresseGoogle } from '../../domaine/identite';
 
@@ -8,6 +10,15 @@ export type ModeleVueSectionCompte = {
   readonly adresse: string;
   readonly actions: ReadonlyArray<ActionCompte>;
   readonly dossier: { readonly code: 'SYN-FEUILLE-DOSSIER'; readonly libelle: string };
+  /**
+   * ST-US-017 v0.11 §6.8 n° 11 (rang 11, RG-054, maquette ECR-011 B, I) : ligne « Fuseau » après « Données », présente
+   * si et seulement si `fuseauAppareil` est défini et différent de FUSEAU_REFERENCE.
+   */
+  readonly fuseau?: {
+    readonly code: 'SYN-FEUILLE-FUSEAU';
+    readonly libelle: string;
+    readonly texte: string;
+  };
 };
 
 const ACTIONS: ReadonlyArray<ActionCompte> = ['SE_DECONNECTER', 'SUPPRIMER_DONNEES'];
@@ -18,10 +29,28 @@ export const libelleActionCompte = (action: ActionCompte): string =>
     ? libelle('CNF-DECONNEXION', {}, 'action')
     : libelle('CNF-SUPPR-DONNEES', { variante: 'section-compte' }, 'action');
 
+/** Dernier segment de l'identifiant IANA, `_` remplacé par une espace (« America/New_York » → « New York »). */
+const nomAffichable = (fuseau: Fuseau): string =>
+  fuseau.slice(fuseau.lastIndexOf('/') + 1).replaceAll('_', ' ');
+
+const modeleFuseau = (fuseauAppareil: Fuseau | undefined) =>
+  fuseauAppareil === undefined || fuseauAppareil === FUSEAU_REFERENCE
+    ? {}
+    : {
+        fuseau: {
+          code: 'SYN-FEUILLE-FUSEAU' as const,
+          libelle: libelle('SYN-FEUILLE-FUSEAU'),
+          texte: libelle('SYN-FEUILLE-FUSEAU', { fuseau: nomAffichable(fuseauAppareil) }, 'texte'),
+        },
+      };
+
 export const construireSectionCompte = (c: {
   readonly adresse: AdresseGoogle;
+  /** v0.11 (rang 11) : `Horloge.fuseauAppareil()` ; absent : pas de ligne « Fuseau ». */
+  readonly fuseauAppareil?: Fuseau;
 }): ModeleVueSectionCompte => ({
   adresse: c.adresse,
   actions: ACTIONS,
   dossier: { code: 'SYN-FEUILLE-DOSSIER', libelle: libelle('SYN-FEUILLE-DOSSIER') },
+  ...modeleFuseau(c.fuseauAppareil),
 });

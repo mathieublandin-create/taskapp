@@ -9,10 +9,17 @@ import { comparerHlc } from '@src/synchronisation/domaine/hlc';
 import { cleEnTexte } from '@src/synchronisation/domaine/information';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '@src/synchronisation/domaine/etat-local';
 import {
+  CLES_META_APPAREIL,
   META_INITIALE,
   type MetaSynchronisation,
   type PlanSynchronisation,
 } from '@src/synchronisation/domaine/meta-synchronisation';
+import {
+  cleInconnue,
+  INCONNUS_VIDES,
+  sontVides,
+  type Inconnus,
+} from '@src/synchronisation/domaine/inconnus';
 import type { PlanEcriture } from '@src/synchronisation/domaine/planifier-ecritures';
 import {
   SIGNALEMENTS_VIDES,
@@ -22,19 +29,22 @@ import {
 
 /**
  * Doublure en mémoire du port DepotLocal (ST-US-017 §12.3 ; condition de Starck sur Q-ST017-STA-1).
- * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 14). Plusieurs instances
+ * Elle passe la suite `tests/contrats/depot-local.contrat.ts` (CT-DEPOT-01 à 18). Plusieurs instances
  * partagent un même `StockageDepotEnMemoire` (deux onglets, ou un redémarrage). Chaque `appliquer` et chaque
  * `appliquerSynchronisation` est atomique : le calcul reçoit l'état (et la méta) du stockage, puis le plan et
  * la méta sont recopiés ensemble, ou rien si le calcul échoue ou lève. Les observateurs de toutes les
  * instances sont appelés après chaque plan non vide.
  * Comme DepotLocalDexie, seul le contenu du plan est écrit (registres, entrées de journal, entrées en attente
- * écrites ou retirées, dernier HLC et correction d'horloge de `etatApres`).
+ * écrites ou retirées, dernier HLC et correction d'horloge de `etatApres`), avec les signalements et les éléments
+ * inconnus ajoutés (ST-US-017 v0.11 §5.1 : tables `registresInconnus` et `evenementsInconnus` de Dexie).
  */
 export class StockageDepotEnMemoire {
   etat: EtatLocal;
   meta: MetaSynchronisation = META_INITIALE;
   /** ST-US-017 v0.5 §4.6 : valeurs écartées et lectures (tables `valeursEcartees` et `lectures` de Dexie). */
   signalements: Signalements = SIGNALEMENTS_VIDES;
+  /** ST-US-017 v0.11 §5.1 : éléments inconnus (tables `registresInconnus` et `evenementsInconnus` de Dexie), triés. */
+  inconnus: Inconnus = INCONNUS_VIDES;
   readonly observateurs = new Set<() => void>();
 
   constructor(readonly appareilId: IdAppareil) {
@@ -49,16 +59,20 @@ export class StockageDepotEnMemoire {
     plan: PlanEcriture,
     meta: Partial<MetaSynchronisation>,
     ajouts: AjoutsSignalements = AUCUN_AJOUT,
+    inconnus: Inconnus = INCONNUS_VIDES,
   ): void {
     this.meta = { ...this.meta, ...meta };
     if (
       planEstVide(plan) &&
       !avanceDernierHlc(this.etat, plan) &&
-      ajouts.valeursEcartees.length + ajouts.lectures.length === 0
+      plan.etatApres.correctionHorloge === this.etat.correctionHorloge &&
+      ajouts.valeursEcartees.length + ajouts.lectures.length === 0 &&
+      sontVides(inconnus)
     ) {
       return;
     }
     this.etat = appliquerPlan(this.etat, plan);
+    this.inconnus = ecrireInconnus(this.inconnus, inconnus);
     this.signalements = {
       valeursEcartees: remplacerParIdentifiant(
         this.signalements.valeursEcartees,
@@ -74,14 +88,18 @@ export class StockageDepotEnMemoire {
   /**
    * ST-US-017 v0.10 §4.7 (CT-DEPOT-14) : état, signalements et clés de synchronisation de la méta remplacés
    * ensemble ; `plan.etatApres` (vide) porte `appareilId`, `dernierHlc` et `correctionHorloge` ; version + 1.
+   * v0.11 §5.1 (CT-DEPOT-17, 18) : la méta d'appareil (`CLES_META_APPAREIL`) est conservée, sauf valeur fournie par
+   * `meta` ; les inconnus sont vidés, puis ceux du plan écrits.
    */
   reinitialiser(
     plan: PlanEcriture,
     meta: Partial<MetaSynchronisation>,
     ajouts: AjoutsSignalements = AUCUN_AJOUT,
+    inconnus: Inconnus = INCONNUS_VIDES,
   ): void {
     const { dernierHlc } = plan.etatApres;
-    this.meta = { ...META_INITIALE, ...meta };
+    this.meta = { ...META_INITIALE, ...metaAppareil(this.meta), ...meta };
+    this.inconnus = ecrireInconnus(INCONNUS_VIDES, inconnus);
     this.etat = {
       appareilId: this.etat.appareilId,
       version: this.etat.version + 1,
@@ -105,6 +123,29 @@ export class StockageDepotEnMemoire {
 }
 
 const AUCUN_AJOUT: AjoutsSignalements = { valeursEcartees: [], lectures: [] };
+
+/** Clés de méta d'appareil présentes (comme les lignes que `reinitialiser` de Dexie ne retire pas). */
+const metaAppareil = (meta: MetaSynchronisation): Partial<MetaSynchronisation> =>
+  Object.fromEntries(
+    CLES_META_APPAREIL.flatMap((cle) => (meta[cle] === undefined ? [] : [[cle, meta[cle]]])),
+  );
+
+/** Ordre des unités de code, comme les clés texte d'IndexedDB. */
+const comparerTextes = (a: string, b: string): number => Number(a > b) - Number(a < b);
+
+/** Ajout ou remplacement par clé et par identifiant (comme `bulkPut`), résultat trié comme `lireInconnus`. */
+const ecrireInconnus = (connus: Inconnus, ajouts: Inconnus): Inconnus => {
+  const registres = new Map(
+    [...connus.registres, ...ajouts.registres].map((r) => [cleInconnue(r), r] as const),
+  );
+  const evenements = new Map(
+    [...connus.evenements, ...ajouts.evenements].map((e) => [e.id, e] as const),
+  );
+  return {
+    registres: [...registres].sort(([a], [b]) => comparerTextes(a, b)).map(([, r]) => r),
+    evenements: [...evenements].sort(([a], [b]) => comparerTextes(a, b)).map(([, e]) => e),
+  };
+};
 
 /** Ajout ou remplacement par identifiant (comme `bulkPut` sur une table de clé `id`). */
 const remplacerParIdentifiant = <K, T extends { readonly id: K }>(
@@ -188,6 +229,11 @@ export class DepotLocalEnMemoire implements DepotLocal {
     return Promise.resolve(succes(this.stockage.signalements));
   }
 
+  /** ST-US-017 v0.11 §4.8 : inconnus triés (CT-DEPOT-18). */
+  lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    return Promise.resolve(succes(this.stockage.inconnus));
+  }
+
   appliquerSynchronisation(
     calcul: (
       etat: EtatLocal,
@@ -196,13 +242,13 @@ export class DepotLocalEnMemoire implements DepotLocal {
     ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
     return Promise.resolve().then(() => {
-      const { plan, meta, signalements, reinitialiser } = calcul(
+      const { plan, meta, signalements, inconnus, reinitialiser } = calcul(
         this.stockage.etat,
         this.stockage.meta,
         this.stockage.signalements,
       );
-      if (reinitialiser === true) this.stockage.reinitialiser(plan, meta, signalements);
-      else this.stockage.valider(plan, meta, signalements);
+      if (reinitialiser === true) this.stockage.reinitialiser(plan, meta, signalements, inconnus);
+      else this.stockage.valider(plan, meta, signalements, inconnus);
       return succes(undefined);
     });
   }

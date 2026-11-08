@@ -80,7 +80,9 @@ export type ServicesTaches = {
 export type IssueTache =
   | { readonly type: 'FAITE'; readonly id?: IdTache }
   | { readonly type: 'REFUSEE'; readonly messages: ReadonlyArray<MessageRefus> }
-  | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' };
+  | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' }
+  // RG-058 (ST-US-017 v0.11 §6.8 n° 9) : toast TST-CONSULTATION-SEULE (`refusConsultationSeule`).
+  | { readonly type: 'CONSULTATION_SEULE' };
 
 export type SaisieTacheUi = {
   readonly intitule: string;
@@ -130,6 +132,8 @@ export type EtatMagasinTaches = {
   readonly finAnnulable?: IdTache | undefined;
   /** Vrai après un échec d'écriture ou de lecture locale : toast ERR-014. */
   readonly erreurEnregistrement: boolean;
+  /** Nombre de commandes refusées en consultation seule (RG-058), pour le toast `TST-CONSULTATION-SEULE`. */
+  readonly refusConsultationSeule: number;
   readonly actions: ActionsMagasinTaches;
 };
 
@@ -231,10 +235,16 @@ class ActionsTaches implements ActionsMagasinTaches {
     await (ecran.type === 'LISTE' ? this.#chargerListe() : this.#chargerDetail(ecran.id));
   };
 
+  /** RG-058 : le service refuse l'écriture ; l'écran en fait un toast `TST-CONSULTATION-SEULE` (un par refus). */
+  readonly #compterRefusConsultationSeule = (): void => {
+    this.ecrire({ refusConsultationSeule: this.lire().refusConsultationSeule + 1 });
+  };
+
   /** Après une commande réussie, les modèles de vue sont recalculés ; sur échec technique, ERR-014. */
   readonly #apres = async (issue: IssueTache): Promise<IssueTache> => {
     if (issue.type === 'FAITE') await this.#rafraichir();
     if (issue.type === 'ENREGISTREMENT_IMPOSSIBLE') this.ecrire({ erreurEnregistrement: true });
+    if (issue.type === 'CONSULTATION_SEULE') this.#compterRefusConsultationSeule();
     return issue;
   };
 
@@ -476,5 +486,6 @@ export const creerMagasinTaches = (services: ServicesTaches): MagasinTaches =>
     objectifs: [],
     termineesRecentes: [],
     erreurEnregistrement: false,
+    refusConsultationSeule: 0,
     actions: new ActionsTaches(services, set, get),
   }));

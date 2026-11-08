@@ -10,10 +10,13 @@ import type { RegistreQuelconque } from '../../domaine/ecriture';
 import type { EtatLocal } from '../../domaine/etat-local';
 import type { EvenementJournal } from '../../domaine/evenement-journal';
 import { creerHlc, type Hlc } from '../../domaine/hlc';
+import { cleInconnue, type EvenementInconnu, type RegistreInconnu } from '../../domaine/inconnus';
 import { lireIdEvenement } from '../../domaine/identifiant-evenement';
 import type { EntreeEnAttente } from '../../domaine/index-en-attente';
 import {
+  CLES_META_APPAREIL,
   META_INITIALE,
+  type ElementACorbeille,
   type IdFichierDrive,
   type MetaSynchronisation,
 } from '../../domaine/meta-synchronisation';
@@ -614,6 +617,14 @@ const generationStockee = z.discriminatedUnion('type', [
   z.object({ type: z.literal('NOUVELLE'), hlc: hlcStocke }),
 ]);
 
+/** Écart de temps stocké : entier de millisecondes (ST-US-017 v0.11 §5.1 ; `int` de Zod borne aux entiers sûrs). */
+const ecartStocke = z.number().int().transform(EcartTemps.depuisMillisecondes);
+
+/** DT-036 (n° 18) : élément à mettre à la corbeille, `{ type, id }`. */
+const elementACorbeilleStocke = z
+  .object({ type: z.enum(['FICHIER', 'DOSSIER_QUITTE']), id: idFichierDrive })
+  .transform(({ type, id }): ElementACorbeille => ({ type, id }));
+
 const encoderGeneration = (generation: Generation): object =>
   generation.type === 'INITIALE'
     ? { type: 'INITIALE' }
@@ -634,11 +645,23 @@ const SCHEMAS_META_SYNCHRONISATION: ReadonlyArray<readonly [keyof MetaSynchronis
     ['restaurationDemandee', z.boolean()],
     ['restaurationConnue', hlcStocke],
     ['inventaireAFaire', z.boolean()],
+    // ST-US-017 v0.11 §5.1 (incrément 4) : méta d'appareil (CLES_META_APPAREIL), conservées par `reinitialiser`.
+    ['mesuresHorloge', z.array(ecartStocke)],
+    ['aMettreALaCorbeille', z.array(elementACorbeilleStocke)],
   ];
 
-/** Noms des lignes `meta` de synchronisation, à retirer par `reinitialiser`. */
+/** Noms de toutes les lignes `meta` de synchronisation (lecture et écriture de `MetaSynchronisation`). */
 export const NOMS_META_SYNCHRONISATION: ReadonlyArray<keyof MetaSynchronisation> =
   SCHEMAS_META_SYNCHRONISATION.map(([nom]) => nom);
+
+const CLES_APPAREIL: ReadonlySet<string> = new Set(CLES_META_APPAREIL);
+
+/**
+ * Lignes `meta` retirées par `reinitialiser` (ST-US-017 v0.11 §5.1, §6.8 n° 6 ; CT-DEPOT-17) : toutes les clés de
+ * synchronisation sauf la méta d'appareil (`CLES_META_APPAREIL`), qui survit à toute réinitialisation.
+ */
+export const NOMS_META_REINITIALISES: ReadonlyArray<keyof MetaSynchronisation> =
+  NOMS_META_SYNCHRONISATION.filter((nom) => !CLES_APPAREIL.has(nom));
 
 /**
  * Valeur stockée de chaque clé : table exhaustive (une clé ajoutée à `MetaSynchronisation` sans encodeur ne
@@ -661,6 +684,9 @@ const ENCODEURS_META: {
   restaurationDemandee: (v) => v,
   restaurationConnue: encoderHlc,
   inventaireAFaire: (v) => v,
+  // ST-US-017 v0.11 §5.1 : méta d'appareil, absentes de la liste des clés retirées par `reinitialiser` (CT-DEPOT-17).
+  mesuresHorloge: (v) => [...v],
+  aMettreALaCorbeille: (v) => v.map(({ type, id }) => ({ type, id })),
 };
 
 /** Lignes `meta` des clés présentes dans `meta` (les autres restent telles quelles). */
@@ -693,4 +719,59 @@ export const decoderMetaSynchronisation = (
   }
   // Chaque valeur a été validée par le schéma de sa clé.
   return { ...META_INITIALE, ...valeurs };
+};
+
+// --- Tables registresInconnus et evenementsInconnus (ST-US-017 v0.11 §5.1, base version 4) ---------------------
+// Éléments de même `schemaVersion` inconnus de cette version (RG-058, ANT-19, §6.8 n° 12) : HLC et contexte en
+// `appareilId` (comme la table `registres`), `valeur` et `brut` gardés tels quels (clone structuré d'IndexedDB).
+
+const ligneRegistreInconnu = z.object({
+  cle: z.string(),
+  type: z.string(),
+  id: z.string(),
+  champ: z.string(),
+  valeur: z.unknown(),
+  hlc: hlcStocke,
+  contexte: contexteStocke.optional(),
+});
+
+const ligneEvenementInconnu = z.object({
+  id: z.string().min(1),
+  hlc: hlcStocke,
+  brut: z.record(z.string(), z.unknown()),
+});
+
+/** Ligne de `registresInconnus` : `{ cle: cleInconnue(r), type, id, champ, valeur, hlc, contexte? }` (contexte omis s'il est vide). */
+export const encoderRegistreInconnu = (r: RegistreInconnu): object => ({
+  cle: cleInconnue(r),
+  type: r.type,
+  id: r.id,
+  champ: r.champ,
+  valeur: r.valeur,
+  hlc: encoderHlc(r.hlc),
+  ...(r.contexte === undefined || Object.keys(r.contexte).length === 0
+    ? {}
+    : { contexte: encoderContexte(r.contexte) }),
+});
+
+/** Ligne de `evenementsInconnus` : `{ id, hlc, brut }`. */
+export const encoderEvenementInconnu = (e: EvenementInconnu): object => ({
+  id: e.id,
+  hlc: encoderHlc(e.hlc),
+  brut: e.brut,
+});
+
+/** Relit une ligne de `registresInconnus` ; undefined si elle est invalide ou si sa clé ne correspond pas à ses colonnes. */
+export const decoderRegistreInconnu = (ligne: unknown): RegistreInconnu | undefined => {
+  const lue = ligneRegistreInconnu.safeParse(ligne);
+  if (!lue.success || lue.data.cle !== cleInconnue(lue.data)) return undefined;
+  const { type, id, champ, valeur, hlc, contexte } = lue.data;
+  const avecContexte = contexte !== undefined && Object.keys(contexte).length > 0;
+  return { type, id, champ, valeur, hlc, ...(avecContexte ? { contexte } : {}) };
+};
+
+/** Relit une ligne de `evenementsInconnus` ; undefined si elle est invalide. */
+export const decoderEvenementInconnu = (ligne: unknown): EvenementInconnu | undefined => {
+  const lue = ligneEvenementInconnu.safeParse(ligne);
+  return lue.success ? { id: lue.data.id, hlc: lue.data.hlc, brut: lue.data.brut } : undefined;
 };

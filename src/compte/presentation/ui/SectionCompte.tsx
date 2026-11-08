@@ -20,6 +20,12 @@ export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
     <IonText>
       <p data-code={vue.dossier.code}>{vue.dossier.libelle}</p>
     </IonText>
+    {vue.fuseau === undefined ? null : (
+      <IonText data-etat={vue.fuseau.code}>
+        <p>{vue.fuseau.libelle}</p>
+        <p>{vue.fuseau.texte}</p>
+      </IonText>
+    )}
     {vue.actions.map((action) => (
       <button
         key={action}

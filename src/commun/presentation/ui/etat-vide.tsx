@@ -1,4 +1,5 @@
 import { IonButton } from '@ionic/react';
+import { useConsultationSeule } from './consultation-seule';
 import type { CodeCatalogue } from '../messages/codes';
 import { aUnePartie, libelle } from '../messages/libelle';
 
@@ -10,12 +11,17 @@ export type ProprietesEtatVide = {
   readonly surAction?: () => void;
 };
 
-export const EtatVide = ({ code, surAction }: ProprietesEtatVide) => (
-  <section className="etat-vide" data-etat={code} aria-label={libelle(code)}>
-    <p>{libelle(code)}</p>
-    {aUnePartie(code, 'texte') ? <p>{libelle(code, {}, 'texte')}</p> : null}
-    {surAction !== undefined && aUnePartie(code, 'action') ? (
-      <IonButton onClick={surAction}>{libelle(code, {}, 'action')}</IonButton>
-    ) : null}
-  </section>
-);
+export const EtatVide = ({ code, surAction }: ProprietesEtatVide) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <section className="etat-vide" data-etat={code} aria-label={libelle(code)}>
+      <p>{libelle(code)}</p>
+      {aUnePartie(code, 'texte') ? <p>{libelle(code, {}, 'texte')}</p> : null}
+      {surAction !== undefined && aUnePartie(code, 'action') ? (
+        <IonButton {...attributsAction} onClick={garder(surAction)}>
+          {libelle(code, {}, 'action')}
+        </IonButton>
+      ) : null}
+    </section>
+  );
+};

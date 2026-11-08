@@ -4,10 +4,12 @@ import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartee
 import type { Annulation } from '../commun/application/ports/planificateur';
 import { jourDeReference } from '../commun/domaine/temps/jour-de-reference';
 import type { DateCalendaire } from '../commun/domaine/temps/date-calendaire';
+import { assertNever } from '../commun/domaine/assert-never';
 import type { Resultat } from '../commun/domaine/resultat';
 import type { IssueOuverture } from '../compte/application/cas-usage/ouvrir-application';
 import type { IssueSuppression } from '../compte/application/cas-usage/supprimer-donnees-appareil';
 import type { ConfirmationCompte } from '../compte/application/evaluation';
+import type { EtatSession } from '../compte/application/session-courante';
 import { REPRISE_ACCUEIL } from '../compte/application/ports/memoire-redirection';
 import type { MotifEchecConnexion } from '../compte/domaine/motif-connexion';
 import {
@@ -28,6 +30,7 @@ import {
   type ActionCompte,
   type ModeleVueSectionCompte,
 } from '../compte/presentation/modeles-de-vue/section-compte';
+import type { IssueMiseAJour } from '../synchronisation/application/ports/mise-a-jour-application';
 import {
   construireBandeau,
   type ModeleVueBandeau,
@@ -87,7 +90,12 @@ export type ApplicationInterface = Pick<
   | 'annulerRestauration'
   | 'evaluerRepartirDeZero'
   | 'repartirDeZero'
+  | 'lireCorrectionHorloge'
+  | 'mettreAJour'
 >;
+
+/** État de synchronisation lu sur l'espace ouvert. */
+type EtatLu = NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>;
 
 /** Choix d'`ERR-012` : modèle de vue et textes (la mention de la demande dépend du réseau). */
 export type ChoixRestaurationAffichable = {
@@ -117,6 +125,13 @@ export type VueInterface = {
   /** Choix d'`ERR-012` (carte de la feuille et feuille de choix) ; absent sans `DONNEES_ABSENTES`. */
   readonly choixRestauration?: ChoixRestaurationAffichable;
   readonly bandeau?: ModeleVueBandeau;
+  /**
+   * RG-058 (ST-US-017 v0.11 §6.8 n° 9) : le cycle constate un format plus récent ; la saisie est bloquée. Faux sans
+   * espace ouvert.
+   */
+  readonly consultationSeule: boolean;
+  /** Issue de la dernière action « Mettre à jour » (n° 10), effacée au rafraîchissement suivant. */
+  readonly miseAJour?: IssueMiseAJour;
   readonly confirmation?: ModeleVueConfirmationCompte;
   readonly suppressionBloquee?: { readonly enCours: boolean };
   readonly toast?: ToastInterface;
@@ -128,6 +143,8 @@ type Etat = {
   confirmation?: { readonly vue: ConfirmationCompte; readonly suite: () => Promise<void> };
   suppressionBloquee?: { enCours: boolean };
   toast?: ToastInterface;
+  /** Issue de « Mettre à jour », lue une fois par la prochaine vue calculée. */
+  miseAJour?: IssueMiseAJour;
   /** « Décider plus tard » choisi pendant cette ouverture d'`ERR-012` (remis à faux quand `ERR-012` disparaît). */
   decisionReportee: boolean;
   /** Présent tant qu'`ERR-012` est affiché : restauration connue faite ici avant le choix (base du toast `TST-RESTAUREE`). */
@@ -148,7 +165,11 @@ export class ControleurInterface {
     /** Cas d'usage des objectifs de l'espace ouvert ; undefined sans session (ST-US-001 §3 n° 34). */
     readonly objectifs: () => ObjectifsTaches | undefined = () => undefined,
   ) {
-    this.#vue = { racine: { ecran: 'CONNEXION' }, connexion: this.#connexion() };
+    this.#vue = {
+      racine: { ecran: 'CONNEXION' },
+      connexion: this.#connexion(),
+      consultationSeule: false,
+    };
     application.session.observer(() => void this.rafraichir());
     application.observerSynchronisation(() => void this.rafraichir());
   }
@@ -190,9 +211,9 @@ export class ControleurInterface {
     this.#vue = {
       racine: construireRacine(session),
       connexion: this.#connexion(),
-      ...(session.type === 'OUVERTE'
-        ? { compte: construireSectionCompte({ adresse: session.identite.adresse }) }
-        : {}),
+      consultationSeule: etatSynchro?.actionRequise === 'FORMAT_PLUS_RECENT',
+      ...this.#sectionCompte(session),
+      ...this.#retirerMiseAJour(),
       ...synchronisation,
       ...(confirmation === undefined
         ? {}
@@ -205,6 +226,24 @@ export class ControleurInterface {
     this.#observateurs.forEach((rappel) => {
       rappel();
     });
+  }
+
+  /** Section « Compte » (adresse, ligne « Fuseau » si l'appareil n'est pas à l'heure de Paris, RG-054). */
+  #sectionCompte(session: EtatSession): Pick<VueInterface, 'compte'> {
+    if (session.type !== 'OUVERTE') return {};
+    return {
+      compte: construireSectionCompte({
+        adresse: session.identite.adresse,
+        fuseauAppareil: this.horloge.fuseauAppareil(),
+      }),
+    };
+  }
+
+  /** Issue de « Mettre à jour » : portée par une seule vue, effacée au rafraîchissement suivant (n° 10). */
+  #retirerMiseAJour(): Pick<VueInterface, 'miseAJour'> {
+    const { miseAJour } = this.#etat;
+    delete this.#etat.miseAJour;
+    return miseAJour === undefined ? {} : { miseAJour };
   }
 
   /**
@@ -316,8 +355,33 @@ export class ControleurInterface {
   };
 
   readonly actionCarte = async (action: ActionCarteFeuille): Promise<void> => {
-    if (action === 'OUVRIR_GOOGLE_DRIVE') this.application.ouvrirGoogleDrive();
-    else await this.synchroniser();
+    switch (action) {
+      case 'OUVRIR_GOOGLE_DRIVE':
+        this.application.ouvrirGoogleDrive();
+        return;
+      case 'REESSAYER_MAINTENANT':
+        await this.synchroniser();
+        return;
+      case 'METTRE_A_JOUR':
+        await this.mettreAJour();
+        return;
+      default:
+        assertNever(action);
+    }
+  };
+
+  /** Action du bandeau : reconnexion ou reprise passent par `reprendre`, « Mettre à jour » par `mettreAJour`. */
+  readonly actionBandeau = async (
+    action: NonNullable<ModeleVueBandeau['action']>,
+  ): Promise<void> => {
+    if (action === 'METTRE_A_JOUR') await this.mettreAJour();
+    else await this.reprendre();
+  };
+
+  /** « Mettre à jour » (RG-058, n° 10) : l'issue s'affiche sous le bandeau ou la carte ; jamais de toast. */
+  readonly mettreAJour = async (): Promise<void> => {
+    this.#etat.miseAJour = await this.application.mettreAJour();
+    await this.rafraichir();
   };
 
   /** « Restaurer mes données » : mémorisée, exécutée par le cycle ; un échec d'écriture locale est signalé (ERR-014). */
@@ -375,7 +439,7 @@ export class ControleurInterface {
   }
 
   async #synchronisation(
-    etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
+    etat: EtatLu,
   ): Promise<
     Pick<
       VueInterface,
@@ -384,13 +448,7 @@ export class ControleurInterface {
   > {
     const maintenant = this.horloge.maintenant();
     const bandeau = construireBandeau(etat, maintenant);
-    const dernierEchange = await this.application.lireDernierContact();
-    const feuille = construireFeuilleSynchronisation({
-      etat,
-      maintenant,
-      ...(dernierEchange === undefined ? {} : { dernierEchange }),
-      elementsEnAttente: await this.application.lireElementsEnAttente(),
-    });
+    const feuille = await this.#feuille(etat, maintenant);
     const lu = await this.application.lireModificationsNonRetenues();
     const nonRetenues =
       lu === undefined ? undefined : construireModificationsNonRetenues(lu.valeurs);
@@ -405,9 +463,22 @@ export class ControleurInterface {
     };
   }
 
+  /** Section « Synchronisation » d'ECR-011 : dernier échange, éléments en attente, correction d'horloge (`ALR-001`). */
+  async #feuille(etat: EtatLu, maintenant: Instant): Promise<ModeleVueFeuilleSynchronisation> {
+    const dernierEchange = await this.application.lireDernierContact();
+    const correctionHorloge = await this.application.lireCorrectionHorloge();
+    return construireFeuilleSynchronisation({
+      etat,
+      maintenant,
+      ...(dernierEchange === undefined ? {} : { dernierEchange }),
+      ...(correctionHorloge === undefined ? {} : { correctionHorloge }),
+      elementsEnAttente: await this.application.lireElementsEnAttente(),
+    });
+  }
+
   /** Choix d'`ERR-012` tant que `DONNEES_ABSENTES` ; à sa disparition, `TST-RESTAUREE` si cet appareil a restauré. */
   async #choixRestauration(
-    etat: NonNullable<Awaited<ReturnType<ApplicationInterface['consulterEtat']>>>,
+    etat: EtatLu,
     maintenant: Instant,
   ): Promise<ChoixRestaurationAffichable | undefined> {
     if (etat.actionRequise !== 'DONNEES_ABSENTES') {

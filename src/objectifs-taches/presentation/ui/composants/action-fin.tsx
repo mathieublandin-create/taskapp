@@ -1,5 +1,6 @@
 import { IonNote } from '@ionic/react';
 import { useId, useRef, useState, type RefObject } from 'react';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { messagesDeIssue } from '../etat/issues';
@@ -80,18 +81,22 @@ const Bouton = ({
   readonly genre: GenreBouton;
   readonly idNote: string | undefined;
   readonly surClic: () => void;
-}) => (
-  <button
-    ref={reference}
-    type="button"
-    {...(genre === 'TERMINER' && idNote !== undefined
-      ? { 'aria-disabled': true, 'aria-describedby': idNote }
-      : {})}
-    onClick={surClic}
-  >
-    {LIBELLES_BOUTON[genre]}
-  </button>
-);
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button
+      ref={reference}
+      type="button"
+      {...(genre === 'TERMINER' && idNote !== undefined
+        ? { 'aria-disabled': true, 'aria-describedby': idNote }
+        : {})}
+      {...attributsAction}
+      onClick={garder(surClic)}
+    >
+      {LIBELLES_BOUTON[genre]}
+    </button>
+  );
+};
 
 const NoteFin = ({
   info,

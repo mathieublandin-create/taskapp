@@ -151,7 +151,8 @@ describe('construireFeuilleSynchronisation — section « Synchronisation » (EC
     const sansCarte: ReadonlyArray<Partial<EtatSynchronisationAffichable>> = [
       {},
       { actionRequise: 'DONNEES_ABSENTES' },
-      { actionRequise: 'FORMAT_PLUS_RECENT' },
+      // FORMAT_PLUS_RECENT retiré : la carte ERR-013 (rang 11, ST-US-017 v0.11.0) est portée par UT-US-017-89 ; la
+      // conserver ici rendrait ce test (rang 3) rouge dès que la feuille porte ERR-013. Les autres états restent sans carte.
       { acces: 'PERDU' },
       { acces: 'A_RENOUVELER' },
       { cycle: 'RETENTATIVE' },

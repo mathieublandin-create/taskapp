@@ -1,6 +1,7 @@
 import type { KeyboardEvent, Ref } from 'react';
 import { Duree, PAS_DUREE_MINUTES } from '../../../../commun/domaine/duree';
 import { formaterDuree } from '../../../../commun/presentation/format/duree';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
 // DurationStepper (guide §4.4) : pas de 30 min, minimum 30 min pour une estimation, « — » tant que rien n'est saisi
@@ -50,11 +51,14 @@ const BoutonPas = ({
   readonly nom: string;
   readonly symbole: string;
   readonly surClic: () => void;
-}) => (
-  <button type="button" aria-label={nom} onClick={surClic}>
-    {symbole}
-  </button>
-);
+}) => {
+  const { attributsAction } = useConsultationSeule();
+  return (
+    <button type="button" aria-label={nom} {...attributsAction} onClick={surClic}>
+      {symbole}
+    </button>
+  );
+};
 
 /** Une valeur qui n'est pas une durée valide (RG-028) s'affiche comme « non saisi » plutôt que d'être transtypée. */
 const texteDe = (valeur: number | undefined): string => {
@@ -64,6 +68,18 @@ const texteDe = (valeur: number | undefined): string => {
 
 const valeurEnLettres = (valeur: number | undefined): string =>
   valeur === undefined ? LIBELLES_TACHES.stepper.nonSaisi : enToutesLettres(valeur);
+
+/** Valeur annoncée (`aria-value*`), invalidité et lecture seule (consultation seule, RG-058) du `spinbutton`. */
+const attributsDeValeur = (
+  valeur: number | undefined,
+  invalide: boolean,
+  lectureSeule: boolean,
+) => ({
+  'aria-valuetext': valeurEnLettres(valeur),
+  ...(valeur === undefined ? {} : { 'aria-valuenow': valeur }),
+  ...(invalide ? { 'aria-invalid': true } : {}),
+  ...(lectureSeule ? { 'aria-readonly': true } : {}),
+});
 
 /** Le champ lui-même : rôle `spinbutton`, valeur annoncée en toutes lettres. */
 const ChampDuree = ({
@@ -77,28 +93,30 @@ const ChampDuree = ({
   readonly identifiant: string | undefined;
   readonly invalide: boolean;
   readonly surTouche: (evenement: KeyboardEvent) => void;
-}) => (
-  <div
-    ref={ref}
-    id={identifiant}
-    role="spinbutton"
-    tabIndex={0}
-    aria-label={nom}
-    aria-valuemin={MINIMUM_MINUTES}
-    aria-valuetext={valeurEnLettres(valeur)}
-    {...(valeur === undefined ? {} : { 'aria-valuenow': valeur })}
-    {...(invalide ? { 'aria-invalid': true } : {})}
-    onKeyDown={surTouche}
-  >
-    {texteDe(valeur)}
-  </div>
-);
+}) => {
+  const { actif } = useConsultationSeule();
+  return (
+    <div
+      ref={ref}
+      id={identifiant}
+      role="spinbutton"
+      tabIndex={0}
+      aria-label={nom}
+      aria-valuemin={MINIMUM_MINUTES}
+      {...attributsDeValeur(valeur, invalide, actif)}
+      onKeyDown={surTouche}
+    >
+      {texteDe(valeur)}
+    </div>
+  );
+};
 
 /** Gestes du champ : boutons ± 30 min, flèches et pages au clavier (guide §4.4). */
 const useGestes = (valeur: number | undefined, surChanger: (minutes: number) => void) => {
-  const changer = (pas: number): void => {
+  const { garder } = useConsultationSeule();
+  const changer = garder((pas: number): void => {
     surChanger(suivante(valeur, pas));
-  };
+  });
   const surTouche = (evenement: KeyboardEvent): void => {
     const pas = PAS_PAR_TOUCHE[evenement.key];
     if (pas === undefined) return;

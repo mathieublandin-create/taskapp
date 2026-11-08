@@ -1,3 +1,5 @@
+import type { Horloge } from '../commun/application/ports/horloge';
+import type { ObservateurEchangesGoogle } from '../commun/application/ports/observateur-echanges-google';
 import { echec, succes, type Resultat } from '../commun/domaine/resultat';
 
 // DAT §4.4.5 ; ST-US-022 §6.8. Erreurs traduites ; aucune exception de fetch ne sort de l'infrastructure.
@@ -67,6 +69,14 @@ export type DependancesClientGoogle = {
   /** Jeton courant (coffre) ; jamais journalisé. */
   readonly lireJeton: () => string | undefined;
   readonly fetch: typeof fetch;
+  /**
+   * ST-US-017 v0.11 §6.8 n° 1 (rang 11, tranche H3) : chaque réponse HTTP reçue (réussie ou non) est signalée à
+   * `observateur.surReponse` avec `horloge.monotone()` et `horloge.maintenant()` lus juste avant `fetch`,
+   * `horloge.monotone()` lu à la réception, et l'en-tête `Date` ; rien sans réponse (exception de `fetch`). Les deux
+   * sont fournis ensemble par la composition ; absents : aucune mesure.
+   */
+  readonly horloge?: Horloge;
+  readonly observateur?: ObservateurEchangesGoogle;
 };
 
 const lireCorps = async (
@@ -87,6 +97,30 @@ const corpsDe = (requete: RequeteGoogle): { readonly body?: BodyInit } => {
   return {};
 };
 
+/** En-tête `Date` de la réponse (horloge du serveur), tel que reçu. */
+const dateDe = (reponse: Response): string | undefined => reponse.headers.get('Date') ?? undefined;
+
+/**
+ * ST-US-017 v0.11 §6.8 n° 1 : instants de l'appareil lus juste avant l'envoi ; la fonction rendue signale la
+ * réponse reçue (réception lue à son appel). Sans horloge ou sans observateur : aucune mesure.
+ */
+const debutEchange = (
+  horloge: Horloge | undefined,
+  observateur: ObservateurEchangesGoogle | undefined,
+): ((reponse: Response) => void) => {
+  if (horloge === undefined || observateur === undefined) return () => undefined;
+  const envoiMonotone = horloge.monotone();
+  const envoiMurale = horloge.maintenant();
+  return (reponse) => {
+    observateur.surReponse({
+      envoiMonotone,
+      receptionMonotone: horloge.monotone(),
+      envoiMurale,
+      date: dateDe(reponse),
+    });
+  };
+};
+
 /** ClientGoogle (ST-US-022 §3.2 n° 37) : `Authorization: Bearer`, jamais le jeton dans l'URL (§9.2). */
 export class ClientGoogle {
   constructor(private readonly dependances: DependancesClientGoogle) {}
@@ -94,6 +128,7 @@ export class ClientGoogle {
   async executer(requete: RequeteGoogle): Promise<Resultat<ReponseGoogle, ErreurGoogle>> {
     const jeton = this.dependances.lireJeton();
     if (jeton === undefined) return echec({ type: 'NonAutorise' });
+    const signalerReponse = debutEchange(this.dependances.horloge, this.dependances.observateur);
     let reponse: Response;
     try {
       reponse = await this.dependances.fetch(requete.url, {
@@ -108,12 +143,9 @@ export class ClientGoogle {
     } catch {
       return echec({ type: 'ReseauIndisponible' });
     }
+    signalerReponse(reponse);
     const corps = await lireCorps(reponse, requete.reponse);
     if (!reponse.ok) return echec(traduireReponse(reponse.status, corps));
-    return succes({
-      statut: reponse.status,
-      corps,
-      date: reponse.headers.get('Date') ?? undefined,
-    });
+    return succes({ statut: reponse.status, corps, date: dateDe(reponse) });
   }
 }

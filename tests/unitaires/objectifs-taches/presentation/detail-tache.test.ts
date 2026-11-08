@@ -60,7 +60,11 @@ describe('construireDetailTache (ECR-007)', () => {
 
     const ligne = modele(detail(tache, [sousTache])).sousTaches?.lignes[0];
 
-    expect(ligne?.caseTerminer).toEqual({ nomAccessible: 'Terminer «\u00a0Section A\u00a0»' });
+    expect(ligne?.caseTerminer).toEqual({
+      nomAccessible: 'Terminer «\u00a0Section A\u00a0»',
+      // ST-US-024 v0.7 §6.8 (UT-US-024-25) : une sous-tâche à faire porte l'action TERMINER.
+      action: 'TERMINER',
+    });
     expect(ligne?.nomAccessible).toMatch(/^Section A, à faire, délai /);
   });
 
@@ -80,7 +84,11 @@ describe('construireDetailTache (ECR-007)', () => {
 
     const ligne = modele(detail(tache, [sousTache])).sousTaches?.lignes[0];
 
-    expect(ligne?.caseTerminer).toEqual({ nomAccessible: 'Rouvrir «\u00a0Section A\u00a0»' });
+    expect(ligne?.caseTerminer).toEqual({
+      nomAccessible: 'Rouvrir «\u00a0Section A\u00a0»',
+      // ST-US-024 v0.7 §6.8 : une sous-tâche terminée porte l'action ROUVRIR.
+      action: 'ROUVRIR',
+    });
   });
 
   it('UT-US-024-16 construireDetailTache — pas d’ALR-013 quand aucune sous-tâche n’est à faire (US-024 CA-8)', () => {

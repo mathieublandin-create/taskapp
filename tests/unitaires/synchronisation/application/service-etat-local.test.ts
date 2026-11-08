@@ -64,6 +64,9 @@ class DepotAvecCorrection implements DepotLocal {
   lireSignalements(): ReturnType<DepotLocal['lireSignalements']> {
     return this.interne.lireSignalements();
   }
+  lireInconnus(): ReturnType<DepotLocal['lireInconnus']> {
+    return this.interne.lireInconnus();
+  }
 }
 
 describe('ServiceEtatLocalTransactionnel (ST-socle-ecriture.md §6.8)', () => {

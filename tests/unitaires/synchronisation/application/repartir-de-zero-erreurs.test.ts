@@ -81,6 +81,7 @@ const cycleEnPanne = (
     observer: (rappel) => vrai.observer(rappel),
     lireMeta: () => vrai.lireMeta(),
     lireSignalements: () => vrai.lireSignalements(),
+    lireInconnus: () => vrai.lireInconnus(),
     appliquerSynchronisation: (calcul) =>
       depotEnPanne('appliquerSynchronisation')
         ? Promise.resolve(ECRITURE_IMPOSSIBLE)

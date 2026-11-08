@@ -29,8 +29,15 @@ export type LigneSousTache = {
    * (code `ETA-TACHE-LIGNE`, guide §6.6.4).
    */
   readonly nomAccessible: string;
-  /** Case « Terminer » de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). */
-  readonly caseTerminer: { readonly nomAccessible: string };
+  /**
+   * Case de la ligne : nom accessible ETA-TACHE-CASE (« Rouvrir » si terminée). ST-US-024 v0.7 §4.5 (DT-030, rang 11) :
+   * `action` = `TERMINER` (à faire, case vide), `ROUVRIR` (terminée, case pleine) ; absente pour une sous-tâche
+   * abandonnée (aucune case rendue).
+   */
+  readonly caseTerminer: {
+    readonly nomAccessible: string;
+    readonly action?: 'TERMINER' | 'ROUVRIR';
+  };
   /** Sous-tâches d'une tâche parente abandonnée (ST-US-025 §6.4). */
   readonly etiquette?: {
     readonly code:
@@ -165,6 +172,19 @@ const etiquetteSousTache = (
   return code === undefined ? {} : etiquetteDe(code);
 };
 
+/** Case d'une sous-tâche (ST-US-024 v0.7 §6.8) : à faire → TERMINER, terminée → ROUVRIR, abandonnée → aucune action. */
+const caseDeSousTache = (
+  intitule: string,
+  codeEtat: LigneSousTache['etat']['code'],
+): LigneSousTache['caseTerminer'] => {
+  if (codeEtat === 'ETA-TACHE-A-FAIRE') {
+    return { nomAccessible: nomAccessibleCase(intitule, 'TERMINER'), action: 'TERMINER' };
+  }
+  return codeEtat === 'ETA-TACHE-TERMINEE'
+    ? { nomAccessible: nomAccessibleCase(intitule, 'ROUVRIR'), action: 'ROUVRIR' }
+    : { nomAccessible: nomAccessibleCase(intitule, 'TERMINER') };
+};
+
 const construireLigneSousTache = (
   resume: ResumeTache,
   parente: ResumeTache,
@@ -180,12 +200,7 @@ const construireLigneSousTache = (
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     alertes: ligne.alertes,
     nomAccessible: ligne.nomAccessible,
-    caseTerminer: {
-      nomAccessible: nomAccessibleCase(
-        ligne.intitule,
-        ligne.etat.code === 'ETA-TACHE-TERMINEE' ? 'ROUVRIR' : 'TERMINER',
-      ),
-    },
+    caseTerminer: caseDeSousTache(ligne.intitule, ligne.etat.code),
     ...etiquetteSousTache(resume, parente),
   };
 };

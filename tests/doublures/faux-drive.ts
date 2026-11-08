@@ -1,5 +1,7 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
 import type { EtatReseau } from '@src/commun/application/ports/etat-reseau';
+import type { Horloge } from '@src/commun/application/ports/horloge';
+import type { ObservateurEchangesGoogle } from '@src/commun/application/ports/observateur-echanges-google';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import { echec, succes, type Resultat } from '@src/commun/domaine/resultat';
 import { Instant } from '@src/commun/domaine/temps/instant';
@@ -24,9 +26,27 @@ import {
   encoderFichierAppareil,
   encoderManifeste,
 } from '@src/synchronisation/infrastructure/drive/format-v1';
+import { SCHEMA_VERSION } from '@src/synchronisation/domaine/version-schema';
+import {
+  empreinteSha256,
+  serialiserCanonique,
+} from '@src/synchronisation/infrastructure/drive/serialisation-canonique';
 import type { TempsSimule } from '../support/banc/temps-simule';
 
-type Conditions = { readonly reseau: EtatReseau; readonly accesAccorde: () => boolean };
+/**
+ * Vue d'un appareil. Incrément 4 (ST-US-017 v0.11 §12.7, E10) : `echanges` (facultatif) reçoit un `EchangeGoogle` par
+ * réponse (réussie ou en erreur métier, jamais pour ReseauIndisponible), mesuré sur `echanges.horloge` (aller-retour
+ * nul) avec l'en-tête `Date` = heure du banc tronquée à la seconde (RFC 9110 IMF-fixdate), comme le ferait
+ * `ClientGoogle` (§6.8 n° 1).
+ */
+type Conditions = {
+  readonly reseau: EtatReseau;
+  readonly accesAccorde: () => boolean;
+  readonly echanges?: {
+    readonly horloge: Horloge;
+    readonly observateur: ObservateurEchangesGoogle;
+  };
+};
 
 const TYPE_DOSSIER = 'application/vnd.google-apps.folder';
 const TYPE_GZIP = 'application/gzip';
@@ -102,6 +122,11 @@ export class FauxDrive {
   #version = 0;
   readonly #lectures = new Map<string, number>();
   #avantCreationManifeste: (() => Promise<void>) | undefined;
+  /** Incrément 4 : `schemaVersion` le plus récent que sait lire chaque appareil (défaut SCHEMA_VERSION). */
+  readonly #formatConnu = new Map<IdAppareil, number>();
+  /** Incrément 4 : appareils dont les dépôts sont écrits au format `SCHEMA_VERSION + 1` (version plus récente). */
+  readonly #formatPlusRecent = new Set<IdAppareil>();
+  #suppressionsEnEchec = 0;
 
   constructor(private readonly temps: TempsSimule) {}
 
@@ -153,6 +178,57 @@ export class FauxDrive {
 
   avantReponseDuProchainDepot(rappel: () => Promise<void>): void {
     this.#apresProchainDepot = { type: 'RAPPEL', rappel };
+  }
+
+  /**
+   * Incrément 4 (US-017 S30, S30b ; US-022 S24, S25 ; ST-US-017 v0.11 §12.7) : `appareil` passe à une version de
+   * l'application dont le format est `SCHEMA_VERSION + 1` (contenu identique au schéma courant, seule la version
+   * change) : son fichier actuel est réécrit à ce format (scellé, nouvelle version Drive, changement noté), ses dépôts
+   * suivants aussi, et il sait lire ce format.
+   */
+  async passerAuFormatPlusRecent(appareil: IdAppareil): Promise<void> {
+    this.#formatConnu.set(appareil, SCHEMA_VERSION + 1);
+    this.#formatPlusRecent.add(appareil);
+    const fichier = this.fichierDe(appareil);
+    if (fichier === undefined) throw new Error(`Aucun fichier de ${appareil} dans le Drive simulé`);
+    this.#remplacer(fichier, await changerVersion(fichier.octets, SCHEMA_VERSION + 1));
+  }
+
+  /**
+   * Incrément 4 (RG-058, ANT-19 ; UT-US-017-87, US-017 S31) : le fichier de `appareil` est réécrit par une version plus
+   * récente de même `schemaVersion` : `modifier` change son JSON (ajout d'éléments inconnus), puis il est scellé de
+   * nouveau (empreinte recalculée) ; nouvelle version Drive, changement noté.
+   */
+  async reecrireParVersionRecente(
+    appareil: IdAppareil,
+    modifier: (objet: Record<string, unknown>) => void,
+  ): Promise<void> {
+    const fichier = this.fichierDe(appareil);
+    if (fichier === undefined) throw new Error(`Aucun fichier de ${appareil} dans le Drive simulé`);
+    const objet = JSON.parse(Buffer.from(gunzipSync(fichier.octets)).toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    modifier(objet);
+    const version =
+      typeof objet['schemaVersion'] === 'number' ? objet['schemaVersion'] : SCHEMA_VERSION;
+    this.#remplacer(
+      fichier,
+      await changerVersion(
+        new Uint8Array(gzipSync(Buffer.from(JSON.stringify(objet), 'utf8'))),
+        version,
+      ),
+    );
+  }
+
+  /** Incrément 4 (US-017 S30b) : `appareil` est mis à jour et sait lire le format `version` (dépôts inchangés). */
+  connaitreFormat(appareil: IdAppareil, version: number): void {
+    this.#formatConnu.set(appareil, version);
+  }
+
+  /** DT-036 (ST-US-017 v0.11 §13.6) : les `n` prochains `supprimerFichier` rendent ServeurIndisponible, sans rien supprimer. */
+  echouerProchainesSuppressions(n: number): void {
+    this.#suppressionsEnEchec = n;
   }
 
   /** Change une valeur du JSON du fichier, en gardant un gzip valide et l'ancienne empreinte (V-02, incrément 3). */
@@ -358,9 +434,19 @@ export class FauxDrive {
   ): Promise<Resultat<T, ErreurTransport>> {
     const refus = this.#refus(conditions);
     if (refus?.type === 'ReseauIndisponible') return echec(refus);
+    const envoi =
+      conditions.echanges === undefined ? undefined : repere(conditions.echanges.horloge);
     this.#reponses.set(appareil, this.nombreReponses(appareil) + 1);
-    if (refus !== undefined) return echec(refus);
-    return operation();
+    const resultat = refus === undefined ? await operation() : echec(refus);
+    if (conditions.echanges !== undefined && envoi !== undefined) {
+      conditions.echanges.observateur.surReponse({
+        envoiMonotone: envoi.monotone,
+        receptionMonotone: conditions.echanges.horloge.monotone(),
+        envoiMurale: envoi.murale,
+        date: dateHttp(this.temps.maintenant()),
+      });
+    }
+    return resultat;
   }
 
   #refus(conditions: Conditions): ErreurTransport | undefined {
@@ -422,7 +508,19 @@ export class FauxDrive {
     const fichier = this.#trouver(id);
     if (fichier === undefined) return echec({ type: 'RessourceIntrouvable' });
     this.#compterLecture(appareil, id);
-    return decoderFichierAppareil(fichier.octets);
+    return decoderFichierAppareil(await this.#versFormatLu(appareil, fichier.octets));
+  }
+
+  /**
+   * Un appareil qui connaît un format plus récent que SCHEMA_VERSION lit un fichier de ce format comme un fichier du
+   * format courant (le banc ne simule qu'un changement de version, sans changement de contenu).
+   */
+  async #versFormatLu(appareil: IdAppareil, octets: Uint8Array): Promise<Uint8Array> {
+    const connu = this.#formatConnu.get(appareil) ?? SCHEMA_VERSION;
+    const version = versionDe(octets);
+    return version !== undefined && version > SCHEMA_VERSION && version <= connu
+      ? changerVersion(octets, SCHEMA_VERSION)
+      : octets;
   }
 
   async #lireContenuManifeste(
@@ -451,6 +549,10 @@ export class FauxDrive {
 
   /** Corbeille (un dossier entraîne son contenu) ; déjà absent : succès. Compté dans `ecrituresPar`. */
   #supprimer(appareil: IdAppareil, id: IdFichierDrive): Resultat<undefined, ErreurTransport> {
+    if (this.#suppressionsEnEchec > 0) {
+      this.#suppressionsEnEchec -= 1;
+      return echec({ type: 'ServeurIndisponible' });
+    }
     const fichier = this.#trouver(id);
     if (fichier === undefined) return succes(undefined);
     this.#compterEcriture(appareil);
@@ -483,7 +585,10 @@ export class FauxDrive {
     { dossier, contenu, fichierExistant }: Depot,
   ): Promise<Resultat<FichierDepose, ErreurTransport>> {
     if (this.#plein) return echec({ type: 'EspaceDrivePlein' });
-    const octets = await encoderFichierAppareil(contenu);
+    const encode = await encoderFichierAppareil(contenu);
+    const octets = this.#formatPlusRecent.has(appareil)
+      ? await changerVersion(encode, SCHEMA_VERSION + 1)
+      : encode;
     const existant =
       fichierExistant === undefined
         ? this.#fichiersAppareils(dossier).find(
@@ -666,3 +771,42 @@ const element = (f: FichierFaux): ElementDrive => ({
 /** Ordre canonique (DAT §4.2.2 d) : créé le plus tôt, puis identifiant. */
 const canonique = (a: FichierFaux, b: FichierFaux): number =>
   a.creeA - b.creeA || Number(a.id > b.id) - Number(a.id < b.id);
+
+/** Repère d'envoi d'un échange (heure de l'appareil, horloge monotone). */
+const repere = (horloge: Horloge) => ({
+  murale: horloge.maintenant(),
+  monotone: horloge.monotone(),
+});
+
+/** En-tête `Date` (IMF-fixdate, à la seconde) de l'instant du banc ; test : `Date` autorisé hors de `src/`. */
+const dateHttp = (maintenant: number): string =>
+  new Date(Math.floor(maintenant / 1000) * 1000).toUTCString();
+
+/** `schemaVersion` d'un fichier d'appareil gzip ; undefined s'il est illisible. */
+const versionDe = (octets: Uint8Array): number | undefined => {
+  try {
+    const objet = JSON.parse(Buffer.from(gunzipSync(octets)).toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    const version = objet['schemaVersion'];
+    return typeof version === 'number' ? version : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+/** Même fichier au `schemaVersion` donné, scellé de nouveau (empreinte recalculée), gzip. */
+export const changerVersion = async (octets: Uint8Array, version: number): Promise<Uint8Array> => {
+  const objet = JSON.parse(Buffer.from(gunzipSync(octets)).toString('utf8')) as Record<
+    string,
+    unknown
+  >;
+  const { empreinte: _ancienne, ...reste } = objet;
+  const sansEmpreinte = { ...reste, schemaVersion: version };
+  const scelle = {
+    ...sansEmpreinte,
+    empreinte: await empreinteSha256(serialiserCanonique(sansEmpreinte)),
+  };
+  return new Uint8Array(gzipSync(Buffer.from(serialiserCanonique(scelle), 'utf8')));
+};

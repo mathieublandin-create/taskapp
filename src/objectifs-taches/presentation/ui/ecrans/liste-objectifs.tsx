@@ -1,6 +1,7 @@
 import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import type { IdObjectif } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { BoutonFlottant } from '../../../../commun/presentation/ui/bouton-flottant';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
@@ -28,8 +29,9 @@ const estRaccourciCreation = (evenement: globalThis.KeyboardEvent): boolean =>
   !estSaisieDeTexte(evenement.target);
 
 /** Maj + N crée un objectif, sauf pendant une saisie de texte. */
-const useRaccourciCreation = (surCreer: () => void): void => {
+const useRaccourciCreation = (surCreer: (() => void) | undefined): void => {
   useEffect(() => {
+    if (surCreer === undefined) return undefined;
     const surTouche = (evenement: globalThis.KeyboardEvent): void => {
       if (!estRaccourciCreation(evenement)) return;
       evenement.preventDefault();
@@ -87,26 +89,40 @@ const SectionAtteints = ({
   );
 };
 
+const EnTeteListe = () => (
+  <IonHeader>
+    <IonToolbar>
+      <IonTitle>{LIBELLES_OBJECTIFS.titreListe}</IonTitle>
+    </IonToolbar>
+  </IonHeader>
+);
+
 export const ListeObjectifs = ({ modele, surCreer, surOuvrir }: ProprietesListeObjectifs) => {
-  useRaccourciCreation(surCreer);
+  // En consultation seule (RG-058), ni « + », ni état vide actionnable, ni raccourci : la création disparaît.
+  const { actif } = useConsultationSeule();
+  const creation = actif ? undefined : surCreer;
+  useRaccourciCreation(creation);
   const { etatVide, sectionAtteints, mentionHeureParis } = modele;
   return (
     <>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>{LIBELLES_OBJECTIFS.titreListe}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <EnTeteListe />
       <IonContent>
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
-        {etatVide === undefined ? null : <EtatVide code={etatVide.code} surAction={surCreer} />}
+        {etatVide === undefined ? null : (
+          <EtatVide
+            code={etatVide.code}
+            {...(creation === undefined ? {} : { surAction: creation })}
+          />
+        )}
         {modele.lignes.length === 0 ? null : (
           <Lignes lignes={modele.lignes} surOuvrir={surOuvrir} />
         )}
         {sectionAtteints === undefined ? null : (
           <SectionAtteints section={sectionAtteints} surOuvrir={surOuvrir} />
         )}
-        <BoutonFlottant libelle={LIBELLES_OBJECTIFS.creerObjectif} surClic={surCreer} />
+        {creation === undefined ? null : (
+          <BoutonFlottant libelle={LIBELLES_OBJECTIFS.creerObjectif} surClic={creation} />
+        )}
       </IonContent>
     </>
   );

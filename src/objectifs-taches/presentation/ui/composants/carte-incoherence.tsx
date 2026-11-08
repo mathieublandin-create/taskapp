@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type RefObject } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { messagesDeIssue } from '../etat/issues';
@@ -53,16 +54,20 @@ const BoutonTertiaire = ({
   readonly libelleBouton: string;
   readonly intitule: string;
   readonly surClic: () => void;
-}) => (
-  <button
-    type="button"
-    data-action={action}
-    aria-label={nomAccessible(libelleBouton, intitule)}
-    onClick={surClic}
-  >
-    {libelleBouton}
-  </button>
-);
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button
+      type="button"
+      data-action={action}
+      aria-label={nomAccessible(libelleBouton, intitule)}
+      {...attributsAction}
+      onClick={garder(surClic)}
+    >
+      {libelleBouton}
+    </button>
+  );
+};
 
 const BoutonsTertiaires = ({
   sousTache,
@@ -103,11 +108,20 @@ const BoutonPrincipal = ({
   readonly reference: RefObject<HTMLButtonElement | null>;
   readonly action: Incoherence['actionPrincipale'];
   readonly surClic: () => void;
-}) => (
-  <button ref={reference} type="button" data-action={action.action} onClick={surClic}>
-    {action.libelle}
-  </button>
-);
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button
+      ref={reference}
+      type="button"
+      data-action={action.action}
+      {...attributsAction}
+      onClick={garder(surClic)}
+    >
+      {action.libelle}
+    </button>
+  );
+};
 
 const EnTeteCarte = ({
   incoherence,
