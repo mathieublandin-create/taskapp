@@ -641,6 +641,42 @@ export const decrireContratDepotLocal = (nom: string, fabriquer: FabriqueDepots)
         evenements: [],
       });
     });
+
+    it('CT-DEPOT-19 lireInconnus — registres et entrées écrits dans le désordre, en deux transactions, relus par une autre instance triés par cleInconnue et par id en unités de code (« B » avant « a ») (ST-US-017 v0.11 §4.8, §6.8 n° 12 ; RC-US-017-20)', async () => {
+      const { premier, second } = fabriquer();
+      const registreInconnu = (champ: string) => ({
+        type: 'OBJECTIF',
+        id: O,
+        champ,
+        valeur: champ,
+        hlc: h,
+      });
+      const evenementInconnu = (id: string) => ({ id, hlc: h, brut: { type: 'ETIQUETAGE', id } });
+      const ecrire = (inconnus: Inconnus) =>
+        premier.appliquerSynchronisation((etat) => ({ plan: planVide(etat), meta: {}, inconnus }));
+
+      valeurDe(
+        await ecrire({
+          registres: [registreInconnu('b')],
+          evenements: [evenementInconnu('evt-b')],
+        }),
+      );
+      valeurDe(
+        await ecrire({
+          registres: [registreInconnu('a'), registreInconnu('B')],
+          evenements: [evenementInconnu('evt-a'), evenementInconnu('evt-B')],
+        }),
+      );
+
+      expect(valeurDe(await second().lireInconnus())).toEqual({
+        registres: [registreInconnu('B'), registreInconnu('a'), registreInconnu('b')],
+        evenements: [
+          evenementInconnu('evt-B'),
+          evenementInconnu('evt-a'),
+          evenementInconnu('evt-b'),
+        ],
+      });
+    });
   });
 };
 
