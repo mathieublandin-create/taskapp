@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { BoiteConfirmation } from '../../../../commun/presentation/ui/boite-confirmation';
+import { useToastDeRefus } from '../../../../commun/presentation/ui/consultation-seule';
 import { Toast } from '../../../../commun/presentation/ui/toast';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import type { ModeleVueConfirmation } from '../../modeles-de-vue/confirmation';
@@ -240,6 +241,19 @@ const useFeuillesSaisie = () => {
   };
 };
 
+/** TST-TERMINEE, ERR-014 (échec d'enregistrement) et `TST-CONSULTATION-SEULE` (commande refusée, RG-058). */
+const ToastsDeLEspace = ({ etat }: { readonly etat: EtatMagasinTaches }) => {
+  useToastDeRefus(etat.refusConsultationSeule);
+  return (
+    <>
+      {etat.finAnnulable === undefined ? null : (
+        <ToastFin key={etat.finAnnulable} id={etat.finAnnulable} actions={etat.actions} />
+      )}
+      {etat.erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null}
+    </>
+  );
+};
+
 export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
   const etat = useStore(magasin);
   const { actions, confirmation } = etat;
@@ -264,10 +278,7 @@ export const EspaceTaches = ({ magasin }: ProprietesEspaceTaches) => {
       {confirmation === undefined ? null : (
         <ConfirmationSuppression confirmation={confirmation} actions={actions} />
       )}
-      {etat.finAnnulable === undefined ? null : (
-        <ToastFin key={etat.finAnnulable} id={etat.finAnnulable} actions={actions} />
-      )}
-      {etat.erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null}
+      <ToastsDeLEspace etat={etat} />
     </>
   );
 };

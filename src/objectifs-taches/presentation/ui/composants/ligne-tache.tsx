@@ -1,4 +1,5 @@
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { LigneTache } from '../../modeles-de-vue/ligne-tache';
 
 // TaskRow (guide §4.2) : intitulé, métadonnées (délai, estimation, objectifs, sous-tâches) et mentions « en retard » et
@@ -92,18 +93,21 @@ const CaseTerminerLigne = ({
   readonly ligne: LigneTache;
   readonly retenue: boolean;
   readonly surTerminer: ProprietesLigneTache['surTerminer'];
-}) =>
-  ligne.caseTerminer === undefined || surTerminer === undefined ? null : (
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return ligne.caseTerminer === undefined || surTerminer === undefined ? null : (
     <input
       type="checkbox"
       aria-label={ligne.caseTerminer.nomAccessible}
       checked={retenue}
       disabled={retenue}
-      onChange={() => {
+      {...attributsAction}
+      onChange={garder(() => {
         surTerminer(ligne.id);
-      }}
+      })}
     />
   );
+};
 
 /** Case ronde pleine « Rouvrir » d'une tâche terminée (ETA-TACHE-CASE, variante `rouvrir`). */
 const CaseRouvrirLigne = ({
@@ -112,17 +116,20 @@ const CaseRouvrirLigne = ({
 }: {
   readonly ligne: LigneTache;
   readonly surRouvrir: ProprietesLigneTache['surRouvrir'];
-}) =>
-  ligne.caseRouvrir === undefined || surRouvrir === undefined ? null : (
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return ligne.caseRouvrir === undefined || surRouvrir === undefined ? null : (
     <input
       type="checkbox"
       aria-label={ligne.caseRouvrir.nomAccessible}
       checked
-      onChange={() => {
+      {...attributsAction}
+      onChange={garder(() => {
         surRouvrir(ligne.id);
-      }}
+      })}
     />
   );
+};
 
 /** Tâche abandonnée (guide §4.2) : cercle barré décoratif, l'état est dit par le nom accessible de la ligne. */
 const IconeAbandonnee = () => (

@@ -1,5 +1,6 @@
 import { IonButton, IonButtons, IonChip, IonContent, IonHeader, IonToolbar } from '@ionic/react';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { EtatVide } from '../../../../commun/presentation/ui/etat-vide';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import type { ModeleVueDetailObjectif } from '../../modeles-de-vue/detail-objectif';
@@ -33,20 +34,50 @@ const libelleNiveau = (niveau: ModeleVueDetailObjectif['niveau']): string =>
 
 type ProprietesBarre = Pick<ProprietesDetailObjectif, 'surRetour' | 'surOuvrirMenu'>;
 
-const BarreDetail = ({ surRetour, surOuvrirMenu }: ProprietesBarre) => (
-  <IonHeader>
-    <IonToolbar>
-      <IonButtons slot="start">
-        <IonButton onClick={surRetour}>{LIBELLES_OBJECTIFS.retourListe}</IonButton>
-      </IonButtons>
-      <IonButtons slot="end">
-        <IonButton aria-label={LIBELLES_OBJECTIFS.ouvrirMenu} onClick={surOuvrirMenu}>
-          …
-        </IonButton>
-      </IonButtons>
-    </IonToolbar>
-  </IonHeader>
-);
+const BarreDetail = ({ surRetour, surOuvrirMenu }: ProprietesBarre) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <IonHeader>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonButton onClick={surRetour}>{LIBELLES_OBJECTIFS.retourListe}</IonButton>
+        </IonButtons>
+        <IonButtons slot="end">
+          <IonButton
+            aria-label={LIBELLES_OBJECTIFS.ouvrirMenu}
+            {...attributsAction}
+            onClick={garder(surOuvrirMenu)}
+          >
+            …
+          </IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+  );
+};
+
+const STYLES_BOUTON_ACTION = {
+  discret: { fill: 'clear', size: 'small' },
+  carte: { fill: 'outline' },
+} as const;
+
+/** Bouton d'action de l'écran : inerte en consultation seule (`aria-disabled`, toast à l'activation). */
+const BoutonAction = ({
+  libelle,
+  style,
+  surClic,
+}: {
+  readonly libelle: string;
+  readonly style: keyof typeof STYLES_BOUTON_ACTION;
+  readonly surClic: () => void;
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <IonButton {...STYLES_BOUTON_ACTION[style]} {...attributsAction} onClick={garder(surClic)}>
+      {libelle}
+    </IonButton>
+  );
+};
 
 const MetaDetail = ({ modele }: { readonly modele: ModeleVueDetailObjectif }) => (
   <p className="detail-objectif-meta">
@@ -56,6 +87,14 @@ const MetaDetail = ({ modele }: { readonly modele: ModeleVueDetailObjectif }) =>
       <strong data-code={modele.enRetard.code}>{modele.enRetard.libelle}</strong>
     )}
   </p>
+);
+
+const AjouterSousObjectif = ({ surClic }: { readonly surClic: () => void }) => (
+  <BoutonAction
+    style="discret"
+    libelle={LIBELLES_OBJECTIFS.ajouterSousObjectif}
+    surClic={surClic}
+  />
 );
 
 const SousObjectifs = ({
@@ -69,11 +108,7 @@ const SousObjectifs = ({
 }) => (
   <section data-code={section.code}>
     <h2>{section.libelle}</h2>
-    {surAjouter === undefined ? null : (
-      <IonButton fill="clear" size="small" onClick={surAjouter}>
-        {LIBELLES_OBJECTIFS.ajouterSousObjectif}
-      </IonButton>
-    )}
+    {surAjouter === undefined ? null : <AjouterSousObjectif surClic={surAjouter} />}
     <ul className="liste-objectifs">
       {section.lignes.map((ligne) => (
         <LigneObjectifUi
@@ -140,9 +175,11 @@ const TachesDuDetail = ({
 }: { readonly modele: ModeleVueDetailObjectif } & ProprietesTaches) => (
   <>
     {surAjouterTache === undefined ? null : (
-      <IonButton fill="clear" size="small" onClick={surAjouterTache}>
-        {LIBELLES_TACHES.ajouterTache}
-      </IonButton>
+      <BoutonAction
+        style="discret"
+        libelle={LIBELLES_TACHES.ajouterTache}
+        surClic={surAjouterTache}
+      />
     )}
     <SectionsTaches taches={modele.taches} surOuvrir={surOuvrirTache ?? (() => undefined)} />
     {modele.etatVide === undefined ? null : (
@@ -166,9 +203,7 @@ const CarteAlerteDelai = ({
     <section role="status" className="carte-alerte" data-code={alerte.code} data-variante="detail">
       <h2>{alerte.carte.titre}</h2>
       <p>{alerte.carte.texte}</p>
-      <IonButton fill="outline" onClick={surChangerDelai}>
-        {alerte.carte.action}
-      </IonButton>
+      <BoutonAction style="carte" libelle={alerte.carte.action} surClic={surChangerDelai} />
     </section>
   );
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { LIBELLES_TACHES } from '../libelles-ui';
 
 // FieldRow et LockedField (guide §4.5, ECR-007) : un champ du détail avec sa valeur et, s'il est modifiable, un bouton
@@ -18,18 +19,26 @@ export const ChampDetail = ({
   editeur,
   enEdition = false,
   surEditer,
-}: ProprietesChampDetail) => (
-  <div className="champ-detail" role="group" aria-label={nom}>
-    <span className="champ-detail-nom">{nom}</span>
-    <span className="champ-detail-valeur">{valeur}</span>
-    {surEditer === undefined || enEdition ? null : (
-      <button type="button" aria-label={`${LIBELLES_TACHES.modifier} ${nom}`} onClick={surEditer}>
-        {LIBELLES_TACHES.modifier}
-      </button>
-    )}
-    {enEdition ? editeur : null}
-  </div>
-);
+}: ProprietesChampDetail) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <div className="champ-detail" role="group" aria-label={nom}>
+      <span className="champ-detail-nom">{nom}</span>
+      <span className="champ-detail-valeur">{valeur}</span>
+      {surEditer === undefined || enEdition ? null : (
+        <button
+          type="button"
+          aria-label={`${LIBELLES_TACHES.modifier} ${nom}`}
+          {...attributsAction}
+          onClick={garder(surEditer)}
+        >
+          {LIBELLES_TACHES.modifier}
+        </button>
+      )}
+      {enEdition ? editeur : null}
+    </div>
+  );
+};
 
 export type ProprietesChampVerrouille = {
   readonly nom: string;

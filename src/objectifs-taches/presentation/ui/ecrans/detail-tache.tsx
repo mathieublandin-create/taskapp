@@ -12,6 +12,7 @@ import { useRef, useState, type RefObject } from 'react';
 import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiants';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { libelle } from '../../../../commun/presentation/messages/libelle';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import { NoteHeureParis } from '../../../../commun/presentation/ui/mention-heure-paris';
 import { LIBELLE_ANNULER } from '../../../../commun/presentation/ui/boite-confirmation';
 import type { ActionTache } from '../../../domaine/types-actions';
@@ -98,11 +99,40 @@ const Menu = ({
   />
 );
 
-const BoutonEnregistrer = ({ surClic }: { readonly surClic: () => void }) => (
-  <button type="button" onClick={surClic}>
-    {LIBELLES_TACHES.enregistrer}
-  </button>
-);
+const BoutonEnregistrer = ({ surClic }: { readonly surClic: () => void }) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button type="button" {...attributsAction} onClick={garder(surClic)}>
+      {LIBELLES_TACHES.enregistrer}
+    </button>
+  );
+};
+
+/** Champ de saisie d'un éditeur : en lecture seule en consultation seule, la tentative de saisie affiche le toast. */
+const ChampSaisie = ({
+  nom,
+  valeur,
+  type,
+  surChanger,
+}: {
+  readonly nom: string;
+  readonly valeur: string;
+  readonly type?: 'date';
+  readonly surChanger: (valeur: string) => void;
+}) => {
+  const { attributsChamp } = useConsultationSeule();
+  return (
+    <input
+      {...(type === undefined ? {} : { type })}
+      aria-label={nom}
+      {...attributsChamp}
+      value={valeur}
+      onChange={(e) => {
+        surChanger(e.target.value);
+      }}
+    />
+  );
+};
 
 const EditeurDelai = ({
   valeur,
@@ -117,13 +147,11 @@ const EditeurDelai = ({
   const delai = DateCalendaire.depuisTexte(texte);
   return (
     <>
-      <input
+      <ChampSaisie
         type="date"
-        aria-label={LIBELLES_TACHES.champDelai}
-        value={texte}
-        onChange={(e) => {
-          setTexte(e.target.value);
-        }}
+        nom={LIBELLES_TACHES.champDelai}
+        valeur={texte}
+        surChanger={setTexte}
       />
       <BoutonEnregistrer
         surClic={() => {
@@ -147,13 +175,7 @@ const EditeurIntitule = ({
   const [texte, setTexte] = useState(valeur);
   return (
     <>
-      <input
-        aria-label={LIBELLES_TACHES.renommage}
-        value={texte}
-        onChange={(e) => {
-          setTexte(e.target.value);
-        }}
-      />
+      <ChampSaisie nom={LIBELLES_TACHES.renommage} valeur={texte} surChanger={setTexte} />
       <BoutonEnregistrer
         surClic={() => {
           surValider(texte);
@@ -199,20 +221,28 @@ const Barre = ({
   readonly surRetour: () => void;
   readonly surMenu: () => void;
   readonly refMenu: RefObject<HTMLIonButtonElement | null>;
-}) => (
-  <IonHeader>
-    <IonToolbar>
-      <IonButtons slot="start">
-        <IonButton onClick={surRetour}>{LIBELLES_TACHES.retourListe}</IonButton>
-      </IonButtons>
-      <IonButtons slot="end">
-        <IonButton ref={refMenu} aria-label={LIBELLES_TACHES.menuActions} onClick={surMenu}>
-          …
-        </IonButton>
-      </IonButtons>
-    </IonToolbar>
-  </IonHeader>
-);
+}) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <IonHeader>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonButton onClick={surRetour}>{LIBELLES_TACHES.retourListe}</IonButton>
+        </IonButtons>
+        <IonButtons slot="end">
+          <IonButton
+            ref={refMenu}
+            aria-label={LIBELLES_TACHES.menuActions}
+            {...attributsAction}
+            onClick={garder(surMenu)}
+          >
+            …
+          </IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+  );
+};
 
 /** Éditeur ouvert et refus de sa dernière commande. */
 type EtatEditeur = {
@@ -419,6 +449,15 @@ const useReouvertureSousTache = (
   return { commande, refus, rouvrir };
 };
 
+const AjouterSousTache = ({ surClic }: { readonly surClic: () => void }) => {
+  const { garder, attributsAction } = useConsultationSeule();
+  return (
+    <button type="button" {...attributsAction} onClick={garder(surClic)}>
+      {LIBELLES_TACHES.ajouterSousTache}
+    </button>
+  );
+};
+
 const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => {
   const reouverture = useReouvertureSousTache(proprietes.surRouvrirSousTache);
   return (
@@ -434,9 +473,7 @@ const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =>
       <MessagesRefus messages={reouverture.refus} />
       <ConfirmationCommande commande={reouverture.commande} />
       {modele.actions.includes('CREER_SOUS_TACHE') ? (
-        <button type="button" onClick={proprietes.surAjouterSousTache}>
-          {LIBELLES_TACHES.ajouterSousTache}
-        </button>
+        <AjouterSousTache surClic={proprietes.surAjouterSousTache} />
       ) : null}
       {carteRendue(modele, proprietes) ? null : (
         <ActionFin
