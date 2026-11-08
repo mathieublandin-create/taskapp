@@ -34,7 +34,11 @@ import {
   type Inconnus,
 } from '../domaine/inconnus';
 import { fusionnerManifestes } from '../domaine/manifeste';
-import type { IdFichierDrive, MetaSynchronisation } from '../domaine/meta-synchronisation';
+import type {
+  ElementACorbeille,
+  IdFichierDrive,
+  MetaSynchronisation,
+} from '../domaine/meta-synchronisation';
 import {
   PERIODE_SYNCHRONISATION_PREMIER_PLAN,
   SEUIL_HORLOGE_DEREGLEE,
@@ -235,6 +239,18 @@ const hlcMaxRecu = (recu: ContenuFichierAppareil): Hlc | undefined => {
   const inconnus = recu.inconnus === undefined ? undefined : hlcMaxInconnus(recu.inconnus);
   if (contenu === undefined || inconnus === undefined) return contenu ?? inconnus;
   return maxHlc(contenu, inconnus);
+};
+
+/** Clé d'une entrée de `aMettreALaCorbeille` : même `type` et même `id` (v0.11 §6.8 n° 18). */
+const cleCorbeille = (e: ElementACorbeille): string => `${e.type}:${e.id}`;
+
+/** Inscription (n° 18) : à la suite, dans l'ordre, sans doublon de même `type` et `id`. */
+const inscrire = (
+  liste: ReadonlyArray<ElementACorbeille>,
+  elements: ReadonlyArray<ElementACorbeille>,
+): ReadonlyArray<ElementACorbeille> => {
+  const cles = new Set(liste.map(cleCorbeille));
+  return [...liste, ...elements.filter((e) => !cles.has(cleCorbeille(e)))];
 };
 
 /** Version d'un dépôt confirmé à mémoriser (n° 5 : seulement si elle est définie). */
@@ -738,7 +754,8 @@ export class CycleSynchronisation implements SuiviCycle {
       fusion.valeur ? undefined : vue.lu,
     );
     if (!depose.ok) return depose;
-    return this.#demenagerPuisNettoyer(vue, dossier.valeur);
+    const fin = await this.#demenagerPuisNettoyer(vue, dossier.valeur);
+    return fin.ok ? this.#reprendreCorbeille(vue) : fin;
   }
 
   /** Méta relevée après les fusions (n° 5, n° 12) : observation, restauration connue (C1), demande, version relue. */
@@ -803,7 +820,9 @@ export class CycleSynchronisation implements SuiviCycle {
       h.valeur === undefined
         ? await this.#restaurationVue(vue, d)
         : await this.#restaurationChoisie(vue.lu.meta, dossier.valeur, h.valeur);
-    return memorise.ok ? this.#supprimerOrphelins(vue) : memorise;
+    if (!memorise.ok) return memorise;
+    const fin = await this.#supprimerOrphelins(vue);
+    return fin.ok ? this.#reprendreCorbeille(vue) : fin;
   }
 
   /** Faite ailleurs (n° 8) : le manifeste n'est pas réécrit ; canonique et restauration connue mémorisés (C1). */
@@ -952,11 +971,11 @@ export class CycleSynchronisation implements SuiviCycle {
       ...(fichierExistant === undefined ? {} : { fichierExistant }),
     });
     if (!depose.ok) return depose;
-    const manifeste = await ecrireManifesteMonotone(transport, {
+    const manifeste = await this.#ecrireManifesteMonotone(
       dossier,
-      apport: { schemaVersion: SCHEMA_VERSION, generation: g },
-      mode: 'CHOIX',
-    });
+      { schemaVersion: SCHEMA_VERSION, generation: g },
+      'CHOIX',
+    );
     return manifeste.ok
       ? succes({ depose: depose.valeur, manifeste: manifeste.valeur })
       : manifeste;
@@ -1120,12 +1139,26 @@ export class CycleSynchronisation implements SuiviCycle {
     apport: ContenuManifeste,
     mode: ModeEcritureManifeste,
   ): Etape<IdFichierDrive> {
+    const ecrit = await this.#ecrireManifesteMonotone(dossier, apport, mode);
+    return ecrit.ok ? succes(ecrit.valeur.id) : ecrit;
+  }
+
+  /** Écriture monotone (n° 13) ; un doublon créé et non supprimé est inscrit (v0.11 §6.8 n° 19). */
+  async #ecrireManifesteMonotone(
+    dossier: IdFichierDrive,
+    apport: ContenuManifeste,
+    mode: ModeEcritureManifeste,
+  ): Etape<ManifesteEcrit> {
     const ecrit = await ecrireManifesteMonotone(this.dependances.transport, {
       dossier,
       apport,
       mode,
     });
-    return ecrit.ok ? succes(ecrit.valeur.id) : ecrit;
+    if (ecrit.ok && ecrit.valeur.doublonNonSupprime !== undefined) {
+      this.#avertir('MiseALaCorbeilleDifferee', ecrit.valeur.erreurDoublon ?? 'inconnue');
+      await this.#inscrireCorbeille([{ type: 'FICHIER', id: ecrit.valeur.doublonNonSupprime }]);
+    }
+    return ecrit;
   }
 
   /**
@@ -1152,20 +1185,37 @@ export class CycleSynchronisation implements SuiviCycle {
       inventaireAFaire: true,
     });
     if (!memorise.ok) return memorise;
-    const ancienPropre = lu.valeur.meta.fichierPropre;
-    if (ancienPropre !== undefined) await this.#mettreALaCorbeille(ancienPropre);
-    await this.#quitterDossier(ancien);
+    await this.#quitter(lu.valeur.meta.fichierPropre, ancien);
     return succes(undefined);
   }
 
-  /** Nouvel inventaire du dossier quitté (n° 14) : vide de tout fichier d'appareil, il est mis à la corbeille. */
-  async #quitterDossier(ancien: IdFichierDrive): Promise<void> {
-    const inventaire = await this.dependances.transport.inventorierDossier(ancien);
-    if (!inventaire.ok) {
-      this.#consigner('DossierQuitteConserve', inventaire.erreur.type);
-    } else if (inventaire.valeur.fichiers.length === 0) {
-      await this.#mettreALaCorbeille(ancien);
+  /**
+   * Fin du déménagement (n° 14 ; v0.11 §6.8 n° 20) : ancien fichier propre mis à la corbeille, puis dossier quitté
+   * examiné ; en échec, le fichier et le dossier (sans examen du dossier), ou le dossier seul, sont inscrits.
+   */
+  async #quitter(ancienPropre: IdFichierDrive | undefined, ancien: IdFichierDrive): Promise<void> {
+    const dossierQuitte: ElementACorbeille = { type: 'DOSSIER_QUITTE', id: ancien };
+    if (ancienPropre !== undefined && !(await this.#mettreALaCorbeille(ancienPropre))) {
+      await this.#inscrireCorbeille([{ type: 'FICHIER', id: ancienPropre }, dossierQuitte]);
+    } else if (!(await this.#quitterDossier(ancien, false))) {
+      await this.#inscrireCorbeille([dossierQuitte]);
     }
+  }
+
+  /**
+   * Nouvel inventaire du dossier quitté (n° 14, C5) : vide de tout fichier d'appareil, il est mis à la corbeille ;
+   * un fichier d'appareil présent le laisse au dernier appareil qui le vide. Vrai si plus rien n'est à faire ; faux
+   * (journalisé) si l'inventaire ou la mise à la corbeille échoue. `reprise` (n° 21) : dossier introuvable, rien à
+   * faire.
+   */
+  async #quitterDossier(ancien: IdFichierDrive, reprise: boolean): Promise<boolean> {
+    const inventaire = await this.dependances.transport.inventorierDossier(ancien);
+    if (inventaire.ok) {
+      return inventaire.valeur.fichiers.length > 0 || this.#mettreALaCorbeille(ancien);
+    }
+    if (reprise && inventaire.erreur.type === 'RessourceIntrouvable') return true;
+    this.#avertir('DossierQuitteConserve', inventaire.erreur.type);
+    return false;
   }
 
   /**
@@ -1182,10 +1232,85 @@ export class CycleSynchronisation implements SuiviCycle {
     return succes('TERMINE');
   }
 
-  /** `supprimerFichier` (corbeille) ; un échec est journalisé en « avertissement ». */
-  async #mettreALaCorbeille(id: IdFichierDrive): Promise<void> {
+  /** `supprimerFichier` (corbeille, introuvable compris, §7) ; vrai si réussi ; un échec est journalisé. */
+  async #mettreALaCorbeille(id: IdFichierDrive): Promise<boolean> {
     const supprime = await this.dependances.transport.supprimerFichier(id);
-    if (!supprime.ok) this.#consigner('MiseALaCorbeilleDifferee', supprime.erreur.type);
+    if (!supprime.ok) this.#avertir('MiseALaCorbeilleDifferee', supprime.erreur.type);
+    return supprime.ok;
+  }
+
+  /** Journal « avertissement » d'une mise à la corbeille différée (v0.11 §6.8 n° 18 : champ `erreur` = type). */
+  #avertir(evenement: string, erreur: string): void {
+    this.dependances.journal.consigner({ niveau: 'avertissement', evenement, champs: { erreur } });
+  }
+
+  /**
+   * Inscription dans `aMettreALaCorbeille` (v0.11 §6.8 n° 18), par une transaction de méta ; elle ne change jamais
+   * l'issue du cycle : son échec est journalisé (`CorbeilleNonMemorisee`).
+   */
+  async #inscrireCorbeille(elements: ReadonlyArray<ElementACorbeille>): Promise<void> {
+    const inscrit = await this.dependances.depot.appliquerSynchronisation((e, m) => ({
+      plan: PLAN_VIDE(e),
+      meta: { aMettreALaCorbeille: inscrire(m.aMettreALaCorbeille ?? [], elements) },
+    }));
+    if (!inscrit.ok) this.#avertir('CorbeilleNonMemorisee', inscrit.erreur.type);
+  }
+
+  /**
+   * Reprise des mises à la corbeille (v0.11 §6.8 n° 21), à la fin d'un cycle `SYNCHRONISER` ou `RESTAURER`, après les
+   * orphelins : entrées présentes au début du cycle (`vue.lu.meta`), dans l'ordre ; celles inscrites pendant ce cycle
+   * attendent le suivant. Garde C1 : un `FICHIER` qui est le manifeste canonique de l'inventaire du cycle est retiré
+   * sans être supprimé. Les entrées retirées le sont par une transaction de méta ; son échec est journalisé.
+   */
+  async #reprendreCorbeille(vue: Vue): Etape<Fin> {
+    const liste = vue.lu.meta.aMettreALaCorbeille ?? [];
+    if (liste.length === 0) return succes('TERMINE');
+    const retires = await this.#reprendre(liste, vue.inventaire.manifestes[0]?.id);
+    if (retires.size === 0) return succes('TERMINE');
+    const ecrit = await this.dependances.depot.appliquerSynchronisation((e, m) => ({
+      plan: PLAN_VIDE(e),
+      meta: {
+        aMettreALaCorbeille: (m.aMettreALaCorbeille ?? []).filter(
+          (el) => !retires.has(cleCorbeille(el)),
+        ),
+      },
+    }));
+    if (!ecrit.ok) this.#avertir('CorbeilleNonMemorisee', ecrit.erreur.type);
+    return succes('TERMINE');
+  }
+
+  /**
+   * n° 21 : `FICHIER` → canonique (C1) : retiré sans requête ; sinon mis à la corbeille, retiré s'il l'est.
+   * `DOSSIER_QUITTE` → examiné seulement si aucun `FICHIER` qui le précède n'est resté ; retiré si plus rien n'est à
+   * faire (C5). Rend les clés retirées.
+   */
+  async #reprendre(
+    liste: ReadonlyArray<ElementACorbeille>,
+    canonique: IdFichierDrive | undefined,
+  ): Promise<ReadonlySet<string>> {
+    const retires = new Set<string>();
+    let fichierReste = false;
+    for (const element of liste) {
+      const fait = await this.#reprendreElement(element, canonique, fichierReste);
+      if (fait) retires.add(cleCorbeille(element));
+      else fichierReste ||= element.type === 'FICHIER';
+    }
+    return retires;
+  }
+
+  /** Une entrée de la reprise (n° 21) ; vrai si elle est à retirer de la liste. */
+  async #reprendreElement(
+    { type, id }: ElementACorbeille,
+    canonique: IdFichierDrive | undefined,
+    fichierReste: boolean,
+  ): Promise<boolean> {
+    switch (type) {
+      case 'FICHIER':
+        // Garde C1 (Q-ST017-STA-8 c) : supprimer le manifeste canonique produirait ERR-012 sur tous les appareils.
+        return id === canonique || this.#mettreALaCorbeille(id);
+      case 'DOSSIER_QUITTE':
+        return !fichierReste && this.#quitterDossier(id, true);
+    }
   }
 
   // ------------------------------------------------------------------ Dépôt seul (§6.5)
