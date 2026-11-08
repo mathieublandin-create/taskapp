@@ -226,7 +226,7 @@ describe('Détail d’une tâche — abandon (ECR-007 C, D, D2, F)', () => {
     // et on garde l'intention : aucune case « Terminer » ni sur la sous-tâche abandonnée ni sur celle abandonnée avec la parente.
     const cases = screen
       .queryAllByRole('checkbox')
-      .map((c) => c.getAttribute('aria-label') ?? c.textContent ?? '');
+      .map((c) => c.getAttribute('aria-label') ?? c.textContent);
     expect(cases.filter((nom) => !nom.startsWith('Rouvrir'))).toEqual([]);
     expect(screen.queryByRole('checkbox', { name: /Section (A|C)/u })).toBeNull();
     const ligneAvec = screen.getByRole('button', { name: /^Section C, abandonnée/u });

@@ -2,7 +2,7 @@
  * Reprise des mises à la corbeille en échec (DT-036 ; ST-US-017 v0.11 §6.7 n° 13, n° 14 et §6.8 n° 18 à 21) : l'ancien
  * fichier propre et le dossier quitté au déménagement, le doublon de manifeste créé par l'appareil, sont inscrits dans
  * `aMettreALaCorbeille` et repris à la fin de chaque cycle qui synchronise ou restaure, jamais sous une altération ni
- * en consultation seule. UT-US-017-120 à 123 (rang 11, tranche H4).
+ * en consultation seule. UT-US-017-120 à 123 et 127 (rang 11, tranche H4).
  */
 import { describe, expect, it } from 'vitest';
 import type { IdFichierDrive } from '@src/synchronisation/domaine/meta-synchronisation';
@@ -126,6 +126,44 @@ describe('Doublon de manifeste créé par l’appareil (n° 13, n° 19)', () => 
     expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
     expect((await manifestesDuDrive(env.drive)).map((m) => m.fichier.id)).toEqual([concurrent]);
     expect((await metaDe(env.smartphone)).aMettreALaCorbeille ?? []).toEqual([]);
+  });
+});
+
+describe('Garde C1 : un fichier devenu le manifeste canonique n’est jamais mis à la corbeille (Q-ST017-STA-8 c)', () => {
+  it('UT-US-017-127 le doublon inscrit est devenu le seul manifeste (le plus ancien a disparu) : il est retiré de la liste sans être supprimé, aucun ERR-012 ni ce cycle ni le suivant', async () => {
+    const env = preparerRestauration();
+    let concurrent: IdFichierDrive | undefined;
+    env.drive.avantLaProchaineCreationDeManifeste(async () => {
+      const dossier = env.drive.dossiers()[0]?.id as IdFichierDrive;
+      concurrent = await env.drive.ajouterManifeste(
+        PC,
+        dossier,
+        { schemaVersion: SCHEMA_VERSION, generation: { type: 'INITIALE' } },
+        T0 - 1000,
+      );
+      env.drive.echouerProchainesSuppressions(1);
+    });
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    const [doublon] = (await metaDe(env.smartphone)).aMettreALaCorbeille ?? [];
+    if (doublon === undefined || concurrent === undefined) throw new Error('doublon attendu');
+
+    // L'utilisateur met à la corbeille le plus ancien : le doublon inscrit devient le manifeste canonique.
+    const utilisateur = env.drive.transportPour(PC, {
+      reseau: env.pc.reseau,
+      accesAccorde: () => true,
+    });
+    expect((await utilisateur.supprimerFichier(concurrent)).ok).toBe(true);
+
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(env.drive.fichiers().find((f) => f.id === doublon.id)?.supprime).not.toBe(true);
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.fichier.id)).toEqual([doublon.id]);
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille ?? []).toEqual([]);
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect((await manifestesDuDrive(env.drive)).map((m) => m.fichier.id)).toEqual([doublon.id]);
+    expect(env.smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
   });
 });
 
