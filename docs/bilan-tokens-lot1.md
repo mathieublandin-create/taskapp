@@ -16,7 +16,7 @@ Les totaux sont ceux que les agents rapportent à leur fin (somme des notificati
 | 8 | US-025 Abandonner | 3,5 j | 660 k | 189 k | corrections mécaniques relues par sonnet (OPT-18) |
 | 9 | US-017 incr. 2 | 11 j | 3 500 k | 320 k | 2 erreurs de spécification rattrapées tard, 3 relances de l'E10 aux tranches, noyau de fusion |
 | 10 | US-017 incr. 3 | 6 j | fusionné (PR #33) ; ≈ 1 500 k à la reprise du 2026-11-02, valeur finale à relever dans `ccusage` | à compléter | coupures par la limite d'usage ; E13 opus (≈ 5 $), corrections sonnet (≈ 0,5 $), E13 bis sonnet (≈ 0,5 $) le 2026-11-07 ; CI rouge corrigée (UT-COMP-US-002-87) |
-| 11 | US-017 incr. 4 | 6 j | à compléter | | |
+| 11 | US-017 incr. 4 | 7 j | à relever (≈ 55 $ de coût `ccusage` sur 2026-11-07/08, fin du rang 10 comprise) | à compléter | un agent à la fois, 8 tranches H1 à H4 / D1 à D4 sans coupure par la limite ; 5 arbitrages d'Anthony sonnet ; E13 opus, 2 passes de corrections, E13 bis sonnet ; CI verte au premier jet de l'E13 bis |
 | 12 | US-018 Hors ligne smartphone | 6,5 j | à compléter | | |
 | 13 | US-031 Hors ligne PC | 3,5 j | à compléter | | |
 
