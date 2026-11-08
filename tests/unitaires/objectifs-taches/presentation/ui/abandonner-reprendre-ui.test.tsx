@@ -222,7 +222,13 @@ describe('Détail d’une tâche — abandon (ECR-007 C, D, D2, F)', () => {
       'ETA-SOUS-TACHE-ABANDONNEE-AVEC',
       'ETA-SOUS-TACHE-TERMINEE-AVANT',
     ]);
-    expect(screen.queryByRole('checkbox')).toBeNull();
+    // ST-US-024 v0.7 §6.8 : la sous-tâche terminée porte la case « Rouvrir » ; on exclut cette seule case
+    // et on garde l'intention : aucune case « Terminer » ni sur la sous-tâche abandonnée ni sur celle abandonnée avec la parente.
+    const cases = screen
+      .queryAllByRole('checkbox')
+      .map((c) => c.getAttribute('aria-label') ?? c.textContent ?? '');
+    expect(cases.filter((nom) => !nom.startsWith('Rouvrir'))).toEqual([]);
+    expect(screen.queryByRole('checkbox', { name: /Section (A|C)/u })).toBeNull();
     const ligneAvec = screen.getByRole('button', { name: /^Section C, abandonnée/u });
     const description = ligneAvec.getAttribute('aria-describedby') ?? '';
     expect(document.getElementById(description)?.textContent).toBe('Abandonnée avec la tâche');

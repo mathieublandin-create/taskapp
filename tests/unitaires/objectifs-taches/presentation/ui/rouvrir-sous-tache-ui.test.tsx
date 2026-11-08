@@ -133,7 +133,9 @@ describe('Détail d’une tâche parente : rouvrir une sous-tâche (ECR-007 A, C
     await userEvent.click(screen.getByRole('checkbox', { name: nom }));
     const boite = await screen.findByRole('alertdialog');
     expect(boite.getAttribute('data-code')).toBe('CNF-ROUVRIR-SOUS-TACHE');
-    expect(within(boite).getByRole('heading').textContent).toBe('Rouvrir aussi « Chapitre 1 » ?');
+    expect(within(boite).getByRole('heading').textContent).toBe(
+      'Rouvrir aussi « Chapitre 1 »\u00a0?',
+    );
     await userEvent.click(within(boite).getByRole('button', { name: 'Annuler' }));
     await waitFor(() => {
       expect(screen.queryByRole('alertdialog')).toBeNull();
