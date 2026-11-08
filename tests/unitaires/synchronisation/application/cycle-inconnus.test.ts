@@ -20,7 +20,11 @@ import { hlc, idObjectif, PC, SMARTPHONE } from '@tests/support/valeurs';
 /** Le PC (version plus récente, même format) ajoute à son fichier un champ et une entrée de journal inconnus. */
 const ajouterInconnus = async (env: ReturnType<typeof preparerRestauration>, iso: string) => {
   await env.drive.reecrireParVersionRecente(PC, (objet) => {
-    const appareils = objet['appareils'] as ReadonlyArray<string>;
+    // Le PC n'a rien écrit dans ce fichier : il n'est pas dans la table `appareils` (triée). On l'y ajoute à sa
+    // place triée ; ici il suit le smartphone, donc les indices existants ne bougent pas.
+    const appareils = objet['appareils'] as Array<string>;
+    if (!appareils.includes(PC)) appareils.push(PC);
+    appareils.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const hlcPc = { physique: iso, compteur: 0, appareil: appareils.indexOf(PC) };
     // Une seule valeur par clé et par identifiant : celle de cette réécriture remplace la précédente.
     objet['registres'] = (objet['registres'] as Array<Record<string, unknown>>).filter(

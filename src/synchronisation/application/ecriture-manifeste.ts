@@ -22,6 +22,8 @@ export type ManifesteEcrit = {
   readonly id: IdFichierDrive;
   readonly contenu: ContenuManifeste;
   readonly doublonNonSupprime?: IdFichierDrive;
+  /** Type de l'erreur de la mise à la corbeille du doublon (journal `MiseALaCorbeilleDifferee`, n° 18). */
+  readonly erreurDoublon?: ErreurTransport['type'];
 };
 
 type Releve = {
@@ -116,7 +118,11 @@ const remplacer = async (
   return succes(undefined);
 };
 
-/** Création ; si une création concurrente a donné un canonique plus ancien, jointure écrite dedans et doublon supprimé. */
+/**
+ * Création ; si une création concurrente a donné un canonique plus ancien, jointure écrite dedans et doublon supprimé.
+ * v0.11 (n° 19) : la suppression du doublon en échec ne rend pas d'erreur ; la relecture du canonique a lieu et le
+ * doublon est rendu (`doublonNonSupprime`), pour que le cycle l'inscrive dans `aMettreALaCorbeille`.
+ */
 const creer = async (
   transport: TransportSynchro,
   dossier: IdFichierDrive,
@@ -130,18 +136,53 @@ const creer = async (
   if (canonique === undefined || canonique.element.id === cree.valeur) {
     return verifier(transport, dossier, { id: cree.valeur, contenu: cible });
   }
-  const jointure = joindre([canonique.contenu], cible);
-  if (canonique.contenu === undefined || !manifestesEgaux(canonique.contenu, jointure)) {
-    const ecrit = await transport.ecrireManifeste({
-      dossier,
-      contenu: jointure,
-      fichierExistant: canonique.element.id,
-    });
-    if (!ecrit.ok) return ecrit;
-  }
-  const supprime = await transport.supprimerFichier(cree.valeur);
-  if (!supprime.ok) return supprime;
-  return verifier(transport, dossier, { id: canonique.element.id, contenu: jointure });
+  return rejoindreCanonique(transport, { dossier, cree: cree.valeur, canonique, cible });
+};
+
+/** Le manifeste `m` remplacé par `cible` s'il est illisible ou en diffère. */
+const ecrireSiDifferent = async (
+  transport: TransportSynchro,
+  dossier: IdFichierDrive,
+  m: Releve['presents'][number],
+  cible: ContenuManifeste,
+): Ecriture<undefined> => {
+  if (m.contenu !== undefined && manifestesEgaux(m.contenu, cible)) return succes(undefined);
+  const ecrit = await transport.ecrireManifeste({
+    dossier,
+    contenu: cible,
+    fichierExistant: m.element.id,
+  });
+  return ecrit.ok ? succes(undefined) : ecrit;
+};
+
+/**
+ * Création concurrente (n° 13) : jointure écrite dans le canonique plus ancien s'il en diffère, doublon `cree` mis à
+ * la corbeille, puis relecture du canonique ; la mise à la corbeille en échec est rendue dans `doublonNonSupprime`.
+ */
+const rejoindreCanonique = async (
+  transport: TransportSynchro,
+  p: {
+    readonly dossier: IdFichierDrive;
+    readonly cree: IdFichierDrive;
+    readonly canonique: Releve['presents'][number];
+    readonly cible: ContenuManifeste;
+  },
+): Ecriture<ManifesteEcrit> => {
+  const { dossier, canonique } = p;
+  const jointure = joindre([canonique.contenu], p.cible);
+  const ecrit = await ecrireSiDifferent(transport, dossier, canonique, jointure);
+  if (!ecrit.ok) return ecrit;
+  const supprime = await transport.supprimerFichier(p.cree);
+  const verifie = await verifier(transport, dossier, {
+    id: canonique.element.id,
+    contenu: jointure,
+  });
+  if (supprime.ok || !verifie.ok) return verifie;
+  return succes({
+    ...verifie.valeur,
+    doublonNonSupprime: p.cree,
+    erreurDoublon: supprime.erreur.type,
+  });
 };
 
 /** Relecture du canonique : réécrit une fois avec la jointure s'il est inférieur à la cible (écriture concurrente). */

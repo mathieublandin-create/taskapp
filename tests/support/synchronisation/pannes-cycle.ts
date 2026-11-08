@@ -20,7 +20,7 @@ import type { preparerRestauration } from './restauration';
 
 export type Environnement = ReturnType<typeof preparerRestauration>;
 export type MethodeTransport = keyof TransportSynchro;
-export type MethodeDepot = 'lire' | 'lireMeta' | 'appliquerSynchronisation';
+export type MethodeDepot = 'lire' | 'lireMeta' | 'lireInconnus' | 'appliquerSynchronisation';
 
 /** Appel en panne : le `occurrence`-ième (à partir de 1) appel de la méthode, dans le cycle observé. */
 export type Panne =
@@ -48,6 +48,7 @@ export const METHODES_TRANSPORT: ReadonlyArray<MethodeTransport> = [
 export const METHODES_DEPOT: ReadonlyArray<MethodeDepot> = [
   'lire',
   'lireMeta',
+  'lireInconnus',
   'appliquerSynchronisation',
 ];
 
@@ -111,7 +112,8 @@ export const cycleEnPanne = (
     lireMeta: () =>
       enPanne('depot', 'lireMeta') ? Promise.resolve(ECRITURE_IMPOSSIBLE) : vrai.lireMeta(),
     lireSignalements: () => vrai.lireSignalements(),
-    lireInconnus: () => vrai.lireInconnus(),
+    lireInconnus: () =>
+      enPanne('depot', 'lireInconnus') ? Promise.resolve(ECRITURE_IMPOSSIBLE) : vrai.lireInconnus(),
     appliquer: (calcul) => vrai.appliquer(calcul),
     observer: (rappel) => vrai.observer(rappel),
     appliquerSynchronisation: (calcul) =>
