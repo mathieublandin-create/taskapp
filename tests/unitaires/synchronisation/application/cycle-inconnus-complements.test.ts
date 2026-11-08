@@ -1,7 +1,7 @@
 /**
  * Compléments de H4 sur les fichiers reçus (ST-US-017 v0.11 §6.8 n° 4, n° 14) : journal d'une valeur reçue du futur
  * (seuil strict de 24 h, éléments inconnus compris) ; éléments inconnus de deux fichiers reçus dans le même cycle (le
- * plus récent l'emporte, dans les deux ordres). UT-COMP-US-017-4-45 à 4-47 (rang 11, tranche H4, Bruce).
+ * plus récent l'emporte, dans les deux ordres). UT-COMP-US-017-4-45 et 4-46 (rang 11, tranche H4, Bruce).
  */
 import { describe, expect, it } from 'vitest';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';

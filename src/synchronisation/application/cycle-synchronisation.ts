@@ -244,6 +244,10 @@ const hlcMaxRecu = (recu: ContenuFichierAppareil): Hlc | undefined => {
 /** Clé d'une entrée de `aMettreALaCorbeille` : même `type` et même `id` (v0.11 §6.8 n° 18). */
 const cleCorbeille = (e: ElementACorbeille): string => `${e.type}:${e.id}`;
 
+/** `aMettreALaCorbeille` (absente ≡ vide). */
+const listeCorbeille = (meta: MetaSynchronisation): ReadonlyArray<ElementACorbeille> =>
+  meta.aMettreALaCorbeille ?? [];
+
 /** Inscription (n° 18) : à la suite, dans l'ordre, sans doublon de même `type` et `id`. */
 const inscrire = (
   liste: ReadonlyArray<ElementACorbeille>,
@@ -754,8 +758,7 @@ export class CycleSynchronisation implements SuiviCycle {
       fusion.valeur ? undefined : vue.lu,
     );
     if (!depose.ok) return depose;
-    const fin = await this.#demenagerPuisNettoyer(vue, dossier.valeur);
-    return fin.ok ? this.#reprendreCorbeille(vue) : fin;
+    return this.#demenagerPuisNettoyer(vue, dossier.valeur);
   }
 
   /** Méta relevée après les fusions (n° 5, n° 12) : observation, restauration connue (C1), demande, version relue. */
@@ -785,13 +788,22 @@ export class CycleSynchronisation implements SuiviCycle {
     );
   }
 
-  /** Déménagement si le dossier courant n'est pas le canonique (n° 14), puis orphelins (C8). */
+  /** Déménagement si le dossier courant n'est pas le canonique (n° 14), puis orphelins (C8) et reprise (DT-036). */
   async #demenagerPuisNettoyer(vue: Vue, dossier: IdFichierDrive): Etape<Fin> {
     if (vue.canonique !== undefined && dossier !== vue.canonique) {
       const demenage = await this.#demenager(vue, dossier, vue.canonique);
       if (!demenage.ok) return demenage;
     }
-    return this.#supprimerOrphelins(vue);
+    return this.#nettoyer(vue);
+  }
+
+  /**
+   * Fin d'un cycle `SYNCHRONISER` ou `RESTAURER` : orphelins (C8), puis reprise des mises à la corbeille (v0.11 §6.8
+   * n° 21).
+   */
+  async #nettoyer(vue: Vue): Etape<Fin> {
+    const orphelins = await this.#supprimerOrphelins(vue);
+    return orphelins.ok ? this.#reprendreCorbeille(vue) : orphelins;
   }
 
   /**
@@ -820,9 +832,7 @@ export class CycleSynchronisation implements SuiviCycle {
       h.valeur === undefined
         ? await this.#restaurationVue(vue, d)
         : await this.#restaurationChoisie(vue.lu.meta, dossier.valeur, h.valeur);
-    if (!memorise.ok) return memorise;
-    const fin = await this.#supprimerOrphelins(vue);
-    return fin.ok ? this.#reprendreCorbeille(vue) : fin;
+    return memorise.ok ? this.#nettoyer(vue) : memorise;
   }
 
   /** Faite ailleurs (n° 8) : le manifeste n'est pas réécrit ; canonique et restauration connue mémorisés (C1). */
@@ -1154,9 +1164,11 @@ export class CycleSynchronisation implements SuiviCycle {
       apport,
       mode,
     });
-    if (ecrit.ok && ecrit.valeur.doublonNonSupprime !== undefined) {
-      this.#avertir('MiseALaCorbeilleDifferee', ecrit.valeur.erreurDoublon ?? 'inconnue');
-      await this.#inscrireCorbeille([{ type: 'FICHIER', id: ecrit.valeur.doublonNonSupprime }]);
+    if (!ecrit.ok) return ecrit;
+    const { doublonNonSupprime: doublon, erreurDoublon: erreur } = ecrit.valeur;
+    if (doublon !== undefined && erreur !== undefined) {
+      this.#avertir('MiseALaCorbeilleDifferee', erreur);
+      await this.#inscrireCorbeille([{ type: 'FICHIER', id: doublon }]);
     }
     return ecrit;
   }
@@ -1251,7 +1263,7 @@ export class CycleSynchronisation implements SuiviCycle {
   async #inscrireCorbeille(elements: ReadonlyArray<ElementACorbeille>): Promise<void> {
     const inscrit = await this.dependances.depot.appliquerSynchronisation((e, m) => ({
       plan: PLAN_VIDE(e),
-      meta: { aMettreALaCorbeille: inscrire(m.aMettreALaCorbeille ?? [], elements) },
+      meta: { aMettreALaCorbeille: inscrire(listeCorbeille(m), elements) },
     }));
     if (!inscrit.ok) this.#avertir('CorbeilleNonMemorisee', inscrit.erreur.type);
   }
@@ -1263,16 +1275,14 @@ export class CycleSynchronisation implements SuiviCycle {
    * sans être supprimé. Les entrées retirées le sont par une transaction de méta ; son échec est journalisé.
    */
   async #reprendreCorbeille(vue: Vue): Etape<Fin> {
-    const liste = vue.lu.meta.aMettreALaCorbeille ?? [];
+    const liste = listeCorbeille(vue.lu.meta);
     if (liste.length === 0) return succes('TERMINE');
     const retires = await this.#reprendre(liste, vue.inventaire.manifestes[0]?.id);
     if (retires.size === 0) return succes('TERMINE');
     const ecrit = await this.dependances.depot.appliquerSynchronisation((e, m) => ({
       plan: PLAN_VIDE(e),
       meta: {
-        aMettreALaCorbeille: (m.aMettreALaCorbeille ?? []).filter(
-          (el) => !retires.has(cleCorbeille(el)),
-        ),
+        aMettreALaCorbeille: listeCorbeille(m).filter((el) => !retires.has(cleCorbeille(el))),
       },
     }));
     if (!ecrit.ok) this.#avertir('CorbeilleNonMemorisee', ecrit.erreur.type);

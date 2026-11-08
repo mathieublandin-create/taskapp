@@ -1,7 +1,7 @@
 /**
  * Compléments de H4 sur la reprise des mises à la corbeille (DT-036 ; ST-US-017 v0.11 §6.8 n° 18 à 21) : transactions
  * d'inscription et de reprise en échec, dossier quitté introuvable, inventaire ou corbeille du dossier en échec,
- * jamais par le dépôt seul. UT-COMP-US-017-4-39 à 4-44 (rang 11, tranche H4, Bruce).
+ * jamais par le dépôt seul. UT-COMP-US-017-4-39 à 4-44 et 4-47 (rang 11, tranche H4, Bruce).
  */
 import { describe, expect, it } from 'vitest';
 import { echec } from '@src/commun/domaine/resultat';
@@ -212,6 +212,25 @@ describe('Dossier quitté à la reprise (n° 21, C5)', () => {
     ]);
     expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
     expect(env.drive.dossiers().map((d) => d.id)).not.toContain(ancien);
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual([]);
+  });
+});
+
+describe('Dossier quitté introuvable à la reprise (n° 21)', () => {
+  it('UT-COMP-US-017-4-47 inventaire du dossier quitté introuvable : l’entrée est retirée sans mise à la corbeille ni journal', async () => {
+    const { env } = await avecListe();
+    const enPanne = cycleEnPanne(env, env.smartphone, {
+      cible: 'transport',
+      methode: 'inventorierDossier',
+      occurrence: 2,
+      erreur: { type: 'RessourceIntrouvable' },
+    });
+
+    expect(await enPanne.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(enPanne.journal.entrees).toEqual([]);
+    // Seule la mise à la corbeille de l'ancien fichier propre : le dossier n'est pas supprimé.
+    expect(enPanne.appels['supprimerFichier']).toBe(1);
     expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual([]);
   });
 });
