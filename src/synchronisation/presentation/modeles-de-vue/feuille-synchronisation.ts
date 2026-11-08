@@ -157,7 +157,8 @@ const modeleCartes = (
   nombreLignes: number,
 ): ReadonlyArray<CarteErreurFeuille> => {
   if (etat.actionRequise === 'DRIVE_PLEIN') return [carte('ERR-011', 'OUVRIR_GOOGLE_DRIVE', {})];
-  if (etat.actionRequise === 'FORMAT_PLUS_RECENT') return [carte('ERR-013', 'METTRE_A_JOUR', {}, 'carte')];
+  if (etat.actionRequise === 'FORMAT_PLUS_RECENT')
+    return [carte('ERR-013', 'METTRE_A_JOUR', {}, 'carte')];
   if (etat.actionRequise === 'ECHEC_PERSISTANT') {
     return [carte('ERR-016', 'REESSAYER_MAINTENANT', { n: nombreLignes })];
   }

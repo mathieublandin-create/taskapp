@@ -82,36 +82,46 @@ const Etiquette = ({
   </span>
 );
 
+const BoutonOuvrirSousTache = ({
+  ligne,
+  idEtiquette,
+  surOuvrir,
+}: {
+  readonly ligne: LigneSousTache;
+  readonly idEtiquette: string;
+  readonly surOuvrir: ProprietesSectionSousTaches['surOuvrir'];
+}) => (
+  <button
+    type="button"
+    aria-label={ligne.nomAccessible}
+    {...(ligne.etiquette === undefined ? {} : { 'aria-describedby': idEtiquette })}
+    data-etat={ligne.etat.code}
+    onClick={() => {
+      surOuvrir(ligne.id);
+    }}
+  >
+    <span className="ligne-tache-intitule" aria-hidden="true">
+      {ligne.intitule}
+    </span>
+    <MetaLigne ligne={ligne} />
+  </button>
+);
+
 const LigneSousTacheUi = ({
   ligne,
   surOuvrir,
-  surTerminer,
-  surRouvrir,
-  surCaseRouvrirActivee,
+  ...actions
 }: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => {
   const idEtiquette = `etiquette-${ligne.id}`;
   return (
     <li className="ligne-tache" data-niveau="SOUS_TACHE">
       <CaseTerminer
         ligne={ligne}
-        surTerminer={surTerminer}
-        surRouvrir={surRouvrir}
-        surCaseRouvrirActivee={surCaseRouvrirActivee}
+        surTerminer={actions.surTerminer}
+        surRouvrir={actions.surRouvrir}
+        surCaseRouvrirActivee={actions.surCaseRouvrirActivee}
       />
-      <button
-        type="button"
-        aria-label={ligne.nomAccessible}
-        {...(ligne.etiquette === undefined ? {} : { 'aria-describedby': idEtiquette })}
-        data-etat={ligne.etat.code}
-        onClick={() => {
-          surOuvrir(ligne.id);
-        }}
-      >
-        <span className="ligne-tache-intitule" aria-hidden="true">
-          {ligne.intitule}
-        </span>
-        <MetaLigne ligne={ligne} />
-      </button>
+      <BoutonOuvrirSousTache ligne={ligne} idEtiquette={idEtiquette} surOuvrir={surOuvrir} />
       {ligne.etiquette === undefined ? null : (
         <Etiquette etiquette={ligne.etiquette} id={idEtiquette} />
       )}
