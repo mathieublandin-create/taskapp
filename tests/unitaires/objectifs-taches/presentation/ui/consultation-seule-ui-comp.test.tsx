@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IdTache } from '@src/commun/domaine/identifiants';
 import { echec } from '@src/commun/domaine/resultat';
 import { FournisseurConsultationSeule } from '@src/commun/presentation/ui/consultation-seule';
+import { SelecteurDuree } from '@src/objectifs-taches/presentation/ui/composants/selecteur-duree';
 import { EspaceObjectifs } from '@src/objectifs-taches/presentation/ui/ecrans/espace-objectifs';
 import { EspaceTaches } from '@src/objectifs-taches/presentation/ui/ecrans/espace-taches';
 import { creerMagasinTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-taches';
@@ -229,5 +230,56 @@ describe('Espace des objectifs en consultation seule', () => {
     await userEvent.click(menu.hote);
     expect(document.querySelector('ion-action-sheet:not(.overlay-hidden)')).toBeNull();
     expect(toastsDeConsultation()).toHaveLength(1);
+  });
+});
+
+describe('Autres contrôles en consultation seule', () => {
+  it('UT-COMP-US-017-4-64 sélecteur de durée : « Moins » et « Plus » en aria-disabled, champ aria-readonly ; clic et flèche affichent le toast et ne changent rien', async () => {
+    const surChanger = vi.fn();
+    render(
+      <FournisseurConsultationSeule actif>
+        <SelecteurDuree nom="Estimation" valeur={60} surChanger={surChanger} />
+      </FournisseurConsultationSeule>,
+    );
+    const champ = screen.getByRole('spinbutton', { name: 'Estimation' });
+    expect(champ.getAttribute('aria-readonly')).toBe('true');
+    const plus = screen.getByRole('button', { name: 'Plus 30 minutes' });
+    expect(plus.getAttribute('aria-disabled')).toBe('true');
+
+    champ.focus();
+    expect(toastsDeConsultation()).toHaveLength(0);
+    await userEvent.keyboard('{ArrowUp}');
+    await toastAffiche();
+    await userEvent.click(plus);
+
+    expect(surChanger).not.toHaveBeenCalled();
+    expect(toastsDeConsultation()).toHaveLength(1);
+  });
+
+  it('UT-COMP-US-017-4-65 liste des tâches vide : l’état vide reste affiché sans son bouton d’action, sans « + »', async () => {
+    const banc = creerBancObjectifs();
+    render(
+      <FournisseurConsultationSeule actif>
+        <EspaceTaches magasin={creerMagasinTaches(banc.services)} />
+      </FournisseurConsultationSeule>,
+    );
+    const vide = await screen.findByRole('region', { name: /./ });
+    expect(vide.dataset['etat']).toMatch(/^EVD-/);
+    expect(vide.querySelector('ion-button')).toBeNull();
+    expect(document.querySelector('ion-fab')).toBeNull();
+  });
+
+  it('UT-COMP-US-017-4-66 magasin des objectifs : une commande refusée (ConsultationSeule) compte un refus, sans ERR-014', async () => {
+    const banc = creerBancObjectifs();
+    const id = await banc.creer('Publier le guide');
+    vi.spyOn(banc.services.renommerObjectif, 'executer').mockResolvedValue(
+      echec({ type: 'ConsultationSeule' as const }),
+    );
+    const { actions } = banc.magasin.getState();
+
+    expect(await actions.renommer(id, 'Autre')).toEqual({ type: 'CONSULTATION_SEULE' });
+
+    expect(banc.magasin.getState().refusConsultationSeule).toBe(1);
+    expect(banc.magasin.getState().erreurEnregistrement).toBe(false);
   });
 });
