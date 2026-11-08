@@ -1,7 +1,9 @@
 /**
  * Compléments de H4 sur la reprise des mises à la corbeille (DT-036 ; ST-US-017 v0.11 §6.8 n° 18 à 21) : transactions
  * d'inscription et de reprise en échec, dossier quitté introuvable, inventaire ou corbeille du dossier en échec,
- * jamais par le dépôt seul. UT-COMP-US-017-4-39 à 4-44 et 4-47 (rang 11, tranche H4, Bruce).
+ * jamais par le dépôt seul. UT-COMP-US-017-4-39 à 4-44 et 4-47 (rang 11, tranche H4, Bruce) ; transaction finale qui
+ * garde les entrées inscrites pendant le cycle (n° 22 c), jamais sous une altération : UT-COMP-US-017-4-78 et 4-80
+ * (corrections de l'E13, RC-US-017-19 et 23).
  */
 import { describe, expect, it } from 'vitest';
 import { echec } from '@src/commun/domaine/resultat';
@@ -232,6 +234,51 @@ describe('Dossier quitté introuvable à la reprise (n° 21)', () => {
     // Seule la mise à la corbeille de l'ancien fichier propre : le dossier n'est pas supprimé.
     expect(enPanne.appels['supprimerFichier']).toBe(1);
     expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual([]);
+  });
+});
+
+describe('Transaction finale de la reprise : les entrées inscrites pendant le cycle sont gardées (n° 22 c, RC-US-017-19)', () => {
+  it('UT-COMP-US-017-4-78 liste initiale [FICHIER X, DOSSIER_QUITTE A] ; au cycle suivant, un second déménagement inscrit l’ancien propre et le dossier quitté : X et A sont mis à la corbeille et retirés, les deux nouvelles entrées restent, dans l’ordre', async () => {
+    // Premier déménagement (A → B) : l'ancien propre X résiste, liste initiale [FICHIER X, DOSSIER_QUITTE A].
+    const { env, ancien, canonique, ancienPropre } = await avecListe();
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual([
+      { type: 'FICHIER', id: ancienPropre },
+      { type: 'DOSSIER_QUITTE', id: ancien },
+    ]);
+    // Second dossier en double, plus ancien : le PC déménage (B → C) le premier.
+    const plusAncien = env.drive.ajouterDossier(PC, T0 - 120_000);
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    const proprePrecedent = (await metaDe(env.smartphone)).fichierPropre;
+    if (proprePrecedent === undefined) throw new Error('fichier propre attendu');
+    // Suppressions du cycle : propre de B au déménagement (1, en échec), puis reprise de X (2) et de A (3).
+    env.drive.echouerProchainesSuppressions(1);
+
+    expect(await env.smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(env.drive.fichiers().find((f) => f.id === ancienPropre)?.supprime).toBe(true);
+    expect(env.drive.dossiers().map((d) => d.id)).not.toContain(ancien);
+    expect(env.drive.fichiers().find((f) => f.id === proprePrecedent)?.supprime).not.toBe(true);
+    expect(env.drive.dossiers().map((d) => d.id)).toEqual([plusAncien, canonique]);
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual([
+      { type: 'FICHIER', id: proprePrecedent },
+      { type: 'DOSSIER_QUITTE', id: canonique },
+    ]);
+  });
+});
+
+describe('Jamais sous une altération (n° 21, RC-US-017-23)', () => {
+  it('UT-COMP-US-017-4-80 liste non vide, manifeste et fichiers rendus illisibles (ERR-012) : DONNEES_ALTEREES, aucune écriture ni mise à la corbeille dans le Drive, liste inchangée', async () => {
+    const { env } = await avecListe();
+    const liste = (await metaDe(env.smartphone)).aMettreALaCorbeille;
+    env.drive.rendreDonneesIllisibles();
+    const ecritures = env.drive.ecrituresPar(SMARTPHONE);
+    const sonde = cycleEnPanne(env, env.smartphone);
+
+    expect(await sonde.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    expect(sonde.appels['supprimerFichier']).toBeUndefined();
+    expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual(liste);
   });
 });
 
