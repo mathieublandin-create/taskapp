@@ -130,6 +130,8 @@ export type AdaptateursApplication = {
 export class RelaisEchangesGoogle implements ObservateurEchangesGoogle {
   readonly #observateurs = new Set<ObservateurEchangesGoogle>();
 
+  constructor(private readonly journal: JournalTechnique) {}
+
   observer(observateur: ObservateurEchangesGoogle): Annulation {
     this.#observateurs.add(observateur);
     return () => {
@@ -139,8 +141,21 @@ export class RelaisEchangesGoogle implements ObservateurEchangesGoogle {
 
   surReponse(echange: EchangeGoogle): void {
     this.#observateurs.forEach((observateur) => {
-      observateur.surReponse(echange);
+      this.#avertir(observateur, echange);
     });
+  }
+
+  /** Le port promet « ne lève jamais » : un observateur fautif ne doit pas faire sortir d'exception du client Google. */
+  #avertir(observateur: ObservateurEchangesGoogle, echange: EchangeGoogle): void {
+    try {
+      observateur.surReponse(echange);
+    } catch (erreur) {
+      this.journal.consigner({
+        niveau: 'erreur',
+        evenement: 'ObservateurEchangesEnEchec',
+        champs: { erreur: erreur instanceof Error ? erreur.name : 'inconnue' },
+      });
+    }
   }
 }
 

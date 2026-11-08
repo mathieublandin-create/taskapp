@@ -2,12 +2,13 @@
  * Composition de l'incrément 4 sur le banc (ST-US-017 v0.11 §6.8 n° 3, 5, 10, 16 ; rang 11, tranche D3), tests
  * complémentaires de Benjamin : un suivi d'horloge par espace (abonné aux échanges, arrêté à la fermeture), correction
  * lue et contrôlée par l'application, « Mettre à jour » sans espace, relais des échanges.
- * UT-COMP-US-017-4-72 à 4-77.
+ * UT-COMP-US-017-4-72 à 4-77 et 4-81.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EchangeGoogle } from '@src/commun/application/ports/observateur-echanges-google';
 import { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import { RelaisEchangesGoogle } from '@src/composition/application';
+import { JournalTechniqueMemoire } from '@tests/doublures/journal-technique-memoire';
 import { BancSynchro } from '@tests/support/banc/banc-synchro';
 import type { AppareilSimule } from '@tests/support/banc/appareil-simule';
 import { objectifsDe } from '@tests/support/objectifs';
@@ -127,7 +128,7 @@ describe('Composition — horloge et mise à jour (rang 11, D3)', () => {
     const issue = await application.mettreAJour();
 
     expect([issue, smartphone.miseAJour.appels]).toEqual(['RECHARGEMENT_LANCE', 1]);
-    const relais = new RelaisEchangesGoogle();
+    const relais = new RelaisEchangesGoogle(new JournalTechniqueMemoire());
     const recus: Array<EchangeGoogle> = [];
     const echange = { date: undefined } as EchangeGoogle;
     const annuler = relais.observer({ surReponse: (e) => recus.push(e) });
@@ -135,5 +136,31 @@ describe('Composition — horloge et mise à jour (rang 11, D3)', () => {
     annuler();
     relais.surReponse(echange);
     expect(recus).toEqual([echange]);
+  });
+
+  it('UT-COMP-US-017-4-81 RelaisEchangesGoogle — un observateur qui lève ne fait pas sortir d’exception : le suivant est appelé et une entrée « erreur » est consignée', () => {
+    const journal = new JournalTechniqueMemoire();
+    const relais = new RelaisEchangesGoogle(journal);
+    const recus: Array<EchangeGoogle> = [];
+    const echange = { date: undefined } as EchangeGoogle;
+    relais.observer({
+      surReponse: () => {
+        throw new TypeError('défaillant');
+      },
+    });
+    relais.observer({ surReponse: (e) => recus.push(e) });
+
+    expect(() => {
+      relais.surReponse(echange);
+    }).not.toThrow();
+
+    expect(recus).toEqual([echange]);
+    expect(journal.entrees()).toEqual([
+      {
+        niveau: 'erreur',
+        evenement: 'ObservateurEchangesEnEchec',
+        champs: { erreur: 'TypeError' },
+      },
+    ]);
   });
 });
