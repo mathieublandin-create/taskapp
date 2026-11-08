@@ -1520,6 +1520,13 @@ Points de vigilance : (1) H1 et H2 ne changent aucun type livré en E10 sans acc
 - **Q-ST017-PEP-5 (Pepper ; confirmation, non bloquante)** — Sens au banc de `que le PC utilise une version de l'application plus récente que celle du smartphone` (US-017 S31) : le fichier du PC contient des éléments que le smartphone ne connaît pas (un champ d'objectif et une entrée de journal d'un type nouveau), au même `schemaVersion` ; S31 vérifie alors que la saisie n'est pas bloquée et que les données connues convergent. Confirmez-vous ce sens (et son ajout au glossaire §12) ★, ou en attendez-vous un autre ?
 - **DT-036** : règle de reprise arrêtée (§6.8 n° 17 à 21), réalisée au rang 11 (H4), tests UT-US-017-120 à 123 ; le §6.7 n° 14 renvoie au §6.8. Registre v0.35 : « Planifiée ».
 - Restent ouvertes, inchangées : Q-ANT-E13-R9-1, Q-ANT-E13-R9-2 (DT-027), Q-ANT-E13-R10-1 (Starck, avant l'E13b).
+- **Réponses de Starck (2026-11-08, DAT v0.11.11 ; Anthony intègre)** :
+  - **Q-ST017-STA-8 a** : option ★ (non mémorisée), DAT §4.2, « état non mémorisé ». Pas de changement de code ni de test.
+  - **Q-ST017-STA-8 b** : H-11 et H-12 validées comme limites du lot 1, sans champ `extensions` ; H-13 validée (DAT §6.4). DAT §4.2, « Champs inconnus » : deux contraintes s'imposent désormais aux évolutions compatibles futures. Pas de changement pour H4. La dette candidate « éléments inconnus partiellement conservés » devient sans objet : c'est une limite assumée et documentée, pas une dette.
+  - **Q-ST017-STA-8 c** : option ★ (conforme), DAT §4.2.2 (d), « Mise à la corbeille en échec : reprise ». **Condition C1 (H4)** : `#reprendreCorbeille` retire de la liste, **sans** appeler `supprimerFichier`, une entrée `FICHIER` qui est le manifeste canonique de l'inventaire du cycle. Un test est à ajouter (série UT-US-017-12x).
+  - **Q-ANT-E13-R9-1** : option ★ a, DAT §4.2.1, « Existence d'une entrée ». Pas de changement de code.
+  - **Q-ANT-E13-R9-2 (DT-027)** : option ★ a, DAT §4.2.1, « Valeurs égales », registre `parent`. Il faut changer `conflitEntre` / `egalesStructurellement` et inverser l'attendu d'UT-US-017-117. Hors H4 : échéance DT-027 inchangée (avant l'E13b). La règle métier ne change pas, donc pas de question à Pepper.
+  - **Q-ANT-E13-R10-1** : option ★ a, DAT §4.2.2 (e). Le DAT est aligné sur H-6. Pas de changement de code ni de test.
 
 ## 17. Checklist de complétude
 - [x] v0.10.1 : conditions C1 à C9 de Starck (Q-ST017-STA-7) intégrées aux règles du §6.7 et au §7, portées par des tests rouges (§13.5) ; DT-026 : ST-US-024 v0.5 complétée.
