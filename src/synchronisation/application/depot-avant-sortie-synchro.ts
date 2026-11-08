@@ -1,6 +1,6 @@
 import type { EtatReseau } from '../../commun/application/ports/etat-reseau';
 import { decompterModificationsEnAttente } from '../domaine/index-en-attente';
-import type { IssueCycle } from './cycle-synchronisation';
+import type { CycleSynchronisation } from './cycle-synchronisation';
 import type { AccesGoogle } from './ports/acces-google';
 import type { DepotLocal } from './ports/depot-local';
 
@@ -9,7 +9,8 @@ export type IssueDepotAvantSortieSynchro = 'DEPOSE' | 'ECHEC' | 'NON_TENTE';
 
 export type DependancesDepotAvantSortie = {
   readonly depot: Pick<DepotLocal, 'lire'>;
-  readonly cycle: { deposerMaintenant(): Promise<IssueCycle> };
+  /** ST-US-017 v0.11 §6.8 n° 8 : l'action requise du moteur dit si l'espace est en consultation seule. */
+  readonly cycle: Pick<CycleSynchronisation, 'deposerMaintenant' | 'etatMoteur'>;
   readonly reseau: EtatReseau;
   readonly acces: Pick<AccesGoogle, 'etat'>;
 };
@@ -24,9 +25,13 @@ export class DepotAvantSortieSynchro {
     return etat.ok ? decompterModificationsEnAttente(etat.valeur.enAttente) : 0;
   }
 
-  /** Réseau connecté et accès valide : dépôt seul ; sinon NON_TENTE (consultation seule : incrément 4). */
+  /**
+   * Consultation seule (format plus récent, ST-US-017 v0.11 §6.8 n° 8) : NON_TENTE sans appeler le cycle, avant le
+   * contrôle du réseau et de l'accès ; sinon, réseau connecté et accès valide : dépôt seul ; sinon NON_TENTE.
+   */
   async deposerSiPossible(): Promise<IssueDepotAvantSortieSynchro> {
     const { reseau, acces, cycle } = this.dependances;
+    if (cycle.etatMoteur().actionRequise === 'FORMAT_PLUS_RECENT') return 'NON_TENTE';
     if (!reseau.estConnecte() || acces.etat() !== 'VALIDE') return 'NON_TENTE';
     return (await cycle.deposerMaintenant()) === 'TERMINE' ? 'DEPOSE' : 'ECHEC';
   }

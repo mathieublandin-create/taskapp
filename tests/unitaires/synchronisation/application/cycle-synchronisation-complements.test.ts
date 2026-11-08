@@ -10,6 +10,7 @@ import {
   type IssueCycle,
 } from '@src/synchronisation/application/cycle-synchronisation';
 import { DepotAvantSortieSynchro } from '@src/synchronisation/application/depot-avant-sortie-synchro';
+import type { EtatMoteur } from '@src/synchronisation/application/ports/suivi-cycle';
 import type { TransportSynchro } from '@src/synchronisation/application/ports/transport-synchro';
 import { FauxDrive } from '@tests/doublures/faux-drive';
 import { HorlogeSimulee } from '@tests/doublures/horloge-simulee';
@@ -235,6 +236,7 @@ describe('DepotAvantSortieSynchro (ST-US-017 §6.5)', () => {
     readonly connecte: boolean;
     readonly acces?: AccesCommandable;
     readonly issue?: IssueCycle;
+    readonly actionRequise?: EtatMoteur['actionRequise'];
   }) => {
     const appels: Array<string> = [];
     const depot = new DepotAvantSortieSynchro({
@@ -244,6 +246,11 @@ describe('DepotAvantSortieSynchro (ST-US-017 §6.5)', () => {
           appels.push('deposer');
           return Promise.resolve(p.issue ?? 'TERMINE');
         },
+        etatMoteur: (): EtatMoteur => ({
+          cycle: 'REPOS',
+          aLire: 0,
+          ...(p.actionRequise === undefined ? {} : { actionRequise: p.actionRequise }),
+        }),
       },
       reseau: new ReseauCommandable(p.connecte),
       acces: p.acces ?? new AccesCommandable(),
@@ -265,6 +272,23 @@ describe('DepotAvantSortieSynchro (ST-US-017 §6.5)', () => {
     expect(await sortie({ connecte: true, issue: 'DRIVE_PLEIN' }).depot.deposerSiPossible()).toBe(
       'ECHEC',
     );
+  });
+
+  it('UT-COMP-US-017-4-38 deposerSiPossible — consultation seule : NON_TENTE sans appel au cycle, avant le contrôle du réseau et de l’accès ; toute autre action requise laisse le dépôt tenté (ST-US-017 v0.11 §6.8 n° 8)', async () => {
+    for (const p of [
+      { connecte: true },
+      { connecte: false },
+      { connecte: true, acces: new AccesCommandable('PERDU') },
+    ]) {
+      const consultation = sortie({ ...p, actionRequise: 'FORMAT_PLUS_RECENT' });
+      expect(await consultation.depot.deposerSiPossible()).toBe('NON_TENTE');
+      expect(consultation.appels).toEqual([]);
+    }
+    for (const actionRequise of ['DONNEES_ABSENTES', 'DRIVE_PLEIN', 'ECHEC_PERSISTANT'] as const) {
+      const autre = sortie({ connecte: true, actionRequise });
+      expect(await autre.depot.deposerSiPossible()).toBe('DEPOSE');
+      expect(autre.appels).toEqual(['deposer']);
+    }
   });
 
   it('UT-COMP-US-017-21 compterEnAttente — décompte par élément ; espace illisible : 0', async () => {
