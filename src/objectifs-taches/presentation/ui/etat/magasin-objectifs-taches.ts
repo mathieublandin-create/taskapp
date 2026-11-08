@@ -64,7 +64,9 @@ export type ServicesObjectifs = {
 export type IssueSaisie =
   | { readonly type: 'FAITE'; readonly id?: IdObjectif }
   | { readonly type: 'REFUSEE'; readonly messages: ReadonlyArray<MessageRefus> }
-  | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' };
+  | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' }
+  // RG-058 (ST-US-017 v0.11 §6.8 n° 9) : le toast TST-CONSULTATION-SEULE est posé en D2.
+  | { readonly type: 'CONSULTATION_SEULE' };
 
 export type SaisieObjectif = {
   readonly intitule: string;
