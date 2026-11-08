@@ -326,6 +326,13 @@ export type ControleTypesEvenementV1 = [
   Verifie<Egaux<keyof typeof TYPES_EVENEMENT_V1, TypeEvenementJournal>>,
 ];
 
+/**
+ * ST-US-017 v0.11 §6.8 n° 12 : `id` (texte non vide) et `hlc` d'une entrée de journal d'un type inconnu, seules clés
+ * lues d'une telle entrée (le reste est conservé tel quel).
+ */
+const schemaEnteteEvenementInconnu = (hlc: z.ZodType<Hlc>) =>
+  z.object({ id: z.string().min(1), hlc });
+
 const schemaCommunEvenement = (hlc: z.ZodType<Hlc>) =>
   z.looseObject({
     id: idEvenement,
@@ -413,6 +420,7 @@ const construireSchemas = (appareils: ReadonlyArray<IdAppareil>) => {
     valeurs: schemasDesValeurs(placement),
     contenuEvenement: schemaContenuEvenement(placement),
     communEvenement: schemaCommunEvenement(hlc),
+    enteteEvenementInconnu: schemaEnteteEvenementInconnu(hlc),
   };
 };
 
