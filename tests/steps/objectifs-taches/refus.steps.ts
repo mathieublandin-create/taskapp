@@ -39,6 +39,19 @@ etapeAssertion(/^l'opération est acceptée$/, ({ monde, appareil }) => {
   assert.ok(resultat?.ok, `Opération refusée sur le ${appareil.nom} : ${JSON.stringify(resultat)}`);
 });
 
+// ST-US-017 v0.11 §12.7 V9 (S30b, S31) : la saisie n'est pas bloquée (lecture de la vue, aucune écriture).
+etapeAssertion(/^la saisie n'est (?:plus|pas) bloquée$/, async ({ appareil }) => {
+  assert.equal((await appareil.vueAffichee()).consultationSeule, false, 'La saisie est bloquée');
+});
+
+// V11 (US-017 S01) : toutes les actions du scénario sur cet appareil ont été acceptées (au moins une).
+etapeAssertion(/^toutes ces opérations ont été acceptées$/, ({ monde, appareil }) => {
+  const resultats = monde.resultatsDuScenario.get(appareil.nom) ?? [];
+  assert.ok(resultats.length > 0, `Aucune opération sur le ${appareil.nom}`);
+  const refus = resultats.filter((r) => !r.ok);
+  assert.deepEqual(refus, [], `Opérations refusées sur le ${appareil.nom}`);
+});
+
 /** L'appareil qui a exactement une confirmation en attente (H-5, sans la consommer). */
 const nomUniqueEnAttente = (monde: MondeDoneJuan): NomAppareil => {
   const noms = [...monde.commandesEnAttente.keys()];

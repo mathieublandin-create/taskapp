@@ -219,8 +219,9 @@ etapeAction(
 
 // ---------------------------------------------------------------- Existence et valeurs (n° 14 à 17)
 
+// « existe toujours » (ST-US-017 v0.11 §12.7 V6, S30) : même vérification, objectif non supprimé de l'état de l'appareil.
 etapeAssertion(
-  new RegExp(`^l'objectif ${TEXTE} existe$`),
+  new RegExp(`^l'objectif ${TEXTE} existe(?: toujours)?$`),
   async ({ monde, appareil }, intitule) => {
     await detailObjectifDe(monde, appareil, String(intitule));
   },

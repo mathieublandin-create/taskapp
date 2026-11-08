@@ -68,7 +68,7 @@ When(
   async function (this: MondeDoneJuan, nomCompte: string, nomAppareil: NomAppareil) {
     const appareil = this.banc.appareil(nomAppareil);
     const resultat = await seConnecter(this, appareil, nomCompte);
-    this.resultats.set(appareil.nom, resultat);
+    this.memoriserResultat(appareil.nom, resultat);
     assert.ok(
       resultat.ok,
       `Connexion du compte ${nomCompte} refusée : ${JSON.stringify(resultat)}`,
@@ -81,7 +81,7 @@ const tenterDeSeConnecter = (suffixe: string, refus: Refus | undefined): void =>
     `l'utilisateur tente de se connecter avec le compte {string} sur le {appareil}${suffixe}`,
     async function (this: MondeDoneJuan, nomCompte: string, nomAppareil: NomAppareil) {
       const appareil = this.banc.appareil(nomAppareil);
-      this.resultats.set(appareil.nom, await seConnecter(this, appareil, nomCompte, refus));
+      this.memoriserResultat(appareil.nom, await seConnecter(this, appareil, nomCompte, refus));
     },
   );
 };

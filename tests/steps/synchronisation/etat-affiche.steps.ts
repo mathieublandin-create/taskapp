@@ -16,7 +16,7 @@ import { formaterAnciennete } from '@src/commun/presentation/format/heure';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { racineDe } from '../../support/compte/etapes-compte';
 import { convertirAppareil } from '../../support/conversions';
-import { listeObjectifsDe, ligneObjectifDe, resumesDe } from '../../support/objectifs';
+import { listeObjectifsDe, ligneObjectifDe, objectifsDe, resumesDe } from '../../support/objectifs';
 import { etapeAssertion, etapeContexte } from '../../support/prefixes';
 import {
   listeTachesDe,
@@ -142,6 +142,52 @@ etapeAssertion(/^aucun bandeau n'est affiché$/, async ({ appareil }) => {
 etapeAssertion(/^un seul bandeau est affiché$/, async ({ appareil }) => {
   assert.notEqual(await bandeauDe(appareil), undefined, 'Aucun bandeau affiché');
 });
+
+// ---------------------------------------------------------------- Consultation seule (ST-US-017 v0.11 §12.7 V3 à V5)
+
+const versionLocale = async (appareil: AppareilSimule): Promise<number> => {
+  const etat = await appareil.depot.lire();
+  assert.ok(etat.ok, `Espace du ${appareil.nom} illisible`);
+  return etat.valeur.version;
+};
+
+// V3 (S30) : « Mettre à jour » proposée par le bandeau et par la carte `ERR-013` de la feuille.
+etapeAssertion(/^l'action "(Mettre à jour)" est proposée$/, async ({ appareil }, libelle) => {
+  const vue = await appareil.vueAffichee();
+  const action = codeAction(libelle);
+  assert.equal(vue.bandeau?.action, action, `Bandeau sans action « ${String(libelle)} »`);
+  assert.ok(
+    vue.feuille?.cartes.some((c) => c.message === 'ERR-013' && c.action.type === action),
+    `Carte ERR-013 sans action « ${String(libelle)} »`,
+  );
+});
+
+// V4 : l'action applique la version, sans téléchargement ni boutique (DEC-034).
+etapeAssertion(
+  /^l'action "(Mettre à jour)" applique la dernière version de l'application, sans fichier à télécharger ni renvoi vers Google Play$/,
+  async ({ appareil }) => {
+    await appareil.controleur.mettreAJour();
+    assert.equal(appareil.miseAJour.appels, 1, 'La mise à jour n’a pas été demandée une fois');
+    assert.deepEqual(appareil.onglets, [], 'Une page a été ouverte');
+  },
+);
+
+// V5 : bandeau de consultation seule, saisie refusée sans aucune écriture locale.
+etapeAssertion(
+  /^le bandeau "([^"]*)" est affiché et la saisie n'est pas possible tant que l'application n'est pas mise à jour$/,
+  async ({ appareil }, code) => {
+    const vue = await appareil.vueAffichee();
+    assert.equal(vue.bandeau?.code, code);
+    assert.equal(vue.consultationSeule, true, 'La saisie n’est pas bloquée');
+    const avant = await versionLocale(appareil);
+    const creation = await (
+      await objectifsDe(appareil)
+    ).creerObjectif.executer({ intitule: 'Objectif de contrôle' });
+    assert.ok(!creation.ok, 'La création a été acceptée');
+    assert.deepEqual(creation.erreur, { type: 'ConsultationSeule' });
+    assert.equal(await versionLocale(appareil), avant, 'Une écriture locale a été faite');
+  },
+);
 
 // ---------------------------------------------------------------- Mention « heure de Paris » (ST-US-017 §12 n° 23)
 

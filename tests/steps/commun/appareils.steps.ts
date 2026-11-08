@@ -4,11 +4,13 @@
  */
 import assert from 'node:assert/strict';
 import { Given, When } from '@cucumber/cucumber';
+import { SCHEMA_VERSION } from '@src/synchronisation/domaine/version-schema';
 import type { NomAppareil } from '../../support/banc/appareil-simule';
 import { convertirAppareil, convertirFuseau } from '../../support/conversions';
 import { racineDe } from '../../support/compte/etapes-compte';
 import type { MondeDoneJuan } from '../../support/monde';
-import { etapeAssertion } from '../../support/prefixes';
+import { etapeAction, etapeAssertion } from '../../support/prefixes';
+import { driveDeLAppareil } from '../../support/synchronisation/drive-banc';
 
 Given(
   "(que )l'application n'a jamais été utilisée sur le {appareil}",
@@ -111,8 +113,8 @@ When(
 
 When(
   "l'utilisateur ramène l'application au premier plan sur le {appareil}",
-  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    this.banc.appareil(nomAppareil).revenirAuPremierPlan();
+  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    await this.banc.appareil(nomAppareil).revenirAuPremierPlan();
   },
 );
 
@@ -120,6 +122,29 @@ When(
   'le {appareil} est éteint puis rallumé',
   function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
     this.banc.appareil(nomAppareil).redemarrer();
+  },
+);
+
+// ST-US-017 v0.11 §12.7 H3 (S12d) : extinction puis rallumage, réseau inchangé ; la monotone repart de zéro.
+Given(
+  '(que )le {appareil} a été éteint puis rallumé',
+  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    const appareil = this.banc.appareil(nomAppareil);
+    appareil.redemarrer();
+    await appareil.ouvrirApplication();
+    appareil.seReconnecterAuRetourDuReseau();
+  },
+);
+
+// ST-US-017 v0.11 §12.7 V8 (S30b) : la nouvelle version connaît le format plus récent ; la page est rechargée.
+etapeAction(
+  /^l'application est mise à jour et connaît le format plus récent$/,
+  async ({ monde, appareil }) => {
+    const drive = driveDeLAppareil(monde, appareil);
+    assert.ok(drive, `Aucun Drive connu du ${appareil.nom}`);
+    drive.connaitreFormat(appareil.identifiantDrive, SCHEMA_VERSION + 1);
+    appareil.fermerApplication();
+    await appareil.ouvrirApplication();
   },
 );
 

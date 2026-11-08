@@ -14,6 +14,7 @@ import type {
   ModeleVueListeObjectifs,
   ModeleVueListeTaches,
 } from '@src/objectifs-taches';
+import type { FauxDrive } from '../doublures/faux-drive';
 import type { NomAppareil } from './banc/appareil-simule';
 import { BancSynchro } from './banc/banc-synchro';
 import type { CommandeEnAttente } from './commandes-en-attente';
@@ -23,7 +24,14 @@ import { References } from './references';
 
 export class MondeDoneJuan extends World {
   readonly banc = new BancSynchro();
+  /** Dernier résultat d'action de chaque appareil. */
   readonly resultats = new Map<NomAppareil, Resultat<unknown, unknown>>();
+  /** Tous les résultats d'action du scénario, par appareil (ST-US-017 v0.11 §12.7 : « toutes ces opérations »). */
+  readonly resultatsDuScenario = new Map<NomAppareil, Array<Resultat<unknown, unknown>>>();
+  /** Écritures de chaque appareil dans le Drive au moment où il passe en consultation seule (§12.7 V1, V7). */
+  readonly ecrituresDepuis = new Map<NomAppareil, number>();
+  /** Drive dont les écritures sont repérées : encore joignable après une déconnexion (US-022 S25). */
+  driveSuivi: FauxDrive | undefined;
   readonly commandesEnAttente = new Map<NomAppareil, CommandeEnAttente>();
   readonly references = new References();
   /** Modèles de vue consultés, par appareil (ST-US-001 §12). */
@@ -53,6 +61,15 @@ export class MondeDoneJuan extends World {
   lectureAffichee = false;
   /** Type (`Context`, `Action`, `Outcome`) de l'étape en cours, lu par le crochet `BeforeStep` (ST-US-017 §12.6 R4). */
   typeEtape: string | undefined;
+
+  /** Mémorise le résultat d'une action : dernier résultat de l'appareil, et suite des résultats du scénario. */
+  memoriserResultat(appareil: NomAppareil, resultat: Resultat<unknown, unknown>): void {
+    this.resultats.set(appareil, resultat);
+    this.resultatsDuScenario.set(appareil, [
+      ...(this.resultatsDuScenario.get(appareil) ?? []),
+      resultat,
+    ]);
+  }
 }
 
 setWorldConstructor(MondeDoneJuan);

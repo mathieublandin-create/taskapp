@@ -4,6 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import type { DataTable } from '@cucumber/cucumber';
+import type { VueInterface } from '@src/composition/controleur-interface';
 import type { InformationSignalee } from '@src/synchronisation/domaine/detail-valeurs-ecartees';
 import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { convertirEcart } from '../../support/conversions';
@@ -92,14 +93,25 @@ etapeAssertion(
   },
 );
 
-// ST-US-017 §12.6 n° R11 : carte `ALR-008` de la section « À lire » (données effacées par « repartir de zéro »).
-etapeAssertion(/^l'alerte "ALR-008" est affichée$/, async ({ appareil }) => {
-  assert.equal(
-    (await appareil.vueAffichee()).nonRetenues?.donneesEffacees?.code,
-    'ALR-008',
-    `Alerte ALR-008 absente sur le ${appareil.nom}`,
-  );
-});
+// ST-US-017 §12.6 n° R11 et v0.11 §12.7 H4 : `ALR-008` (section « À lire », données effacées par « repartir de zéro »)
+// et `ALR-001` (feuille, horloge déréglée) ; un autre code est un échec explicite.
+const alerteAffichee = (vue: VueInterface, code: string): boolean => {
+  if (code === 'ALR-001') return vue.feuille?.alerteHorloge?.code === 'ALR-001';
+  if (code === 'ALR-008') return vue.nonRetenues?.donneesEffacees?.code === 'ALR-008';
+  throw new Error(`Alerte non prise en charge : ${code}`);
+};
+
+etapeAssertion(
+  /^l'alerte "(ALR-\d{3})" (est affichée|n'est pas affichée)$/,
+  async ({ appareil }, code, forme) => {
+    const affichee = alerteAffichee(await appareil.vueAffichee(), String(code));
+    assert.equal(
+      affichee,
+      forme === 'est affichée',
+      `Alerte ${String(code)} ${affichee ? 'affichée' : 'absente'} sur le ${appareil.nom}`,
+    );
+  },
+);
 
 // ---------------------------------------------------------------- Construction au banc (N4)
 
