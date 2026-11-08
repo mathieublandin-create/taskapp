@@ -266,6 +266,22 @@ describe('Transaction finale de la reprise : les entrées inscrites pendant le c
   });
 });
 
+describe('Jamais sous une altération (n° 21, RC-US-017-23)', () => {
+  it('UT-COMP-US-017-4-80 liste non vide, manifeste et fichiers rendus illisibles (ERR-012) : DONNEES_ALTEREES, aucune écriture ni mise à la corbeille dans le Drive, liste inchangée', async () => {
+    const { env } = await avecListe();
+    const liste = (await metaDe(env.smartphone)).aMettreALaCorbeille;
+    env.drive.rendreDonneesIllisibles();
+    const ecritures = env.drive.ecrituresPar(SMARTPHONE);
+    const sonde = cycleEnPanne(env, env.smartphone);
+
+    expect(await sonde.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    expect(sonde.appels['supprimerFichier']).toBeUndefined();
+    expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
+    expect((await metaDe(env.smartphone)).aMettreALaCorbeille).toEqual(liste);
+  });
+});
+
 describe('Jamais par le dépôt seul (n° 21, §6.5)', () => {
   it('UT-COMP-US-017-4-44 deposerMaintenant dépose les modifications sans aucune mise à la corbeille ; la liste est gardée pour le cycle suivant', async () => {
     const { env, ancienPropre } = await avecListe();
