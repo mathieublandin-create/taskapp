@@ -1,5 +1,4 @@
-import { nonImplemente } from '@non-implemente';
-import type { Resultat } from '../../commun/domaine/resultat';
+import { echec, type Resultat } from '../../commun/domaine/resultat';
 import type { ErreurDepotLocal } from './ports/depot-local';
 import type { DecisionMetier, ServiceEtatLocal } from './service-etat-local';
 
@@ -17,19 +16,19 @@ export class ServiceEtatLocalConsultationSeule implements ServiceEtatLocal {
 
   /** Délégué tel quel (la consultation reste complète). */
   lire(): ReturnType<ServiceEtatLocal['lire']> {
-    return nonImplemente(`ServiceEtatLocalConsultationSeule.lire (${typeof this.dependances})`);
+    return this.dependances.service.lire();
   }
 
   /** Délégué tel quel. */
   lireJournal(
     element: Parameters<ServiceEtatLocal['lireJournal']>[0],
   ): ReturnType<ServiceEtatLocal['lireJournal']> {
-    return nonImplemente(`ServiceEtatLocalConsultationSeule.lireJournal (${element.id})`);
+    return this.dependances.service.lireJournal(element);
   }
 
   /** Délégué tel quel. */
   lireDecompteEnAttente(): ReturnType<ServiceEtatLocal['lireDecompteEnAttente']> {
-    return nonImplemente('ServiceEtatLocalConsultationSeule.lireDecompteEnAttente');
+    return this.dependances.service.lireDecompteEnAttente();
   }
 
   /**
@@ -39,6 +38,9 @@ export class ServiceEtatLocalConsultationSeule implements ServiceEtatLocal {
   modifier<T, E extends { readonly type: string }>(
     decision: DecisionMetier<T, E>,
   ): Promise<Resultat<T, E | ErreurDepotLocal>> {
-    return nonImplemente(`ServiceEtatLocalConsultationSeule.modifier (${typeof decision})`);
+    if (this.dependances.estConsultationSeule()) {
+      return Promise.resolve(echec({ type: 'ConsultationSeule' }));
+    }
+    return this.dependances.service.modifier(decision);
   }
 }
