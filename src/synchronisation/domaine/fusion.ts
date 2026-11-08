@@ -4,6 +4,7 @@ import type { EtatLocal } from './etat-local';
 import type { EvenementJournal } from './evenement-journal';
 import { comparerHlc, maxHlc, type Hlc } from './hlc';
 import type { IdEvenement } from './identifiant-evenement';
+import { hlcMaxInconnus } from './inconnus';
 import { cleEnTexte, type CleTexte } from './information';
 import { joindrePierresTombales } from './pierre-tombale';
 import type { PlanEcriture } from './planifier-ecritures';
@@ -55,11 +56,18 @@ export const fusionnerEtats = (a: EtatFusionnable, b: EtatFusionnable): EtatFusi
   return { registres, journal: unirJournaux(a.journal, b.journal.values()) };
 };
 
-/** Plus grand HLC d'un fichier reçu (registres et journal) ; undefined s'il est vide. */
-const plusGrandHlc = (recu: ContenuFichierAppareil): Hlc | undefined =>
-  [...recu.registres.map((r) => r.ecriture.hlc), ...recu.journal.map((e) => e.hlc)].reduce<
-    Hlc | undefined
-  >((max, h) => (max === undefined ? h : maxHlc(max, h)), undefined);
+/**
+ * Plus grand HLC d'un fichier reçu : registres, journal et éléments inconnus (ST-US-017 v0.11 §6.8 n° 15 :
+ * causalité, DAT §6.4) ; undefined s'il est vide.
+ */
+const plusGrandHlc = (recu: ContenuFichierAppareil): Hlc | undefined => {
+  const inconnus = recu.inconnus === undefined ? undefined : hlcMaxInconnus(recu.inconnus);
+  return [
+    ...recu.registres.map((r) => r.ecriture.hlc),
+    ...recu.journal.map((e) => e.hlc),
+    ...(inconnus === undefined ? [] : [inconnus]),
+  ].reduce<Hlc | undefined>((max, h) => (max === undefined ? h : maxHlc(max, h)), undefined);
+};
 
 const dernierHlcApres = (etat: EtatLocal, recu: ContenuFichierAppareil): Hlc | undefined => {
   const recuMax = plusGrandHlc(recu);
