@@ -68,6 +68,26 @@ export type ModeleVueFeuilleSynchronisation = {
   };
 };
 
+/** Textes affichés d'une carte de la feuille. */
+export type LibellesCarteFeuille = {
+  readonly titre: string;
+  readonly texte: string;
+  readonly action: string;
+};
+
+/**
+ * Carte de la feuille : celle d'`ERR-013` reprend la variante `carte` (guide v0.2.23 §6.6.14 d, maquette ECR-011 G) ;
+ * le bandeau garde le texte court. Les autres cartes gardent les textes du modèle de vue.
+ */
+export const libellesCarte = (c: CarteErreurFeuille): LibellesCarteFeuille =>
+  c.message === 'ERR-013'
+    ? {
+        titre: libelle('ERR-013', { variante: 'carte' }),
+        texte: libelle('ERR-013', { variante: 'carte' }, 'texte'),
+        action: c.action.libelle,
+      }
+    : { titre: c.titre, texte: c.texte, action: c.action.libelle };
+
 const modeleDernierEchange = (e: EntreeFeuilleSynchronisation) =>
   e.dernierEchange === undefined
     ? {}
