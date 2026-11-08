@@ -172,6 +172,19 @@ const etiquetteSousTache = (
   return code === undefined ? {} : etiquetteDe(code);
 };
 
+/** Case d'une sous-tâche (ST-US-024 v0.7 §6.8) : à faire → TERMINER, terminée → ROUVRIR, abandonnée → aucune action. */
+const caseDeSousTache = (
+  intitule: string,
+  codeEtat: LigneSousTache['etat']['code'],
+): LigneSousTache['caseTerminer'] => {
+  if (codeEtat === 'ETA-TACHE-A-FAIRE') {
+    return { nomAccessible: nomAccessibleCase(intitule, 'TERMINER'), action: 'TERMINER' };
+  }
+  return codeEtat === 'ETA-TACHE-TERMINEE'
+    ? { nomAccessible: nomAccessibleCase(intitule, 'ROUVRIR'), action: 'ROUVRIR' }
+    : { nomAccessible: nomAccessibleCase(intitule, 'TERMINER') };
+};
+
 const construireLigneSousTache = (
   resume: ResumeTache,
   parente: ResumeTache,
@@ -187,12 +200,7 @@ const construireLigneSousTache = (
     ...(ligne.enRetard === undefined ? {} : { enRetard: ligne.enRetard }),
     alertes: ligne.alertes,
     nomAccessible: ligne.nomAccessible,
-    caseTerminer: {
-      nomAccessible: nomAccessibleCase(
-        ligne.intitule,
-        ligne.etat.code === 'ETA-TACHE-TERMINEE' ? 'ROUVRIR' : 'TERMINER',
-      ),
-    },
+    caseTerminer: caseDeSousTache(ligne.intitule, ligne.etat.code),
     ...etiquetteSousTache(resume, parente),
   };
 };
