@@ -109,6 +109,21 @@ describe('SuiviHorloge — échecs du dépôt (n° 2)', () => {
     await c.suivi.traitementsTermines();
     expect(await c.mesures()).toEqual([HEURE + MINUTE]);
   });
+
+  it('UT-COMP-US-017-4-37 lecture en échec à l’ouverture : rien de consigné ; rejet qui n’est pas une Error : erreur « inconnue »', async () => {
+    const c = preparer((depot) => ({
+      lire: () => Promise.resolve(echec({ type: 'DonneesLocalesIllisibles' })),
+      lireMeta: () => depot.lireMeta(),
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- rejet hors Error simulé
+      appliquerSynchronisation: () => Promise.reject('panne'),
+    }));
+    c.suivi.demarrer();
+    await c.suivi.traitementsTermines();
+    expect(c.journal.entrees).toEqual([]);
+    c.suivi.surReponse(c.echange());
+    await c.suivi.traitementsTermines();
+    expect(c.journal.entrees).toEqual([NON_ECRITE('inconnue')]);
+  });
 });
 
 describe('SuiviHorloge — file, cycle de vie, ouverture (n° 2, n° 3, n° 5)', () => {
