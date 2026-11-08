@@ -52,6 +52,7 @@ const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVI
     window.open(url, '_blank', 'noopener,noreferrer');
   },
   conteneurServiceWorker: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
+  gestionnaireStockage: 'storage' in navigator ? navigator.storage : undefined,
 });
 
 setupIonicReact();

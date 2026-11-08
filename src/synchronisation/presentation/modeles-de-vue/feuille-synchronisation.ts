@@ -1,3 +1,4 @@
+import type { EtatPersistance } from '../../../commun/application/ports/persistance-stockage';
 import type { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 import type { Instant } from '../../../commun/domaine/temps/instant';
 import { formaterAnciennete, formaterHeure } from '../../../commun/presentation/format/heure';
@@ -18,6 +19,11 @@ export type EntreeFeuilleSynchronisation = {
   readonly elementsEnAttente: ReadonlyArray<LigneFeuilleOrdonnable>;
   /** ST-US-017 v0.11 §6.8 n° 4 (rang 11) : `EtatLocal.correctionHorloge` de l'espace ; absente ≡ 0. */
   readonly correctionHorloge?: EcartTemps;
+  /**
+   * ST-US-018 v0.4 §6.3 (rang 12, tranche D1) : état de la persistance du stockage (`DemanderPersistance`). Absent tant
+   * qu'il n'est pas lu : ni ligne `SYN-FEUILLE-STOCKAGE`, ni carte `ALR-015`.
+   */
+  readonly persistance?: EtatPersistance;
 };
 
 export type LigneAttenteFeuille = { readonly id: string; readonly intitule: string };
@@ -65,6 +71,26 @@ export type ModeleVueFeuilleSynchronisation = {
     readonly code: 'ALR-001';
     readonly titre: string;
     readonly texte: string;
+  };
+  /**
+   * ST-US-018 v0.4 §6.3 (rang 12) : ligne « Stockage » en pied de feuille, texte simple (aucun contrôle), présente dès
+   * que `persistance` est lue ; `PERSISTANT` → `PROTEGE`, `NON_PERSISTANT` ou `INDISPONIBLE` → `NON-PROTEGE`.
+   */
+  readonly stockage?: {
+    readonly code: 'SYN-FEUILLE-STOCKAGE';
+    readonly etat: 'PROTEGE' | 'NON-PROTEGE';
+    readonly libelle: string;
+  };
+  /**
+   * Carte `ALR-015` (Attention) si et seulement si la ligne est `NON-PROTEGE` : `role="status"`, ni action, ni
+   * fermeture ; aucun bandeau, aucun point sur l'indicateur (guide v0.2.12 §6.6.9 ; RL-LOT-001-S7).
+   */
+  readonly alerteStockage?: {
+    readonly code: 'ALR-015';
+    readonly titre: string;
+    readonly texte: string;
+    readonly role: 'status';
+    readonly fermable: false;
   };
 };
 

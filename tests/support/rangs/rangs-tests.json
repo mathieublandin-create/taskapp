@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "TransportParPont.*CT-TRANS-\\d+",
+      "rang": 12
+    },
+    {
       "motif": "CT-DEPOT-1[6-9]\\b",
       "rang": 11
     },

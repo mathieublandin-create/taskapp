@@ -1,5 +1,7 @@
 import Dexie from 'dexie';
 import { z } from 'zod';
+import { nonImplemente } from '@non-implemente';
+import type { MemoireDemandePersistance } from '../../commun/application/ports/persistance-stockage';
 import type { EntreeJournalTechnique } from '../../commun/application/ports/journal-technique';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
 import { Instant } from '../../commun/domaine/temps/instant';
@@ -221,5 +223,22 @@ export class MemoireRedirectionDexie implements MemoireRedirection {
     const depart = departDepuisLigne(ligne);
     if (depart === undefined) this.base.signalerLigneInvalide('redirection');
     return depart;
+  }
+}
+
+/**
+ * ST-US-018 v0.4 §4.1, §5 (rang 12, tranche B1) : table `installation`, ligne de clé `persistanceDemandee`
+ * (`{ cle: 'persistanceDemandee', demandee: true }`). Base fermée ou indisponible : `dejaDemandee()` rend faux,
+ * `noterDemandee()` se résout sans erreur ; ligne invalide : faux et `signalerLigneInvalide('installation')`.
+ */
+export class MemoireDemandePersistanceDexie implements MemoireDemandePersistance {
+  constructor(private readonly base: BaseTechnique) {}
+
+  dejaDemandee(): Promise<boolean> {
+    return nonImplemente(`MemoireDemandePersistanceDexie.dejaDemandee ${typeof this.base}`);
+  }
+
+  noterDemandee(): Promise<void> {
+    return nonImplemente('MemoireDemandePersistanceDexie.noterDemandee');
   }
 }

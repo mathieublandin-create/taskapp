@@ -13,12 +13,14 @@ import type {
 import type { ContenuFichierAppareil } from '@src/synchronisation/domaine/contenu-fichier';
 import { ClientGoogle } from '@src/infrastructure-google';
 import { TransportSynchroDrive } from '@src/synchronisation/infrastructure/drive/transport-synchro-drive';
+import { TransportParPont } from '@src/composition/test-ihm/transport-par-pont';
 import { DriveHttpSimule } from '@tests/doublures/drive-http-simule';
 import { FauxDrive } from '@tests/doublures/faux-drive';
 import { TempsSimule } from '@tests/support/banc/temps-simule';
 import { valeurDe } from '@tests/support/environnement';
 import { registre } from '@tests/support/fabriques/etat-local';
 import { ReseauCommandable } from '@tests/support/synchronisation/appareil-cycle';
+import { repondrePontDrive } from '@tests/support/ihm/repondre-pont-drive';
 import { hlc, idObjectif, instant, PC, SMARTPHONE } from '@tests/support/valeurs';
 
 export type FixtureTransport = {
@@ -414,5 +416,42 @@ suiteContratTransport('TransportSynchroDrive sur Drive HTTP simulé', () => {
       drive.invaliderJetons();
     },
     etatDe: (id) => drive.etatDe(id),
+  };
+});
+
+// ST-US-018 v0.4 §6.4, §13 (rang 12, tranche B2) : la même suite sur le transport de la composition `test-ihm`, dont
+// chaque appel franchit le codec du pont (encoderPont, decoderPont) vers le FauxDrive. Rang 12 (rangs-tests.json).
+suiteContratTransport('TransportParPont sur FauxDrive', () => {
+  const drive = new FauxDrive(new TempsSimule(instant('2026-10-21T08:00:00.000Z')));
+  const acces = { accorde: true };
+  return {
+    transport: (appareil) => {
+      const vu = drive.transportPour(appareil, {
+        reseau: new ReseauCommandable(),
+        accesAccorde: () => acces.accorde,
+      });
+      return new TransportParPont({
+        pont: (methode, argumentsJson) => repondrePontDrive(vu, methode, argumentsJson),
+        reseau: new ReseauCommandable(),
+      });
+    },
+    modifierALaMain: (id) => {
+      drive.modifierFichierALaMain(id);
+      return Promise.resolve();
+    },
+    retirerAcces: () => {
+      acces.accorde = false;
+    },
+    pendantLeProchainInventaire: (rappel) => {
+      drive.pendantLeProchainInventaire(rappel);
+    },
+    invaliderJetons: () => {
+      drive.invaliderJetons();
+    },
+    etatDe: (id) => {
+      const fichier = drive.fichiers().find((x) => x.id === id);
+      if (fichier === undefined) return 'ABSENT';
+      return fichier.supprime ? 'CORBEILLE' : 'PRESENT';
+    },
   };
 });

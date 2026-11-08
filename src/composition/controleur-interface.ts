@@ -92,6 +92,7 @@ export type ApplicationInterface = Pick<
   | 'repartirDeZero'
   | 'lireCorrectionHorloge'
   | 'mettreAJour'
+  | 'etatPersistance'
 >;
 
 /** État de synchronisation lu sur l'espace ouvert. */

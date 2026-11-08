@@ -1,4 +1,9 @@
 import type { Instant } from '../commun/domaine/temps/instant';
+import type {
+  EtatPersistance,
+  PersistanceStockage,
+} from '../commun/application/ports/persistance-stockage';
+import { nonImplemente } from '@non-implemente';
 import type { EcartTemps } from '../commun/domaine/temps/ecart-temps';
 import type {
   EchangeGoogle,
@@ -121,6 +126,8 @@ export type AdaptateursApplication = {
   readonly surFermetureImposee: () => void;
   /** Ouvre `url` dans un nouvel onglet (`noopener,noreferrer`) ; seul `main.tsx` touche à `window.open`. */
   readonly ouvrirOnglet: (url: string) => void;
+  /** ST-US-018 v0.4 §3 n° 4 (rang 12) : `PersistanceNavigateur` en production, `PersistanceSimulee` au banc. */
+  readonly persistance: PersistanceStockage;
 };
 
 /**
@@ -230,6 +237,11 @@ export type Application = {
   readonly mettreAJour: () => Promise<IssueMiseAJour>;
   /** Contrôle de saut de l'horloge de l'espace ouvert, avant le cycle du retour au premier plan (n° 3) ; sans effet sans espace. */
   readonly controlerHorloge: () => Promise<void>;
+  /**
+   * ST-US-018 v0.4 §4.2 (rang 12, tranche B1) : `DemanderPersistance.executer()` d'une instance unique par application
+   * (`DemanderPersistance` sur `a.persistance` et `MemoireDemandePersistanceDexie(base)`), sans espace requis.
+   */
+  readonly etatPersistance: () => Promise<EtatPersistance>;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
 };
@@ -727,6 +739,8 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerSortie(a, noyau),
     ...assemblerSynchronisation(a, noyau),
     ...assemblerHorlogeEtMiseAJour(a, noyau),
+    // ST-US-018 v0.4 §4.2 : squelette (tranche B1).
+    etatPersistance: () => nonImplemente(`etatPersistance ${typeof a.persistance}`),
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       fermerEspace(stockage.espace());

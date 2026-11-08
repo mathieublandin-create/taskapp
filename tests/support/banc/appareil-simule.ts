@@ -41,6 +41,7 @@ import type { FauxGoogle } from '../../doublures/faux-google';
 import { GenerateurIdentifiantsSequentiel } from '../../doublures/generateur-identifiants-sequentiel';
 import { HorlogeSimulee } from '../../doublures/horloge-simulee';
 import { MiseAJourSimulee } from '../../doublures/mise-a-jour-simulee';
+import { PersistanceSimulee } from '../../doublures/persistance-simulee';
 import { JournalTechniqueMemoire } from '../../doublures/journal-technique-memoire';
 import { ReseauSimule } from '../../doublures/reseau-simule';
 import { SourceAleatoireDeterministe } from '../../doublures/source-aleatoire-deterministe';
@@ -100,6 +101,8 @@ export class AppareilSimule {
   readonly echangesGoogle = new RelaisEchangesGoogle(this.journalTechnique);
   /** « Mettre à jour » de cet appareil (appels comptés sur toute la durée du scénario). */
   readonly miseAJour = new MiseAJourSimulee();
+  /** Persistance du stockage de cet appareil (ST-US-018 v0.4 §11.3) : accordée par défaut, comme la PWA installée. */
+  readonly persistance = new PersistanceSimulee();
   /** URL ouvertes dans un nouvel onglet par cet appareil. */
   readonly onglets: Array<string> = [];
   /** Vrai : le retour de la prochaine redirection d'ouverture est différé (« la session Google a expiré »). */
@@ -460,6 +463,7 @@ export class AppareilSimule {
       ouvrirOnglet: (url) => {
         this.onglets.push(url);
       },
+      persistance: this.persistance,
     });
   }
 }

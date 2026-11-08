@@ -3,6 +3,10 @@ import { EtatReseauNavigateur } from '../commun/infrastructure/etat-reseau-navig
 import { GenerateurUuidV7 } from '../commun/infrastructure/generateur-uuid-v7';
 import { HorlogeSysteme } from '../commun/infrastructure/horloge-systeme';
 import { JournalTechniqueLocal } from '../commun/infrastructure/journal-technique-local';
+import {
+  PersistanceNavigateur,
+  type GestionnaireStockage,
+} from '../commun/infrastructure/persistance-navigateur';
 import { PlanificateurNavigateur } from '../commun/infrastructure/planificateur-navigateur';
 import { SourceAleatoireCrypto } from '../commun/infrastructure/source-aleatoire-crypto';
 import { registreSaisie } from '../commun/presentation/saisie/registre-saisie';
@@ -50,6 +54,8 @@ export type Navigateur = {
   readonly ouvrirOnglet: (url: string) => void;
   /** `navigator.serviceWorker`, absent d'un navigateur sans service worker (« Mettre à jour », ST-US-017 §6.8 n° 10). */
   readonly conteneurServiceWorker: ConteneurServiceWorker | undefined;
+  /** `navigator.storage`, absent d'un navigateur sans l'API (ST-US-018 v0.4 §3 n° 3 : stockage `INDISPONIBLE`). */
+  readonly gestionnaireStockage: GestionnaireStockage | undefined;
 };
 
 /** Journal technique local : tampon de 7 jours dans la base technique ; `debug` désactivé en production. */
@@ -136,6 +142,7 @@ const assembler = (
     versionApplication: VERSION_APPLICATION,
     surFermetureImposee: navigateur.recharger,
     ouvrirOnglet: navigateur.ouvrirOnglet,
+    persistance: new PersistanceNavigateur(navigateur.gestionnaireStockage),
   });
   reference.base = application.base;
   return application;

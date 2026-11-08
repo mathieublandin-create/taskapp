@@ -167,7 +167,7 @@
     },
     "src/composition/application.ts": {
       "debut": 1,
-      "fin": 9
+      "fin": 12
     },
     "src/composition/controleur-interface.ts": {
       "debut": 1,
@@ -323,7 +323,7 @@
     },
     "src/compte/infrastructure/base-technique.ts": {
       "debut": 1,
-      "fin": 1
+      "fin": 12
     },
     "src/compte/infrastructure/coffre-jetons-memoire.ts": {
       "debut": 1,
@@ -1076,6 +1076,38 @@
     "src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx": {
       "debut": 9,
       "fin": 9
+    },
+    "src/commun/application/ports/persistance-stockage.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/commun/infrastructure/persistance-navigateur.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/synchronisation/application/cas-usage/demander-persistance.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/reevaluation-rappel.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/synchronisation/infrastructure/enregistrement-service-worker.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/codec-pont.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/transport-par-pont.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/fournisseur-auth-test-ihm.ts": {
+      "debut": 12,
+      "fin": 12
     }
   }
 }
