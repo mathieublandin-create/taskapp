@@ -11,14 +11,23 @@ import { fusionnerEtats, type EtatFusionnable } from '@src/synchronisation/domai
 import { cleEnTexte } from '@src/synchronisation/domaine/information';
 import { projeterEtatMetier } from '@src/synchronisation/domaine/projection';
 import { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-local-dexie';
+import { SCHEMA_VERSION } from '@src/synchronisation/domaine/version-schema';
 import { decoderFichierAppareil } from '@src/synchronisation/infrastructure/drive/format-v1';
-import type { FauxDrive } from '../../doublures/faux-drive';
+import { changerVersion, type FauxDrive } from '../../doublures/faux-drive';
 import type { AppareilSimule } from '../banc/appareil-simule';
 import { nomEspaceDuCompte, espaceExiste } from '../compte/etapes-compte';
 import type { MondeDoneJuan } from '../monde';
 
 const VIDE: EtatFusionnable = { registres: new Map(), journal: new Map() };
 const APPAREIL_LECTEUR = '00000000-0000-7000-8000-0000000000ff' as IdAppareil;
+
+/** Lecture comme un lecteur à jour (§12.7) : un fichier `SCHEMA_VERSION + 1` est lu comme un fichier du format courant. */
+const decoderEnLecteurAJour = async (octets: Uint8Array) => {
+  const contenu = await decoderFichierAppareil(octets);
+  return !contenu.ok && contenu.erreur.type === 'FormatPlusRecent'
+    ? decoderFichierAppareil(await changerVersion(octets, SCHEMA_VERSION))
+    : contenu;
+};
 
 /** État métier du Drive : fusion de tous les fichiers d'appareil lisibles. */
 export const etatMetierDuDrive = async (drive: FauxDrive): Promise<EtatMetier> => {
@@ -27,7 +36,7 @@ export const etatMetierDuDrive = async (drive: FauxDrive): Promise<EtatMetier> =
     .filter((f) => !f.supprime && f.appProperties['donejuan'] === 'appareil');
   let fusion = VIDE;
   for (const fichier of fichiers) {
-    const contenu = await decoderFichierAppareil(fichier.octets);
+    const contenu = await decoderEnLecteurAJour(fichier.octets);
     if (!contenu.ok) continue;
     fusion = fusionnerEtats(fusion, {
       registres: new Map(contenu.valeur.registres.map((r) => [cleEnTexte(r.cle), r])),

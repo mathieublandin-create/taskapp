@@ -97,7 +97,7 @@ export class AppareilSimule {
   readonly fournisseur: FauxFournisseurAuth;
   readonly avis = new AvisOngletsEnMemoire();
   /** Échanges de cet appareil avec Google (mesure de l'horloge, ST-US-017 v0.11 §12.7). */
-  readonly echangesGoogle = new RelaisEchangesGoogle();
+  readonly echangesGoogle = new RelaisEchangesGoogle(this.journalTechnique);
   /** « Mettre à jour » de cet appareil (appels comptés sur toute la durée du scénario). */
   readonly miseAJour = new MiseAJourSimulee();
   /** URL ouvertes dans un nouvel onglet par cet appareil. */

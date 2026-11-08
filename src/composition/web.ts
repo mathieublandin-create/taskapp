@@ -118,7 +118,7 @@ const assembler = (
 ): Application => {
   const reference: { base?: BaseTechnique } = {};
   const socle = socleWeb(configuration, () => reference.base);
-  const echangesGoogle = new RelaisEchangesGoogle();
+  const echangesGoogle = new RelaisEchangesGoogle(socle.journal);
   const application = assemblerApplication({
     ...socle,
     env: configuration.env,

@@ -797,7 +797,7 @@ const versionDe = (octets: Uint8Array): number | undefined => {
 };
 
 /** Même fichier au `schemaVersion` donné, scellé de nouveau (empreinte recalculée), gzip. */
-const changerVersion = async (octets: Uint8Array, version: number): Promise<Uint8Array> => {
+export const changerVersion = async (octets: Uint8Array, version: number): Promise<Uint8Array> => {
   const objet = JSON.parse(Buffer.from(gunzipSync(octets)).toString('utf8')) as Record<
     string,
     unknown
