@@ -105,7 +105,7 @@ describe('Éléments inconnus du fichier d’appareil : cas limites (n° 12)', (
     });
   });
 
-  it('UT-COMP-US-017-4-30 un registre inconnu au HLC invalide rend le fichier illisible (SCHEMA), comme un registre connu ; un registre inconnu écrit avec un contexte vide est réécrit sans contexte', async () => {
+  it('UT-COMP-US-017-4-30 un registre inconnu au HLC invalide rend le fichier illisible (SCHEMA), comme un registre connu ; un registre inconnu au contexte vide ou absent est réécrit sans contexte, son appareil ajouté à la table', async () => {
     const brut = ouvrir(await encoderFichierAppareil(CONTENU));
     const altere = await sceller({
       ...brut,
@@ -118,11 +118,15 @@ describe('Éléments inconnus du fichier d’appareil : cas limites (n° 12)', (
     const octets = await encoderFichierAppareil({
       ...CONTENU,
       inconnus: {
-        registres: [{ type: 'X', id: '1', champ: 'y', valeur: 1, hlc: h1, contexte: {} }],
+        registres: [
+          { type: 'X', id: '1', champ: 'y', valeur: 1, hlc: h1, contexte: {} },
+          { type: 'X', id: '2', champ: 'y', valeur: 2, hlc: h1 },
+        ],
         evenements: [],
       },
     });
     const ecrits = ouvrir(octets)['registres'] as ReadonlyArray<Brut>;
-    expect(ecrits.map((r) => 'contexte' in r)).toEqual([false, false]);
+    expect(ecrits.map((r) => 'contexte' in r)).toEqual([false, false, false]);
+    expect(ouvrir(octets)['appareils']).toEqual([SMARTPHONE, PC]);
   });
 });
