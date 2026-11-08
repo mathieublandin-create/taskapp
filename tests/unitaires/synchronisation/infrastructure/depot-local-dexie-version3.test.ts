@@ -80,9 +80,16 @@ describe('DepotLocalDexie — base version 3 (ST-US-017 v0.5 §5.1)', () => {
 
     const relue = new Dexie('done-juan-cible', { indexedDB: fabrique });
     await relue.open();
-    expect(relue.verno).toBe(3);
+    // ST-US-017 v0.11 §5.1 : l'ouverture migre la base 2 jusqu'à la version courante, 4 (v3 : signalements, v4 : inconnus).
+    // Le test reste exact : toute version de base ajoutée plus tard devra être déclarée ici.
+    expect(relue.verno).toBe(4);
     expect(relue.tables.map((table) => table.name)).toEqual(
-      expect.arrayContaining(['valeursEcartees', 'lectures']),
+      expect.arrayContaining([
+        'valeursEcartees',
+        'lectures',
+        'registresInconnus',
+        'evenementsInconnus',
+      ]),
     );
     relue.close();
   });

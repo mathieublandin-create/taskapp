@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import Dexie from 'dexie';
 import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
 import { ErreurProgrammation } from '../../commun/domaine/erreur-programmation';
@@ -10,7 +9,7 @@ import type {
   IssueTransaction,
 } from '../application/ports/depot-local';
 import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
-import type { Inconnus } from '../domaine/inconnus';
+import { sontVides, type Inconnus } from '../domaine/inconnus';
 import { comparerHlc } from '../domaine/hlc';
 import { cleEnTexte } from '../domaine/information';
 import {
@@ -23,18 +22,22 @@ import type { AjoutsSignalements, Signalements } from '../domaine/signalements';
 import {
   decoderEnAttente,
   decoderEvenement,
+  decoderEvenementInconnu,
   decoderLecture,
   decoderMeta,
   decoderMetaSynchronisation,
   decoderRegistre,
+  decoderRegistreInconnu,
   decoderValeurEcartee,
   encoderEnAttente,
   encoderEvenement,
+  encoderEvenementInconnu,
   encoderLecture,
   encoderMeta,
   encoderMetaSynchronisation,
-  NOMS_META_SYNCHRONISATION,
+  NOMS_META_REINITIALISES,
   encoderRegistre,
+  encoderRegistreInconnu,
   encoderValeurEcartee,
 } from './stockage-local/schemas';
 
@@ -67,9 +70,24 @@ export type OptionsOuvertureEspace = {
 };
 
 const TABLES_SIGNALEMENTS = ['valeursEcartees', 'lectures'];
+/** ST-US-017 v0.11 §5.1 (base version 4) : éléments inconnus de même `schemaVersion` (RG-058, ANT-19). */
+const TABLES_INCONNUS = ['registresInconnus', 'evenementsInconnus'];
 /** Tables vidées par `reinitialiser` (la méta est traitée à part). */
-const TABLES_VIDEES = ['registres', 'journal', 'enAttente', ...TABLES_SIGNALEMENTS];
-const TABLES = ['registres', 'journal', 'enAttente', 'meta', ...TABLES_SIGNALEMENTS];
+const TABLES_VIDEES = [
+  'registres',
+  'journal',
+  'enAttente',
+  ...TABLES_SIGNALEMENTS,
+  ...TABLES_INCONNUS,
+];
+const TABLES = [
+  'registres',
+  'journal',
+  'enAttente',
+  'meta',
+  ...TABLES_SIGNALEMENTS,
+  ...TABLES_INCONNUS,
+];
 
 type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
 
@@ -92,7 +110,15 @@ const creerBase = (nomBase: string, fabrique: IDBFactory | undefined): Dexie => 
   // ST-US-017 §5.1 : version 2, aucune nouvelle table ; la méta reçoit les clés de synchronisation.
   base.version(2).stores(tables);
   // ST-US-017 v0.5 §5.1 (DAT v0.11.7 §4.2) : version 3, ajout pur des tables de signalements, sans `upgrade`.
-  base.version(3).stores({ ...tables, valeursEcartees: 'id', lectures: 'id' });
+  const signalements = { valeursEcartees: 'id', lectures: 'id' };
+  base.version(3).stores({ ...tables, ...signalements });
+  // ST-US-017 v0.11 §5.1 : version 4, ajout pur des tables d'éléments inconnus, sans `upgrade`.
+  base.version(4).stores({
+    ...tables,
+    ...signalements,
+    registresInconnus: 'cle',
+    evenementsInconnus: 'id',
+  });
   return base;
 };
 
@@ -134,6 +160,21 @@ const avanceDernierHlc = (avant: EtatLocal, plan: PlanEcriture): boolean => {
 
 const signalementsVides = (ajouts: AjoutsSignalements | undefined): boolean =>
   ajouts === undefined || (ajouts.valeursEcartees.length === 0 && ajouts.lectures.length === 0);
+
+/** ST-US-017 v0.11 §5.1, §6.8 n° 2 : un plan qui change la correction d'horloge n'est pas vide. */
+const changeCorrection = (avant: EtatLocal, plan: PlanEcriture): boolean =>
+  plan.etatApres.correctionHorloge !== avant.correctionHorloge;
+
+const inconnusVides = (inconnus: Inconnus | undefined): boolean =>
+  inconnus === undefined || sontVides(inconnus);
+
+/** Plan de synchronisation sans écriture d'état (seule la méta est écrite) : version et observateurs inchangés. */
+const synchronisationVide = (s: PlanSynchronisation, avant: EtatLocal): boolean =>
+  planEstVide(s.plan) &&
+  !avanceDernierHlc(avant, s.plan) &&
+  !changeCorrection(avant, s.plan) &&
+  signalementsVides(s.signalements) &&
+  inconnusVides(s.inconnus);
 
 /** Décode toutes les lignes ; undefined si l'une d'elles est invalide. */
 const decoderTout = <T>(
@@ -297,8 +338,15 @@ export class DepotLocalDexie implements DepotLocal {
    * ST-US-017 v0.11 §4.8, §5.1 (rang 11, tranche H2) : tables `registresInconnus` et `evenementsInconnus` (base
    * version 4), lues dans une transaction `r`, triées comme `Inconnus` ; ligne illisible → DonneesLocalesIllisibles.
    */
-  lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
-    return nonImplemente(`DepotLocalDexie.lireInconnus (${String(this.ferme)})`);
+  async lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', TABLES_INCONNUS, () => this.inconnus());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
   }
 
   /**
@@ -417,6 +465,23 @@ export class DepotLocalDexie implements DepotLocal {
     });
   }
 
+  /**
+   * Dans une transaction qui couvre les deux tables : inconnus relus, ou DonneesLocalesIllisibles. Triés par clé
+   * primaire (`cle`, puis `id`) : l'ordre des clés texte d'IndexedDB est celui des unités de code (n° 12).
+   */
+  private async inconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    const registres = decoderTout(
+      await this.base.table('registresInconnus').toArray(),
+      decoderRegistreInconnu,
+    );
+    const evenements = decoderTout(
+      await this.base.table('evenementsInconnus').toArray(),
+      decoderEvenementInconnu,
+    );
+    if (registres === undefined || evenements === undefined) return ESPACE_ILLISIBLE;
+    return succes({ registres, evenements });
+  }
+
   private async metaSynchronisation(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
     const meta = decoderMetaSynchronisation(await this.base.table('meta').toArray());
     return meta === undefined ? ESPACE_ILLISIBLE : succes(meta);
@@ -452,21 +517,22 @@ export class DepotLocalDexie implements DepotLocal {
     synchronisation: PlanSynchronisation,
     etatAvant: EtatLocal,
   ): Promise<IssueExecution<undefined, never>> {
-    const { plan, meta: metaEcrite, signalements: ajouts } = synchronisation;
+    const { plan, meta: metaEcrite, signalements: ajouts, inconnus } = synchronisation;
     await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
-    if (planEstVide(plan) && !avanceDernierHlc(etatAvant, plan) && signalementsVides(ajouts)) {
-      return succes({ valeur: undefined });
-    }
+    if (synchronisationVide(synchronisation, etatAvant)) return succes({ valeur: undefined });
     const etatApres = { ...plan.etatApres, version: etatAvant.version + 1 };
     await this.ecrire(plan, etatApres);
     if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
+    if (inconnus !== undefined) await this.ecrireInconnus(inconnus);
     return succes({ valeur: undefined, etatApres });
   }
 
   /**
-   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14), dans la transaction en cours : vide les tables d'état et de signalements,
-   * REMPLACE les clés de synchronisation de la méta par `{ ...META_INITIALE, ...meta }`, écrit l'état vide
-   * (`appareilId`, `dernierHlc`, `correctionHorloge` de `plan.etatApres`, version + 1) puis les signalements.
+   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14), dans la transaction en cours : vide les tables d'état, de signalements et
+   * d'inconnus, REMPLACE les clés de synchronisation de la méta par `{ ...META_INITIALE, ...meta }`, écrit l'état vide
+   * (`appareilId`, `dernierHlc`, `correctionHorloge` de `plan.etatApres`, version + 1) puis les signalements et les
+   * inconnus du plan. v0.11 §5.1 (CT-DEPOT-17) : la méta d'appareil (`CLES_META_APPAREIL`) n'est pas retirée ; une
+   * valeur fournie par `meta` la remplace.
    */
   private async reinitialiser(
     synchronisation: PlanSynchronisation,
@@ -480,7 +546,7 @@ export class DepotLocalDexie implements DepotLocal {
       enAttente: new Map(),
     };
     await Promise.all(TABLES_VIDEES.map((table) => this.base.table(table).clear()));
-    await this.base.table('meta').bulkDelete([...NOMS_META_SYNCHRONISATION]);
+    await this.base.table('meta').bulkDelete([...NOMS_META_REINITIALISES]);
     await this.base
       .table('meta')
       .bulkPut([
@@ -490,6 +556,7 @@ export class DepotLocalDexie implements DepotLocal {
     if (synchronisation.signalements !== undefined) {
       await this.ecrireSignalements(synchronisation.signalements);
     }
+    if (synchronisation.inconnus !== undefined) await this.ecrireInconnus(synchronisation.inconnus);
     return succes({ valeur: undefined, etatApres });
   }
 
@@ -534,6 +601,16 @@ export class DepotLocalDexie implements DepotLocal {
       .table('valeursEcartees')
       .bulkPut(ajouts.valeursEcartees.map(encoderValeurEcartee));
     await this.base.table('lectures').bulkPut(ajouts.lectures.map(encoderLecture));
+  }
+
+  /** Ajout ou remplacement par clé (`cleInconnue`) et par identifiant, dans la transaction en cours. */
+  private async ecrireInconnus(inconnus: Inconnus): Promise<void> {
+    await this.base
+      .table('registresInconnus')
+      .bulkPut(inconnus.registres.map(encoderRegistreInconnu));
+    await this.base
+      .table('evenementsInconnus')
+      .bulkPut(inconnus.evenements.map(encoderEvenementInconnu));
   }
 
   private confirmer(etatApres: EtatLocal): void {
