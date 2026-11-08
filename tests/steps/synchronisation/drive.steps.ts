@@ -1,6 +1,7 @@
 /** Étapes du Drive simulé (glossaire d'étapes §1, §6 ; ST-US-022 §12.1 n° 15 à 17, 43 ; ST-US-017 §12.1 n° 11 à 14). */
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
+import { SCHEMA_VERSION } from '@src/synchronisation/domaine/version-schema';
 import { connecter } from '../../support/compte/etapes-compte';
 import { convertirAppareil, FRAGMENT_APPAREIL, FRAGMENT_DATE } from '../../support/conversions';
 import type { MondeDoneJuan } from '../../support/monde';
@@ -15,6 +16,10 @@ import {
 import { FILTRES_ETAT } from '../../support/taches';
 import { creerObjectifEnregistre } from '../../support/synchronisation/echanges';
 import { resoudreObjectif } from '../../support/objectifs';
+import {
+  formatDuFichierDe,
+  reecrireFichierDuPcParVersionRecente,
+} from '../../support/synchronisation/versions-application';
 import type { FauxDrive } from '../../doublures/faux-drive';
 import {
   etatMetierDansEspace,
@@ -337,5 +342,55 @@ Then(
   "le fichier de données du {appareil} n'a pas été réécrit dans le Drive",
   function (this: MondeDoneJuan, nom: NomAppareil) {
     verifierFichierAltereIntact(this, nom);
+  },
+);
+
+// ---------------------------------------------------------------- Formats et versions (ST-US-017 v0.11 §12.7 V1, V7, V10)
+
+// V1 (S30, S30b ; US-022 S24, S25) : le PC passe au format plus récent ; les écritures des appareils sont repérées.
+Given(
+  '(que )le PC a enregistré dans le Drive des données dans un format plus récent que celui que connaît le smartphone',
+  async function (this: MondeDoneJuan) {
+    await this.banc.attendreCycles();
+    const drive = driveDesAppareils(this);
+    await drive.passerAuFormatPlusRecent(this.banc.appareil('pc').appareilId);
+    this.driveSuivi = drive;
+    for (const appareil of this.banc.appareils()) {
+      this.ecrituresDepuis.set(appareil.nom, drive.ecrituresPar(appareil.identifiantDrive));
+    }
+  },
+);
+
+// V7 : en consultation seule, aucune écriture (dépôt, manifeste, corbeille) depuis V1.
+Then(
+  "aucune écriture n'a été faite dans le Drive par le {appareil}",
+  function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
+    const appareil = this.banc.appareil(nomAppareil);
+    const avant = this.ecrituresDepuis.get(nomAppareil);
+    assert.ok(avant !== undefined, `Écritures du ${nomAppareil} non repérées (format plus récent)`);
+    const drive = this.driveSuivi;
+    assert.ok(drive, 'Aucun Drive suivi');
+    assert.equal(drive.ecrituresPar(appareil.identifiantDrive), avant, `Le ${nomAppareil} a écrit`);
+  },
+);
+
+// V10 (S31, Q-ST017-PEP-5) : la version plus récente du PC ajoute des éléments inconnus au même `schemaVersion`.
+Given(
+  "(que )le PC utilise une version de l'application plus récente que celle du smartphone",
+  async function (this: MondeDoneJuan) {
+    await this.banc.attendreCycles();
+    await reecrireFichierDuPcParVersionRecente(
+      driveDesAppareils(this),
+      this.banc.appareil('pc').appareilId,
+      this.banc.temps.maintenant(),
+    );
+  },
+);
+
+Given(
+  '(que )les deux versions partagent le même format de données',
+  function (this: MondeDoneJuan) {
+    const format = formatDuFichierDe(driveDesAppareils(this), this.banc.appareil('pc').appareilId);
+    assert.equal(format, SCHEMA_VERSION, 'Les deux versions ne partagent pas le même format');
   },
 );

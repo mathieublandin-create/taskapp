@@ -51,6 +51,7 @@ const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVI
   ouvrirOnglet: (url) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   },
+  conteneurServiceWorker: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
 });
 
 setupIonicReact();
@@ -95,8 +96,9 @@ const IndicateurEtBandeau = ({ controleur }: { readonly controleur: ControleurIn
         <Bandeau
           vue={vue.bandeau}
           appareil={APPAREIL}
-          surAction={() => void controleur.reprendre()}
+          surAction={(a) => void controleur.actionBandeau(a)}
           surMasquer={() => void controleur.masquerRappel()}
+          miseAJour={vue.miseAJour}
         />
       )}
     </>
@@ -139,6 +141,7 @@ const EtatSynchronisation = ({
           vue={vue.feuille}
           surSynchroniser={() => void controleur.synchroniser()}
           surActionCarte={(a) => void controleur.actionCarte(a)}
+          miseAJour={vue.miseAJour}
           {...(choix === undefined ? {} : { choixRestauration: choix })}
         />
       )}
@@ -162,7 +165,11 @@ const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInte
         <SectionCompte vue={vue.compte} surAction={(a) => void controleur.actionCompte(a)} />
       )}
       {objectifs === undefined ? null : (
-        <EcransObjectifs objectifs={objectifs} navigation={navigation} />
+        <EcransObjectifs
+          objectifs={objectifs}
+          navigation={navigation}
+          consultationSeule={vue.consultationSeule}
+        />
       )}
     </main>
   );

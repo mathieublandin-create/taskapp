@@ -32,6 +32,7 @@ import {
 } from '../../support/compte/doublures-compte';
 import { instant } from '../../support/valeurs';
 import { RESTAURATION_ABSENTE } from '../../support/synchronisation/restauration-absente';
+import { HORLOGE_ABSENTE } from '../../support/synchronisation/horloge-absente';
 
 /** Espaces dont l'ouverture ou la suppression peut échouer (IndexedDB indisponible, quota, corruption). */
 class EspacesFaillibles extends EspacesEnMemoire {
@@ -86,6 +87,7 @@ const preparer = ({ enAttente = 0, connecte = true }: Options = {}) => {
     observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => undefined,
     ...RESTAURATION_ABSENTE,
+    ...HORLOGE_ABSENTE,
     seConnecter: new SeConnecter({
       ...{ reseau, fournisseur, espaces, memoireSession, session },
       preparation: new PreparationSimulee(),

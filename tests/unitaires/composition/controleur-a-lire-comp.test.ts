@@ -16,6 +16,7 @@ import { HorlogeSimulee } from '../../doublures/horloge-simulee';
 import { TempsSimule } from '../../support/banc/temps-simule';
 import { h, idArbitraire } from '../../support/synchronisation/ecritures-concurrentes';
 import { date, idTache, instant, PC } from '../../support/valeurs';
+import { HORLOGE_ABSENTE } from '../../support/synchronisation/horloge-absente';
 
 const ETAT: EtatSynchronisationLu = {
   reseau: 'CONNECTE',
@@ -48,6 +49,7 @@ const preparer = (issue: Resultat<undefined, ErreurDepotLocal> = succes(undefine
     consulterEtat: () => Promise.resolve(ETAT),
     lireElementsEnAttente: () => Promise.resolve([]),
     lireDernierContact: () => Promise.resolve(undefined),
+    ...HORLOGE_ABSENTE,
     lireModificationsNonRetenues: () => Promise.resolve(etat.lu),
     marquerCommeLue,
     observerSynchronisation: () => () => undefined,

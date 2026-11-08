@@ -137,7 +137,7 @@ export const etapeAction = (
         }
         this.instantDerniereAction = this.banc.temps.maintenant();
         const resultat = await corps({ monde: this, appareil }, ...reste);
-        if (estResultat(resultat)) this.resultats.set(appareil.nom, resultat);
+        if (estResultat(resultat)) this.memoriserResultat(appareil.nom, resultat);
       },
       options.tableau ?? false,
     ),

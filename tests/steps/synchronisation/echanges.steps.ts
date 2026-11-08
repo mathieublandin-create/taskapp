@@ -88,6 +88,15 @@ etapeContexte(
   },
 );
 
+// ST-US-017 v0.11 §12.7 V2 (S30, S30b) : création sans délai ni dépôt ; l'objectif porte la mention MEN-ATTENTE.
+etapeContexte(
+  new RegExp(`^l'objectif ${TEXTE} a été créé et n'est pas encore synchronisé$`),
+  async ({ monde, appareil }, intitule) => {
+    await creerObjectifAuPasse(monde, appareil, String(intitule));
+    await verifierNonEnregistre(monde, appareil, String(intitule));
+  },
+);
+
 // ---------------------------------------------------------------- Opérations au passé sur une tâche (ST-US-017 §12.1 n° 16)
 
 etapeContexte(
