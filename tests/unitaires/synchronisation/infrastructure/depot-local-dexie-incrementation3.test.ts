@@ -23,7 +23,7 @@ const depotSur = (fabrique: IDBFactory) =>
 const generation: Generation = { type: 'NOUVELLE', hlc: h(5, SMARTPHONE) };
 
 describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
-  it('UT-COMP-US-017-3-117 une base version 3 existante, sans clé de l’incrément 3, est lue sans perte avec les valeurs initiales ; la version reste 3', async () => {
+  it('UT-COMP-US-017-3-117 une base version 3 existante, sans clé de l’incrément 3, est lue sans perte avec les valeurs initiales ; l’incrément 3 n’ajoute aucune version (la base passe à la version 4 de l’incrément 4, ajout pur)', async () => {
     const fabrique = new IDBFactory();
     const existante = new Dexie(NOM, { indexedDB: fabrique });
     existante.version(3).stores({
@@ -52,7 +52,8 @@ describe('DepotLocalDexie — incrément 3 (ST-US-017 v0.10 §5.1)', () => {
     depot.fermer();
     const relue = new Dexie(NOM, { indexedDB: fabrique });
     await relue.open();
-    expect(relue.verno).toBe(3);
+    // ST-US-017 v0.11 §5.1 : la seule version ajoutée depuis la 3 est la 4 (incrément 4, tables d'inconnus).
+    expect(relue.verno).toBe(4);
     relue.close();
   });
 
