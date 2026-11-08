@@ -13,6 +13,7 @@ import type { ElementEnAttente } from '@src/synchronisation/domaine/elements-en-
 import { HorlogeSimulee } from '../../doublures/horloge-simulee';
 import { TempsSimule } from '../../support/banc/temps-simule';
 import { instant } from '../../support/valeurs';
+import { HORLOGE_ABSENTE } from '../../support/synchronisation/horloge-absente';
 
 const MAINTENANT = instant('2026-10-21T08:00:00.000Z');
 const EN_ATTENTE: EtatSynchronisationLu = {
@@ -49,6 +50,7 @@ const preparer = () => {
     },
     lireElementsEnAttente: () => Promise.resolve(donnees.elements),
     lireDernierContact: () => Promise.resolve(donnees.dernierContact),
+    ...HORLOGE_ABSENTE,
     lireModificationsNonRetenues: () => Promise.resolve(undefined),
     synchroniserMaintenant: () => Promise.resolve(),
     observerSynchronisation: (rappel: () => void) => {

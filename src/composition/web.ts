@@ -18,10 +18,21 @@ import { PasserelleGisNavigateur } from '../compte/infrastructure/auth/passerell
 import { AvisOngletsBroadcast } from '../compte/infrastructure/avis-onglets-broadcast';
 import type { BaseTechnique } from '../compte/infrastructure/base-technique';
 import { lireConfiguration, type Configuration } from '../compte/infrastructure/configuration';
+import type { Horloge } from '../commun/application/ports/horloge';
+import type { ObservateurEchangesGoogle } from '../commun/application/ports/observateur-echanges-google';
 import { ClientGoogle } from '../infrastructure-google';
+import {
+  MiseAJourServiceWorker,
+  type ConteneurServiceWorker,
+} from '../synchronisation/infrastructure/mise-a-jour-service-worker';
 import { TransportSynchroDrive } from '../synchronisation/infrastructure/drive/transport-synchro-drive';
 import { version as VERSION_APPLICATION } from '../../package.json';
-import { assemblerApplication, type AdaptateursApplication, type Application } from './application';
+import {
+  assemblerApplication,
+  RelaisEchangesGoogle,
+  type AdaptateursApplication,
+  type Application,
+} from './application';
 import { ControleurInterface } from './controleur-interface';
 
 // Composition de la PWA (ADR-013 ; ST-US-022 §3.2 n° 51, §6.2). Appelée par main.tsx, après la consommation du
@@ -37,6 +48,8 @@ export type Navigateur = {
   readonly arreterNavigation: () => void;
   /** Ouvre `url` dans un nouvel onglet, sans lien avec la page (`noopener,noreferrer`). */
   readonly ouvrirOnglet: (url: string) => void;
+  /** `navigator.serviceWorker`, absent d'un navigateur sans service worker (« Mettre à jour », ST-US-017 §6.8 n° 10). */
+  readonly conteneurServiceWorker: ConteneurServiceWorker | undefined;
 };
 
 /** Journal technique local : tampon de 7 jours dans la base technique ; `debug` désactivé en production. */
@@ -67,11 +80,32 @@ const fournisseurWeb =
       },
     });
 
-/** Transport Drive v3 (ST-US-017 §4.4) : jeton lu dans le coffre à chaque requête. */
-const transportDrive: AdaptateursApplication['transport'] = (coffre) =>
-  new TransportSynchroDrive(
-    new ClientGoogle({ lireJeton: () => coffre.lire()?.jeton, fetch: fetch.bind(globalThis) }),
-  );
+/**
+ * Transport Drive v3 (ST-US-017 §4.4) : jeton lu dans le coffre à chaque requête ; chaque réponse est signalée au
+ * relais pour la mesure de l'horloge (§6.8 n° 1). La lecture d'identité (userinfo) n'utilise pas `ClientGoogle` : elle n'est pas mesurée.
+ */
+const transportDrive =
+  (horloge: Horloge, observateur: ObservateurEchangesGoogle): AdaptateursApplication['transport'] =>
+  (coffre) =>
+    new TransportSynchroDrive(
+      new ClientGoogle({
+        lireJeton: () => coffre.lire()?.jeton,
+        fetch: fetch.bind(globalThis),
+        horloge,
+        observateur,
+      }),
+    );
+
+/** Horloge, journal local, réseau et hasard de la PWA. */
+const socleWeb = (configuration: Configuration, base: () => BaseTechnique | undefined) => {
+  const horloge = new HorlogeSysteme();
+  return {
+    horloge,
+    journal: new JournalTechniqueLocal(puitsJournal(configuration, horloge, base)),
+    reseau: new EtatReseauNavigateur(),
+    aleatoire: new SourceAleatoireCrypto(),
+  };
+};
 
 /**
  * Un seul canal d'avis par onglet : un BroadcastChannel ne reçoit pas ses propres messages, mais une autre
@@ -82,14 +116,9 @@ const assembler = (
   navigateur: Navigateur,
   avis: AvisOngletsBroadcast,
 ): Application => {
-  const horloge = new HorlogeSysteme();
   const reference: { base?: BaseTechnique } = {};
-  const socle = {
-    horloge,
-    journal: new JournalTechniqueLocal(puitsJournal(configuration, horloge, () => reference.base)),
-    reseau: new EtatReseauNavigateur(),
-    aleatoire: new SourceAleatoireCrypto(),
-  };
+  const socle = socleWeb(configuration, () => reference.base);
+  const echangesGoogle = new RelaisEchangesGoogle();
   const application = assemblerApplication({
     ...socle,
     env: configuration.env,
@@ -98,13 +127,28 @@ const assembler = (
     avis,
     gardeSaisie: registreSaisie,
     fournisseur: fournisseurWeb(configuration, socle),
-    transport: transportDrive,
+    transport: transportDrive(socle.horloge, echangesGoogle),
+    echangesGoogle,
+    miseAJour: new MiseAJourServiceWorker({
+      conteneur: navigateur.conteneurServiceWorker,
+      recharger: navigateur.recharger,
+    }),
     versionApplication: VERSION_APPLICATION,
     surFermetureImposee: navigateur.recharger,
     ouvrirOnglet: navigateur.ouvrirOnglet,
   });
   reference.base = application.base;
   return application;
+};
+
+/**
+ * ST-US-017 §6.4 : retour au premier plan (cycle) ; page masquée : pas de cycle toutes les 2 min. Au retour, le saut
+ * de l'horloge est contrôlé **avant** le cycle, pour qu'il horodate déjà corrigé (v0.11 §6.8 n° 3).
+ */
+const auChangementDeVisibilite = async (application: Application): Promise<void> => {
+  const visible = document.visibilityState === 'visible';
+  if (visible) await application.controlerHorloge();
+  application.espace()?.cycle.definirPremierPlan(visible);
 };
 
 /** Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038). */
@@ -122,10 +166,7 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
   );
   avis.ecouter(navigateur.recharger);
   new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
-  // ST-US-017 §6.4 : retour au premier plan (cycle) ; page masquée : pas de cycle toutes les 2 min.
-  document.addEventListener('visibilitychange', () => {
-    application.espace()?.cycle.definirPremierPlan(document.visibilityState === 'visible');
-  });
+  document.addEventListener('visibilitychange', () => void auChangementDeVisibilite(application));
   void application.ouvrirApplication.executer(retour).then(async (issue) => {
     if (issue.type === 'REDIRECTION_LANCEE') {
       new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {

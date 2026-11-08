@@ -32,6 +32,7 @@ import {
 } from '../../support/compte/doublures-compte';
 import { instant } from '../../support/valeurs';
 import { RESTAURATION_ABSENTE } from '../../support/synchronisation/restauration-absente';
+import { HORLOGE_ABSENTE } from '../../support/synchronisation/horloge-absente';
 
 class EspacesInstables extends EspacesEnMemoire {
   ouvertureImpossible = true;
@@ -81,6 +82,7 @@ const preparer = () => {
     observerSynchronisation: () => () => undefined,
     ouvrirGoogleDrive: () => undefined,
     ...RESTAURATION_ABSENTE,
+    ...HORLOGE_ABSENTE,
     seConnecter: new SeConnecter({
       ...{ reseau, fournisseur, espaces, memoireSession, session },
       preparation: new PreparationSimulee(),

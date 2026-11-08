@@ -13,6 +13,7 @@ import { HorlogeSimulee } from '../../doublures/horloge-simulee';
 import { TempsSimule } from '../../support/banc/temps-simule';
 import { h } from '../../support/synchronisation/ecritures-concurrentes';
 import { instant, PC } from '../../support/valeurs';
+import { HORLOGE_ABSENTE } from '../../support/synchronisation/horloge-absente';
 
 const ETAT: EtatSynchronisationLu = {
   reseau: 'CONNECTE',
@@ -43,6 +44,7 @@ const preparer = () => {
     consulterEtat: () => Promise.resolve(etat.lu),
     lireElementsEnAttente: () => Promise.resolve([]),
     lireDernierContact: () => Promise.resolve(undefined),
+    ...HORLOGE_ABSENTE,
     lireModificationsNonRetenues: () => Promise.resolve(undefined),
     lireChoixRestauration: () => Promise.resolve({ restaurationDemandee: false, copie: COPIE }),
     lireRestaurationFaiteIci: () => Promise.resolve(etat.restauree),

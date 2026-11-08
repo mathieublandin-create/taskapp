@@ -1,4 +1,9 @@
 import type { Instant } from '../commun/domaine/temps/instant';
+import type { EcartTemps } from '../commun/domaine/temps/ecart-temps';
+import type {
+  EchangeGoogle,
+  ObservateurEchangesGoogle,
+} from '../commun/application/ports/observateur-echanges-google';
 import type { EtatReseau } from '../commun/application/ports/etat-reseau';
 import type { GenerateurIdentifiants } from '../commun/application/ports/generateur-identifiants';
 import type { Horloge } from '../commun/application/ports/horloge';
@@ -45,6 +50,10 @@ import type {
 } from '../synchronisation/application/ports/acces-google';
 import { SUIVI_CYCLE_AU_REPOS } from '../synchronisation/application/ports/suivi-cycle';
 import type { ErreurDepotLocal } from '../synchronisation/application/ports/depot-local';
+import type {
+  IssueMiseAJour,
+  MiseAJourApplication,
+} from '../synchronisation/application/ports/mise-a-jour-application';
 import type { TransportSynchro } from '../synchronisation/application/ports/transport-synchro';
 import { PreparationDossierDrive } from '../synchronisation/application/preparation-dossier-drive';
 import {
@@ -57,12 +66,15 @@ import {
   type EtatSynchronisationLu,
 } from '../synchronisation/application/requetes/consulter-etat-synchronisation';
 import type { ServiceEtatLocal } from '../synchronisation/application/service-etat-local';
+import { ServiceEtatLocalConsultationSeule } from '../synchronisation/application/service-etat-local-consultation-seule';
+import { SuiviHorloge } from '../synchronisation/application/suivi-horloge';
 import { ServiceEtatLocalTransactionnel } from '../synchronisation/application/service-etat-local-transactionnel';
 import {
   elementsEnAttenteDetailles,
   type ElementEnAttente,
 } from '../synchronisation/domaine/elements-en-attente';
 import { resumerCopieLocale, type CopieLocale } from '../synchronisation/domaine/copie-locale';
+import { enHeureAppareil } from '../synchronisation/domaine/correction-horloge';
 import type { Hlc } from '../synchronisation/domaine/hlc';
 import { compterALire } from '../synchronisation/domaine/lectures';
 import type { IdValeurEcartee } from '../synchronisation/domaine/valeurs-ecartees';
@@ -94,6 +106,15 @@ export type AdaptateursApplication = {
     readonly session: SessionCourante;
   }) => FournisseurAuth;
   readonly transport: (coffre: CoffreJetons) => TransportSynchro;
+  /**
+   * Source des échanges avec Google (ST-US-017 v0.11 §6.8 n° 16) : relais de `ClientGoogle` en production, du
+   * `FauxDrive` au banc. L'observateur reçoit chaque réponse ; l'annulation le retire.
+   */
+  readonly echangesGoogle: {
+    readonly observer: (observateur: ObservateurEchangesGoogle) => Annulation;
+  };
+  /** « Mettre à jour » (RG-058, ADR-013) : service worker en production, doublure au banc. */
+  readonly miseAJour: MiseAJourApplication;
   /** Version de l'application écrite dans le fichier d'appareil (ST-US-017 §5.2). */
   readonly versionApplication: string;
   /** `versionchange` sur l'espace ou la base technique (RL-LOT-001-A1) : la PWA recharge la page. */
@@ -101,6 +122,27 @@ export type AdaptateursApplication = {
   /** Ouvre `url` dans un nouvel onglet (`noopener,noreferrer`) ; seul `main.tsx` touche à `window.open`. */
   readonly ouvrirOnglet: (url: string) => void;
 };
+
+/**
+ * Relais des échanges avec Google (ST-US-017 v0.11 §6.8 n° 16) : chaque client Google y signale ses réponses, le suivi
+ * d'horloge de chaque espace s'y abonne. Un relais par appareil (PWA ou banc).
+ */
+export class RelaisEchangesGoogle implements ObservateurEchangesGoogle {
+  readonly #observateurs = new Set<ObservateurEchangesGoogle>();
+
+  observer(observateur: ObservateurEchangesGoogle): Annulation {
+    this.#observateurs.add(observateur);
+    return () => {
+      this.#observateurs.delete(observateur);
+    };
+  }
+
+  surReponse(echange: EchangeGoogle): void {
+    this.#observateurs.forEach((observateur) => {
+      observateur.surReponse(echange);
+    });
+  }
+}
 
 /** Ce que le choix RG-044 affiche : demande mémorisée et copie de l'appareil (ST-US-017 v0.10 §6.7 n° 17). */
 export type ChoixRestaurationLu = {
@@ -167,6 +209,12 @@ export type Application = {
   readonly repartirDeZero: () => Promise<Resultat<undefined, ErreurChoixRestauration>>;
   /** Ouvre Google Drive dans un nouvel onglet (action de la carte ERR-011). */
   readonly ouvrirGoogleDrive: () => void;
+  /** `EtatLocal.correctionHorloge` de l'espace ouvert (alerte `ALR-001`) ; undefined sans espace ou si la lecture échoue. */
+  readonly lireCorrectionHorloge: () => Promise<EcartTemps | undefined>;
+  /** « Mettre à jour » (n° 10) : appel direct au port, sans espace requis. */
+  readonly mettreAJour: () => Promise<IssueMiseAJour>;
+  /** Contrôle de saut de l'horloge de l'espace ouvert, avant le cycle du retour au premier plan (n° 3) ; sans effet sans espace. */
+  readonly controlerHorloge: () => Promise<void>;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
 };
@@ -176,6 +224,10 @@ export type EspaceOuvert = {
   readonly service: ServiceEtatLocal;
   /** ST-US-017 §6.4 : un cycle par espace, démarré à l'ouverture de l'espace, arrêté à sa fermeture. */
   readonly cycle: CycleSynchronisation;
+  /** ST-US-017 v0.11 §6.8 n° 16 : correction d'horloge de l'espace, abonnée aux échanges avec Google. */
+  readonly suivi: SuiviHorloge;
+  /** Désabonnement du suivi des échanges avec Google, à la fermeture de l'espace. */
+  readonly desabonnerSuivi: Annulation;
 };
 
 /** Ce qu'il faut au cycle d'un espace, connu une fois la session et l'accès Google assemblés. */
@@ -189,7 +241,12 @@ const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocal
   const signalements = await espace.depot.lireSignalements();
   return {
     enAttente: decompterModificationsEnAttente(etat.valeur.enAttente),
-    ...(plusAncienne === undefined ? {} : { plusAncienneEnAttente: plusAncienne }),
+    // n° 5 : instant corrigé ramené à l'heure de l'appareil avant toute comparaison à `Horloge.maintenant()`.
+    ...(plusAncienne === undefined
+      ? {}
+      : {
+          plusAncienneEnAttente: enHeureAppareil(plusAncienne, etat.valeur.correctionHorloge),
+        }),
     ...(signalements.ok
       ? { aLire: compterALire(signalements.valeur.valeursEcartees, signalements.valeur.lectures) }
       : {}),
@@ -216,6 +273,14 @@ const dernierContactDe = async (espace: EspaceOuvert | undefined): Promise<Insta
   if (espace === undefined) return undefined;
   const meta = await espace.depot.lireMeta();
   return meta.ok ? meta.valeur.dernierContactDrive : undefined;
+};
+
+const correctionHorlogeDe = async (
+  espace: EspaceOuvert | undefined,
+): Promise<EcartTemps | undefined> => {
+  if (espace === undefined) return undefined;
+  const etat = await espace.depot.lire();
+  return etat.ok ? etat.valeur.correctionHorloge : undefined;
 };
 
 const marquerCommeLueDans = async (
@@ -323,14 +388,20 @@ const baseTechnique = (a: AdaptateursApplication): BaseTechnique =>
     },
   });
 
-/** Arrête le cycle de l'espace, puis ferme sa connexion. */
+/** Arrête le suivi d'horloge et le cycle de l'espace, puis ferme sa connexion. */
 const fermerEspace = (espace: EspaceOuvert | undefined): void => {
+  espace?.suivi.arreter();
+  espace?.desabonnerSuivi();
   espace?.cycle.arreter();
   espace?.depot.fermer();
 };
 
-/** Ouverture (ST-US-017 §6.4) : déclencheurs installés, puis un cycle si l'accès est déjà valide. */
-const demarrerCycle = (a: AdaptateursApplication, cycle: CycleSynchronisation): void => {
+/**
+ * Ouverture (ST-US-017 §6.4, v0.11 §6.8 n° 3) : suivi d'horloge et déclencheurs installés, puis un cycle si l'accès
+ * est déjà valide.
+ */
+const demarrerEspace = (a: AdaptateursApplication, { cycle, suivi }: EspaceOuvert): void => {
+  suivi.demarrer();
   cycle.demarrer();
   cycle.synchroniserMaintenant().catch((erreur: unknown) => {
     a.journal.consigner({
@@ -354,7 +425,7 @@ const assemblerStockage = (a: AdaptateursApplication, fabriqueCycle: FabriqueCyc
       if (espace === undefined) return echec({ type: 'EspaceInaccessible' });
       if (ouvert !== espace) fermerEspace(ouvert);
       ouvert = espace;
-      demarrerCycle(a, espace.cycle);
+      demarrerEspace(a, espace);
       return succes(undefined);
     },
     surFermeture: () => {
@@ -386,15 +457,37 @@ const ouvrirEspace = async (
     surFermetureImposee: a.surFermetureImposee,
   });
   if (!ouvert.ok) return undefined;
-  const depot = ouvert.valeur;
+  return assemblerEspace(a, ouvert.valeur, creerCycle);
+};
+
+/** Dépôt, service d'écriture (consultation seule comprise), cycle et suivi d'horloge d'un espace (§6.8 n° 9, 16). */
+const assemblerEspace = (
+  a: AdaptateursApplication,
+  depot: DepotLocalDexie,
+  creerCycle: (depot: DepotLocalDexie) => CycleSynchronisation,
+): EspaceOuvert => {
+  const cycle = creerCycle(depot);
+  const suivi = new SuiviHorloge({
+    depot,
+    horloge: a.horloge,
+    planificateur: a.planificateur,
+    journal: a.journal,
+  });
+  const transactionnel = new ServiceEtatLocalTransactionnel({
+    depot,
+    horloge: a.horloge,
+    generateur: a.generateur,
+  });
   return {
     depot,
-    service: new ServiceEtatLocalTransactionnel({
-      depot,
-      horloge: a.horloge,
-      generateur: a.generateur,
+    // n° 9 : saisie bloquée tant que le cycle constate un format plus récent (RG-058).
+    service: new ServiceEtatLocalConsultationSeule({
+      service: transactionnel,
+      estConsultationSeule: () => cycle.etatMoteur().actionRequise === 'FORMAT_PLUS_RECENT',
     }),
-    cycle: creerCycle(depot),
+    cycle,
+    suivi,
+    desabonnerSuivi: a.echangesGoogle.observer(suivi),
   };
 };
 
@@ -522,6 +615,15 @@ const assemblerSynchronisation = (a: AdaptateursApplication, n: Noyau) => {
   };
 };
 
+/** Correction d'horloge et « Mettre à jour » (ST-US-017 v0.11 §6.8 n° 3, 4, 10) sur l'espace ouvert. */
+const assemblerHorlogeEtMiseAJour = (a: AdaptateursApplication, n: Noyau) => ({
+  lireCorrectionHorloge: () => correctionHorlogeDe(n.espace()),
+  mettreAJour: () => a.miseAJour.mettreAJour(),
+  controlerHorloge: async (): Promise<void> => {
+    await n.espace()?.suivi.controlerSaut();
+  },
+});
+
 /** ANO-001 (ST-US-017 §6.9) : le cycle et le dépôt de chaque espace alimentent le relais de `observerSynchronisation`. */
 const fabriquerCycles =
   (
@@ -609,6 +711,7 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerConnexion(a, noyau),
     ...assemblerSortie(a, noyau),
     ...assemblerSynchronisation(a, noyau),
+    ...assemblerHorlogeEtMiseAJour(a, noyau),
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       fermerEspace(stockage.espace());
