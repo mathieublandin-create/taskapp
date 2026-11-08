@@ -23,7 +23,11 @@ import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { ActionFin } from '../composants/action-fin';
 import { CarteIncoherence } from '../composants/carte-incoherence';
 import { ChampDetail, ChampVerrouille } from '../composants/champ-detail';
-import { ConfirmationCommande, useCommandeConfirmee } from '../composants/commande-confirmee';
+import {
+  ConfirmationCommande,
+  useCommandeConfirmee,
+  type Focalisable,
+} from '../composants/commande-confirmee';
 import { MessagesRefus } from '../composants/messages-refus';
 import { PucesObjectif } from '../composants/puces-objectif';
 import { SectionSousTaches } from '../composants/section-sous-taches';
@@ -54,6 +58,8 @@ export type ProprietesDetailTache = {
   readonly surTerminerSousTache?: (id: IdTache) => void;
   readonly surRouvrir?: () => Promise<IssueSaisie>;
   readonly surReprendre?: () => Promise<IssueSaisie>;
+  /** ST-US-024 v0.7 §6.8 (DT-030) : case « Rouvrir » d'une sous-tâche terminée ; confirmée si la tâche parente est terminée. */
+  readonly surRouvrirSousTache?: (id: IdTache) => Promise<IssueSaisie>;
   /** Carte d'incohérence (ECR-007 H) : « Abandonner la sous-tâche » ; la confirmation habituelle de l'abandon s'applique. */
   readonly surAbandonnerSousTache?: (id: IdTache) => Promise<IssueSaisie>;
 };
@@ -390,30 +396,59 @@ const CarteEnTete = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) =
   );
 };
 
-const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => (
-  <>
-    {modele.sousTaches === undefined ? null : (
-      <SectionSousTaches
-        section={modele.sousTaches}
-        surOuvrir={proprietes.surOuvrirSousTache}
-        surTerminer={proprietes.surTerminerSousTache}
-      />
-    )}
-    {modele.actions.includes('CREER_SOUS_TACHE') ? (
-      <button type="button" onClick={proprietes.surAjouterSousTache}>
-        {LIBELLES_TACHES.ajouterSousTache}
-      </button>
-    ) : null}
-    {carteRendue(modele, proprietes) ? null : (
-      <ActionFin
-        modele={modele}
-        surTerminer={proprietes.surTerminer}
-        surRouvrir={proprietes.surRouvrir}
-        surReprendre={proprietes.surReprendre}
-      />
-    )}
-  </>
-);
+/**
+ * Réouverture d'une sous-tâche depuis sa case (ST-US-024 v0.7 §6.8) : confirmation distincte de celle de l'action de
+ * fin ; le focus revient à la case activée, mémorisée au clic (la case garde son élément d'un état à l'autre).
+ */
+const useReouvertureSousTache = (
+  surRouvrirSousTache: ProprietesDetailTache['surRouvrirSousTache'],
+) => {
+  const caseActivee = useRef<Focalisable | null>(null);
+  const [refus, setRefus] = useState<ReadonlyArray<MessageRefus>>([]);
+  const commande = useCommandeConfirmee(caseActivee, (issue) => {
+    setRefus(messagesDeIssue(issue));
+  });
+  const rouvrir =
+    surRouvrirSousTache === undefined
+      ? undefined
+      : (id: IdTache): void => {
+          caseActivee.current = document.activeElement as HTMLElement | null;
+          setRefus([]);
+          void commande.lancer(() => surRouvrirSousTache(id));
+        };
+  return { commande, refus, rouvrir };
+};
+
+const SousTaches = ({ modele, proprietes }: Omit<ProprietesChamp, 'editeur'>) => {
+  const reouverture = useReouvertureSousTache(proprietes.surRouvrirSousTache);
+  return (
+    <>
+      {modele.sousTaches === undefined ? null : (
+        <SectionSousTaches
+          section={modele.sousTaches}
+          surOuvrir={proprietes.surOuvrirSousTache}
+          surTerminer={proprietes.surTerminerSousTache}
+          surRouvrir={reouverture.rouvrir}
+        />
+      )}
+      <MessagesRefus messages={reouverture.refus} />
+      <ConfirmationCommande commande={reouverture.commande} />
+      {modele.actions.includes('CREER_SOUS_TACHE') ? (
+        <button type="button" onClick={proprietes.surAjouterSousTache}>
+          {LIBELLES_TACHES.ajouterSousTache}
+        </button>
+      ) : null}
+      {carteRendue(modele, proprietes) ? null : (
+        <ActionFin
+          modele={modele}
+          surTerminer={proprietes.surTerminer}
+          surRouvrir={proprietes.surRouvrir}
+          surReprendre={proprietes.surReprendre}
+        />
+      )}
+    </>
+  );
+};
 
 const CorpsDetail = ({ modele, proprietes, editeur }: ProprietesChamp) => (
   <IonContent>

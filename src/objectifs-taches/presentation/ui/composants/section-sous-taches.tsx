@@ -16,8 +16,6 @@ export type ProprietesSectionSousTaches = {
   readonly surRouvrir?: ((id: IdTache) => void) | undefined;
 };
 
-const CODE_ETAT_A_FAIRE: LigneSousTache['etat']['code'] = 'ETA-TACHE-A-FAIRE';
-
 const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
   <span className="ligne-tache-meta" aria-hidden="true">
     <span>{ligne.delai.libelle}</span>
@@ -36,21 +34,28 @@ const MetaLigne = ({ ligne }: { readonly ligne: LigneSousTache }) => (
 const CaseTerminer = ({
   ligne,
   surTerminer,
+  surRouvrir,
 }: {
   readonly ligne: LigneSousTache;
   readonly surTerminer: ProprietesSectionSousTaches['surTerminer'];
-}) =>
-  ligne.etat.code === CODE_ETAT_A_FAIRE ? (
+  readonly surRouvrir: ProprietesSectionSousTaches['surRouvrir'];
+}) => {
+  const { action, nomAccessible } = ligne.caseTerminer;
+  if (action === undefined) return null;
+  const rouvrir = action === 'ROUVRIR';
+  const commande = rouvrir ? surRouvrir : surTerminer;
+  return (
     <input
       type="checkbox"
-      aria-label={ligne.caseTerminer.nomAccessible}
-      checked={false}
-      disabled={surTerminer === undefined}
+      aria-label={nomAccessible}
+      checked={rouvrir}
+      disabled={commande === undefined}
       onChange={() => {
-        surTerminer?.(ligne.id);
+        commande?.(ligne.id);
       }}
     />
-  ) : null;
+  );
+};
 
 /** Étiquette d'une sous-tâche d'une tâche parente abandonnée (ECR-007 F) : lue avec la ligne, jamais la couleur seule. */
 const Etiquette = ({
@@ -69,11 +74,12 @@ const LigneSousTacheUi = ({
   ligne,
   surOuvrir,
   surTerminer,
+  surRouvrir,
 }: { readonly ligne: LigneSousTache } & Omit<ProprietesSectionSousTaches, 'section'>) => {
   const idEtiquette = `etiquette-${ligne.id}`;
   return (
     <li className="ligne-tache" data-niveau="SOUS_TACHE">
-      <CaseTerminer ligne={ligne} surTerminer={surTerminer} />
+      <CaseTerminer ligne={ligne} surTerminer={surTerminer} surRouvrir={surRouvrir} />
       <button
         type="button"
         aria-label={ligne.nomAccessible}
@@ -99,6 +105,7 @@ export const SectionSousTaches = ({
   section,
   surOuvrir,
   surTerminer,
+  surRouvrir,
 }: ProprietesSectionSousTaches) => {
   const idTitre = useId();
   return (
@@ -113,6 +120,7 @@ export const SectionSousTaches = ({
             ligne={ligne}
             surOuvrir={surOuvrir}
             surTerminer={surTerminer}
+            surRouvrir={surRouvrir}
           />
         ))}
       </ul>

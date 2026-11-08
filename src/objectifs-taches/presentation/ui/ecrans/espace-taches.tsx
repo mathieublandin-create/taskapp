@@ -82,6 +82,7 @@ const commandesDeFin = (actions: ActionsMagasinTaches, id: IdTache) => ({
   surRouvrir: () => actions.rouvrir(id),
   surReprendre: () => actions.reprendre(id),
   surAbandonnerSousTache: (sousTacheId: IdTache) => actions.abandonner(sousTacheId),
+  surRouvrirSousTache: (sousTacheId: IdTache) => actions.rouvrir(sousTacheId),
 });
 
 const PageDetail = ({
