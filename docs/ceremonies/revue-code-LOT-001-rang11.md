@@ -8,7 +8,7 @@
 | Auteurs | Bruce (opus) : H1 (domaine horloge, inconnus, réception), H2 (Dexie v4, format), H3 (`SuiviHorloge`, `ClientGoogle`), H4 (cycle, sortie, DT-036), compléments UT-COMP-US-017-4-21 à 4-50. Benjamin (sonnet) : D1 (modèles de vue, décorateur, `MiseAJourServiceWorker`), D2 (interface, consultation seule, `ERR-013`), D3 (composition, banc, étapes, `rangCourant` 11), D4 (DT-030 reliquat), compléments UT-COMP-US-017-4-01 à 4-16, 4-51 à 4-77. Starck (DAT v0.11.11), Steeve (guide v0.2.23). |
 | Périmètre | Différentiel `origin/lot/LOT-001...origin/us/US-017-rang11` : 131 fichiers, + 8 009, − 488 (src/ et tests des tranches H1 à H4, D1 à D4) |
 | Référentiel | ST-US-017 v0.11.2 (§3.6, §4.8, §6.8 n° 1 à 22, §12.7, §13.6, §14, §15.3), ST-US-024 v0.7 §6.8, DAT v0.11.11 (§4.2, §4.2.2, §6.4), guide d'ergonomie v0.2.23 §6.6.14, `checklist-revue-code.md` v0.3, revue du rang 10 |
-| Passage | 1 |
+| Passage | 2 (E13 bis, OPT-18) : voir le § 9 |
 
 ## 1. Contrôles exécutés
 
@@ -173,3 +173,39 @@ Aucun code de `src/` ni aucun test n'est modifié.
 | RC-US-017-21, 22, 28 | Suggestion | Bruce, Benjamin | Non |
 
 La nouvelle revue (OPT-18, sonnet possible) portera seulement sur ces remarques et sur le différentiel, avec une CI verte sur les 7 contrôles.
+
+## 9. Passage 2 (E13 bis) : différentiel `d565341..1c728d0`
+
+Branche `us/US-017-rang11` @ `1c728d0` (corrections de Bruce RC-19, 20, 23 ; de Benjamin RC-24 à 28). Seules les remarques ouvertes et le différentiel sont revus.
+
+| Contrôle | Résultat |
+|---|---|
+| Tests ciblés (4 fichiers modifiés) | 24 / 24 verts. |
+| Essai local annulé, RC-26 | Ancien code rétabli (`document.activeElement as HTMLElement` pris dans `rouvrir`, `memoriserCase` sans effet) : **UT-COMP-US-017-4-82 rouge**, les 4 autres cas du fichier verts. Annulé. |
+| Essai local annulé, RC-19 | `listeCorbeille(m).filter` remplacé par `liste.filter` (`cycle-synchronisation.ts:1285`) : **UT-COMP-US-017-4-78 rouge**, seul des 9 du fichier. Annulé. Les deux autres mutations (RC-20, RC-23) sont rapportées dans les commits `ac60278` et `fb9fc0e` (un seul test rouge à chaque fois). |
+| `pnpm verifier` | Voir le § 9.3. |
+
+### 9.1 Décisions
+
+| Remarque | Décision |
+|---|---|
+| RC-US-017-19 | **Levée.** UT-COMP-US-017-4-78 (cas plus fort que celui demandé : `[FICHIER X, DOSSIER_QUITTE A]` en liste initiale, second déménagement dans le même cycle, attendu exact et ordonné des deux nouvelles entrées) prouve la règle n° 22 c : rouge sous la mutation `liste.filter`. Le doublon de manifeste (n° 19) reste couvert par UT-US-017-122 et 4-48. |
+| RC-US-017-20 | **Levée.** CT-DEPOT-19 (deux adaptateurs, deux transactions, `B` avant `a`, registres et entrées) ; mutations rapportées par Bruce : tri de la doublure mémoire retiré, puis `reverse()` sur la lecture Dexie : rouge seul à chaque fois. |
+| RC-US-017-23 | **Levée.** UT-COMP-US-017-4-80 (sous `ERR-012` : `DONNEES_ALTEREES`, aucun `supprimerFichier`, écritures et liste inchangées) ; mutation (reprise appelée sous `ALTERATION`) : rouge seul. **Je renomme UT-US-017-123** (titre et `describe` : « en consultation seule (FORMAT_PLUS_RECENT, ERR-013) », renvoi à 4-80 pour l'altération) ; aucune assertion modifiée. |
+| RC-US-017-24 | **Levée ; la modification d'UT-US-017-89 (2e cas) est confirmée.** `toEqual` strict conservé, titre et texte de la variante `carte`, action inchangée : exactement ce que j'avais accordé par écrit (décision 2). `libellesCarte` et `LibellesCarteFeuille` supprimées, le composant lit `carte.titre`, `carte.texte`, `carte.action.libelle`. Variante portée par un paramètre `variante?: 'carte'` de `carte(…)`, libellé de l'action sans variante : conforme. |
+| RC-US-017-25 | **Levée.** Garde `try/catch` dans `RelaisEchangesGoogle.#avertir`, journal injecté (`web.ts`), erreur consignée en `ObservateurEchangesEnEchec` avec le seul nom de l'erreur (aucune donnée), observateur suivant appelé ; UT-COMP-US-017-4-81. `ClientGoogle` intact. |
+| RC-US-017-26 | **Écart accepté, signature de la revue abandonnée.** `surRouvrir(id, caseActivee)` aurait cassé UT-US-024-26 et UT-COMP-US-024-08 (`toHaveBeenCalledWith(id)`), que je ne veux pas affaiblir. La propriété distincte `surCaseRouvrirActivee(case)`, appelée dans `onChange` sur `evenement.currentTarget` avant `surRouvrir(id)`, atteint le même but (plus de `document.activeElement`, plus de `as`), sans toucher aux tests. L'appel n'a lieu que si la case est pleine (`rouvrir`), ce qui est exact. **ST-US-024 passe en v0.8** (§4.5, §6.8 n° 2 et 3). UT-COMP-US-017-4-82 : rouge sur l'ancien code (essai ci-dessus). La découpe de `LigneSousTacheUi` (`BoutonOuvrirSousTache`, `...actions`) est mécanique et lisible. |
+| RC-US-017-27 | **Levée.** `changerVersion` exportée ; `decoderEnLecteurAJour` ne ré-encode que sur `FormatPlusRecent` ; `etatMetierDuDrive` voit désormais le fichier du PC (S30, S30b, US-022 S24 et S25). L'essai de rejet de l'assertion négative n'est pas rejoué par moi : le critère est tenu par construction (le décodage rend le contenu du fichier). Non bloquant. |
+| RC-US-017-28 | **Levée** (`rangs-fichiers.json` replacé à l'ordre alphabétique). |
+
+### 9.2 Remarques ouvertes
+
+Aucune remarque bloquante. RC-US-017-21 et 22 (suggestions) restent ouvertes, sans effet. Questions Q-ANT-E13-R11-1 à 3 : inchangées (Pepper, Starck), non bloquantes ; DT-038 à retirer avant l'E13b.
+
+### 9.3 Dette (registre inchangé, v0.37)
+
+DT-036 : RC-19 levée, « Remboursée » à la fusion de la PR #35. DT-030 : RC-26 levée, « Remboursée » à la fusion (contrôle de Steeve en E14). Aucun changement d'état avant la fusion : le registre reste en **v0.37**. DT-025, DT-027, DT-029, DT-037, DT-038 : inchangées.
+
+### 9.4 Verdict du passage 2
+
+**Approuvé.** Aucun code de `src/` modifié par ce passage (apports : ST-US-024 v0.8, renommage du titre d'UT-US-017-123, ce § 9).

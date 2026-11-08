@@ -167,8 +167,8 @@ describe('Garde C1 : un fichier devenu le manifeste canonique n’est jamais mis
   });
 });
 
-describe('Jamais sous une altération ni en consultation seule (n° 20)', () => {
-  it('UT-US-017-123 sous ERR-012 puis en consultation seule, la reprise n’écrit rien dans le Drive et la liste est gardée ; elle reprend au premier cycle qui synchronise', async () => {
+describe('Jamais en consultation seule (n° 20) ; sous altération : UT-COMP-US-017-4-80', () => {
+  it('UT-US-017-123 en consultation seule (FORMAT_PLUS_RECENT, ERR-013), la reprise n’écrit rien dans le Drive et la liste est gardée ; elle reprend au premier cycle qui synchronise', async () => {
     const { env, ancien, ancienPropre } = await demenagementEnEchec(1);
     const liste = (await metaDe(env.smartphone)).aMettreALaCorbeille;
 
