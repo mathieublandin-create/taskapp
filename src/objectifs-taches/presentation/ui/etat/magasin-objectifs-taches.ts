@@ -65,7 +65,7 @@ export type IssueSaisie =
   | { readonly type: 'FAITE'; readonly id?: IdObjectif }
   | { readonly type: 'REFUSEE'; readonly messages: ReadonlyArray<MessageRefus> }
   | { readonly type: 'ENREGISTREMENT_IMPOSSIBLE' }
-  // RG-058 (ST-US-017 v0.11 §6.8 n° 9) : le toast TST-CONSULTATION-SEULE est posé en D2.
+  // RG-058 (ST-US-017 v0.11 §6.8 n° 9) : toast TST-CONSULTATION-SEULE (`refusConsultationSeule`).
   | { readonly type: 'CONSULTATION_SEULE' };
 
 export type SaisieObjectif = {
@@ -93,6 +93,8 @@ export type EtatMagasinObjectifs = {
   readonly selecteurParent?: SelecteurParentOuvert | undefined;
   /** Vrai après un échec d'écriture ou de lecture locale : toast ERR-014. */
   readonly erreurEnregistrement: boolean;
+  /** Nombre de commandes refusées en consultation seule (RG-058), pour le toast `TST-CONSULTATION-SEULE`. */
+  readonly refusConsultationSeule: number;
   readonly actions: ActionsMagasinObjectifs;
 };
 
@@ -170,10 +172,16 @@ class ActionsObjectifs implements ActionsMagasinObjectifs {
     await (ecran.type === 'LISTE' ? this.#chargerListe() : this.#chargerDetail(ecran.id));
   };
 
+  /** RG-058 : le service refuse l'écriture ; l'écran en fait un toast `TST-CONSULTATION-SEULE` (un par refus). */
+  readonly #compterRefusConsultationSeule = (): void => {
+    this.ecrire({ refusConsultationSeule: this.lire().refusConsultationSeule + 1 });
+  };
+
   /** Après une commande réussie, les modèles de vue sont recalculés ; sur échec technique, ERR-014. */
   readonly #apres = async (issue: IssueSaisie): Promise<IssueSaisie> => {
     if (issue.type === 'FAITE') await this.#rafraichir();
     if (issue.type === 'ENREGISTREMENT_IMPOSSIBLE') this.ecrire({ erreurEnregistrement: true });
+    if (issue.type === 'CONSULTATION_SEULE') this.#compterRefusConsultationSeule();
     return issue;
   };
 
@@ -310,5 +318,6 @@ export const creerMagasinObjectifsTaches = (services: ServicesObjectifs): Magasi
   createStore<EtatMagasinObjectifs>((set, get) => ({
     ecran: { type: 'LISTE' },
     erreurEnregistrement: false,
+    refusConsultationSeule: 0,
     actions: new ActionsObjectifs(services, set, get),
   }));

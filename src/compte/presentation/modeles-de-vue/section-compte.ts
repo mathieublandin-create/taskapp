@@ -31,7 +31,7 @@ export const libelleActionCompte = (action: ActionCompte): string =>
 
 /** Dernier segment de l'identifiant IANA, `_` remplacé par une espace (« America/New_York » → « New York »). */
 const nomAffichable = (fuseau: Fuseau): string =>
-  (fuseau.split('/').pop() ?? fuseau).replaceAll('_', ' ');
+  fuseau.slice(fuseau.lastIndexOf('/') + 1).replaceAll('_', ' ');
 
 const modeleFuseau = (fuseauAppareil: Fuseau | undefined) =>
   fuseauAppareil === undefined || fuseauAppareil === FUSEAU_REFERENCE

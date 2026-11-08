@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 
 // Section « Sous-tâches » du détail d'une tâche (ECR-007 A, guide v0.2.9 §5.8 e) : une seule liste, tous états, dans
@@ -40,6 +41,7 @@ const CaseTerminer = ({
   readonly surTerminer: ProprietesSectionSousTaches['surTerminer'];
   readonly surRouvrir: ProprietesSectionSousTaches['surRouvrir'];
 }) => {
+  const { garder, attributsAction } = useConsultationSeule();
   const { action, nomAccessible } = ligne.caseTerminer;
   if (action === undefined) return null;
   const rouvrir = action === 'ROUVRIR';
@@ -50,9 +52,10 @@ const CaseTerminer = ({
       aria-label={nomAccessible}
       checked={rouvrir}
       disabled={commande === undefined}
-      onChange={() => {
+      {...attributsAction}
+      onChange={garder(() => {
         commande?.(ligne.id);
-      }}
+      })}
     />
   );
 };

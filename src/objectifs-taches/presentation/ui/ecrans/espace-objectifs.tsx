@@ -4,7 +4,9 @@ import type { IdObjectif, IdTache } from '../../../../commun/domaine/identifiant
 import { ErreurProgrammation } from '../../../../commun/domaine/erreur-programmation';
 import { DateCalendaire } from '../../../../commun/domaine/temps/date-calendaire';
 import { BoiteConfirmation } from '../../../../commun/presentation/ui/boite-confirmation';
+import { useToastDeRefus } from '../../../../commun/presentation/ui/consultation-seule';
 import { Toast } from '../../../../commun/presentation/ui/toast';
+import type { ModeleVueConfirmation } from '../../modeles-de-vue/confirmation';
 import type { ModeleVueDetailObjectif } from '../../modeles-de-vue/detail-objectif';
 import {
   FeuilleObjectif,
@@ -271,7 +273,8 @@ const SaisieTacheDeLObjectif = ({
   readonly objectifId: IdObjectif;
   readonly geste: Geste;
 }) => {
-  const { actions, objectifs } = useStore(magasin);
+  const { actions, objectifs, refusConsultationSeule } = useStore(magasin);
+  useToastDeRefus(refusConsultationSeule);
   useEffect(() => {
     if (geste.saisieTacheOuverte) void actions.chargerObjectifs();
   }, [actions, geste.saisieTacheOuverte]);
@@ -286,6 +289,36 @@ const SaisieTacheDeLObjectif = ({
       }}
     />
   );
+};
+
+const ConfirmationSuppression = ({
+  confirmation,
+  actions,
+}: {
+  readonly confirmation: ModeleVueConfirmation;
+  readonly actions: ActionsMagasinObjectifs;
+}) => (
+  <BoiteConfirmation
+    code={confirmation.code}
+    titre={confirmation.titre}
+    {...(confirmation.texte === undefined ? {} : { texte: confirmation.texte })}
+    actionLibelle={confirmation.actionLibelle}
+    rouge
+    surConfirmer={() => void actions.confirmerSuppression()}
+    surAnnuler={actions.annulerSuppression}
+  />
+);
+
+/** ERR-014 (échec d'enregistrement) et `TST-CONSULTATION-SEULE` (commande refusée, RG-058). */
+const ToastsDeLEspace = ({
+  erreurEnregistrement,
+  refusConsultationSeule,
+}: {
+  readonly erreurEnregistrement: boolean;
+  readonly refusConsultationSeule: number;
+}) => {
+  useToastDeRefus(refusConsultationSeule);
+  return erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null;
 };
 
 export const EspaceObjectifs = ({ magasin, taches }: ProprietesEspaceObjectifs) => {
@@ -304,17 +337,12 @@ export const EspaceObjectifs = ({ magasin, taches }: ProprietesEspaceObjectifs) 
         <SaisieTacheDeLObjectif magasin={taches.magasin} objectifId={ecran.id} geste={geste} />
       )}
       {confirmation === undefined ? null : (
-        <BoiteConfirmation
-          code={confirmation.code}
-          titre={confirmation.titre}
-          {...(confirmation.texte === undefined ? {} : { texte: confirmation.texte })}
-          actionLibelle={confirmation.actionLibelle}
-          rouge
-          surConfirmer={() => void actions.confirmerSuppression()}
-          surAnnuler={actions.annulerSuppression}
-        />
+        <ConfirmationSuppression confirmation={confirmation} actions={actions} />
       )}
-      {etat.erreurEnregistrement ? <Toast code="TST-ERREUR-ENREGISTREMENT" /> : null}
+      <ToastsDeLEspace
+        erreurEnregistrement={etat.erreurEnregistrement}
+        refusConsultationSeule={etat.refusConsultationSeule}
+      />
     </>
   );
 };

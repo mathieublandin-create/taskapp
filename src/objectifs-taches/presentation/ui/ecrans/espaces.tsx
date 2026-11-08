@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FournisseurConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { RefElementMetier } from '../../../../synchronisation';
 import { EspaceObjectifs } from './espace-objectifs';
 import { EspaceTaches } from './espace-taches';
@@ -114,24 +115,31 @@ const EspaceActif = ({
     />
   );
 
-/** Écrans des tâches (US-002, rang 5) et des objectifs (US-001, rang 2), sur les magasins de l'espace ouvert. */
+/**
+ * Écrans des tâches (US-002, rang 5) et des objectifs (US-001, rang 2), sur les magasins de l'espace ouvert.
+ * `consultationSeule` (RG-058, `VueInterface.consultationSeule`) : champs et menus visibles et inertes, toast à la tentative.
+ */
 export const EcransObjectifs = ({
   objectifs,
   navigation,
+  consultationSeule = false,
 }: {
   readonly objectifs: ObjectifsTaches;
   readonly navigation: NavigationUi;
+  readonly consultationSeule?: boolean;
 }) => {
   const magasins = useMagasins(objectifs);
   const { onglet, surOnglet, demande, surOuvert } = navigation;
   useOuvertureDemandee(magasins, demande, surOuvert);
   return (
-    <div className="espaces">
-      <div className="espaces-contenu">
-        <EspaceActif magasins={magasins} onglet={onglet} surOnglet={surOnglet} />
+    <FournisseurConsultationSeule actif={consultationSeule}>
+      <div className="espaces">
+        <div className="espaces-contenu">
+          <EspaceActif magasins={magasins} onglet={onglet} surOnglet={surOnglet} />
+        </div>
+        <BarreOnglets onglet={onglet} surChoisir={surOnglet} />
       </div>
-      <BarreOnglets onglet={onglet} surChoisir={surOnglet} />
-    </div>
+    </FournisseurConsultationSeule>
   );
 };
 

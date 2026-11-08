@@ -1,11 +1,15 @@
 import { IonCard, IonCardContent, IonCardTitle } from '@ionic/react';
 import type { ReactElement } from 'react';
 import { CarteChoixRestauration, type ProprietesChoixRestauration } from './ChoixRestauration';
-import type {
-  ActionCarteFeuille,
-  CarteErreurFeuille,
-  ModeleVueFeuilleSynchronisation,
+import type { IssueMiseAJour } from '../../application/ports/mise-a-jour-application';
+import {
+  libellesCarte,
+  ordreDesCartes,
+  type ActionCarteFeuille,
+  type CarteErreurFeuille,
+  type ModeleVueFeuilleSynchronisation,
 } from '../modeles-de-vue/feuille-synchronisation';
+import { construireRetourMiseAJour } from '../modeles-de-vue/retour-mise-a-jour';
 
 // SyncSheet, section « Synchronisation » (ECR-011, guide §4.26, §6.6.2 ; ST-US-017 v0.4 §4.5) : data-etat des lignes
 // SYN-FEUILLE-…, data-message des cartes ; boutons natifs (aria-disabled focalisable). Textes : modèle de vue.
@@ -15,6 +19,8 @@ export type ProprietesFeuilleSynchronisation = {
   readonly surActionCarte: (action: ActionCarteFeuille) => void;
   /** Carte `ERR-012` de la section « Erreurs qui demandent une action » ; présente tant que l'erreur dure. */
   readonly choixRestauration?: ProprietesChoixRestauration;
+  /** Issue de la dernière action « Mettre à jour » (`VueInterface.miseAJour`) : texte sous la carte `ERR-013`. */
+  readonly miseAJour?: IssueMiseAJour | undefined;
 };
 
 const ID_ATTENTE = 'feuille-synchronisation-attente';
@@ -59,34 +65,105 @@ const BoutonSynchroniser = ({
   </>
 );
 
+const BoutonCarte = ({
+  libelle,
+  desactive,
+  surClic,
+}: {
+  readonly libelle: string;
+  /** `aria-disabled` : le bouton reste focalisable, son activation est sans effet (retour `rechargement`). */
+  readonly desactive: boolean;
+  readonly surClic: () => void;
+}) => (
+  <button
+    type="button"
+    {...(desactive ? { 'aria-disabled': true } : {})}
+    onClick={() => {
+      if (!desactive) surClic();
+    }}
+  >
+    {libelle}
+  </button>
+);
+
+/** Retour de « Mettre à jour » (guide §6.6.14 a) : ligne `role="status"` sous le texte de la carte `ERR-013`. */
+const retourDeLaCarte = (carte: CarteErreurFeuille, miseAJour: IssueMiseAJour | undefined) =>
+  carte.action.type === 'METTRE_A_JOUR' ? construireRetourMiseAJour(miseAJour) : undefined;
+
 const CarteErreur = ({
   carte,
   surActionCarte,
+  miseAJour,
 }: {
   readonly carte: CarteErreurFeuille;
   readonly surActionCarte: (action: ActionCarteFeuille) => void;
+  readonly miseAJour?: IssueMiseAJour | undefined;
+}) => {
+  const libelles = libellesCarte(carte);
+  const retour = retourDeLaCarte(carte, miseAJour);
+  const desactive = retour?.actionDesactivee === true;
+  return (
+    <IonCard data-message={carte.message}>
+      <IonCardTitle>{libelles.titre}</IonCardTitle>
+      <IonCardContent>
+        <p>{libelles.texte}</p>
+        {carte.action.type === 'METTRE_A_JOUR' ? <p role="status">{retour?.texte}</p> : null}
+        <BoutonCarte
+          libelle={libelles.action}
+          desactive={desactive}
+          surClic={() => {
+            surActionCarte(carte.action.type);
+          }}
+        />
+      </IonCardContent>
+    </IonCard>
+  );
+};
+
+/** `ALR-001` (RG-057 bis) : niveau Attention, ni action, ni fermeture, aucun blocage ; annoncée en `status`. */
+const CarteAlerteHorloge = ({
+  alerte,
+}: {
+  readonly alerte: NonNullable<ModeleVueFeuilleSynchronisation['alerteHorloge']>;
 }) => (
-  <IonCard data-message={carte.message}>
-    <IonCardTitle>{carte.titre}</IonCardTitle>
+  <IonCard data-message={alerte.code} data-niveau="attention" role="status">
+    <IonCardTitle>{alerte.titre}</IonCardTitle>
     <IonCardContent>
-      <p>{carte.texte}</p>
-      <button
-        type="button"
-        onClick={() => {
-          surActionCarte(carte.action.type);
-        }}
-      >
-        {carte.action.libelle}
-      </button>
+      <p>{alerte.texte}</p>
     </IonCardContent>
   </IonCard>
 );
+
+/** Section « Erreurs qui demandent une action » (ST-US-017 §6.8 n° 4), dans l'ordre du modèle de vue. */
+const CartesDeLaFeuille = ({
+  vue,
+  surActionCarte,
+  miseAJour,
+}: Pick<ProprietesFeuilleSynchronisation, 'vue' | 'surActionCarte' | 'miseAJour'>) => {
+  const rendre = (carte: CarteErreurFeuille) => (
+    <CarteErreur
+      key={carte.message}
+      carte={carte}
+      surActionCarte={surActionCarte}
+      miseAJour={miseAJour}
+    />
+  );
+  const { avantAlerte, apresAlerte } = ordreDesCartes(vue);
+  return (
+    <>
+      {avantAlerte.map(rendre)}
+      {vue.alerteHorloge === undefined ? null : <CarteAlerteHorloge alerte={vue.alerteHorloge} />}
+      {apresAlerte.map(rendre)}
+    </>
+  );
+};
 
 export const FeuilleSynchronisation = ({
   vue,
   surSynchroniser,
   surActionCarte,
   choixRestauration,
+  miseAJour,
 }: ProprietesFeuilleSynchronisation): ReactElement => (
   <section>
     {vue.dernierEchange === undefined ? null : (
@@ -97,9 +174,7 @@ export const FeuilleSynchronisation = ({
       <p data-etat={vue.horsLigne.code}>{vue.horsLigne.libelle}</p>
     )}
     <BoutonSynchroniser bouton={vue.bouton} surSynchroniser={surSynchroniser} />
-    {vue.cartes.map((carte) => (
-      <CarteErreur key={carte.message} carte={carte} surActionCarte={surActionCarte} />
-    ))}
+    <CartesDeLaFeuille vue={vue} surActionCarte={surActionCarte} miseAJour={miseAJour} />
     {choixRestauration === undefined ? null : <CarteChoixRestauration {...choixRestauration} />}
   </section>
 );

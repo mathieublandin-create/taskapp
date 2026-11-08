@@ -68,6 +68,40 @@ export type ModeleVueFeuilleSynchronisation = {
   };
 };
 
+/** Textes affichés d'une carte de la feuille. */
+export type LibellesCarteFeuille = {
+  readonly titre: string;
+  readonly texte: string;
+  readonly action: string;
+};
+
+/**
+ * Carte de la feuille : celle d'`ERR-013` reprend la variante `carte` (guide v0.2.23 §6.6.14 d, maquette ECR-011 G) ;
+ * le bandeau garde le texte court. Les autres cartes gardent les textes du modèle de vue.
+ */
+export const libellesCarte = (c: CarteErreurFeuille): LibellesCarteFeuille =>
+  c.message === 'ERR-013'
+    ? {
+        titre: libelle('ERR-013', { variante: 'carte' }),
+        texte: libelle('ERR-013', { variante: 'carte' }, 'texte'),
+        action: c.action.libelle,
+      }
+    : { titre: c.titre, texte: c.texte, action: c.action.libelle };
+
+/**
+ * Ordre de la section « Erreurs qui demandent une action » (ST-US-017 v0.11 §6.8 n° 4, maquette ECR-011 G) : cartes
+ * `ERR-011` / `ERR-016`, puis `ALR-001`, puis `ERR-013`.
+ */
+export const ordreDesCartes = (
+  vue: Pick<ModeleVueFeuilleSynchronisation, 'cartes'>,
+): {
+  readonly avantAlerte: ReadonlyArray<CarteErreurFeuille>;
+  readonly apresAlerte: ReadonlyArray<CarteErreurFeuille>;
+} => ({
+  avantAlerte: vue.cartes.filter((c) => c.message !== 'ERR-013'),
+  apresAlerte: vue.cartes.filter((c) => c.message === 'ERR-013'),
+});
+
 const modeleDernierEchange = (e: EntreeFeuilleSynchronisation) =>
   e.dernierEchange === undefined
     ? {}

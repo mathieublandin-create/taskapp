@@ -317,6 +317,18 @@ export const CATALOGUE = {
     texte:
       'Une version plus récente de l’application a enregistré vos données. Mettez à jour l’application pour les modifier.',
     action: 'Mettre à jour',
+    // Guide §6.6.14 : `carte` (feuille ECR-011 G) remplace le titre et le texte ; les trois autres sont des retours de
+    // l'action « Mettre à jour », affichés sous le bandeau ou la carte (texte seul).
+    variantes: {
+      carte: {
+        libelle: 'Mettez l’application à jour',
+        texte:
+          'Une version plus récente a enregistré vos données. Vous pouvez les consulter ; mettez l’application à jour pour continuer à les modifier.',
+      },
+      rechargement: { texte: 'L’application va se recharger. Vos modifications sont conservées.' },
+      'aucune-version': { texte: 'Aucune version plus récente n’est disponible.' },
+      echec: { texte: 'Vérification impossible pour le moment. Réessayez dans quelques instants.' },
+    },
   },
   'ERR-014': {
     libelle: 'Impossible d’enregistrer. Réessayer',
