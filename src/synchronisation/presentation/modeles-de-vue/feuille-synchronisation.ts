@@ -88,6 +88,20 @@ export const libellesCarte = (c: CarteErreurFeuille): LibellesCarteFeuille =>
       }
     : { titre: c.titre, texte: c.texte, action: c.action.libelle };
 
+/**
+ * Ordre de la section « Erreurs qui demandent une action » (ST-US-017 v0.11 §6.8 n° 4, maquette ECR-011 G) : cartes
+ * `ERR-011` / `ERR-016`, puis `ALR-001`, puis `ERR-013`.
+ */
+export const ordreDesCartes = (
+  vue: Pick<ModeleVueFeuilleSynchronisation, 'cartes'>,
+): {
+  readonly avantAlerte: ReadonlyArray<CarteErreurFeuille>;
+  readonly apresAlerte: ReadonlyArray<CarteErreurFeuille>;
+} => ({
+  avantAlerte: vue.cartes.filter((c) => c.message !== 'ERR-013'),
+  apresAlerte: vue.cartes.filter((c) => c.message === 'ERR-013'),
+});
+
 const modeleDernierEchange = (e: EntreeFeuilleSynchronisation) =>
   e.dernierEchange === undefined
     ? {}

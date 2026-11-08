@@ -4,6 +4,7 @@ import { CarteChoixRestauration, type ProprietesChoixRestauration } from './Choi
 import type { IssueMiseAJour } from '../../application/ports/mise-a-jour-application';
 import {
   libellesCarte,
+  ordreDesCartes,
   type ActionCarteFeuille,
   type CarteErreurFeuille,
   type ModeleVueFeuilleSynchronisation,
@@ -133,7 +134,7 @@ const CarteAlerteHorloge = ({
   </IonCard>
 );
 
-/** Ordre de la section « Erreurs qui demandent une action » (ST-US-017 §6.8 n° 4) : `ERR-011` / `ERR-016`, `ALR-001`, `ERR-013`. */
+/** Section « Erreurs qui demandent une action » (ST-US-017 §6.8 n° 4), dans l'ordre du modèle de vue. */
 const CartesDeLaFeuille = ({
   vue,
   surActionCarte,
@@ -147,11 +148,12 @@ const CartesDeLaFeuille = ({
       miseAJour={miseAJour}
     />
   );
+  const { avantAlerte, apresAlerte } = ordreDesCartes(vue);
   return (
     <>
-      {vue.cartes.filter((carte) => carte.message !== 'ERR-013').map(rendre)}
+      {avantAlerte.map(rendre)}
       {vue.alerteHorloge === undefined ? null : <CarteAlerteHorloge alerte={vue.alerteHorloge} />}
-      {vue.cartes.filter((carte) => carte.message === 'ERR-013').map(rendre)}
+      {apresAlerte.map(rendre)}
     </>
   );
 };
