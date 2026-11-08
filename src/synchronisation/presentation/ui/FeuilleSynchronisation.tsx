@@ -3,7 +3,6 @@ import type { ReactElement } from 'react';
 import { CarteChoixRestauration, type ProprietesChoixRestauration } from './ChoixRestauration';
 import type { IssueMiseAJour } from '../../application/ports/mise-a-jour-application';
 import {
-  libellesCarte,
   ordreDesCartes,
   type ActionCarteFeuille,
   type CarteErreurFeuille,
@@ -99,17 +98,16 @@ const CarteErreur = ({
   readonly surActionCarte: (action: ActionCarteFeuille) => void;
   readonly miseAJour?: IssueMiseAJour | undefined;
 }) => {
-  const libelles = libellesCarte(carte);
   const retour = retourDeLaCarte(carte, miseAJour);
   const desactive = retour?.actionDesactivee === true;
   return (
     <IonCard data-message={carte.message}>
-      <IonCardTitle>{libelles.titre}</IonCardTitle>
+      <IonCardTitle>{carte.titre}</IonCardTitle>
       <IonCardContent>
-        <p>{libelles.texte}</p>
+        <p>{carte.texte}</p>
         {carte.action.type === 'METTRE_A_JOUR' ? <p role="status">{retour?.texte}</p> : null}
         <BoutonCarte
-          libelle={libelles.action}
+          libelle={carte.action.libelle}
           desactive={desactive}
           surClic={() => {
             surActionCarte(carte.action.type);

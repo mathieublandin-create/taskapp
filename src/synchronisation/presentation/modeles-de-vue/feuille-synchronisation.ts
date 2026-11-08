@@ -68,26 +68,6 @@ export type ModeleVueFeuilleSynchronisation = {
   };
 };
 
-/** Textes affichés d'une carte de la feuille. */
-export type LibellesCarteFeuille = {
-  readonly titre: string;
-  readonly texte: string;
-  readonly action: string;
-};
-
-/**
- * Carte de la feuille : celle d'`ERR-013` reprend la variante `carte` (guide v0.2.23 §6.6.14 d, maquette ECR-011 G) ;
- * le bandeau garde le texte court. Les autres cartes gardent les textes du modèle de vue.
- */
-export const libellesCarte = (c: CarteErreurFeuille): LibellesCarteFeuille =>
-  c.message === 'ERR-013'
-    ? {
-        titre: libelle('ERR-013', { variante: 'carte' }),
-        texte: libelle('ERR-013', { variante: 'carte' }, 'texte'),
-        action: c.action.libelle,
-      }
-    : { titre: c.titre, texte: c.texte, action: c.action.libelle };
-
 /**
  * Ordre de la section « Erreurs qui demandent une action » (ST-US-017 v0.11 §6.8 n° 4, maquette ECR-011 G) : cartes
  * `ERR-011` / `ERR-016`, puis `ALR-001`, puis `ERR-013`.
@@ -161,19 +141,23 @@ const carte = (
   message: CarteErreurFeuille['message'],
   type: ActionCarteFeuille,
   variables: Readonly<Record<string, number>>,
-): CarteErreurFeuille => ({
-  message,
-  titre: libelle(message, variables),
-  texte: libelle(message, variables, 'texte'),
-  action: { type, libelle: libelle(message, variables, 'action') },
-});
+  variante?: 'carte',
+): CarteErreurFeuille => {
+  const options = variante === undefined ? variables : { ...variables, variante };
+  return {
+    message,
+    titre: libelle(message, options),
+    texte: libelle(message, options, 'texte'),
+    action: { type, libelle: libelle(message, variables, 'action') },
+  };
+};
 
 const modeleCartes = (
   etat: EtatSynchronisationAffichable,
   nombreLignes: number,
 ): ReadonlyArray<CarteErreurFeuille> => {
   if (etat.actionRequise === 'DRIVE_PLEIN') return [carte('ERR-011', 'OUVRIR_GOOGLE_DRIVE', {})];
-  if (etat.actionRequise === 'FORMAT_PLUS_RECENT') return [carte('ERR-013', 'METTRE_A_JOUR', {})];
+  if (etat.actionRequise === 'FORMAT_PLUS_RECENT') return [carte('ERR-013', 'METTRE_A_JOUR', {}, 'carte')];
   if (etat.actionRequise === 'ECHEC_PERSISTANT') {
     return [carte('ERR-016', 'REESSAYER_MAINTENANT', { n: nombreLignes })];
   }

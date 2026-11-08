@@ -57,8 +57,8 @@ describe('Feuille « Compte et synchronisation » : horloge et version (n° 4, n
     expect(vue.cartes).toEqual([
       {
         message: 'ERR-013',
-        titre: libelle('ERR-013'),
-        texte: libelle('ERR-013', {}, 'texte'),
+        titre: libelle('ERR-013', { variante: 'carte' }),
+        texte: libelle('ERR-013', { variante: 'carte' }, 'texte'),
         action: { type: 'METTRE_A_JOUR', libelle: libelle('ERR-013', {}, 'action') },
       },
     ]);
