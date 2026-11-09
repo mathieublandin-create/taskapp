@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
 import { z } from 'zod';
-import { nonImplemente } from '@non-implemente';
 import type { MemoireDemandePersistance } from '../../commun/application/ports/persistance-stockage';
 import type { EntreeJournalTechnique } from '../../commun/application/ports/journal-technique';
 import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
@@ -23,6 +22,8 @@ export const RETENTION_JOURNAL_MS = 7 * 24 * 60 * 60_000;
 
 const CLE_SESSION = 'session';
 const CLE_REDIRECTION = 'redirection';
+/** ST-US-018 v0.4 §5 : ligne de la table `installation` qui note la demande de persistance du stockage. */
+const CLE_PERSISTANCE_DEMANDEE = 'persistanceDemandee';
 const INDISPONIBLE: Resultat<never, ErreurMemoireTechnique> = echec({
   type: 'MemoireTechniqueIndisponible',
 });
@@ -44,6 +45,14 @@ const schemaRedirection = z.object({
     feuilleSynchronisationOuverte: z.boolean(),
   }),
 });
+
+const schemaPersistanceDemandee = z.object({
+  cle: z.literal(CLE_PERSISTANCE_DEMANDEE),
+  demandee: z.literal(true),
+});
+
+/** Tables à lignes nommées ; `session` et `redirection` n'ont qu'une ligne, de clé égale au nom de la table. */
+type TableLignes = 'session' | 'redirection' | 'installation';
 
 export const nomBaseTechnique = (env: NomEnvironnement): string => `donejuan-${env}-technique`;
 
@@ -103,11 +112,11 @@ export class BaseTechnique {
     this.base.close({ disableAutoOpen: true });
   }
 
-  /** Lecture d'une ligne ; base fermée ou indisponible → undefined. */
-  async lire(table: 'session' | 'redirection'): Promise<unknown> {
+  /** Lecture d'une ligne (clé : le nom de la table par défaut) ; base fermée ou indisponible → undefined. */
+  async lire(table: TableLignes, cle: string = table): Promise<unknown> {
     if (this.ferme) return undefined;
     try {
-      return await this.base.table(table).get(table);
+      return await this.base.table(table).get(cle);
     } catch {
       return undefined;
     }
@@ -127,16 +136,17 @@ export class BaseTechnique {
     }
   }
 
-  /** Écriture (ou effacement si `ligne` est undefined) confirmée à `complete`. */
+  /** Écriture (ou effacement si `ligne` est undefined) confirmée à `complete` ; clé : le nom de la table par défaut. */
   async ecrire(
-    table: 'session' | 'redirection',
+    table: TableLignes,
     ligne: Readonly<Record<string, unknown>> | undefined,
+    cle: string = table,
   ): Promise<Resultat<undefined, ErreurMemoireTechnique>> {
     if (this.ferme) return INDISPONIBLE;
     try {
       await this.base.transaction('rw', [table], async () => {
-        if (ligne === undefined) await this.base.table(table).delete(table);
-        else await this.base.table(table).put({ ...ligne, cle: table });
+        if (ligne === undefined) await this.base.table(table).delete(cle);
+        else await this.base.table(table).put({ ...ligne, cle });
       });
       return succes(undefined);
     } catch {
@@ -234,11 +244,16 @@ export class MemoireRedirectionDexie implements MemoireRedirection {
 export class MemoireDemandePersistanceDexie implements MemoireDemandePersistance {
   constructor(private readonly base: BaseTechnique) {}
 
-  dejaDemandee(): Promise<boolean> {
-    return nonImplemente(`MemoireDemandePersistanceDexie.dejaDemandee ${typeof this.base}`);
+  async dejaDemandee(): Promise<boolean> {
+    const ligne = await this.base.lire('installation', CLE_PERSISTANCE_DEMANDEE);
+    if (ligne === undefined) return false;
+    const valide = schemaPersistanceDemandee.safeParse(ligne).success;
+    if (!valide) this.base.signalerLigneInvalide('installation');
+    return valide;
   }
 
-  noterDemandee(): Promise<void> {
-    return nonImplemente('MemoireDemandePersistanceDexie.noterDemandee');
+  async noterDemandee(): Promise<void> {
+    // Échec absorbé (base fermée ou indisponible) : la demande sera refaite au lancement suivant, sans conséquence.
+    await this.base.ecrire('installation', { demandee: true }, CLE_PERSISTANCE_DEMANDEE);
   }
 }
