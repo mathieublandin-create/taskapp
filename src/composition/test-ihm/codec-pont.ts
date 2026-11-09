@@ -43,17 +43,19 @@ const verifier = (valeur: unknown, chemin: string, enObjet: boolean): void => {
     return;
   }
   if (Array.isArray(valeur)) {
+    // Boucle par indice : `forEach` sauterait les trous d'un tableau creux, que JSON changerait en `null`.
     const elements: ReadonlyArray<unknown> = valeur;
-    elements.forEach((element, indice) => {
-      verifier(element, `${chemin}[${String(indice)}]`, false);
-    });
+    for (let indice = 0; indice < elements.length; indice += 1) {
+      verifier(elements[indice], `${chemin}[${String(indice)}]`, false);
+    }
     return;
   }
-  if (!estObjetSimple(valeur)) {
-    refuser(chemin, valeur);
-    return;
-  }
-  // Une clé symbole serait perdue en silence par JSON.stringify.
+  verifierObjet(valeur, chemin);
+};
+
+/** Objet simple seulement ; une clé symbole serait perdue en silence par JSON.stringify. */
+const verifierObjet = (valeur: object, chemin: string): void => {
+  if (!estObjetSimple(valeur)) refuser(chemin, valeur);
   if (Object.getOwnPropertySymbols(valeur).length > 0) refuser(`${chemin}[symbole]`, Symbol());
   for (const [cle, element] of Object.entries(valeur)) verifier(element, `${chemin}.${cle}`, true);
 };
