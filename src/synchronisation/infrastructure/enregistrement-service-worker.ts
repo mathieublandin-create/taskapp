@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { JournalTechnique } from '../../commun/application/ports/journal-technique';
 
 // ST-US-018 v0.4 §4.3, §6.1 (rang 12, tranche D2) ; DAT §4.1.7 (RED-02), §7.4 : le service worker généré par
@@ -38,10 +37,40 @@ export type DependancesEnregistrementServiceWorker = {
 };
 
 /**
+ * Annonce la nouvelle version quand le service worker en installation passe à `installed`, si la page est déjà
+ * contrôlée : au premier chargement (`controller` nul), l'installation initiale n'est pas une mise à jour.
+ */
+const suivreInstallation = (
+  travailleur: TravailleurInstallation | null,
+  conteneur: ConteneurEnregistrement,
+  surNouvelleVersion: () => void,
+): void => {
+  travailleur?.addEventListener('statechange', () => {
+    if (travailleur.state === 'installed' && conteneur.controller !== null) surNouvelleVersion();
+  });
+};
+
+/**
  * Enregistre le service worker et observe l'arrivée d'une nouvelle version. Un échec de `register` est consigné
  * (`avertissement`, événement `EnregistrementServiceWorkerEnEchec`, champ `erreur` = nom de l'erreur) ; ne rejette
  * jamais.
  */
-export const enregistrerServiceWorker = (
+export const enregistrerServiceWorker = async (
   dependances: DependancesEnregistrementServiceWorker,
-): Promise<void> => nonImplemente(`enregistrerServiceWorker ${dependances.base}`);
+): Promise<void> => {
+  const { conteneur, base, journal, surNouvelleVersion } = dependances;
+  if (conteneur === undefined) return;
+  try {
+    const enregistrement = await conteneur.register(`${base}sw.js`, { scope: base });
+    if (enregistrement.waiting !== null) surNouvelleVersion();
+    enregistrement.addEventListener('updatefound', () => {
+      suivreInstallation(enregistrement.installing, conteneur, surNouvelleVersion);
+    });
+  } catch (erreur) {
+    journal.consigner({
+      niveau: 'avertissement',
+      evenement: 'EnregistrementServiceWorkerEnEchec',
+      champs: { erreur: erreur instanceof Error ? erreur.name : 'inconnue' },
+    });
+  }
+};

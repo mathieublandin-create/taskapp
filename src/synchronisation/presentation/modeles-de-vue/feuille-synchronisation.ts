@@ -24,6 +24,11 @@ export type EntreeFeuilleSynchronisation = {
    * qu'il n'est pas lu : ni ligne `SYN-FEUILLE-STOCKAGE`, ni carte `ALR-015`.
    */
   readonly persistance?: EtatPersistance;
+  /**
+   * ST-US-018 v0.4 §6.1 n° 5 (rang 12, tranche D2) : un service worker plus récent attend l'accord de l'utilisateur
+   * (`ControleurInterface.signalerNouvelleVersion`). Absent ou faux : pas d'invite.
+   */
+  readonly nouvelleVersion?: boolean;
 };
 
 export type LigneAttenteFeuille = { readonly id: string; readonly intitule: string };
@@ -91,6 +96,19 @@ export type ModeleVueFeuilleSynchronisation = {
     readonly texte: string;
     readonly role: 'status';
     readonly fermable: false;
+  };
+  /**
+   * Invite `ALR-016` (Information, guide v0.2.24 §6.6.15) : une version plus récente est disponible. `role="status"`,
+   * non fermable ; l'action est celle d'`ERR-013` (retours compris). Absente quand la carte `ERR-013` (consultation
+   * seule) offre déjà la même action. Aucun toast, bandeau ni point sur l'indicateur.
+   */
+  readonly alerteVersion?: {
+    readonly code: 'ALR-016';
+    readonly titre: string;
+    readonly texte: string;
+    readonly role: 'status';
+    readonly fermable: false;
+    readonly action: { readonly type: 'METTRE_A_JOUR'; readonly libelle: string };
   };
 };
 
@@ -229,6 +247,21 @@ const modeleStockage = (persistance: EtatPersistance | undefined) => {
   };
 };
 
+/** ST-US-018 §6.1 n° 5 : jamais en même temps que la variante `carte` d'`ERR-013`, qui offre déjà « Mettre à jour ». */
+const modeleAlerteVersion = (e: EntreeFeuilleSynchronisation) =>
+  e.nouvelleVersion === true && e.etat.actionRequise !== 'FORMAT_PLUS_RECENT'
+    ? {
+        alerteVersion: {
+          code: 'ALR-016' as const,
+          titre: libelle('ALR-016'),
+          texte: libelle('ALR-016', {}, 'texte'),
+          role: 'status' as const,
+          fermable: false as const,
+          action: { type: 'METTRE_A_JOUR' as const, libelle: libelle('ALR-016', {}, 'action') },
+        },
+      }
+    : {};
+
 export const construireFeuilleSynchronisation = (
   e: EntreeFeuilleSynchronisation,
 ): ModeleVueFeuilleSynchronisation => ({
@@ -239,4 +272,5 @@ export const construireFeuilleSynchronisation = (
   cartes: modeleCartes(e.etat, e.elementsEnAttente.length),
   ...modeleAlerteHorloge(e.correctionHorloge),
   ...modeleStockage(e.persistance),
+  ...modeleAlerteVersion(e),
 });

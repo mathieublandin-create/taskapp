@@ -16,6 +16,7 @@ export const CODES_CATALOGUE = [
   'ALR-013',
   'ALR-014',
   'ALR-015',
+  'ALR-016',
   'BAN-ACCES-GOOGLE',
   'BAN-CONSULTATION-SEULE',
   'BAN-RAPPEL-24H',

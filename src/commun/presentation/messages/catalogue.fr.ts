@@ -150,6 +150,12 @@ export const CATALOGUE = {
     texte:
       'Vos données ne sont pas protégées contre un nettoyage du navigateur. Installez l’application et gardez-la sur l’écran d’accueil.',
   },
+  // Guide §6.6.15 : invite « nouvelle version » ; l'action et ses retours sont ceux d'`ERR-013` (aucun texte nouveau).
+  'ALR-016': {
+    libelle: 'Une nouvelle version est disponible',
+    texte: 'Mettez à jour quand vous le souhaitez. Vos modifications sont conservées.',
+    action: 'Mettre à jour',
+  },
 
   // ---- Bandeaux (§6.6.3)
   'BAN-ACCES-GOOGLE': {
