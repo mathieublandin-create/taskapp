@@ -43,7 +43,7 @@ describe('construireFeuilleSynchronisation — stockage de cet appareil (ST-US-0
     expect(vue.stockage).toEqual({
       code: 'SYN-FEUILLE-STOCKAGE',
       etat: 'PROTEGE',
-      libelle: 'Stockage de cet appareil : protégé',
+      libelle: 'Stockage de cet appareil : protégé',
     });
     expect(vue.stockage?.libelle).toBe(libelle('SYN-FEUILLE-STOCKAGE'));
     expect(vue).not.toHaveProperty('alerteStockage');
@@ -57,7 +57,7 @@ describe('construireFeuilleSynchronisation — stockage de cet appareil (ST-US-0
       expect(vue.stockage).toEqual({
         code: 'SYN-FEUILLE-STOCKAGE',
         etat: 'NON-PROTEGE',
-        libelle: 'Stockage de cet appareil : non protégé',
+        libelle: 'Stockage de cet appareil : non protégé',
       });
       expect(vue.stockage?.libelle).toBe(
         libelle('SYN-FEUILLE-STOCKAGE', { variante: 'non-protege' }),

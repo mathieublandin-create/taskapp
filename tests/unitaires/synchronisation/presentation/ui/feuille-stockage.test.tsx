@@ -20,7 +20,7 @@ const PROTEGE: ModeleVueFeuilleSynchronisation = {
   stockage: {
     code: 'SYN-FEUILLE-STOCKAGE',
     etat: 'PROTEGE',
-    libelle: 'Stockage de cet appareil : protégé',
+    libelle: 'Stockage de cet appareil : protégé',
   },
 };
 
@@ -29,7 +29,7 @@ const NON_PROTEGE: ModeleVueFeuilleSynchronisation = {
   stockage: {
     code: 'SYN-FEUILLE-STOCKAGE',
     etat: 'NON-PROTEGE',
-    libelle: 'Stockage de cet appareil : non protégé',
+    libelle: 'Stockage de cet appareil : non protégé',
   },
   alerteStockage: {
     code: 'ALR-015',

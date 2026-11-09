@@ -33,12 +33,17 @@ const fermer = function (this: MondeDoneJuan, nomAppareil: NomAppareil): void {
 Given("(que )l'application est fermée sur le {appareil}", fermer);
 When("l'utilisateur ferme l'application sur le {appareil}", fermer);
 
-When(
-  "l'utilisateur ouvre l'application sur le {appareil}",
-  async function (this: MondeDoneJuan, nomAppareil: NomAppareil) {
-    await this.banc.appareil(nomAppareil).ouvrirApplication();
-  },
-);
+// ST-US-018 v0.4 §12.1 n° 10 : « l'onglet » ne désigne que le PC (US-031 : un seul appareil, sans préfixe).
+When("l'utilisateur ferme l'onglet de l'application", function (this: MondeDoneJuan) {
+  this.banc.appareil('pc').fermerApplication();
+});
+
+const ouvrir = async function (this: MondeDoneJuan, nomAppareil: NomAppareil): Promise<void> {
+  await this.banc.appareil(nomAppareil).ouvrirApplication();
+};
+When("l'utilisateur ouvre l'application sur le {appareil}", ouvrir);
+// n° 10 b : au banc, l'adresse web et l'ouverture simple sont la même ouverture de l'application.
+When("l'utilisateur ouvre l'application sur le {appareil} depuis son adresse web", ouvrir);
 
 When(
   "l'utilisateur ouvre l'application sur le {appareil}, connecté au réseau",
@@ -132,7 +137,6 @@ Given(
     const appareil = this.banc.appareil(nomAppareil);
     appareil.redemarrer();
     await appareil.ouvrirApplication();
-    appareil.seReconnecterAuRetourDuReseau();
   },
 );
 
