@@ -7,7 +7,7 @@ import { Given, Then, When } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import type { NomAppareil } from '../support/banc/appareil-simule';
 import { elementsDeDoneJuan } from './support/ecrans-ihm';
-import { URL_ERREUR_NAVIGATEUR, type MondeIhm } from './support/monde-ihm';
+import { PAGE_ERREUR_NAVIGATEUR, type MondeIhm } from './support/monde-ihm';
 import { ORIGINE_IHM } from './support/serveur-ihm';
 
 Given(
@@ -93,6 +93,6 @@ Then(
   async function (this: MondeIhm, appareil: NomAppareil) {
     this.exigerAppareil(appareil);
     const page = await this.pageCourante();
-    expect(page.url().startsWith(URL_ERREUR_NAVIGATEUR), `URL : ${page.url()}`).toBe(true);
+    await expect.poll(() => page.url()).toMatch(PAGE_ERREUR_NAVIGATEUR);
   },
 );

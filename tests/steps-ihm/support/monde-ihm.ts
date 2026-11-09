@@ -34,8 +34,8 @@ const VIEWPORTS: Readonly<Record<NomAppareil, { width: number; height: number }>
   pc: { width: 1280, height: 800 },
 };
 
-/** Page d'erreur du navigateur (hors ligne, jamais chargée) : aucun écran de Done Juan. */
-export const URL_ERREUR_NAVIGATEUR = 'chrome-error://';
+/** URL de la page d'erreur du navigateur (hors ligne, jamais chargée). */
+export const PAGE_ERREUR_NAVIGATEUR = /^chrome-error:\/\//;
 
 export const DELAI_ATTENTE_MS = 5_000;
 export const DELAI_SYNCHRONISATION_MS = 10_000;
@@ -45,6 +45,9 @@ export type InstantaneIhm = {
   readonly ecran: EcranAffiche | undefined;
   readonly intitulesTaches: ReadonlyArray<string>;
 };
+
+/** Navigation en échec (hors ligne, jamais chargée) : le navigateur affiche sa page d'erreur, aucun écran de Done Juan. */
+const PAGE_NON_CHARGEE: InstantaneIhm = { ecran: undefined, intitulesTaches: [] };
 
 export type DemarrageInitial = 'EN_ATTENTE' | 'FAIT' | 'SANS_OBJET';
 
@@ -110,9 +113,12 @@ export class MondeIhm extends MondeDoneJuan {
     const page = await this.#nouvellePage();
     this.pontDrive.retenir();
     try {
-      await page.goto(url).catch(() => undefined);
-      await this.#verifierOuvertureHorsLigne(page);
-      this.instantaneOuverture = await this.#instantane(page);
+      const chargee = await page.goto(url).then(
+        () => true,
+        () => false,
+      );
+      if (chargee) await this.#verifierOuvertureHorsLigne(page);
+      this.instantaneOuverture = chargee ? await this.#instantane(page) : PAGE_NON_CHARGEE;
     } finally {
       this.pontDrive.liberer();
     }
@@ -247,7 +253,7 @@ export class MondeIhm extends MondeDoneJuan {
    * page voit bien le réseau coupé : sans cela, « sans réseau » ne serait qu'une intention du scénario.
    */
   async #verifierOuvertureHorsLigne(page: Page): Promise<void> {
-    if (!this.#horsLigne || page.url().startsWith(URL_ERREUR_NAVIGATEUR)) return;
+    if (!this.#horsLigne) return;
     const etat = await page.evaluate(() => ({
       enLigne: navigator.onLine,
       controleeParLeServiceWorker: navigator.serviceWorker.controller !== null,
@@ -267,9 +273,6 @@ export class MondeIhm extends MondeDoneJuan {
    * attendue. Aucune réponse du Drive n'est attendue (la porte est fermée).
    */
   async #instantane(page: Page): Promise<InstantaneIhm> {
-    if (page.url().startsWith(URL_ERREUR_NAVIGATEUR)) {
-      return { ecran: undefined, intitulesTaches: [] };
-    }
     await page.waitForLoadState('networkidle');
     if ((await ecranAffiche(page)) === 'APPLICATION') {
       await expect
