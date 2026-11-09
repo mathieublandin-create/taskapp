@@ -13,6 +13,7 @@ import {
 import { PlanificateurNavigateur } from '../commun/infrastructure/planificateur-navigateur';
 import { SourceAleatoireCrypto } from '../commun/infrastructure/source-aleatoire-crypto';
 import { registreSaisie } from '../commun/presentation/saisie/registre-saisie';
+import type { IssueOuverture } from '../compte/application/cas-usage/ouvrir-application';
 import type { RetourGoogle } from '../compte/application/ports/fournisseur-auth';
 import { DELAI_MAX_ATTENTE_REDIRECTION } from '../compte/domaine/ouverture';
 import {
@@ -70,7 +71,26 @@ const puitsJournal =
     void base()?.journaliser(entree, horloge.maintenant());
   };
 
-type SocleWeb = Pick<DependancesFournisseurAuthWeb, 'horloge' | 'journal' | 'reseau' | 'aleatoire'>;
+/** Horloge, journal, réseau et hasard de la page, partagés par l'application et par ses adaptateurs Google. */
+export type SocleWeb = Pick<
+  DependancesFournisseurAuthWeb,
+  'horloge' | 'journal' | 'reseau' | 'aleatoire'
+>;
+
+/**
+ * Ce qui distingue la composition de production de la composition `test-ihm` (ST-US-018 v0.4 §6.4 n° 5) : les
+ * fabriques du fournisseur d'authentification et du transport Drive. Tout le reste est commun (`demarrerAvec`).
+ */
+export type AdaptateursVariables = {
+  readonly fournisseur: (
+    configuration: Configuration,
+    socle: SocleWeb,
+  ) => AdaptateursApplication['fournisseur'];
+  readonly transport: (
+    socle: SocleWeb,
+    echangesGoogle: ObservateurEchangesGoogle,
+  ) => AdaptateursApplication['transport'];
+};
 
 /** FournisseurAuthWeb (ADR-013) : GIS chargé à la demande, userinfo, navigation pleine page. */
 const fournisseurWeb =
@@ -117,11 +137,24 @@ const socleWeb = (configuration: Configuration, base: () => BaseTechnique | unde
   };
 };
 
+/** Adaptateurs liés à la page : service worker, rechargement, onglets et persistance du stockage. */
+const adaptateursNavigateur = (navigateur: Navigateur) => ({
+  miseAJour: new MiseAJourServiceWorker({
+    conteneur: navigateur.conteneurServiceWorker,
+    recharger: navigateur.recharger,
+  }),
+  versionApplication: VERSION_APPLICATION,
+  surFermetureImposee: navigateur.recharger,
+  ouvrirOnglet: navigateur.ouvrirOnglet,
+  persistance: new PersistanceNavigateur(navigateur.gestionnaireStockage),
+});
+
 /**
  * Un seul canal d'avis par onglet : un BroadcastChannel ne reçoit pas ses propres messages, mais une autre
  * instance ouverte dans la même page les reçoit (l'onglet qui se déconnecte se rechargerait lui-même).
  */
 const assembler = (
+  variables: AdaptateursVariables,
   configuration: Configuration,
   navigateur: Navigateur,
   avis: AvisOngletsBroadcast,
@@ -136,17 +169,10 @@ const assembler = (
     generateur: new GenerateurUuidV7(),
     avis,
     gardeSaisie: registreSaisie,
-    fournisseur: fournisseurWeb(configuration, socle),
-    transport: transportDrive(socle.horloge, echangesGoogle),
+    fournisseur: variables.fournisseur(configuration, socle),
+    transport: variables.transport(socle, echangesGoogle),
     echangesGoogle,
-    miseAJour: new MiseAJourServiceWorker({
-      conteneur: navigateur.conteneurServiceWorker,
-      recharger: navigateur.recharger,
-    }),
-    versionApplication: VERSION_APPLICATION,
-    surFermetureImposee: navigateur.recharger,
-    ouvrirOnglet: navigateur.ouvrirOnglet,
-    persistance: new PersistanceNavigateur(navigateur.gestionnaireStockage),
+    ...adaptateursNavigateur(navigateur),
   });
   reference.base = application.base;
   return application;
@@ -180,20 +206,55 @@ const ecouterDeclencheurs = (application: Application, controleur: ControleurInt
   );
 };
 
+/** Suite de l'ouverture : persistance, échéance de l'attente de Google, puis vue. */
+const apresOuvertureWeb = async (
+  application: Application,
+  controleur: ControleurInterface,
+  navigateur: Navigateur,
+  issue: IssueOuverture,
+): Promise<void> => {
+  // ST-US-018 v0.4 §6.3 n° 3 : demande de persistance au premier lancement, même avant la connexion.
+  void application.etatPersistance();
+  if (issue.type === 'REDIRECTION_LANCEE') {
+    new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {
+      navigateur.arreterNavigation();
+      void application.ouvrirApplication.abandonnerAttenteGoogle();
+    });
+  }
+  await controleur.apresOuverture(issue, () =>
+    application.ouvrirApplication.executer({ type: 'AUCUN' }),
+  );
+};
+
 /** Ce que `main.tsx` reçoit de l'ouverture : le contrôleur de l'interface et le journal (enregistrement du service worker). */
 export type DemarrageWeb = {
   readonly controleur: ControleurInterface;
   readonly journal: JournalTechnique;
 };
 
-/** Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038). */
-export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): DemarrageWeb => {
+/** Adaptateurs Google de production : GIS et redirection (ADR-013), Drive v3 mesuré (ST-US-017 §6.8 n° 1). */
+const ADAPTATEURS_GOOGLE: AdaptateursVariables = {
+  fournisseur: fournisseurWeb,
+  transport: (socle, echangesGoogle) => transportDrive(socle.horloge, echangesGoogle),
+};
+
+/**
+ * Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038).
+ * `main.tsx` l'appelle sans `adaptateurs` (Google réel). ST-US-018 v0.4 §6.4 n° 5 : la composition `test-ihm` la
+ * réutilise (`demarrerAvec`) en ne changeant que les deux fabriques Google ; le retour reste lu une seule fois, ici
+ * (RED-05, UT-COMP-US-022-89).
+ */
+export const demarrerWeb = (
+  retour: RetourGoogle,
+  navigateur: Navigateur,
+  adaptateurs: AdaptateursVariables = ADAPTATEURS_GOOGLE,
+): DemarrageWeb => {
   const configuration = lireConfiguration(navigateur.variables, {
     agent: navigateur.agent,
     pointsTactiles: navigateur.pointsTactiles,
   });
   const avis = new AvisOngletsBroadcast(configuration.env);
-  const application = assembler(configuration, navigateur, avis);
+  const application = assembler(adaptateurs, configuration, navigateur, avis);
   const controleur = new ControleurInterface(
     application,
     new HorlogeSysteme(),
@@ -201,18 +262,7 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Demar
   );
   avis.ecouter(navigateur.recharger);
   ecouterDeclencheurs(application, controleur);
-  void application.ouvrirApplication.executer(retour).then(async (issue) => {
-    // ST-US-018 v0.4 §6.3 n° 3 : demande de persistance au premier lancement, même avant la connexion.
-    void application.etatPersistance();
-    if (issue.type === 'REDIRECTION_LANCEE') {
-      new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {
-        navigateur.arreterNavigation();
-        void application.ouvrirApplication.abandonnerAttenteGoogle();
-      });
-    }
-    await controleur.apresOuverture(issue, () =>
-      application.ouvrirApplication.executer({ type: 'AUCUN' }),
-    );
-  });
+  const ouverture = application.ouvrirApplication.executer(retour);
+  void ouverture.then((issue) => apresOuvertureWeb(application, controleur, navigateur, issue));
   return { controleur, journal: application.journal };
 };

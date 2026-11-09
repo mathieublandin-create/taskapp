@@ -1,9 +1,10 @@
-import { nonImplemente } from '@non-implemente';
 import type { EtatReseau } from '../../commun/application/ports/etat-reseau';
 import type { Horloge } from '../../commun/application/ports/horloge';
-import type { Resultat } from '../../commun/domaine/resultat';
-import type { CoffreJetons } from '../../compte/application/ports/coffre-jetons';
+import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
+import { EcartTemps } from '../../commun/domaine/temps/ecart-temps';
+import type { CoffreJetons, JetonAcces } from '../../compte/application/ports/coffre-jetons';
 import type {
+  AccesObtenu,
   DemandeJeton,
   ErreurAuth,
   FournisseurAuth,
@@ -13,6 +14,7 @@ import type {
 } from '../../compte/application/ports/fournisseur-auth';
 import type { DepartMemorise } from '../../compte/application/ports/memoire-redirection';
 import type { IdCompte } from '../../compte/domaine/identite';
+import { decoderPont, encoderPont } from './codec-pont';
 
 // ST-US-018 v0.4 §4.4, §6.5 (rang 12, tranche B2). Composition `test-ihm` seulement. Google est simulé par le processus
 // cucumber (binding `donejuanFauxGoogle`) : aucune redirection, aucun chargement de GIS ; le parcours réel par
@@ -47,8 +49,21 @@ export type DependancesFournisseurAuthTestIhm = {
 export class FournisseurAuthTestIhm implements FournisseurAuth {
   constructor(private readonly dependances: DependancesFournisseurAuthTestIhm) {}
 
-  demanderJeton(demande: DemandeJeton): Promise<Resultat<IssueDemandeJeton, ErreurAuth>> {
-    return nonImplemente(`FournisseurAuthTestIhm.demanderJeton ${demande.mode}`);
+  async demanderJeton(demande: DemandeJeton): Promise<Resultat<IssueDemandeJeton, ErreurAuth>> {
+    const { pont, reseau, coffre, horloge } = this.dependances;
+    if (!reseau.estConnecte()) return echec({ type: 'ReseauIndisponible' });
+    const reponse = await pont(
+      'demanderJeton',
+      encoderPont([{ mode: demande.mode, portees: demande.portees, indice: demande.indice }]),
+    );
+    // Le pont rend le Resultat encodé par le Google simulé du processus cucumber (pont-faux-google.ts, D3).
+    const resultat = decoderPont(reponse) as Resultat<AccesObtenu, ErreurAuth>;
+    if (!resultat.ok) return resultat;
+    coffre.placer({
+      jeton: `jeton-test-ihm:${resultat.valeur.identite.compte}` as JetonAcces,
+      echeance: EcartTemps.depuisMillisecondes(horloge.monotone() + VALIDITE_JETON_TEST_IHM_MS),
+    });
+    return succes({ type: 'ACCES_OBTENU', acces: resultat.valeur });
   }
 
   recevoirRetour(_p: {
@@ -56,10 +71,11 @@ export class FournisseurAuthTestIhm implements FournisseurAuth {
     readonly depart: DepartMemorise | undefined;
     readonly compteAttendu: IdCompte;
   }): Promise<Resultat<RetourAccepte, ErreurAuth>> {
-    return nonImplemente(`FournisseurAuthTestIhm.recevoirRetour ${typeof this.dependances}`);
+    return Promise.resolve(echec({ type: 'RetourRedirectionRejete', motif: 'SANS_DEPART' }));
   }
 
   oublier(): void {
-    nonImplemente('FournisseurAuthTestIhm.oublier');
+    this.dependances.coffre.vider();
+    void this.dependances.pont('oublier', encoderPont([]));
   }
 }

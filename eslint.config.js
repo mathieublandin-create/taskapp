@@ -119,6 +119,15 @@ const proprietesInterdites = [
     message: 'Google Identity Services : passerelle GIS du contexte compte (§9.2).',
     dispenses: ['src/compte/infrastructure/auth/passerelle-gis-navigateur.ts'],
   },
+  // ST-US-018 v0.4 §3 n° 22 : les bindings Playwright de la chaîne `@ihm` ne sont lus que par la composition de test.
+  ...['window', 'globalThis', 'self'].flatMap((object) =>
+    ['donejuanFauxDrive', 'donejuanFauxGoogle'].map((property) => ({
+      object,
+      property,
+      message: 'Bindings de la chaîne @ihm : composition test-ihm seulement (ST-US-018 §6.4).',
+      dispenses: ['src/composition/test-ihm/**'],
+    })),
+  ),
 ];
 
 const globauxInterdits = [
