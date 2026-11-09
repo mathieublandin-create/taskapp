@@ -1,6 +1,5 @@
-import { nonImplemente } from '@non-implemente';
 import type { EtatReseau } from '../../commun/application/ports/etat-reseau';
-import type { Resultat } from '../../commun/domaine/resultat';
+import { echec, type Resultat } from '../../commun/domaine/resultat';
 import type {
   Changements,
   ElementDrive,
@@ -15,6 +14,7 @@ import type {
   ContenuFichierAppareil,
   ContenuManifeste,
 } from '../../synchronisation/domaine/contenu-fichier';
+import { decoderPont, encoderPont } from './codec-pont';
 
 // ST-US-018 v0.4 §4.4, §6.4 (rang 12, tranche B2) ; ST-US-031 §3 n° 9, §6.5. Composition `test-ihm` seulement : jamais
 // importé par `web.ts` ni par le build de production (alias du mode `test-ihm`, §3 n° 14).
@@ -31,27 +31,38 @@ export class TransportParPont implements TransportSynchro {
     private readonly dependances: { readonly pont: PontDrive; readonly reseau: EtatReseau },
   ) {}
 
+  /** Seule logique du transport : contrôle du réseau de la page, puis appel nommé du pont (aucune validation). */
+  private async appeler<T>(
+    methode: keyof TransportSynchro,
+    ...args: ReadonlyArray<unknown>
+  ): Promise<Resultat<T, ErreurTransport>> {
+    if (!this.dependances.reseau.estConnecte()) return echec({ type: 'ReseauIndisponible' });
+    const reponse = await this.dependances.pont(methode, encoderPont(args));
+    // Le pont rend le Resultat encodé par le transport du FauxDrive (repondrePontDrive) : même type, par construction.
+    return decoderPont(reponse) as Resultat<T, ErreurTransport>;
+  }
+
   preparerDossier(): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.preparerDossier ${typeof this.dependances}`);
+    return this.appeler('preparerDossier');
   }
 
   listerFichiersAppareils(
     dossier: IdFichierDrive,
   ): Promise<Resultat<Changements, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.listerFichiersAppareils ${dossier}`);
+    return this.appeler('listerFichiersAppareils', dossier);
   }
 
   changements(
     dossier: IdFichierDrive,
     jeton: string,
   ): Promise<Resultat<Changements, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.changements ${dossier} ${jeton}`);
+    return this.appeler('changements', dossier, jeton);
   }
 
   lireFichierAppareil(
     id: IdFichierDrive,
   ): Promise<Resultat<ContenuFichierAppareil, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.lireFichierAppareil ${id}`);
+    return this.appeler('lireFichierAppareil', id);
   }
 
   deposerFichierAppareil(p: {
@@ -59,13 +70,13 @@ export class TransportParPont implements TransportSynchro {
     readonly contenu: ContenuFichierAppareil;
     readonly fichierExistant?: IdFichierDrive;
   }): Promise<Resultat<FichierDepose, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.deposerFichierAppareil ${p.dossier}`);
+    return this.appeler('deposerFichierAppareil', p);
   }
 
   lireManifeste(
     dossier: IdFichierDrive,
   ): Promise<Resultat<ManifesteDistant | undefined, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.lireManifeste ${dossier}`);
+    return this.appeler('lireManifeste', dossier);
   }
 
   ecrireManifeste(p: {
@@ -73,24 +84,24 @@ export class TransportParPont implements TransportSynchro {
     readonly contenu: ContenuManifeste;
     readonly fichierExistant?: IdFichierDrive;
   }): Promise<Resultat<IdFichierDrive, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.ecrireManifeste ${p.dossier}`);
+    return this.appeler('ecrireManifeste', p);
   }
 
   listerDossiers(): Promise<Resultat<ReadonlyArray<ElementDrive>, ErreurTransport>> {
-    return nonImplemente('TransportParPont.listerDossiers');
+    return this.appeler('listerDossiers');
   }
 
   inventorierDossier(
     dossier: IdFichierDrive,
   ): Promise<Resultat<InventaireDossier, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.inventorierDossier ${dossier}`);
+    return this.appeler('inventorierDossier', dossier);
   }
 
   lireContenuManifeste(id: IdFichierDrive): Promise<Resultat<ContenuManifeste, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.lireContenuManifeste ${id}`);
+    return this.appeler('lireContenuManifeste', id);
   }
 
   supprimerFichier(id: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>> {
-    return nonImplemente(`TransportParPont.supprimerFichier ${id}`);
+    return this.appeler('supprimerFichier', id);
   }
 }
