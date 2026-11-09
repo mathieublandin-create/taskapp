@@ -1,0 +1,118 @@
+# Déploiement de la PWA (conventions.md §14.3 ; ADR-013 ; DAT v0.11.12 §7.4, §7.5). Aucun secret : l'identifiant du
+# client OAuth Web est une variable publique du dépôt (`VITE_GOOGLE_WEB_CLIENT_ID`). Actions épinglées par empreinte
+# de commit (§9.5).
+#
+# Déclenchement manuel uniquement. Le déclenchement par étiquette `v*` du §14.3 n'est volontairement pas branché : il
+# contournerait la garde ci-dessous. Il sera ajouté après la relecture des textes des pages publiques (E13b, Q-ST018-STA-2).
+#
+# Garde du déploiement de production (trois verrous cumulés) :
+#   1. variable de dépôt `DEPLOIEMENT_PRODUCTION_AUTORISE` = `true`, posée par le propriétaire du dépôt seulement après la
+#      relecture des textes de `public/accueil.html` et `public/confidentialite.html` par Starck à l'E13b ;
+#   2. entrée `confirmation` = `PUBLIER` ;
+#   3. environnement GitHub `production`, à protéger par un relecteur requis (approbation du commanditaire).
+# La recette (`environnement` = `recette`) construit et contrôle à blanc : son origine est distincte (DAT §7.4 bis,
+# Q-ANT26 en attente), elle n'est pas publiée par ce dépôt.
+name: deploiement
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branche, étiquette ou commit à construire (production : un commit de main)'
+        required: true
+        default: main
+      environnement:
+        description: 'recette (à blanc : construction et contrôles) ou production (publication)'
+        type: choice
+        options: [recette, production]
+        default: recette
+      confirmation:
+        description: 'Production seulement : saisir PUBLIER'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploiement
+  cancel-in-progress: false
+
+jobs:
+  garde:
+    name: garde
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Garde du déploiement de production
+        if: ${{ inputs.environnement == 'production' }}
+        env:
+          AUTORISE: ${{ vars.DEPLOIEMENT_PRODUCTION_AUTORISE }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          if [ "${AUTORISE}" != "true" ]; then
+            echo "::error title=Production bloquée::DEPLOIEMENT_PRODUCTION_AUTORISE n'est pas à « true » : déploiement refusé tant que les textes des pages publiques n'ont pas été relus (E13b)."
+            exit 1
+          fi
+          if [ "${CONFIRMATION}" != "PUBLIER" ]; then
+            echo "::error title=Confirmation absente::Saisir PUBLIER dans l'entrée « confirmation »."
+            exit 1
+          fi
+
+  construction:
+    name: construction
+    needs: garde
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_ENV: ${{ inputs.environnement }}
+      VITE_BASE_PATH: ${{ inputs.environnement == 'production' && '/taskapp/' || vars.RECETTE_BASE_PATH || '/taskapp/' }}
+      VITE_APP_ORIGIN: ${{ inputs.environnement == 'production' && 'https://mathieublandin-create.github.io' || vars.RECETTE_APP_ORIGIN || 'https://recette.invalid' }}
+      VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID || 'identifiant-fictif.apps.googleusercontent.com' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - name: Le commit appartient à main (production)
+        if: ${{ inputs.environnement == 'production' }}
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main || { echo "::error title=Hors main::Le commit ${GITHUB_SHA} choisi n'appartient pas à main."; exit 1; }
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Contrôles de qualité (conventions.md §14.1)
+        run: pnpm verifier
+      - name: Tests
+        run: pnpm test
+      - name: Construction de la PWA
+        run: pnpm build
+      - name: Aucune composition de test dans dist/ (ST-US-018 §6.4 n° 6)
+        run: pnpm verifier:dist
+      - name: Artefact Pages (production)
+        if: ${{ inputs.environnement == 'production' }}
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  publication:
+    name: publication
+    if: ${{ inputs.environnement == 'production' }}
+    needs: construction
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: production
+      url: ${{ steps.deploiement.outputs.url }}
+    steps:
+      # Récupère l'action locale (même révision que ce workflow). L'artefact Pages vient du job `construction`.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: deploiement
+        uses: ./.github/actions/deployer-hebergement
