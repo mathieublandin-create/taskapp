@@ -258,7 +258,17 @@ const blocsImportsDispenses = zonesImports.map(({ files, autorises }) => ({
 }));
 
 export default tseslint.config(
-  { ignores: ['poc/**', 'node_modules/**', 'coverage/**', 'dist/**', 'dev-dist/**', 'docs/**'] },
+  {
+    ignores: [
+      'poc/**',
+      'node_modules/**',
+      'coverage/**',
+      'dist/**',
+      'dist-test-ihm/**',
+      'dev-dist/**',
+      'docs/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,

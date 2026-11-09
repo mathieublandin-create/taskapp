@@ -16,6 +16,7 @@ local.properties
 # Artefacts
 node_modules/
 dist/
+dist-test-ihm/
 dev-dist/
 build/
 coverage/
