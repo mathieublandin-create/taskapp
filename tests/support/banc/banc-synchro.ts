@@ -81,9 +81,10 @@ export class BancSynchro {
   /** Attend la fin des cycles de synchronisation en cours sur les appareils ouverts (relances comprises). */
   async attendreCycles(): Promise<void> {
     for (;;) {
-      const enCours = this.appareils().flatMap((a) =>
-        [a.reconnexionEnCours(), a.cycleEnCours()].flatMap((p) => (p === undefined ? [] : [p])),
-      );
+      const enCours = this.appareils().flatMap((a) => {
+        const cycle = a.cycleEnCours();
+        return cycle === undefined ? [] : [cycle];
+      });
       if (enCours.length === 0) return;
       await Promise.allSettled(enCours);
     }

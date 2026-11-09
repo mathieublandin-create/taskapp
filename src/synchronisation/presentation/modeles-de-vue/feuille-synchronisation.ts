@@ -203,6 +203,32 @@ const modeleAlerteHorloge = (correction: EcartTemps | undefined) =>
       }
     : {};
 
+/**
+ * ST-US-018 §6.3 n° 4 (R15) : la persistance protégée ne donne que la ligne `PROTEGE` ; sinon (refusée ou API absente),
+ * ligne `NON-PROTEGE` et carte `ALR-015`. Aucun blocage : rien d'autre dans la feuille n'en dépend.
+ */
+const modeleStockage = (persistance: EtatPersistance | undefined) => {
+  if (persistance === undefined) return {};
+  const code = 'SYN-FEUILLE-STOCKAGE' as const;
+  if (persistance === 'PERSISTANT') {
+    return { stockage: { code, etat: 'PROTEGE' as const, libelle: libelle(code) } };
+  }
+  return {
+    stockage: {
+      code,
+      etat: 'NON-PROTEGE' as const,
+      libelle: libelle(code, { variante: 'non-protege' }),
+    },
+    alerteStockage: {
+      code: 'ALR-015' as const,
+      titre: libelle('ALR-015'),
+      texte: libelle('ALR-015', {}, 'texte'),
+      role: 'status' as const,
+      fermable: false as const,
+    },
+  };
+};
+
 export const construireFeuilleSynchronisation = (
   e: EntreeFeuilleSynchronisation,
 ): ModeleVueFeuilleSynchronisation => ({
@@ -212,4 +238,5 @@ export const construireFeuilleSynchronisation = (
   bouton: modeleBouton(e.etat),
   cartes: modeleCartes(e.etat, e.elementsEnAttente.length),
   ...modeleAlerteHorloge(e.correctionHorloge),
+  ...modeleStockage(e.persistance),
 });

@@ -132,6 +132,23 @@ const CarteAlerteHorloge = ({
   </IonCard>
 );
 
+/**
+ * `ALR-015` (R15, ST-US-018 §6.3 n° 5) : niveau Attention, annoncée en `status`, aucun bouton, non fermable ; en pied
+ * de section (Q-ST018-STE-3, option a).
+ */
+const CarteAlerteStockage = ({
+  alerte,
+}: {
+  readonly alerte: NonNullable<ModeleVueFeuilleSynchronisation['alerteStockage']>;
+}) => (
+  <IonCard data-message={alerte.code} data-niveau="attention" role={alerte.role}>
+    <IonCardTitle>{alerte.titre}</IonCardTitle>
+    <IonCardContent>
+      <p>{alerte.texte}</p>
+    </IonCardContent>
+  </IonCard>
+);
+
 /** Section « Erreurs qui demandent une action » (ST-US-017 §6.8 n° 4), dans l'ordre du modèle de vue. */
 const CartesDeLaFeuille = ({
   vue,
@@ -174,5 +191,10 @@ export const FeuilleSynchronisation = ({
     <BoutonSynchroniser bouton={vue.bouton} surSynchroniser={surSynchroniser} />
     <CartesDeLaFeuille vue={vue} surActionCarte={surActionCarte} miseAJour={miseAJour} />
     {choixRestauration === undefined ? null : <CarteChoixRestauration {...choixRestauration} />}
+    {/* TODO(Q-ST018-STE-3) : emplacement d'`ALR-015` (option a ★) à confirmer par Steeve. */}
+    {vue.alerteStockage === undefined ? null : <CarteAlerteStockage alerte={vue.alerteStockage} />}
+    {vue.stockage === undefined ? null : (
+      <p data-etat={vue.stockage.etat}>{vue.stockage.libelle}</p>
+    )}
   </section>
 );

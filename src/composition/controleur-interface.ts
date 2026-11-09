@@ -464,7 +464,7 @@ export class ControleurInterface {
     };
   }
 
-  /** Section « Synchronisation » d'ECR-011 : dernier échange, éléments en attente, correction d'horloge (`ALR-001`). */
+  /** Section « Synchronisation » d'ECR-011 : dernier échange, éléments en attente, correction d'horloge (`ALR-001`), stockage (`ALR-015`). */
   async #feuille(etat: EtatLu, maintenant: Instant): Promise<ModeleVueFeuilleSynchronisation> {
     const dernierEchange = await this.application.lireDernierContact();
     const correctionHorloge = await this.application.lireCorrectionHorloge();
@@ -473,6 +473,7 @@ export class ControleurInterface {
       maintenant,
       ...(dernierEchange === undefined ? {} : { dernierEchange }),
       ...(correctionHorloge === undefined ? {} : { correctionHorloge }),
+      persistance: await this.application.etatPersistance(),
       elementsEnAttente: await this.application.lireElementsEnAttente(),
     });
   }

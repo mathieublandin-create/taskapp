@@ -12,7 +12,6 @@ import { EcartTemps } from '@src/commun/domaine/temps/ecart-temps';
 import type { IssueOuverture } from '@src/compte/application/cas-usage/ouvrir-application';
 import type { JetonAcces } from '@src/compte/application/ports/coffre-jetons';
 import type { RetourGoogle } from '@src/compte/application/ports/fournisseur-auth';
-import { REPRISE_ACCUEIL } from '@src/compte/application/ports/memoire-redirection';
 import { BaseTechnique, MemoireRedirectionDexie } from '@src/compte/infrastructure/base-technique';
 import {
   assemblerApplication,
@@ -116,12 +115,6 @@ export class AppareilSimule {
   /** Contrôleur de l'interface de l'instance ouverte (vue affichée, ANO-001, ST-US-017 §12.4). */
   private controleurInstance: ControleurInterface | undefined;
   private annulerReseau: Annulation | undefined;
-  /**
-   * Vrai : l'appareil rallumé hors ligne retrouve son accès à Google au retour du réseau, sans geste (écart signalé à
-   * Anthony : S12d n'a pas de geste de reconnexion, et la PWA n'en fait pas seule).
-   */
-  private reconnexionAuRetourDuReseau = false;
-  private reconnexion: Promise<void> | undefined;
   /** Réponses du Drive retenues pendant l'ouverture, jusqu'à l'instantané. */
   private porteDrive: Promise<void> = Promise.resolve();
 
@@ -218,16 +211,6 @@ export class AppareilSimule {
     this.controleurInstance = undefined;
     this.instance?.arreter();
     this.instance = undefined;
-  }
-
-  /** Le prochain retour du réseau renouvelle l'accès à Google de cette instance (S12d, `le … a été éteint puis rallumé`). */
-  seReconnecterAuRetourDuReseau(): void {
-    this.reconnexionAuRetourDuReseau = true;
-  }
-
-  /** Reconnexion lancée par le retour du réseau, tant qu'elle n'est pas terminée. */
-  reconnexionEnCours(): Promise<void> | undefined {
-    return this.reconnexion;
   }
 
   /** Contrôleur de l'interface de l'application ouverte ; erreur si elle est fermée. */
@@ -361,9 +344,8 @@ export class AppareilSimule {
       this.instance = instance;
       const controleur = new ControleurInterface(instance, this.horloge, instance.objectifs);
       this.controleurInstance = controleur;
-      this.annulerReseau = this.reseau.surChangement((connecte) => {
+      this.annulerReseau = this.reseau.surChangement(() => {
         void controleur.rafraichir();
-        if (connecte && this.reconnexionAuRetourDuReseau) this.reconnecter(instance);
       });
       instance.session.observer((etat) => {
         if (etat.type === 'SANS_SESSION') this.depuisOuverture.ecranConnexion = true;
@@ -377,17 +359,6 @@ export class AppareilSimule {
       this.porteDrive = Promise.resolve();
       await this.attendreCycle();
     }
-  }
-
-  /** Geste de reconnexion (« Reprendre la synchronisation ») joué au retour du réseau, une seule fois. */
-  private reconnecter(instance: Application): void {
-    this.reconnexionAuRetourDuReseau = false;
-    this.reconnexion = instance.reprendreSession
-      .executer(REPRISE_ACCUEIL)
-      .then(() => undefined)
-      .finally(() => {
-        this.reconnexion = undefined;
-      });
   }
 
   /** Racine et objectifs affichés, lus sur les seules données locales (aucune réponse du Drive n'est passée). */
