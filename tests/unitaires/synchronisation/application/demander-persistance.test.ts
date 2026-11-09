@@ -14,7 +14,10 @@ import { PersistanceSimulee } from '../../../doublures/persistance-simulee';
 class MemoireEspionne implements MemoireDemandePersistance {
   readonly appels: Array<string> = [];
 
-  constructor(private demandee = false) {}
+  constructor(
+    private demandee = false,
+    private readonly journal: Array<string> = [],
+  ) {}
 
   dejaDemandee(): Promise<boolean> {
     this.appels.push('dejaDemandee');
@@ -23,6 +26,7 @@ class MemoireEspionne implements MemoireDemandePersistance {
 
   noterDemandee(): Promise<void> {
     this.appels.push('noterDemandee');
+    this.journal.push('noterDemandee');
     this.demandee = true;
     return Promise.resolve();
   }
@@ -30,8 +34,15 @@ class MemoireEspionne implements MemoireDemandePersistance {
 
 describe('DemanderPersistance (ST-US-018 §6.3)', () => {
   it('UT-US-018-01 premier lancement — persist() une fois, demande notée après la réponse, état obtenu rendu ; lancement suivant : persisted() seulement', async () => {
-    const memoire = new MemoireEspionne();
+    const journal: Array<string> = [];
+    const memoire = new MemoireEspionne(false, journal);
     const persistance = new PersistanceSimulee('NON_PERSISTANT', 'PERSISTANT');
+    const demanderReel = persistance.demander.bind(persistance);
+    persistance.demander = async () => {
+      const reponse = await demanderReel();
+      journal.push('persist-repondu');
+      return reponse;
+    };
 
     const premier = await new DemanderPersistance({ persistance, memoire }).executer();
 
@@ -39,6 +50,7 @@ describe('DemanderPersistance (ST-US-018 §6.3)', () => {
     expect(persistance.appelsDemander).toBe(1);
     expect(persistance.appelsEtat).toBe(0);
     expect(memoire.appels).toEqual(['dejaDemandee', 'noterDemandee']);
+    expect(journal).toEqual(['persist-repondu', 'noterDemandee']);
 
     const suivant = await new DemanderPersistance({ persistance, memoire }).executer();
 
