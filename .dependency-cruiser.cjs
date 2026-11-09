@@ -136,6 +136,15 @@ module.exports = {
       to: { path: BIBLIOTHEQUES_DE_TEST },
     },
     {
+      name: 'composition-test-ihm-isolee',
+      comment:
+        'La composition test-ihm (point d’entrée du seul build `--mode test-ihm`, par alias) n’est importée par ' +
+        'aucun autre module de src/ (ST-US-018 v0.4 §3 n° 22, §6.4 n° 6).',
+      severity: 'error',
+      from: { path: '^src/', pathNot: '^src/composition/test-ihm(\\.ts$|/)' },
+      to: { path: '^src/composition/test-ihm(\\.ts$|/)' },
+    },
+    {
       name: 'capacitor-interdit',
       comment: '@capacitor/* est interdit dans src/ en cible (§14.2, repli §19).',
       severity: 'error',
