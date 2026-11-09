@@ -72,6 +72,7 @@ describe('MemoireDemandePersistanceDexie (ST-US-018 §5)', () => {
   it('UT-US-018-08 base fermée — dejaDemandee rend faux et noterDemandee se résout sans erreur ni écriture', async () => {
     const fabrique = new IDBFactory();
     const { base, memoire } = ouvrir(fabrique);
+    expect(await memoire.dejaDemandee()).toBe(false); // ouvre (et crée) la base avant de la fermer
     base.fermer();
 
     await expect(memoire.dejaDemandee()).resolves.toBe(false);

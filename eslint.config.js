@@ -107,6 +107,13 @@ const proprietesInterdites = [
     dispenses: ['src/synchronisation/infrastructure/verrou-onglets-web.ts'],
   },
   {
+    object: 'navigator',
+    property: 'storage',
+    message: 'Persistance du stockage : port PersistanceStockage (ST-US-018 §9).',
+    // main.tsx ne fait que transmettre `navigator.storage` à la composition (ST-US-018 v0.4 §3 n° 7, §4.2).
+    dispenses: ['src/commun/infrastructure/persistance-navigateur.ts', 'src/main.tsx'],
+  },
+  {
     object: 'window',
     property: 'google',
     message: 'Google Identity Services : passerelle GIS du contexte compte (§9.2).',

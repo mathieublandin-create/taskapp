@@ -38,6 +38,7 @@ import {
   type Application,
 } from './application';
 import { ControleurInterface } from './controleur-interface';
+import { armerReevaluationRappel } from './reevaluation-rappel';
 
 // Composition de la PWA (ADR-013 ; ST-US-022 §3.2 n° 51, §6.2). Appelée par main.tsx, après la consommation du
 // retour de redirection (RED-02). Rien ne s'exécute à l'évaluation de ce module.
@@ -150,12 +151,30 @@ const assembler = (
 
 /**
  * ST-US-017 §6.4 : retour au premier plan (cycle) ; page masquée : pas de cycle toutes les 2 min. Au retour, le saut
- * de l'horloge est contrôlé **avant** le cycle, pour qu'il horodate déjà corrigé (v0.11 §6.8 n° 3).
+ * de l'horloge est contrôlé **avant** le cycle, pour qu'il horodate déjà corrigé (v0.11 §6.8 n° 3). ST-US-018 v0.4
+ * §6.2 (RG-057) : au retour, la vue est recalculée (le rappel des 24 h peut apparaître ; le masquage n'est pas remis).
  */
-const auChangementDeVisibilite = async (application: Application): Promise<void> => {
+const auChangementDeVisibilite = async (
+  application: Application,
+  controleur: ControleurInterface,
+): Promise<void> => {
   const visible = document.visibilityState === 'visible';
   if (visible) await application.controlerHorloge();
   application.espace()?.cycle.definirPremierPlan(visible);
+  if (visible) void controleur.rafraichir();
+};
+
+/**
+ * Recalculs de la vue : changement de réseau, visibilité de la page et, ST-US-018 v0.4 §6.2 (RG-057), chaque minute.
+ * La page vit autant que l'application : aucune annulation.
+ */
+const ecouterDeclencheurs = (application: Application, controleur: ControleurInterface): void => {
+  new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
+  armerReevaluationRappel(new PlanificateurNavigateur(), () => void controleur.rafraichir());
+  document.addEventListener(
+    'visibilitychange',
+    () => void auChangementDeVisibilite(application, controleur),
+  );
 };
 
 /** Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038). */
@@ -172,9 +191,10 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
     application.objectifs,
   );
   avis.ecouter(navigateur.recharger);
-  new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
-  document.addEventListener('visibilitychange', () => void auChangementDeVisibilite(application));
+  ecouterDeclencheurs(application, controleur);
   void application.ouvrirApplication.executer(retour).then(async (issue) => {
+    // ST-US-018 v0.4 §6.3 n° 3 : demande de persistance au premier lancement, même avant la connexion.
+    void application.etatPersistance();
     if (issue.type === 'REDIRECTION_LANCEE') {
       new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {
         navigateur.arreterNavigation();

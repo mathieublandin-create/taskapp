@@ -3,7 +3,6 @@ import type {
   EtatPersistance,
   PersistanceStockage,
 } from '../commun/application/ports/persistance-stockage';
-import { nonImplemente } from '@non-implemente';
 import type { EcartTemps } from '../commun/domaine/temps/ecart-temps';
 import type {
   EchangeGoogle,
@@ -33,6 +32,7 @@ import type { MemoireSession } from '../compte/application/ports/memoire-session
 import { SessionCourante } from '../compte/application/session-courante';
 import {
   BaseTechnique,
+  MemoireDemandePersistanceDexie,
   MemoireRedirectionDexie,
   MemoireSessionDexie,
 } from '../compte/infrastructure/base-technique';
@@ -45,6 +45,7 @@ import {
   RepartirDeZero,
   type ErreurChoixRestauration,
 } from '../synchronisation/application/cas-usage/choisir-restauration';
+import { DemanderPersistance } from '../synchronisation/application/cas-usage/demander-persistance';
 import { MarquerCommeLue } from '../synchronisation/application/cas-usage/marquer-comme-lue';
 import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
 import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
@@ -729,6 +730,21 @@ const objectifsDe = (
   };
 };
 
+/**
+ * ST-US-018 v0.4 §4.2 : une seule `DemanderPersistance` par application (appels concurrents partagés), sans espace
+ * requis ; le drapeau « déjà demandée » vit dans la base technique, hors espace de compte.
+ */
+const etatPersistanceDe = (
+  a: AdaptateursApplication,
+  base: BaseTechnique,
+): Application['etatPersistance'] => {
+  const demande = new DemanderPersistance({
+    persistance: a.persistance,
+    memoire: new MemoireDemandePersistanceDexie(base),
+  });
+  return () => demande.executer();
+};
+
 export const assemblerApplication = (a: AdaptateursApplication): Application => {
   const fabriqueCycle: FabriqueCycle = {};
   const stockage = assemblerStockage(a, fabriqueCycle);
@@ -739,8 +755,7 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerSortie(a, noyau),
     ...assemblerSynchronisation(a, noyau),
     ...assemblerHorlogeEtMiseAJour(a, noyau),
-    // ST-US-018 v0.4 §4.2 : squelette (tranche B1).
-    etatPersistance: () => nonImplemente(`etatPersistance ${typeof a.persistance}`),
+    etatPersistance: etatPersistanceDe(a, stockage.base),
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       fermerEspace(stockage.espace());

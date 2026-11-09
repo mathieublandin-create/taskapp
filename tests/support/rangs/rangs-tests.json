@@ -190,6 +190,10 @@
       "rang": 12
     },
     {
+      "motif": "UT-COMP-US-018-\\d+",
+      "rang": 12
+    },
+    {
       "motif": "(?:UT-US-031|CT-VER)-\\d+",
       "rang": 13
     }

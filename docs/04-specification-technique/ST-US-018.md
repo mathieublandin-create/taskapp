@@ -14,7 +14,7 @@
 | Résultats du test technique | M-PERSIST favorable (`persist()` accordé sans question à la PWA installée) ; M-DUR favorable ; hors ligne (étape 10) favorable |
 | Prérequis | Rangs 0 à 11 fusionnés (PR #35, `bb612a7`) : durabilité stricte, ouverture hors ligne, `MasquageRappel` (rang 1), cycle (rang 3), « Mettre à jour » et `MiseAJourServiceWorker` (rang 11, `SKIP_WAITING` attendu du service worker de ce rang) |
 | Questions | Q-ST018-PEP-1 (**bloquante pour la fin de D1**), Q-ST018-STE-2 (**bloquante pour l'invite de D2 seulement**), Q-ST018-STE-3, Q-ST018-STA-2 (**bloquante pour le déploiement de production de F1**), Q-ST018-STA-3 (§16) |
-| Version | 0.4 |
+| Version | 0.4.1 |
 | Statut | E10 du rang 12 faite : 90 tests rouges, 7 gardes vertes (§13) ; tranches B1, D1, D2, B2, D3, F1 (§15) |
 | Auteur | Anthony |
 | Branche | `us/US-018-rang12` (E10) ; une branche par tranche et par développeur (OPT-17) |
@@ -26,6 +26,7 @@
 | 0.2 | 2026-10-27 | Anthony | Réponses de Steeve (Q-ST018-STE-1 : `SYN-FEUILLE-STOCKAGE`, `ALR-015`) et de Starck (Q-ST018-STA-1 a) : rattachement strict ; vérifications sur appareil réel en E14). Table `installation` de la base technique (ST-US-022 v0.2 §5.1). UT-US-018-04 précisé. |
 | 0.3 | 2026-10-28 | Anthony | E11, RL-LOT-001-S7 : accessibilité de la ligne « Stockage » et de la carte `ALR-015` (§6, UT-US-018-04) ; RL-A2 et S5 de Steeve sans effet ici. |
 | 0.4 | 2026-11-08 | Anthony | **E10 du rang 12**, conception confrontée au code fusionné des rangs 0 à 11 : (1) `MasquerRappel24h` **retiré** : le masquage existe depuis le rang 1 (`MasquageRappel`, `ControleurInterface.masquerRappel`), UT-US-018-03 devient une garde sur le banc ; (2) persistance : port `MemoireDemandePersistance`, `Application.etatPersistance`, exécution concurrente partagée (§4, §6.3) ; (3) déclencheurs de RG-057 : `armerReevaluationRappel` (§6.2) ; (4) service worker : `pwa.config.ts` (fonction pure), `enregistrerServiceWorker` après RED-02, détection d'une version en attente (§6.1) ; (5) **composition `test-ihm` spécifiée** : codec du pont, `TransportParPont`, `FournisseurAuthTestIhm` (Google simulé par binding, sans redirection), mode de construction `test-ihm` (§6.4, §6.5) ; (6) S17b et S21b : geste de reconnexion manquant, constaté à l'essai (Q-ST018-PEP-1, DT-038 entre au rang 12) ; (7) tranches OPT-15 (§15) ; tests UT-US-018-01 à 15 et CT-TRANS sur `TransportParPont` (§13). |
+| 0.4.1 | 2026-11-09 | Anthony | Arbitrage rang 12 B1 : §9, `src/main.tsx` dispensé de la règle `navigator.storage` (aligné sur ESLint) ; UT-US-018-01 et 08 renforcés (ordre persist/note ; base ouverte avant fermeture). |
 
 ## 1. Résumé technique
 
@@ -197,7 +198,7 @@ Sans objet (aucune nouvelle requête).
 
 ## 9. Patterns imposés
 - Service worker généré (Workbox), aucun code de service worker écrit à la main.
-- Port `PersistanceStockage` ; **aucun accès à `navigator.storage` hors de `persistance-navigateur.ts`** : règle `no-restricted-properties` (objet `navigator`, propriété `storage`) avec exception par bloc `files` (conventions §14.2), ajoutée par B1.
+- Port `PersistanceStockage` ; **aucun accès à `navigator.storage` hors de `persistance-navigateur.ts` et de `src/main.tsx`** (qui se borne à transmettre `navigator.storage` à la composition, §3 n° 7, §4.2) : règle `no-restricted-properties` (objet `navigator`, propriété `storage`) avec exception par bloc `files` (conventions §14.2), ajoutée par B1.
 - Composition de test isolée par alias de construction ; `src/composition/test-ihm/**` n'est importé que par `src/composition/test-ihm.ts` (dependency-cruiser) ; aucune logique métier dans le pont.
 
 ## 10. Sécurité
