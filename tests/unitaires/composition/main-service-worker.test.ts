@@ -39,14 +39,16 @@ const unAppel = (source: ts.SourceFile, nom: string): ts.CallExpression => {
 const instructionDe = (source: ts.SourceFile, n: ts.Node): number =>
   source.statements.findIndex((s) => s.pos <= n.pos && n.end <= s.end);
 
+/** Valeur source de chaque propriété du littéral (`journal,` vaut « journal »). */
 const proprietes = (appel: ts.CallExpression): ReadonlyMap<string, string> => {
   const objet = appel.arguments[0];
   if (objet === undefined || !ts.isObjectLiteralExpression(objet)) return new Map();
-  return new Map(
-    objet.properties
-      .filter(ts.isPropertyAssignment)
-      .map((p) => [p.name.getText(), p.initializer.getText()]),
-  );
+  const valeurs: Array<[string, string]> = [];
+  for (const p of objet.properties) {
+    if (ts.isPropertyAssignment(p)) valeurs.push([p.name.getText(), p.initializer.getText()]);
+    if (ts.isShorthandPropertyAssignment(p)) valeurs.push([p.name.text, p.name.text]);
+  }
+  return new Map(valeurs);
 };
 
 describe('main.tsx — enregistrement du service worker (ST-US-018 §6.1)', () => {
