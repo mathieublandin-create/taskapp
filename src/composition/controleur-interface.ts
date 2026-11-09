@@ -146,6 +146,8 @@ type Etat = {
   toast?: ToastInterface;
   /** Issue de « Mettre à jour », lue une fois par la prochaine vue calculée. */
   miseAJour?: IssueMiseAJour;
+  /** Un service worker plus récent attend (`ALR-016`) ; jamais mémorisé : remis à faux par le rechargement. */
+  nouvelleVersion: boolean;
   /** « Décider plus tard » choisi pendant cette ouverture d'`ERR-012` (remis à faux quand `ERR-012` disparaît). */
   decisionReportee: boolean;
   /** Présent tant qu'`ERR-012` est affiché : restauration connue faite ici avant le choix (base du toast `TST-RESTAUREE`). */
@@ -156,7 +158,7 @@ type Etat = {
 
 export class ControleurInterface {
   #vue: VueInterface;
-  readonly #etat: Etat = { enCours: false, decisionReportee: false };
+  readonly #etat: Etat = { enCours: false, decisionReportee: false, nouvelleVersion: false };
   readonly #observateurs = new Set<() => void>();
   readonly #rafraichissements = new Set<Promise<void>>();
 
@@ -379,6 +381,15 @@ export class ControleurInterface {
     else await this.reprendre();
   };
 
+  /**
+   * ST-US-018 §6.1 n° 5 : une version plus récente attend. Seule l'invite `ALR-016` de la feuille en témoigne : aucun
+   * toast, aucun bandeau, aucun rechargement sans le geste « Mettre à jour ».
+   */
+  readonly signalerNouvelleVersion = (): void => {
+    this.#etat.nouvelleVersion = true;
+    void this.rafraichir();
+  };
+
   /** « Mettre à jour » (RG-058, n° 10) : l'issue s'affiche sous le bandeau ou la carte ; jamais de toast. */
   readonly mettreAJour = async (): Promise<void> => {
     this.#etat.miseAJour = await this.application.mettreAJour();
@@ -474,6 +485,7 @@ export class ControleurInterface {
       ...(dernierEchange === undefined ? {} : { dernierEchange }),
       ...(correctionHorloge === undefined ? {} : { correctionHorloge }),
       persistance: await this.application.etatPersistance(),
+      nouvelleVersion: this.#etat.nouvelleVersion,
       elementsEnAttente: await this.application.lireElementsEnAttente(),
     });
   }

@@ -29,6 +29,7 @@ import { Toast } from './commun/presentation/ui/toast';
 import { FeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
 import { FeuilleChoixRestauration } from './synchronisation/presentation/ui/ChoixRestauration';
 import { useFocusFinALire } from './synchronisation/presentation/ui/focus-fin-a-lire';
+import { enregistrerServiceWorker } from './synchronisation/infrastructure/enregistrement-service-worker';
 import { Bandeau } from './synchronisation/presentation/ui/Bandeau';
 import { ModificationsNonRetenues } from './synchronisation/presentation/ui/ModificationsNonRetenues';
 import type { RefElementMetier } from './synchronisation';
@@ -38,21 +39,32 @@ import './commun/presentation/ui/styles.css';
 // RED-02 : première instruction, synchrone, avant tout rendu, toute requête et le chargement de GIS : le fragment
 // de l'URL de retour de Google est copié, effacé, puis analysé. Les modules importés n'ont aucun effet de bord.
 // RED-05 : le retour (qui porte le jeton) n'est lié à aucun nom de module ; il n'existe que le temps de l'appel.
-const controleur = demarrerWeb(consommerRetourRedirection(NAVIGATION_RETOUR_NAVIGATEUR), {
-  variables: import.meta.env,
-  agent: navigator.userAgent,
-  pointsTactiles: navigator.maxTouchPoints,
-  recharger: () => {
-    location.reload();
+const { controleur, journal } = demarrerWeb(
+  consommerRetourRedirection(NAVIGATION_RETOUR_NAVIGATEUR),
+  {
+    variables: import.meta.env,
+    agent: navigator.userAgent,
+    pointsTactiles: navigator.maxTouchPoints,
+    recharger: () => {
+      location.reload();
+    },
+    arreterNavigation: () => {
+      window.stop();
+    },
+    ouvrirOnglet: (url) => {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    },
+    conteneurServiceWorker: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
+    gestionnaireStockage: 'storage' in navigator ? navigator.storage : undefined,
   },
-  arreterNavigation: () => {
-    window.stop();
-  },
-  ouvrirOnglet: (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  },
-  conteneurServiceWorker: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
-  gestionnaireStockage: 'storage' in navigator ? navigator.storage : undefined,
+);
+
+// RED-02 : le service worker n'est enregistré qu'après la consommation du retour de redirection (ST-US-018 §6.1 n° 4).
+void enregistrerServiceWorker({
+  conteneur: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
+  base: import.meta.env.BASE_URL,
+  journal,
+  surNouvelleVersion: controleur.signalerNouvelleVersion,
 });
 
 setupIonicReact();

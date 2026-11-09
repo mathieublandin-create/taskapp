@@ -243,6 +243,8 @@ export type Application = {
    * (`DemanderPersistance` sur `a.persistance` et `MemoireDemandePersistanceDexie(base)`), sans espace requis.
    */
   readonly etatPersistance: () => Promise<EtatPersistance>;
+  /** Journal technique de l'application, pour l'enregistrement du service worker (ST-US-018 v0.4 §4.3, tranche D2). */
+  readonly journal: JournalTechnique;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
 };
@@ -756,6 +758,7 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerSynchronisation(a, noyau),
     ...assemblerHorlogeEtMiseAJour(a, noyau),
     etatPersistance: etatPersistanceDe(a, stockage.base),
+    journal: a.journal,
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       fermerEspace(stockage.espace());

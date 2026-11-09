@@ -1,4 +1,7 @@
-import type { EntreeJournalTechnique } from '../commun/application/ports/journal-technique';
+import type {
+  EntreeJournalTechnique,
+  JournalTechnique,
+} from '../commun/application/ports/journal-technique';
 import { EtatReseauNavigateur } from '../commun/infrastructure/etat-reseau-navigateur';
 import { GenerateurUuidV7 } from '../commun/infrastructure/generateur-uuid-v7';
 import { HorlogeSysteme } from '../commun/infrastructure/horloge-systeme';
@@ -177,8 +180,14 @@ const ecouterDeclencheurs = (application: Application, controleur: ControleurInt
   );
 };
 
+/** Ce que `main.tsx` reçoit de l'ouverture : le contrôleur de l'interface et le journal (enregistrement du service worker). */
+export type DemarrageWeb = {
+  readonly controleur: ControleurInterface;
+  readonly journal: JournalTechnique;
+};
+
 /** Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038). */
-export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): ControleurInterface => {
+export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): DemarrageWeb => {
   const configuration = lireConfiguration(navigateur.variables, {
     agent: navigateur.agent,
     pointsTactiles: navigateur.pointsTactiles,
@@ -205,5 +214,5 @@ export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): Contr
       application.ouvrirApplication.executer({ type: 'AUCUN' }),
     );
   });
-  return controleur;
+  return { controleur, journal: application.journal };
 };
