@@ -349,6 +349,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand 5 minutes plus tard, sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
     Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
     Et le réseau revient sur le smartphone
+    Et sur le smartphone, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "A" existe avec le délai 2026-11-30
     Et sur chacun des deux appareils, la liste des modifications non retenues contient :
