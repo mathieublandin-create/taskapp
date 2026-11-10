@@ -13,7 +13,12 @@
  * 4. aucune perte silencieuse (ENF-06) : toute écriture d'utilisateur perdue sans connaissance (remplacée par une
  *    écriture qui ne la connaît pas et de valeur différente, ou visée par une suppression qui ne la connaît pas) a son
  *    entrée dans les valeurs écartées. L'oracle de connaissance est écrit ici, indépendamment du code (DAT §4.2.1,
- *    « ses propres écritures antérieures »).
+ *    « ses propres écritures antérieures »). **DT-027 (ST-US-017 v0.11.4 §6.6 n° 2 b, DAT §4.2.1 « Valeurs égales »,
+ *    Q-ANT-E13-R9-2)** : attendu **inversé**. Avant, l'oracle comparait la valeur entière d'un placement (`origine` et
+ *    `hlcOrigine` compris) : deux déplacements concurrents sous le même parent « perdaient » un placement, et un
+ *    signalement `CONFLIT` de ce type était toléré. Désormais, pour le registre `parent`, rien n'est perdu quand le
+ *    parent visé est le même (l'oracle ne compare que `parentId`), et la propriété 5 exige qu'**aucune** entrée
+ *    `CONFLIT` d'un registre `parent` ne relie deux placements de même parent visé.
  */
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
@@ -245,12 +250,23 @@ const connait = (d: RegistreQuelconque, r: RegistreQuelconque): boolean => {
  * c'est ce que la jointure garantit, US-017 S10c). Une entrée constatée sur une vue partielle, qu'une écriture faite
  * plus tard rendrait inutile, reste admise (« Existence d'une entrée ») : seule la vue de l'intégration compte.
  */
+/** DT-027 : un registre `parent` n'est écarté (CONFLIT) que si le parent visé diffère (absent ≡ objectif principal). */
+const parentVise = (r: RegistreQuelconque): IdObjectif | undefined =>
+  (r.ecriture.valeur as PlacementObjectif).parentId;
+const verifierAucunConflitDeMemeParent = (valeurs: Iterable<ValeurEcartee>): void => {
+  for (const v of valeurs) {
+    if (v.motif !== 'CONFLIT' || v.ecartee.cle.champ !== 'parent') continue;
+    expect(parentVise(v.ecartee)).not.toBe(parentVise(v.gagnante));
+  }
+};
+
 const verifierConstats = (
   banc: Banc,
   d: number,
   s: number,
   nouvelles: ReadonlyArray<ValeurEcartee>,
 ): void => {
+  verifierAucunConflitDeMemeParent(nouvelles); // propriété 5 (DT-027)
   const connues = (i: number) => nieme(banc.appareils, i).signalements.valeursEcartees;
   const vues = [...nieme(banc.vues, d), ...nieme(banc.vues, s)];
   for (const v of nouvelles) {
@@ -358,6 +374,13 @@ const canonique = (v: unknown): string => {
         .join(',')}}`;
 };
 
+/**
+ * Valeur comparée pour décider si une écriture est perdue (DAT §4.2.1 « Valeurs égales », DT-027) : pour le registre
+ * `parent`, le seul parent visé ; sinon la valeur entière.
+ */
+const valeurComparee = (r: RegistreQuelconque): unknown =>
+  r.cle.champ === 'parent' ? { parentId: parentVise(r) } : r.ecriture.valeur;
+
 /** Éléments qu'une suppression peut écarter : le sien et celui que vise un placement (H-1). */
 const vises = (r: RegistreQuelconque): ReadonlyArray<IdObjectif> => {
   const propre = r.cle.id as IdObjectif;
@@ -365,6 +388,21 @@ const vises = (r: RegistreQuelconque): ReadonlyArray<IdObjectif> => {
   const cible = (r.ecriture.valeur as PlacementObjectif).parentId;
   return cible === undefined ? [propre] : [propre, cible];
 };
+
+/**
+ * Écritures qui portent la même valeur que `w` au sens de l'égalité (DT-027) : pour le registre `parent`, celles de
+ * même clé et de même parent visé (une même valeur écrite deux fois ne se perd que si toutes sont perdues, et un seul
+ * signalement la porte) ; sinon `w` seule.
+ */
+const memeValeur = (
+  ecrites: ReadonlyArray<RegistreQuelconque>,
+  w: RegistreQuelconque,
+): ReadonlyArray<RegistreQuelconque> =>
+  w.cle.champ !== 'parent'
+    ? [w]
+    : ecrites.filter(
+        (u) => texteDeCle(u.cle) === texteDeCle(w.cle) && parentVise(u) === parentVise(w),
+      );
 
 /**
  * Perdue sans connaissance : ni retenue, ni remplacée en connaissance de cause (par une écriture d'utilisateur qui la
@@ -379,14 +417,16 @@ const perdueSansConnaissance = (
   const finale = etat.registres.get(texteDeCle(w.cle));
   if (finale === undefined) return true;
   if (comparerHlc(finale.ecriture.hlc, w.ecriture.hlc) !== 0) {
-    const remplaceeSciemment = [finale, ...ecrites].some(
-      (autre) =>
-        texteDeCle(autre.cle) === texteDeCle(w.cle) &&
-        comparerHlc(autre.ecriture.hlc, w.ecriture.hlc) !== 0 &&
-        connait(autre, w),
+    const remplaceeSciemment = memeValeur(ecrites, w).some((u) =>
+      [finale, ...ecrites].some(
+        (autre) =>
+          texteDeCle(autre.cle) === texteDeCle(u.cle) &&
+          comparerHlc(autre.ecriture.hlc, u.ecriture.hlc) !== 0 &&
+          connait(autre, u),
+      ),
     );
     return (
-      !remplaceeSciemment && canonique(finale.ecriture.valeur) !== canonique(w.ecriture.valeur)
+      !remplaceeSciemment && canonique(valeurComparee(finale)) !== canonique(valeurComparee(w))
     );
   }
   return vises(w).some((id) => {
@@ -424,20 +464,24 @@ const verifier = ({ banc, ecrites, physique }: Deroulement): void => {
   // 2. Convergence structurelle (contextes, journal, signalements et lectures compris).
   const [premier, ...autres] = courant.appareils.map(photo);
   for (const autre of autres) expect(autre).toEqual(premier);
-  // 3. Hiérarchie valide ; 4. aucune perte silencieuse.
+  // 3. Hiérarchie valide ; 4. aucune perte silencieuse ; 5. aucun CONFLIT entre deux placements de même parent (DT-027).
   const final = nieme(courant.appareils, 0);
+  verifierAucunConflitDeMemeParent(final.signalements.valeursEcartees.values());
   expect(hierarchieValide(final.etat)).toBe(true);
   for (const w of ecrites.filter((r) => r.cle.champ !== 'suppression')) {
     if (perdueSansConnaissance(final.etat, ecrites, w)) {
-      expect(final.signalements.valeursEcartees.has(idValeurEcartee(w.cle, w.ecriture.hlc))).toBe(
-        true,
-      );
+      // Une entrée pour w, ou, si la même valeur de parent a été écrite plusieurs fois (DT-027), pour l'une d'elles.
+      expect(
+        memeValeur(ecrites, w).some((u) =>
+          final.signalements.valeursEcartees.has(idValeurEcartee(u.cle, u.ecriture.hlc)),
+        ),
+      ).toBe(true);
     }
   }
 };
 
 describe('Convergence du noyau de fusion (ST-US-017 v0.9 §14, revue E13 du rang 9)', () => {
-  it('UT-US-017-117 trois appareils : suppressions concurrentes, renommages, déplacements en cycle, « Compris », échanges quelconques : terminaison, états égaux, hiérarchie valide, aucune perte silencieuse, aucune suppression constatée à tort', () => {
+  it('UT-US-017-117 trois appareils : suppressions concurrentes, renommages, déplacements en cycle, « Compris », échanges quelconques : terminaison, états égaux, hiérarchie valide, aucune perte silencieuse, aucune suppression constatée à tort, aucun conflit entre placements de même parent (DT-027, attendu inversé)', () => {
     fc.assert(
       fc.property(fc.array(pas(3), { minLength: 4, maxLength: 24 }), (suite) => {
         verifier(derouler(3, suite));
