@@ -135,7 +135,6 @@ describe('CycleSynchronisation, compléments (ST-US-017 §6.3, §6.4)', () => {
     expect(smartphone.cycle.etatMoteur()).toEqual({
       cycle: 'REPOS',
       actionRequise: 'ECHEC_PERSISTANT',
-      aLire: 0,
     });
     expect(env.planificateur.prochaineEcheance()).toBeUndefined();
     expect(avertissements(smartphone)).toContain('SynchronisationEchec');
@@ -190,7 +189,7 @@ describe('CycleSynchronisation, compléments (ST-US-017 §6.3, §6.4)', () => {
 
     expect(await smartphone.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
 
-    expect(smartphone.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    expect(smartphone.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
     expect(await enAttente(smartphone)).toBe(1);
   });
 
@@ -248,7 +247,6 @@ describe('DepotAvantSortieSynchro (ST-US-017 §6.5)', () => {
         },
         etatMoteur: (): EtatMoteur => ({
           cycle: 'REPOS',
-          aLire: 0,
           ...(p.actionRequise === undefined ? {} : { actionRequise: p.actionRequise }),
         }),
       },

@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { JournalTechnique } from '../../commun/application/ports/journal-technique';
 import type { VerrouOnglets } from '../application/ports/verrou-onglets';
 
@@ -11,24 +10,80 @@ export type DependancesVerrouOngletsWeb = {
   readonly journal: JournalTechnique;
 };
 
+const EXCLUSIF = { mode: 'exclusive' } as const;
+
 export class VerrouOngletsWeb implements VerrouOnglets {
+  #indisponibiliteSignalee = false;
+
   constructor(private readonly dependances: DependancesVerrouOngletsWeb) {}
 
-  executerExclusivement<T>(nom: string, _tache: () => Promise<T>): Promise<T> {
-    return nonImplemente(`VerrouOngletsWeb.executerExclusivement(${nom})`);
+  async executerExclusivement<T>(nom: string, tache: () => Promise<T>): Promise<T> {
+    const gestionnaire = this.#gestionnaire();
+    if (gestionnaire === undefined) return tache();
+    return gestionnaire.request(nom, EXCLUSIF, () => tache());
   }
 
-  demanderLaMain(nom: string, _quandObtenue: () => void): () => void {
-    return nonImplemente(`VerrouOngletsWeb.demanderLaMain(${nom})`);
+  demanderLaMain(nom: string, quandObtenue: () => void): () => void {
+    const gestionnaire = this.#gestionnaire();
+    if (gestionnaire === undefined) return mainSansVerrou(quandObtenue);
+    const abandon = new AbortController();
+    let rendu = false;
+    let tenue = false;
+    let liberer: () => void;
+    const promesseRendue = new Promise<void>((resoudre) => {
+      liberer = resoudre;
+    });
+    gestionnaire
+      .request(nom, { ...EXCLUSIF, signal: abandon.signal }, () => {
+        // Garde obligatoire (§4.2) : Web Locks accorde un verrou libre aussitôt et n'appelle ce rappel qu'ensuite ;
+        // un `abort()` entre les deux est sans effet. Une demande rendue entre-temps ne prend donc jamais la main.
+        if (rendu) return Promise.resolve();
+        tenue = true;
+        quandObtenue();
+        return promesseRendue;
+      })
+      // Demande abandonnée (`AbortError`) : absorbée, aucun rejet non traité (§8).
+      .catch(() => undefined);
+    return () => {
+      if (rendu) return;
+      rendu = true;
+      if (tenue) liberer();
+      else abandon.abort();
+    };
   }
 
-  estTenu(nom: string): Promise<boolean> {
-    return nonImplemente(
-      `VerrouOngletsWeb.estTenu(${nom}, ${String(this.dependances.gestionnaire !== undefined)})`,
-    );
+  async estTenu(nom: string): Promise<boolean> {
+    const gestionnaire = this.#gestionnaire();
+    if (gestionnaire === undefined) return false;
+    const { held } = await gestionnaire.query();
+    return (held ?? []).some((verrou) => verrou.name === nom);
+  }
+
+  /** Le gestionnaire ; s'il manque, une seule entrée `erreur` par instance, au premier appel (§8). */
+  #gestionnaire(): LockManager | undefined {
+    const { gestionnaire, journal } = this.dependances;
+    if (gestionnaire === undefined && !this.#indisponibiliteSignalee) {
+      this.#indisponibiliteSignalee = true;
+      journal.consigner({ niveau: 'erreur', evenement: 'VerrouOngletsIndisponible' });
+    }
+    return gestionnaire;
   }
 }
 
+/** API absente : onglet meneur d'office, dans une microtâche, sauf si `rendre` a été appelé entre-temps. */
+const mainSansVerrou = (quandObtenue: () => void): (() => void) => {
+  let rendu = false;
+  queueMicrotask(() => {
+    if (!rendu) quandObtenue();
+  });
+  return () => {
+    rendu = true;
+  };
+};
+
 /** Verrou du navigateur courant (composition `web.ts`) : `navigator.locks` s'il existe. */
 export const verrouOngletsDuNavigateur = (journal: JournalTechnique): VerrouOngletsWeb =>
-  nonImplemente(`verrouOngletsDuNavigateur(${typeof journal})`);
+  new VerrouOngletsWeb({
+    gestionnaire: 'locks' in navigator ? navigator.locks : undefined,
+    journal,
+  });

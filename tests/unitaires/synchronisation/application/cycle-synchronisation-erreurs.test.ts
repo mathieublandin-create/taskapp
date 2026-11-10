@@ -180,7 +180,7 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
 
     expect(await enPanne.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
 
-    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'RETENTATIVE', aLire: 0 });
+    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'RETENTATIVE' });
     expect((await meta(smartphone)).pageToken).toBe(jeton);
     expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
     expect(await enAttente(smartphone)).toBe(1);
@@ -194,7 +194,7 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
     expect(await objectifs(smartphone)).toBe(2);
     expect((await meta(smartphone)).pageToken).not.toBe(jeton);
     expect(await enAttente(smartphone)).toBe(0);
-    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
   });
 
   it('UT-COMP-US-017-36 lecture d’un fichier d’appareil interrompue par le réseau : jeton inchangé, aucun dépôt ; le cycle suivant relit le fichier', async () => {
@@ -205,7 +205,7 @@ describe('CycleSynchronisation, chemins d’erreur (ST-US-017 §6.3, RC-R3-2)', 
 
     expect(await enPanne.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
 
-    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    expect(enPanne.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
     expect((await meta(smartphone)).pageToken).toBe(jeton);
     expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
     expect(env.planificateur.prochaineEcheance()).toBeUndefined();

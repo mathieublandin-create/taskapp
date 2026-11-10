@@ -105,7 +105,7 @@ describe('CycleSynchronisation (ST-US-017 §6)', () => {
     expect(await pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
 
     expect(await intitules(pc)).toEqual(['Publier le guide']);
-    expect(pc.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    expect(pc.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
     const jetonApres = valeurDe(await pc.depot.lireMeta()).pageToken;
     expect(jetonApres).toBeDefined();
     expect(jetonApres).not.toEqual(jetonAvant);
@@ -243,7 +243,7 @@ describe('CycleSynchronisation (ST-US-017 §6)', () => {
 
     env.drive.retablir();
     await env.avancer(5 * MINUTE, [smartphone]);
-    expect(smartphone.cycle.etatMoteur()).toEqual({ cycle: 'REPOS', aLire: 0 });
+    expect(smartphone.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
     expect(await enAttente(smartphone)).toBe(0);
   });
 

@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { VerrouOnglets } from './ports/verrou-onglets';
 
 // ST-US-031 v0.4 §4.1, §6.2 (rang 13, tranche B1) ; DAT v0.11.12 §4.1.6. Décorateur injecté dans `CycleSynchronisation`
@@ -11,9 +10,10 @@ export type ExclusionCycle = {
 
 /** Exécution directe, sans verrou : appelle `tache` immédiatement (comportement des rangs 3 à 12). */
 export const SANS_EXCLUSION: ExclusionCycle = {
-  executer: <T>(_tache: () => Promise<T>): Promise<T> => nonImplemente('SANS_EXCLUSION.executer'),
+  executer: <T>(tache: () => Promise<T>): Promise<T> => tache(),
 };
 
 /** Exclusion par le verrou `nom` (en pratique `nomVerrouCycle(nomEspace)`). */
-export const exclusionParVerrou = (verrou: VerrouOnglets, nom: string): ExclusionCycle =>
-  nonImplemente(`exclusionParVerrou(${typeof verrou}, ${nom})`);
+export const exclusionParVerrou = (verrou: VerrouOnglets, nom: string): ExclusionCycle => ({
+  executer: <T>(tache: () => Promise<T>): Promise<T> => verrou.executerExclusivement(nom, tache),
+});
