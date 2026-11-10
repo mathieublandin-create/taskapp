@@ -467,7 +467,6 @@ export class CycleSynchronisation implements SuiviCycle {
     const garde = this.#garde();
     if (garde !== undefined) {
       this.#enCours = undefined;
-      this.#aRefaire = false;
       return Promise.resolve(garde);
     }
     const execution = this.#executer(executer);
