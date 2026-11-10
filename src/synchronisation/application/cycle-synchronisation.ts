@@ -367,7 +367,6 @@ export class CycleSynchronisation implements SuiviCycle {
     return {
       cycle: this.#cycle,
       ...(this.#actionRequise === undefined ? {} : { actionRequise: this.#actionRequise }),
-      aLire: 0,
     };
   }
 

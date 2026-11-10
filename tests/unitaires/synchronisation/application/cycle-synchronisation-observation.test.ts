@@ -70,8 +70,8 @@ describe('CycleSynchronisation.observer (ANO-001, ST-US-017 v0.4.3 §6.9)', () =
     expect(await smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
 
     expect(notifications).toEqual([
-      { cycle: 'EN_COURS', aLire: 0, enCours: true },
-      { cycle: 'REPOS', aLire: 0, enCours: false },
+      { cycle: 'EN_COURS', enCours: true },
+      { cycle: 'REPOS', enCours: false },
     ]);
     expect(await attenteALaFin).toBe(0);
   });
@@ -98,7 +98,7 @@ describe('CycleSynchronisation.observer (ANO-001, ST-US-017 v0.4.3 §6.9)', () =
 
     env.drive.indisponible('toujours');
     expect(await smartphone.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
-    expect(notifications.at(-1)).toEqual({ cycle: 'RETENTATIVE', aLire: 0, enCours: false });
+    expect(notifications.at(-1)).toEqual({ cycle: 'RETENTATIVE', enCours: false });
     // Reprises programmées (sans geste) : chacune notifie sa fin ; la 3e porte l'action requise.
     for (let i = 0; i < 3; i += 1) await env.avancer(5 * MINUTE, smartphone);
     expect(notifications.at(-1)).toMatchObject({
@@ -113,7 +113,6 @@ describe('CycleSynchronisation.observer (ANO-001, ST-US-017 v0.4.3 §6.9)', () =
     expect(notifications.at(-1)).toEqual({
       cycle: 'REPOS',
       actionRequise: 'DRIVE_PLEIN',
-      aLire: 0,
       enCours: false,
     });
     env.drive.liberer();
@@ -152,8 +151,8 @@ describe('CycleSynchronisation.observer (ANO-001, ST-US-017 v0.4.3 §6.9)', () =
     await expect(cycle.synchroniserMaintenant()).rejects.toBe(panne);
 
     expect(notifications).toEqual([
-      { cycle: 'EN_COURS', aLire: 0, enCours: true },
-      { cycle: 'REPOS', aLire: 0, enCours: false },
+      { cycle: 'EN_COURS', enCours: true },
+      { cycle: 'REPOS', enCours: false },
     ]);
   });
 
