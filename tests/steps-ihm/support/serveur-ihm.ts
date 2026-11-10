@@ -6,12 +6,12 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { preview } from 'vite';
+import { MODE_TEST_IHM } from '../../../vite.config';
 
 export const PORT_IHM = 4175;
 export const ORIGINE_IHM = `http://localhost:${String(PORT_IHM)}`;
 
 const DOSSIER_BUILD_IHM = 'dist-test-ihm';
-const MODE_TEST_IHM = 'test-ihm';
 
 export type ServeurIhm = { readonly arreter: () => Promise<void> };
 

@@ -18,6 +18,7 @@ const feuilleDeSaisie = (page: Page) => page.locator('ion-modal[is-open]');
 /**
  * Ouvre le détail de la tâche (ECR-007) depuis la liste. Le libellé du bouton flottant « Ajouter une tâche » recouvre
  * le centre de la dernière ligne visible : la ligne est touchée à son bord gauche, comme le ferait un utilisateur.
+ * ANO-005 : à remettre au centre de la ligne à la correction.
  */
 const ouvrirDetail = async (page: Page, intitule: string): Promise<void> => {
   await ligneTache(page, intitule)
