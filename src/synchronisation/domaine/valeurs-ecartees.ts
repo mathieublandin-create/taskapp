@@ -13,7 +13,8 @@ import {
 } from './information';
 import { cibleDe, joindrePierresTombales } from './pierre-tombale';
 
-// ST-US-017 v0.5 §4.6, §6.6 ; DAT §4.2.1 (critère du contexte causal, pierre tombale étendue H-1, signalement unique).
+// ST-US-017 v0.5 §4.6, §6.6 (v0.11.4 : n° 2 b) ; DAT §4.2.1 (critère du contexte causal, pierre tombale étendue H-1,
+// signalement unique, valeurs égales du registre `parent`).
 
 /** base32hex(SHA-256(UTF-8 de `${type}|${id}|${champ}|${appareil}|${physique}|${compteur}`)), 52 caractères. */
 export type IdValeurEcartee = Marque<string, 'IdValeurEcartee'>;
@@ -158,7 +159,21 @@ const versionsDe = (local: RegistresDeLEtat, recu: RegistresDeLEtat): ReadonlyAr
     .map(([, registre]) => ({ registre, deRecu: false })),
 ];
 
-/** n° 2 (RG-036) : W la plus grande, L l'autre ; entrée si W ne connaît pas L et que les valeurs diffèrent. */
+/**
+ * n° 2 b (DT-027) : valeur comparée par le n° 2. Registre `parent` : le seul parent visé (`parentId` omis pour un
+ * objectif principal) ; `origine` et `hlcOrigine`, données techniques de la réparation, n'y entrent pas. Autres
+ * champs : la valeur entière.
+ */
+const valeurPourEgalite = (registre: RegistreQuelconque): unknown => {
+  if (!estRegistre(registre, 'OBJECTIF', 'parent')) return registre.ecriture.valeur;
+  const { parentId } = registre.ecriture.valeur;
+  return parentId === undefined ? {} : { parentId };
+};
+
+/**
+ * n° 2 (RG-036) : W la plus grande, L l'autre ; entrée si W ne connaît pas L et que les valeurs comparées
+ * (`valeurPourEgalite`, n° 2 b) diffèrent.
+ */
 const conflitEntre = (
   a: RegistreQuelconque,
   b: RegistreQuelconque,
@@ -168,7 +183,7 @@ const conflitEntre = (
   const [gagnante, ecartee] = ordre > 0 ? [a, b] : [b, a];
   if (
     estConnue(gagnante.ecriture, ecartee.ecriture) ||
-    egalesStructurellement(gagnante.ecriture.valeur, ecartee.ecriture.valeur)
+    egalesStructurellement(valeurPourEgalite(gagnante), valeurPourEgalite(ecartee))
   ) {
     return [];
   }
