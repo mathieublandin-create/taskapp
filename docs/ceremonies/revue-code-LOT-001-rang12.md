@@ -8,7 +8,7 @@
 | Auteurs | Bruce (opus) : B1 (persistance, déclencheurs de RG-057, règle ESLint), B2 (codec, `TransportParPont`, `FournisseurAuthTestIhm`, `ponts.ts`, `test-ihm.ts`, alias, règles d'isolement), UT-COMP-US-018-1 à 20. Benjamin (sonnet) : D1 (feuille, `ALR-015`, étapes du banc, DT-038), D2 (options PWA, enregistrement, `ALR-016`, e2e de démarrage), D3 (profil `ihm`, `tests/steps-ihm/`, `rangCourant` 12), UT-COMP-US-018-21 à 39. Friday (sonnet) : F1 (job `ihm`, `verifier:dist`, `deploiement.yml`, action composite, `poc.yml`, pages publiques, UT-COMP-US-018-40). Pepper (glossaire v1.13, S12d, S17b, S21b), Steeve (guide v0.2.24), Starck (DAT v0.11.12). |
 | Périmètre | Différentiel `origin/lot/LOT-001...origin/us/US-018-rang12` : 98 fichiers, + 5 599, − 252 (tranches B1, D1, D2, B2, D3, F1) |
 | Référentiel | ST-US-018 v0.4.1 (portée à v0.4.2 par cette revue, §7), DAT v0.11.12 (§4.1.3, §4.1.6, §4.1.7, §7.2, §7.4, §7.5), guide d'ergonomie v0.2.24 §6.6.9, §6.6.15, glossaire d'étapes v1.13 §14, conventions §11.14, §14.1 à §14.3, `checklist-revue-code.md` v0.3, revue du rang 11 |
-| Passage | 1 |
+| Passage | 1 ; 2 (E13 bis, OPT-18, §9) |
 
 ## 1. Contrôles exécutés
 
@@ -158,3 +158,27 @@ Observations de Benjamin pendant D3, confirmées à la lecture du code ; non cor
 - Benjamin (sonnet) : RC-US-018-4, 5 (`demarrage.e2e.ts`, commentaire de `saisie.steps.ts`).
 - Bruce : aucune reprise. Suggestions RC-US-018-6 à 10 facultatives.
 - E13 bis sur sonnet (OPT-18) : contrôle des seules RC-US-018-1 à 5 et du différentiel ; la CI doit rester verte sur les 7 contrôles.
+
+## 9. Passage 2 (E13 bis, sonnet, OPT-18)
+
+Différentiel contrôlé : `c76a8ea..4431426` de `origin/us/US-018-rang12` (5 fichiers, aucun `src/`). Contrôles : `pnpm verifier` (les huit sous-commandes, Node 22 au poste faute de Node 24 : formatage, lint, types, architecture, catalogue, tags, rangs, dépôt) : **vert**, 0 erreur. Le test e2e n'a pas été rejoué au poste (pas de Chromium) : sa mutation est celle rapportée par Benjamin, et sa logique est relue ci-dessous.
+
+| Remarque | Contrôle | Résultat |
+|---|---|---|
+| RC-US-018-1 | Relecture ligne à ligne de `confidentialite.html` et `accueil.html` contre `src/` et le DAT §7.2, §7.3. Portées `openid`, `email`, `drive.file` : exactes (`portees.ts`). Dossier « Done Juan », un fichier par appareil, `manifeste.json`, `LISEZ-MOI.txt` : exacts (`transport-synchro-drive.ts:29-37`). Plus de sélecteur de fichiers. Jeton en mémoire seulement (`coffre-jetons-memoire.ts`), envoyé aux seules API Google. Journal technique : champs limités à des noms d'erreur, écarts d'horloge, identifiants d'entrée, nom de table, avec masquage défensif des jetons et adresses (`journal-technique-local.ts`) : « aucun contenu » exact. Le compte connecté (`sub`, adresse) est dans la base technique : annoncé. Aucun `document.cookie`, `localStorage` ni `sessionStorage` dans `src/` ni dans les pages : « aucun cookie de suivi » exact pour l'application. Aucun hébergement tiers de ressources (seules origines : Google, GitHub). Date : 10 novembre 2026, celle du commit. `accueil.html` : exacte. | **Levée** |
+| RC-US-018-2 | `contents: read` ajouté au job `publication` (avec `pages: write`, `id-token: write`) : suffisant pour `actions/checkout`. | **Levée** |
+| RC-US-018-3 | (a) La garde lit `vars.VITE_GOOGLE_WEB_CLIENT_ID` par `env` et refuse le vide et la valeur fictive, littéralement celle du repli de `construction` ; `construction` dépend de `garde` : pas de contournement par la production (la recette garde son repli). Même portée de variables (dépôt) dans les deux jobs. (b) `$(git rev-parse HEAD)` cite le commit construit, dans un message d'erreur seul (aucune injection : valeur issue de git). | **Levée** |
+| RC-US-018-4 | `navigator.storage.persisted()` et `persist()` évalués dans la page : si l'API manque, `evaluate` rejette (`TypeError`) et le test échoue ; une exception de page lors du chargement est captée par `pageerror`. Le test vérifie l'API du navigateur et l'absence d'exception de l'adaptateur au démarrage, comme demandé. | **Levée** |
+| RC-US-018-5 | Commentaire renvoyant à ANO-005 (`saisie.steps.ts:21`). | **Levée** |
+| RC-US-018-10 | `MODE_TEST_IHM` importé de `vite.config.ts` : lint, types et dependency-cruiser verts. | **Levée** |
+
+Observations sans exigence (non bloquantes, non inscrites) : le commentaire d'en-tête de `deploiement.yml` numérote le nouveau verrou « (+) » entre les verrous 2 et 3 (cosmétique, à renuméroter au prochain passage de Friday) ; `confidentialite.html` ne parle que des cookies de l'application, ceux que Google peut poser lors de la connexion relevant de ses règles, liées dans la page (exact).
+
+Suggestions laissées : confirmées facultatives.
+- RC-US-018-6 (constante de `main.tsx`, modifiant UT-COMP-US-018-37) : **fermée sans suite** (gain cosmétique, modification d'un test qui fait foi).
+- RC-US-018-7 (surcharges de `BaseTechnique`) : **dette candidate R12-c**, numéro attribué à la fusion (OPT-20).
+- RC-US-018-8 (composant `CorpsMiseAJour`) : **fermée sans suite** (deux occurrences, aucune évolution prévue).
+- RC-US-018-9 (motif d'attente `expect.poll(...).catch`) : **fermée sans suite** (sans affaiblissement ; la réécriture ferait courir un risque de flakiness).
+- RC-US-018-10 : réalisée.
+
+**Verdict du passage 2 : Approuvé.** Aucune remarque ouverte, aucun bloquant. Registre de la dette v0.40.
