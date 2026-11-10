@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.25, 2026-11-10 (Steeve).** LOT-001, rang 13 (US-031, tranche D1), réponse à Q-ST031-STE-1 d'Anthony : `SYN-FEUILLE-AUTRE-ONGLET` s'affiche sur toutes les largeurs, après le bouton et son explication, avant les cartes (§6.6.9). Aucun nouveau code ni changement de libellé.
+>
 > **Version 0.2.24, 2026-11-09 (Steeve).** LOT-001, rang 12 (US-018, tranche D2), réponses à Q-ST018-STE-2 (invite « nouvelle version » : nouveau code `ALR-016`, carte de la feuille, pas de toast, §6.6.15) et Q-ST018-STE-3 (`ALR-015` en pied de la section « Synchronisation », confirmé). Aucune règle de gestion modifiée ; maquettes inchangées.
 >
 > **Version 0.2.23, 2026-11-08 (Steeve).** LOT-001, rang 11 (US-017, incrément 4), réponse à Q-ST017-STE-5 d'Anthony (ST-US-017 §16) : textes de « Mettre à jour » (variantes `rechargement`, `aucune-version`, `echec` d'`ERR-013`, aucun nouveau code), forme de `{fuseau}`, champs et menus « … » des détails en consultation seule (visibles, inertes, toast), variante `carte` d'`ERR-013` (§6.6.14). Aucune règle de gestion modifiée ; maquettes inchangées (ECR-011 G et K déjà conformes).
@@ -743,7 +745,7 @@ Libellés de la feuille « Compte et synchronisation » (`SyncSheet`, §4.26), o
 | `SYN-FEUILLE-A-LIRE` | « {n} information(s) à lire » (v0.2.7) : titre de la section placée **en tête** de la feuille dès que `data-a-lire` ≥ 1, dans tous les états ; les `DiscardedItem` (§4.24) y figurent avec « Compris » |
 | `SYN-FEUILLE-HORS-LIGNE` | « Vos modifications sont enregistrées sur cet appareil. Elles seront envoyées au retour du réseau, sans rien faire. » |
 | `SYN-FEUILLE-BOUTON` | Bouton « Synchroniser maintenant » ; hors ligne : `aria-disabled="true"` (reste focalisable), explication « Disponible au retour du réseau. » liée par `aria-describedby` |
-| `SYN-FEUILLE-AUTRE-ONGLET` | « Cet onglet n'effectue pas la synchronisation : un autre onglet de l'application s'en charge. Les deux onglets affichent les mêmes données. » (PC, jamais d'interruption) |
+| `SYN-FEUILLE-AUTRE-ONGLET` | « Cet onglet n'effectue pas la synchronisation : un autre onglet de l'application s'en charge. Les deux onglets affichent les mêmes données. » (toutes les largeurs, PC et smartphone ; jamais d'interruption) | Ligne de texte simple `color.text.secondary`, `role="status"`, placée après le bouton « Synchroniser maintenant » et son explication, avant les cartes ; ni toast, ni icône, ni action ; apparaît ou disparaît sans animation si le rôle de l'onglet change (reprise silencieuse, DAT-UX-16) |
 | `SYN-FEUILLE-STOCKAGE` | Ligne « Stockage » (v0.2.12, Q-ST018-STE-1), en pied de feuille, discrète (`color.text.tertiary`), toujours présente : « Stockage de cet appareil : protégé » ou « Stockage de cet appareil : non protégé » (`data-etat="PROTEGE"` / `"NON-PROTEGE"` ; persistance refusée ou API indisponible = non protégé). Sur Android, la PWA installée est protégée sans question : la ligne reste calme |
 | `SYN-FEUILLE-DOSSIER` | « Dossier « Done Juan » dans votre Google Drive » |
 | `SYN-FEUILLE-FUSEAU` | Ligne « Fuseau » : « Heure de Paris » puis « Votre appareil est réglé sur {fuseau}. » (`{fuseau}` : voir §6.6.14 b) — seulement si le fuseau de l'appareil diffère de Paris (`MEN-HEURE-PARIS`) |
