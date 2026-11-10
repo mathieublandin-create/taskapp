@@ -78,4 +78,12 @@ describe('VerrouOngletsWeb, compléments (ST-US-031 §4.2)', () => {
     expect(registre.demandes).toBe(1);
     expect(journal.entrees).toEqual([{ niveau: 'erreur', evenement: 'VerrouOngletsIndisponible' }]);
   });
+
+  it('UT-COMP-US-031-5 estTenu — instantané sans liste held (champ facultatif de LockManagerSnapshot) : faux', async () => {
+    const gestionnaire = new RegistreVerrousSimule().client('page');
+    vi.spyOn(gestionnaire, 'query').mockResolvedValue({});
+    const verrou = new VerrouOngletsWeb({ gestionnaire, journal: new JournalEnMemoire() });
+
+    expect(await verrou.estTenu(NOM)).toBe(false);
+  });
 });

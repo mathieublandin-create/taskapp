@@ -445,19 +445,18 @@ export class CycleSynchronisation implements SuiviCycle {
    * sans exécution du corps libère tout de même le cycle de cet onglet.
    */
   #lancerSousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
-    let regler: { resoudre: (issue: IssueCycle) => void; rejeter: (erreur: unknown) => void } = {
-      resoudre: () => undefined,
-      rejeter: () => undefined,
-    };
-    const enCours = new Promise<IssueCycle>((resoudre, rejeter) => {
-      regler = { resoudre, rejeter };
+    let resoudre!: (issue: IssueCycle) => void;
+    let rejeter!: (erreur: unknown) => void;
+    const enCours = new Promise<IssueCycle>((ok, ko) => {
+      resoudre = ok;
+      rejeter = ko;
     });
     this.#enCours = enCours;
     this.#exclusion
       .executer(() => this.#sousExclusion(executer))
-      .then(regler.resoudre, (erreur: unknown) => {
+      .then(resoudre, (erreur: unknown) => {
         if (this.#enCours === enCours) this.#enCours = undefined;
-        regler.rejeter(erreur);
+        rejeter(erreur);
       });
     return enCours;
   }
