@@ -53,6 +53,7 @@ import {
   type ManifesteEcrit,
   type ModeEcritureManifeste,
 } from './ecriture-manifeste';
+import type { ExclusionCycle } from './exclusion-cycle';
 import type { AccesGoogle, EtatAccesGoogle } from './ports/acces-google';
 import type { DepotLocal, ErreurDepotLocal } from './ports/depot-local';
 import type { EtatMoteur, SuiviCycle } from './ports/suivi-cycle';
@@ -89,6 +90,11 @@ export type DependancesCycle = {
   readonly horloge: Horloge;
   readonly journal: JournalTechnique;
   readonly versionApplication: string;
+  /**
+   * ST-US-031 v0.4 §6.2 (rang 13, tranche B1) : exclusion entre onglets de tout le corps d'une exécution, contrôles du
+   * réseau et de l'accès refaits sous l'exclusion ; absente ≡ `SANS_EXCLUSION` (comportement des rangs 3 à 12).
+   */
+  readonly exclusion?: ExclusionCycle;
 };
 
 type ErreurCycle = ErreurTransport | ErreurDepotLocal;

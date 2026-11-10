@@ -3,6 +3,7 @@ import type { EcartTemps } from '../../../commun/domaine/temps/ecart-temps';
 import type { Instant } from '../../../commun/domaine/temps/instant';
 import { formaterAnciennete, formaterHeure } from '../../../commun/presentation/format/heure';
 import { libelle } from '../../../commun/presentation/messages/libelle';
+import type { EtatCoordination } from '../../application/coordination-onglets';
 import { estHorlogeDereglee } from '../../domaine/correction-horloge';
 import type { EtatSynchronisationAffichable } from './etat-synchronisation-affichable';
 import { comparerLignesFeuille, type LigneFeuilleOrdonnable } from './ordre-feuille';
@@ -29,6 +30,11 @@ export type EntreeFeuilleSynchronisation = {
    * (`ControleurInterface.signalerNouvelleVersion`). Absent ou faux : pas d'invite.
    */
   readonly nouvelleVersion?: boolean;
+  /**
+   * ST-US-031 v0.4 §6.3 (rang 13, tranche D1) : état de la coordination entre onglets de l'espace
+   * (`CoordinationOnglets.etat()`). Absent tant qu'il n'est pas lu : pas de ligne `SYN-FEUILLE-AUTRE-ONGLET`.
+   */
+  readonly coordination?: EtatCoordination;
 };
 
 export type LigneAttenteFeuille = { readonly id: string; readonly intitule: string };
@@ -110,6 +116,12 @@ export type ModeleVueFeuilleSynchronisation = {
     readonly fermable: false;
     readonly action: { readonly type: 'METTRE_A_JOUR'; readonly libelle: string };
   };
+  /**
+   * ST-US-031 v0.4 §6.3 : ligne de texte simple (aucun contrôle, aucun rôle d'alerte) si et seulement si
+   * `coordination.role = SUIVEUR` et `coordination.autreMeneur` ; rendue juste après le bouton « Synchroniser
+   * maintenant » et son explication (maquette ECR-011, PC, « un autre onglet synchronise »).
+   */
+  readonly autreOnglet?: { readonly code: 'SYN-FEUILLE-AUTRE-ONGLET'; readonly libelle: string };
 };
 
 /**
