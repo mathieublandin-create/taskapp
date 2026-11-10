@@ -132,6 +132,55 @@ const CarteAlerteHorloge = ({
   </IonCard>
 );
 
+/**
+ * `ALR-015` (R15, ST-US-018 §6.3 n° 5) : niveau Attention, annoncée en `status`, aucun bouton, non fermable ; en pied
+ * de section (Q-ST018-STE-3, option a).
+ */
+const CarteAlerteStockage = ({
+  alerte,
+}: {
+  readonly alerte: NonNullable<ModeleVueFeuilleSynchronisation['alerteStockage']>;
+}) => (
+  <IonCard data-message={alerte.code} data-niveau="attention" role={alerte.role}>
+    <IonCardTitle>{alerte.titre}</IonCardTitle>
+    <IonCardContent>
+      <p>{alerte.texte}</p>
+    </IonCardContent>
+  </IonCard>
+);
+
+/**
+ * `ALR-016` (guide v0.2.24 §6.6.15) : niveau Information, annoncée en `status`, non fermable, en tête de la feuille ;
+ * l'action « Mettre à jour » et ses retours sont ceux de la carte `ERR-013` (clic ou Entrée, sans confirmation).
+ */
+const CarteNouvelleVersion = ({
+  alerte,
+  surActionCarte,
+  miseAJour,
+}: {
+  readonly alerte: NonNullable<ModeleVueFeuilleSynchronisation['alerteVersion']>;
+  readonly surActionCarte: (action: ActionCarteFeuille) => void;
+  readonly miseAJour?: IssueMiseAJour | undefined;
+}) => {
+  const retour = construireRetourMiseAJour(miseAJour);
+  return (
+    <IonCard data-message={alerte.code} data-niveau="information" role={alerte.role}>
+      <IonCardTitle>{alerte.titre}</IonCardTitle>
+      <IonCardContent>
+        <p>{alerte.texte}</p>
+        <p role="status">{retour?.texte}</p>
+        <BoutonCarte
+          libelle={alerte.action.libelle}
+          desactive={retour?.actionDesactivee === true}
+          surClic={() => {
+            surActionCarte(alerte.action.type);
+          }}
+        />
+      </IonCardContent>
+    </IonCard>
+  );
+};
+
 /** Section « Erreurs qui demandent une action » (ST-US-017 §6.8 n° 4), dans l'ordre du modèle de vue. */
 const CartesDeLaFeuille = ({
   vue,
@@ -156,6 +205,16 @@ const CartesDeLaFeuille = ({
   );
 };
 
+/** Pied de la section (Q-ST018-STE-3 a) : carte `ALR-015` puis ligne « Stockage », dernier élément `data-etat`. */
+const PiedDeFeuille = ({ vue }: { readonly vue: ModeleVueFeuilleSynchronisation }) => (
+  <>
+    {vue.alerteStockage === undefined ? null : <CarteAlerteStockage alerte={vue.alerteStockage} />}
+    {vue.stockage === undefined ? null : (
+      <p data-etat={vue.stockage.etat}>{vue.stockage.libelle}</p>
+    )}
+  </>
+);
+
 export const FeuilleSynchronisation = ({
   vue,
   surSynchroniser,
@@ -164,6 +223,13 @@ export const FeuilleSynchronisation = ({
   miseAJour,
 }: ProprietesFeuilleSynchronisation): ReactElement => (
   <section>
+    {vue.alerteVersion === undefined ? null : (
+      <CarteNouvelleVersion
+        alerte={vue.alerteVersion}
+        surActionCarte={surActionCarte}
+        miseAJour={miseAJour}
+      />
+    )}
     {vue.dernierEchange === undefined ? null : (
       <p data-etat={vue.dernierEchange.code}>{vue.dernierEchange.libelle}</p>
     )}
@@ -174,5 +240,6 @@ export const FeuilleSynchronisation = ({
     <BoutonSynchroniser bouton={vue.bouton} surSynchroniser={surSynchroniser} />
     <CartesDeLaFeuille vue={vue} surActionCarte={surActionCarte} miseAJour={miseAJour} />
     {choixRestauration === undefined ? null : <CarteChoixRestauration {...choixRestauration} />}
+    <PiedDeFeuille vue={vue} />
   </section>
 );

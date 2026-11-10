@@ -52,6 +52,7 @@ const preparer = (reglages: Reglages = {}) => {
     lireElementsEnAttente: () => Promise.resolve([]),
     lireDernierContact: () => Promise.resolve(undefined),
     lireCorrectionHorloge: () => Promise.resolve(donnees.correction),
+    etatPersistance: () => Promise.resolve('PERSISTANT'),
     lireModificationsNonRetenues: () => Promise.resolve(undefined),
     lireChoixRestauration: () => Promise.resolve(undefined),
     lireRestaurationFaiteIci: () => Promise.resolve(undefined),

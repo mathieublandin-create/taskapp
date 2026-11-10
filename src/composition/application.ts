@@ -1,4 +1,8 @@
 import type { Instant } from '../commun/domaine/temps/instant';
+import type {
+  EtatPersistance,
+  PersistanceStockage,
+} from '../commun/application/ports/persistance-stockage';
 import type { EcartTemps } from '../commun/domaine/temps/ecart-temps';
 import type {
   EchangeGoogle,
@@ -28,6 +32,7 @@ import type { MemoireSession } from '../compte/application/ports/memoire-session
 import { SessionCourante } from '../compte/application/session-courante';
 import {
   BaseTechnique,
+  MemoireDemandePersistanceDexie,
   MemoireRedirectionDexie,
   MemoireSessionDexie,
 } from '../compte/infrastructure/base-technique';
@@ -40,6 +45,7 @@ import {
   RepartirDeZero,
   type ErreurChoixRestauration,
 } from '../synchronisation/application/cas-usage/choisir-restauration';
+import { DemanderPersistance } from '../synchronisation/application/cas-usage/demander-persistance';
 import { MarquerCommeLue } from '../synchronisation/application/cas-usage/marquer-comme-lue';
 import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
 import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
@@ -121,6 +127,8 @@ export type AdaptateursApplication = {
   readonly surFermetureImposee: () => void;
   /** Ouvre `url` dans un nouvel onglet (`noopener,noreferrer`) ; seul `main.tsx` touche à `window.open`. */
   readonly ouvrirOnglet: (url: string) => void;
+  /** ST-US-018 v0.4 §3 n° 4 (rang 12) : `PersistanceNavigateur` en production, `PersistanceSimulee` au banc. */
+  readonly persistance: PersistanceStockage;
 };
 
 /**
@@ -230,6 +238,13 @@ export type Application = {
   readonly mettreAJour: () => Promise<IssueMiseAJour>;
   /** Contrôle de saut de l'horloge de l'espace ouvert, avant le cycle du retour au premier plan (n° 3) ; sans effet sans espace. */
   readonly controlerHorloge: () => Promise<void>;
+  /**
+   * ST-US-018 v0.4 §4.2 (rang 12, tranche B1) : `DemanderPersistance.executer()` d'une instance unique par application
+   * (`DemanderPersistance` sur `a.persistance` et `MemoireDemandePersistanceDexie(base)`), sans espace requis.
+   */
+  readonly etatPersistance: () => Promise<EtatPersistance>;
+  /** Journal technique de l'application, pour l'enregistrement du service worker (ST-US-018 v0.4 §4.3, tranche D2). */
+  readonly journal: JournalTechnique;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
 };
@@ -717,6 +732,21 @@ const objectifsDe = (
   };
 };
 
+/**
+ * ST-US-018 v0.4 §4.2 : une seule `DemanderPersistance` par application (appels concurrents partagés), sans espace
+ * requis ; le drapeau « déjà demandée » vit dans la base technique, hors espace de compte.
+ */
+const etatPersistanceDe = (
+  a: AdaptateursApplication,
+  base: BaseTechnique,
+): Application['etatPersistance'] => {
+  const demande = new DemanderPersistance({
+    persistance: a.persistance,
+    memoire: new MemoireDemandePersistanceDexie(base),
+  });
+  return () => demande.executer();
+};
+
 export const assemblerApplication = (a: AdaptateursApplication): Application => {
   const fabriqueCycle: FabriqueCycle = {};
   const stockage = assemblerStockage(a, fabriqueCycle);
@@ -727,6 +757,8 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
     ...assemblerSortie(a, noyau),
     ...assemblerSynchronisation(a, noyau),
     ...assemblerHorlogeEtMiseAJour(a, noyau),
+    etatPersistance: etatPersistanceDe(a, stockage.base),
+    journal: a.journal,
     objectifs: objectifsDe(a, stockage.espace),
     arreter: () => {
       fermerEspace(stockage.espace());

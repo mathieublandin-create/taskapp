@@ -1,11 +1,19 @@
-import type { EntreeJournalTechnique } from '../commun/application/ports/journal-technique';
+import type {
+  EntreeJournalTechnique,
+  JournalTechnique,
+} from '../commun/application/ports/journal-technique';
 import { EtatReseauNavigateur } from '../commun/infrastructure/etat-reseau-navigateur';
 import { GenerateurUuidV7 } from '../commun/infrastructure/generateur-uuid-v7';
 import { HorlogeSysteme } from '../commun/infrastructure/horloge-systeme';
 import { JournalTechniqueLocal } from '../commun/infrastructure/journal-technique-local';
+import {
+  PersistanceNavigateur,
+  type GestionnaireStockage,
+} from '../commun/infrastructure/persistance-navigateur';
 import { PlanificateurNavigateur } from '../commun/infrastructure/planificateur-navigateur';
 import { SourceAleatoireCrypto } from '../commun/infrastructure/source-aleatoire-crypto';
 import { registreSaisie } from '../commun/presentation/saisie/registre-saisie';
+import type { IssueOuverture } from '../compte/application/cas-usage/ouvrir-application';
 import type { RetourGoogle } from '../compte/application/ports/fournisseur-auth';
 import { DELAI_MAX_ATTENTE_REDIRECTION } from '../compte/domaine/ouverture';
 import {
@@ -34,6 +42,7 @@ import {
   type Application,
 } from './application';
 import { ControleurInterface } from './controleur-interface';
+import { armerReevaluationRappel } from './reevaluation-rappel';
 
 // Composition de la PWA (ADR-013 ; ST-US-022 §3.2 n° 51, §6.2). Appelée par main.tsx, après la consommation du
 // retour de redirection (RED-02). Rien ne s'exécute à l'évaluation de ce module.
@@ -50,6 +59,8 @@ export type Navigateur = {
   readonly ouvrirOnglet: (url: string) => void;
   /** `navigator.serviceWorker`, absent d'un navigateur sans service worker (« Mettre à jour », ST-US-017 §6.8 n° 10). */
   readonly conteneurServiceWorker: ConteneurServiceWorker | undefined;
+  /** `navigator.storage`, absent d'un navigateur sans l'API (ST-US-018 v0.4 §3 n° 3 : stockage `INDISPONIBLE`). */
+  readonly gestionnaireStockage: GestionnaireStockage | undefined;
 };
 
 /** Journal technique local : tampon de 7 jours dans la base technique ; `debug` désactivé en production. */
@@ -60,7 +71,26 @@ const puitsJournal =
     void base()?.journaliser(entree, horloge.maintenant());
   };
 
-type SocleWeb = Pick<DependancesFournisseurAuthWeb, 'horloge' | 'journal' | 'reseau' | 'aleatoire'>;
+/** Horloge, journal, réseau et hasard de la page, partagés par l'application et par ses adaptateurs Google. */
+export type SocleWeb = Pick<
+  DependancesFournisseurAuthWeb,
+  'horloge' | 'journal' | 'reseau' | 'aleatoire'
+>;
+
+/**
+ * Ce qui distingue la composition de production de la composition `test-ihm` (ST-US-018 v0.4 §6.4 n° 5) : les
+ * fabriques du fournisseur d'authentification et du transport Drive. Tout le reste est commun (`demarrerAvec`).
+ */
+export type AdaptateursVariables = {
+  readonly fournisseur: (
+    configuration: Configuration,
+    socle: SocleWeb,
+  ) => AdaptateursApplication['fournisseur'];
+  readonly transport: (
+    socle: SocleWeb,
+    echangesGoogle: ObservateurEchangesGoogle,
+  ) => AdaptateursApplication['transport'];
+};
 
 /** FournisseurAuthWeb (ADR-013) : GIS chargé à la demande, userinfo, navigation pleine page. */
 const fournisseurWeb =
@@ -107,11 +137,24 @@ const socleWeb = (configuration: Configuration, base: () => BaseTechnique | unde
   };
 };
 
+/** Adaptateurs liés à la page : service worker, rechargement, onglets et persistance du stockage. */
+const adaptateursNavigateur = (navigateur: Navigateur) => ({
+  miseAJour: new MiseAJourServiceWorker({
+    conteneur: navigateur.conteneurServiceWorker,
+    recharger: navigateur.recharger,
+  }),
+  versionApplication: VERSION_APPLICATION,
+  surFermetureImposee: navigateur.recharger,
+  ouvrirOnglet: navigateur.ouvrirOnglet,
+  persistance: new PersistanceNavigateur(navigateur.gestionnaireStockage),
+});
+
 /**
  * Un seul canal d'avis par onglet : un BroadcastChannel ne reçoit pas ses propres messages, mais une autre
  * instance ouverte dans la même page les reçoit (l'onglet qui se déconnecte se rechargerait lui-même).
  */
 const assembler = (
+  variables: AdaptateursVariables,
   configuration: Configuration,
   navigateur: Navigateur,
   avis: AvisOngletsBroadcast,
@@ -126,16 +169,10 @@ const assembler = (
     generateur: new GenerateurUuidV7(),
     avis,
     gardeSaisie: registreSaisie,
-    fournisseur: fournisseurWeb(configuration, socle),
-    transport: transportDrive(socle.horloge, echangesGoogle),
+    fournisseur: variables.fournisseur(configuration, socle),
+    transport: variables.transport(socle, echangesGoogle),
     echangesGoogle,
-    miseAJour: new MiseAJourServiceWorker({
-      conteneur: navigateur.conteneurServiceWorker,
-      recharger: navigateur.recharger,
-    }),
-    versionApplication: VERSION_APPLICATION,
-    surFermetureImposee: navigateur.recharger,
-    ouvrirOnglet: navigateur.ouvrirOnglet,
+    ...adaptateursNavigateur(navigateur),
   });
   reference.base = application.base;
   return application;
@@ -143,40 +180,89 @@ const assembler = (
 
 /**
  * ST-US-017 §6.4 : retour au premier plan (cycle) ; page masquée : pas de cycle toutes les 2 min. Au retour, le saut
- * de l'horloge est contrôlé **avant** le cycle, pour qu'il horodate déjà corrigé (v0.11 §6.8 n° 3).
+ * de l'horloge est contrôlé **avant** le cycle, pour qu'il horodate déjà corrigé (v0.11 §6.8 n° 3). ST-US-018 v0.4
+ * §6.2 (RG-057) : au retour, la vue est recalculée (le rappel des 24 h peut apparaître ; le masquage n'est pas remis).
  */
-const auChangementDeVisibilite = async (application: Application): Promise<void> => {
+const auChangementDeVisibilite = async (
+  application: Application,
+  controleur: ControleurInterface,
+): Promise<void> => {
   const visible = document.visibilityState === 'visible';
   if (visible) await application.controlerHorloge();
   application.espace()?.cycle.definirPremierPlan(visible);
+  if (visible) void controleur.rafraichir();
 };
 
-/** Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038). */
-export const demarrerWeb = (retour: RetourGoogle, navigateur: Navigateur): ControleurInterface => {
+/**
+ * Recalculs de la vue : changement de réseau, visibilité de la page et, ST-US-018 v0.4 §6.2 (RG-057), chaque minute.
+ * La page vit autant que l'application : aucune annulation.
+ */
+const ecouterDeclencheurs = (application: Application, controleur: ControleurInterface): void => {
+  new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
+  armerReevaluationRappel(new PlanificateurNavigateur(), () => void controleur.rafraichir());
+  document.addEventListener(
+    'visibilitychange',
+    () => void auChangementDeVisibilite(application, controleur),
+  );
+};
+
+/** Suite de l'ouverture : persistance, échéance de l'attente de Google, puis vue. */
+const apresOuvertureWeb = async (
+  application: Application,
+  controleur: ControleurInterface,
+  navigateur: Navigateur,
+  issue: IssueOuverture,
+): Promise<void> => {
+  // ST-US-018 v0.4 §6.3 n° 3 : demande de persistance au premier lancement, même avant la connexion.
+  void application.etatPersistance();
+  if (issue.type === 'REDIRECTION_LANCEE') {
+    new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {
+      navigateur.arreterNavigation();
+      void application.ouvrirApplication.abandonnerAttenteGoogle();
+    });
+  }
+  await controleur.apresOuverture(issue, () =>
+    application.ouvrirApplication.executer({ type: 'AUCUN' }),
+  );
+};
+
+/** Ce que `main.tsx` reçoit de l'ouverture : le contrôleur de l'interface et le journal (enregistrement du service worker). */
+export type DemarrageWeb = {
+  readonly controleur: ControleurInterface;
+  readonly journal: JournalTechnique;
+};
+
+/** Adaptateurs Google de production : GIS et redirection (ADR-013), Drive v3 mesuré (ST-US-017 §6.8 n° 1). */
+const ADAPTATEURS_GOOGLE: AdaptateursVariables = {
+  fournisseur: fournisseurWeb,
+  transport: (socle, echangesGoogle) => transportDrive(socle.horloge, echangesGoogle),
+};
+
+/**
+ * Ouvre l'application (DAT §4.1.7) ; l'écran d'attente de Google dure au plus 10 s (RL-LOT-001-S6, DEC-038).
+ * `main.tsx` l'appelle sans `adaptateurs` (Google réel). ST-US-018 v0.4 §6.4 n° 5 : la composition `test-ihm` la
+ * réutilise (`demarrerAvec`) en ne changeant que les deux fabriques Google ; le retour reste lu une seule fois, ici
+ * (RED-05, UT-COMP-US-022-89).
+ */
+export const demarrerWeb = (
+  retour: RetourGoogle,
+  navigateur: Navigateur,
+  adaptateurs: AdaptateursVariables = ADAPTATEURS_GOOGLE,
+): DemarrageWeb => {
   const configuration = lireConfiguration(navigateur.variables, {
     agent: navigateur.agent,
     pointsTactiles: navigateur.pointsTactiles,
   });
   const avis = new AvisOngletsBroadcast(configuration.env);
-  const application = assembler(configuration, navigateur, avis);
+  const application = assembler(adaptateurs, configuration, navigateur, avis);
   const controleur = new ControleurInterface(
     application,
     new HorlogeSysteme(),
     application.objectifs,
   );
   avis.ecouter(navigateur.recharger);
-  new EtatReseauNavigateur().surChangement(() => void controleur.rafraichir());
-  document.addEventListener('visibilitychange', () => void auChangementDeVisibilite(application));
-  void application.ouvrirApplication.executer(retour).then(async (issue) => {
-    if (issue.type === 'REDIRECTION_LANCEE') {
-      new PlanificateurNavigateur().apres(DELAI_MAX_ATTENTE_REDIRECTION, () => {
-        navigateur.arreterNavigation();
-        void application.ouvrirApplication.abandonnerAttenteGoogle();
-      });
-    }
-    await controleur.apresOuverture(issue, () =>
-      application.ouvrirApplication.executer({ type: 'AUCUN' }),
-    );
-  });
-  return controleur;
+  ecouterDeclencheurs(application, controleur);
+  const ouverture = application.ouvrirApplication.executer(retour);
+  void ouverture.then((issue) => apresOuvertureWeb(application, controleur, navigateur, issue));
+  return { controleur, journal: application.journal };
 };

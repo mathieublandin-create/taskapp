@@ -10,13 +10,19 @@ const SUPPORT = [
   'tests/support/monde.ts',
   'tests/support/hooks.ts',
 ];
+// Le profil `ihm` n'utilise ni le monde ni les hooks du banc : il a ses propres supports (ST-US-018 v0.4 §12.3).
+const SUPPORT_IHM = [
+  'tests/support/indexeddb-fake.ts',
+  'tests/support/types-parametres.ts',
+  'tests/steps-ihm/support/*.ts',
+];
 const SANS_RECETTE_NI_REEL = 'not @google-reel and not @recette';
 const selection = selectionnerScenarios(lireRangCourant());
 
-const profil = (steps, tags, paths = selection) => ({
+const profil = (steps, tags, paths = selection, support = SUPPORT) => ({
   strict: true,
   language: 'fr',
-  import: [...SUPPORT, steps],
+  import: [...support, steps],
   paths,
   tags,
   format: ['progress'],
@@ -30,7 +36,12 @@ export const rapide = profil(
   `not @ihm and not @lent and ${SANS_RECETTE_NI_REEL}`,
 );
 
-export const ihm = profil('tests/steps-ihm/**/*.ts', `@ihm and ${SANS_RECETTE_NI_REEL}`);
+export const ihm = profil(
+  'tests/steps-ihm/*.steps.ts',
+  `@ihm and ${SANS_RECETTE_NI_REEL}`,
+  selection,
+  SUPPORT_IHM,
+);
 
 // Contrôle des étapes inutilisées (§11.13) : tous les scénarios du lot, sans --strict, sans exécution.
 const stepsInutilises = {

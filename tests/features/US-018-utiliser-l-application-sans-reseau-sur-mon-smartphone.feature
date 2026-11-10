@@ -356,6 +356,9 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon smartphone
     Et l'utilisateur ouvre l'application sur le smartphone
     Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
     Quand le réseau revient sur le smartphone
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le smartphone, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
     Alors sur le smartphone, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
 
   @US-018 @RG-057 @RG-035 @LOT-001

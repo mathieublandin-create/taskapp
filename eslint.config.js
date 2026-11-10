@@ -107,11 +107,27 @@ const proprietesInterdites = [
     dispenses: ['src/synchronisation/infrastructure/verrou-onglets-web.ts'],
   },
   {
+    object: 'navigator',
+    property: 'storage',
+    message: 'Persistance du stockage : port PersistanceStockage (ST-US-018 §9).',
+    // main.tsx ne fait que transmettre `navigator.storage` à la composition (ST-US-018 v0.4 §3 n° 7, §4.2).
+    dispenses: ['src/commun/infrastructure/persistance-navigateur.ts', 'src/main.tsx'],
+  },
+  {
     object: 'window',
     property: 'google',
     message: 'Google Identity Services : passerelle GIS du contexte compte (§9.2).',
     dispenses: ['src/compte/infrastructure/auth/passerelle-gis-navigateur.ts'],
   },
+  // ST-US-018 v0.4 §3 n° 22 : les bindings Playwright de la chaîne `@ihm` ne sont lus que par la composition de test.
+  ...['window', 'globalThis', 'self'].flatMap((object) =>
+    ['donejuanFauxDrive', 'donejuanFauxGoogle'].map((property) => ({
+      object,
+      property,
+      message: 'Bindings de la chaîne @ihm : composition test-ihm seulement (ST-US-018 §6.4).',
+      dispenses: ['src/composition/test-ihm/**'],
+    })),
+  ),
 ];
 
 const globauxInterdits = [
@@ -242,7 +258,17 @@ const blocsImportsDispenses = zonesImports.map(({ files, autorises }) => ({
 }));
 
 export default tseslint.config(
-  { ignores: ['poc/**', 'node_modules/**', 'coverage/**', 'dist/**', 'dev-dist/**', 'docs/**'] },
+  {
+    ignores: [
+      'poc/**',
+      'node_modules/**',
+      'coverage/**',
+      'dist/**',
+      'dist-test-ihm/**',
+      'dev-dist/**',
+      'docs/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,

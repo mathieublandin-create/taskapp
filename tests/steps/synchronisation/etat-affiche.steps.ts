@@ -17,7 +17,7 @@ import type { AppareilSimule } from '../../support/banc/appareil-simule';
 import { racineDe } from '../../support/compte/etapes-compte';
 import { convertirAppareil } from '../../support/conversions';
 import { listeObjectifsDe, ligneObjectifDe, objectifsDe, resumesDe } from '../../support/objectifs';
-import { etapeAssertion, etapeContexte } from '../../support/prefixes';
+import { etapeAction, etapeAssertion, etapeContexte } from '../../support/prefixes';
 import {
   listeTachesDe,
   ligneTacheDe,
@@ -275,6 +275,13 @@ etapeContexte(
     assert.deepEqual([bandeau?.code, bandeau?.n], [code, Number(n)]);
   },
 );
+
+// ST-US-018 v0.4 §12.1 n° 3 : seul le rappel 24 h se ferme ; le bandeau doit être affiché au moment du geste.
+etapeAction(/^l'utilisateur ferme le bandeau "([^"]*)"$/, async ({ appareil }, code) => {
+  assert.equal(code, 'BAN-RAPPEL-24H', `Bandeau non fermable : ${String(code)}`);
+  assert.equal((await appareil.vueAffichee()).bandeau?.code, code, 'Le bandeau n’est pas affiché');
+  await appareil.controleur.masquerRappel();
+});
 
 etapeAssertion(/^le bandeau "([^"]*)" est non bloquant$/, async ({ appareil }, code) => {
   const bandeau = await bandeauDe(appareil);
