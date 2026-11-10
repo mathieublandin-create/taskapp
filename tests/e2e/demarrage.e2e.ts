@@ -39,6 +39,22 @@ test.describe('Démarrage du build de production (ST-US-018 §14)', () => {
     expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
   });
 
+  test('PersistanceNavigateur : navigator.storage.persisted() et persist() répondent par un booléen, sans exception de page', async ({
+    page,
+  }) => {
+    const exceptionsDePage: string[] = [];
+    page.on('pageerror', (erreur) => exceptionsDePage.push(erreur.message));
+    await page.goto('/');
+    await expect(page.getByRole('button', BOUTON_CONNEXION)).toBeVisible();
+
+    const persistee = await page.evaluate(() => navigator.storage.persisted());
+    const demandee = await page.evaluate(() => navigator.storage.persist());
+
+    expect(typeof persistee).toBe('boolean');
+    expect(typeof demandee).toBe('boolean');
+    expect(exceptionsDePage).toEqual([]);
+  });
+
   test('aucune violation d’accessibilité serious ou critical sur l’écran de connexion', async ({
     page,
   }) => {
