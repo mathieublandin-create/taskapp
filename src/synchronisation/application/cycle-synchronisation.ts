@@ -53,7 +53,7 @@ import {
   type ManifesteEcrit,
   type ModeEcritureManifeste,
 } from './ecriture-manifeste';
-import type { ExclusionCycle } from './exclusion-cycle';
+import { SANS_EXCLUSION, type ExclusionCycle } from './exclusion-cycle';
 import type { AccesGoogle, EtatAccesGoogle } from './ports/acces-google';
 import type { DepotLocal, ErreurDepotLocal } from './ports/depot-local';
 import type { EtatMoteur, SuiviCycle } from './ports/suivi-cycle';
@@ -285,8 +285,11 @@ export class CycleSynchronisation implements SuiviCycle {
   #declencheurs: ReadonlyArray<Annulation> | undefined;
   #premierPlan = true;
   readonly #observateurs = new Set<() => void>();
+  readonly #exclusion: ExclusionCycle;
 
-  constructor(private readonly dependances: DependancesCycle) {}
+  constructor(private readonly dependances: DependancesCycle) {
+    this.#exclusion = dependances.exclusion ?? SANS_EXCLUSION;
+  }
 
   /** Installe les déclencheurs (§6.4) ; idempotent. */
   demarrer(): void {
@@ -433,10 +436,43 @@ export class CycleSynchronisation implements SuiviCycle {
     }
     const garde = this.#garde();
     if (garde !== undefined) return Promise.resolve(garde);
-    const enCours = this.#executer(executer);
+    return this.#lancerSousExclusion(executer);
+  }
+
+  /**
+   * ST-US-031 §6.2 n° 3 et 5 : `#enCours` est défini dès la demande du verrou, avant tout appel du corps, même
+   * synchrone (`SANS_EXCLUSION`) ; l'attente ne notifie pas et ne change pas l'état du moteur. Un rejet de l'exclusion
+   * sans exécution du corps libère tout de même le cycle de cet onglet.
+   */
+  #lancerSousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
+    let regler: { resoudre: (issue: IssueCycle) => void; rejeter: (erreur: unknown) => void } = {
+      resoudre: () => undefined,
+      rejeter: () => undefined,
+    };
+    const enCours = new Promise<IssueCycle>((resoudre, rejeter) => {
+      regler = { resoudre, rejeter };
+    });
     this.#enCours = enCours;
-    this.#notifier();
+    this.#exclusion
+      .executer(() => this.#sousExclusion(executer))
+      .then(regler.resoudre, (erreur: unknown) => {
+        if (this.#enCours === enCours) this.#enCours = undefined;
+        regler.rejeter(erreur);
+      });
     return enCours;
+  }
+
+  /** §6.2 n° 4 : contrôles refaits une fois le verrou obtenu ; en échec, ni notification ni appel au Drive. */
+  #sousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
+    const garde = this.#garde();
+    if (garde !== undefined) {
+      this.#enCours = undefined;
+      this.#aRefaire = false;
+      return Promise.resolve(garde);
+    }
+    const execution = this.#executer(executer);
+    this.#notifier();
+    return execution;
   }
 
   #notifier(): void {
