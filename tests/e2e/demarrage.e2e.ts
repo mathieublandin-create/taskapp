@@ -42,7 +42,7 @@ test.describe('Démarrage du build de production (ST-US-018 §14)', () => {
   test('PersistanceNavigateur : navigator.storage.persisted() et persist() répondent par un booléen, sans exception de page', async ({
     page,
   }) => {
-    const exceptionsDePage: string[] = [];
+    const exceptionsDePage: Array<string> = [];
     page.on('pageerror', (erreur) => exceptionsDePage.push(erreur.message));
     await page.goto('/');
     await expect(page.getByRole('button', BOUTON_CONNEXION)).toBeVisible();
