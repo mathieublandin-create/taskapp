@@ -77,4 +77,26 @@ describe('CycleSynchronisation sous exclusion, compléments (ST-US-031 §6.2)', 
     expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
     expect(valeurDe(await env.pc.service.lireDecompteEnAttente()).nombre).toBe(0);
   });
+
+  it('UT-COMP-US-031-6 corps réglé, verrou pas encore rendu — le cycle de l’onglet est déjà libéré, après un contrôle en échec comme après une exécution', async () => {
+    const vusAvantRestitution: Array<boolean> = [];
+    let cycle: { cycleEnCours: () => unknown } = { cycleEnCours: () => undefined };
+    const env = await preparer({
+      executer: async (tache) => {
+        await Promise.resolve();
+        const issue = await tache();
+        vusAvantRestitution.push(cycle.cycleEnCours() === undefined);
+        return issue;
+      },
+    });
+    cycle = env.pc.cycle;
+
+    const horsLigne = env.pc.cycle.synchroniserMaintenant();
+    env.pc.reseau.changer(false);
+    expect(await horsLigne).toBe('NON_LANCE_HORS_LIGNE');
+    env.pc.reseau.changer(true);
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
+
+    expect(vusAvantRestitution).toEqual([true, true]);
+  });
 });

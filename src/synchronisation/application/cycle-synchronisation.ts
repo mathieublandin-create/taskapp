@@ -440,24 +440,18 @@ export class CycleSynchronisation implements SuiviCycle {
   }
 
   /**
-   * ST-US-031 §6.2 n° 3 et 5 : `#enCours` est défini dès la demande du verrou, avant tout appel du corps, même
-   * synchrone (`SANS_EXCLUSION`) ; l'attente ne notifie pas et ne change pas l'état du moteur. Un rejet de l'exclusion
-   * sans exécution du corps libère tout de même le cycle de cet onglet.
+   * ST-US-031 §6.2 n° 3 et 5 : pendant l'attente du verrou, la promesse de l'exclusion tient lieu d'exécution en
+   * cours (`DEJA_EN_COURS`, `cycleEnCours()`), sans notification ni changement d'état du moteur. Un corps appelé
+   * pendant l'appel (`SANS_EXCLUSION`) a déjà défini `#enCours` (chemin des rangs 3 à 12). Au règlement de l'exclusion,
+   * y compris sur un rejet sans exécution du corps, le cycle de cet onglet est libéré.
    */
   #lancerSousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
-    let resoudre!: (issue: IssueCycle) => void;
-    let rejeter!: (erreur: unknown) => void;
-    const enCours = new Promise<IssueCycle>((ok, ko) => {
-      resoudre = ok;
-      rejeter = ko;
-    });
-    this.#enCours = enCours;
-    this.#exclusion
-      .executer(() => this.#sousExclusion(executer))
-      .then(resoudre, (erreur: unknown) => {
-        if (this.#enCours === enCours) this.#enCours = undefined;
-        rejeter(erreur);
-      });
+    const enCours = this.#exclusion.executer(() => this.#sousExclusion(executer));
+    this.#enCours ??= enCours;
+    const liberer = (): void => {
+      if (this.#enCours === enCours) this.#enCours = undefined;
+    };
+    enCours.then(liberer, liberer);
     return enCours;
   }
 
@@ -469,6 +463,7 @@ export class CycleSynchronisation implements SuiviCycle {
       return Promise.resolve(garde);
     }
     const execution = this.#executer(executer);
+    this.#enCours = execution;
     this.#notifier();
     return execution;
   }

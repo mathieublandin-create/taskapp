@@ -29,7 +29,7 @@ export class VerrouOngletsWeb implements VerrouOnglets {
     const abandon = new AbortController();
     let rendu = false;
     let tenue = false;
-    let liberer!: () => void;
+    let liberer: () => void;
     const promesseRendue = new Promise<void>((resoudre) => {
       liberer = resoudre;
     });
