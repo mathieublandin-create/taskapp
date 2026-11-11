@@ -9,13 +9,13 @@
 | Fichier `.feature` | [`tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature`](../../tests/features/US-031-utiliser-l-application-sans-reseau-sur-mon-pc.feature), 30 scénarios (9 `@ihm` : S01a, S01b, S08, S14, S15, S16, S16b, S16c, S17 ; S16b et S16c ajoutés par Pepper le 2026-10-27, Q-ST031-PEP-1) |
 | RG couvertes | RG-017, RG-019, RG-021, RG-035, RG-036, RG-043, RG-047 à RG-049, RG-055, RG-056, RG-057 |
 | ENF | ENF-04, ENF-06, ENF-07 ; ENF-T-01 |
-| DAT / ADR | DAT **v0.11.12** §4.1.4, §4.1.6 (plusieurs onglets, connexions IndexedDB des autres onglets), §4.1.6 bis, §4.1.7, §4.3 ; ADR-013 ; conventions §2.3 (port interne), §10.2 (un seul onglet synchronise) |
+| DAT / ADR | DAT **v0.11.13** §4.1.4, §4.1.6 (plusieurs onglets, connexions IndexedDB des autres onglets), §4.1.6 bis, §4.1.7, §4.3 ; ADR-013 ; conventions §2.3 (port interne), §10.2 (un seul onglet synchronise) |
 | Résultats du test technique | M-RED favorable (redirection à l'ouverture), étape 16 refaite (GIS avec `login_hint` pour le geste) ; hors ligne (étape 10) favorable |
 | Prérequis | Rangs 0 à 12 fusionnés, DT-027 fusionnée (PR #39, `01da5ff`) ; en particulier ST-US-022 (rang 1 : `AvisOnglets`, `versionchange`, `ERR-017`), ST-US-017 (rang 3 : `CycleSynchronisation`), ST-US-018 v0.4.2 (rang 12 : service worker, persistance, profil `ihm`, banc `test-ihm` et ponts) |
 | Dette intégrée | **DT-025** (champ `EtatMoteur.aLire` mort), rattachée au rang 13 (registre v0.38), tranche B1 (§6.6) |
 | Questions | Q-ST031-STA-1, Q-ST031-STA-2 et Q-ST031-PEP-1 **répondues** (2026-10-27) et intégrées ; v0.4 : aucune question bloquante (§16) |
-| Version | **0.4** |
-| Statut | Conception arrêtée ; **E10 livrée** (tests rouges, §13) ; E12 par tranches (§15) |
+| Version | **0.4.1** |
+| Statut | Conception arrêtée ; E10 livrée ; E12 livrée (B1, B2, D1, D2) ; **E13 : changements requis** (`docs/ceremonies/revue-code-LOT-001-rang13.md`, correctif d'ANO-006 au §6.7) |
 | Auteur | Anthony |
 | Branche | `us/US-031-rang13` |
 
@@ -26,6 +26,7 @@
 | 0.2 | 2026-10-27 | Anthony | Réponses de Starck (DAT v0.11.3 : Q-ST031-STA-1 a), noms des verrous, verrou « cycle » jusqu'à la mise à jour de `deposeJusquA` ; Q-ST031-STA-2 a)), de Pepper (Q-ST031-PEP-1 a) : S16b et S16c, rang 13) et de Steeve (sans message, guide v0.2.13). Avis de fin de session **ferme** (§6.4, UT-US-031-11). |
 | 0.3 | 2026-10-28 | Anthony | E11. **RL-LOT-001-A1** : ordre « effacer la session → prévenir → supprimer », `versionchange` sans réouverture, `ERR-017` ; port `AvisOnglets`, adaptateur et leurs tests avancés au rang 1 (ST-US-022 v0.3) ; UT-US-031-11 remplacé par UT-US-022-56 (§6.4, §13). **RL-LOT-001-A6** : `navigator.locks` absent journalisé en `erreur`, hypothèse inscrite (§8, §16). Estimation ramenée à 3,5 j. |
 | **0.4** | 2026-11-10 | Anthony | **E10 du rang 13**, revue de la conception sur le code des rangs 0 à 12. (1) **Composition** précisée (§3, §6.5) : `assemblerApplication` reçoit `verrou`, chaque espace a sa `CoordinationOnglets`, `Application.arreterCoordination` et `lireCoordination`, fonction `quitterApresFinDeSession` (avis et `versionchange`), lecture de `navigator.locks` dans l'adaptateur seul (`verrouOngletsDuNavigateur`). (2) **Exclusion** (§6.2) : contrôles du réseau et de l'accès **avant** la demande du verrou (pas d'attente inutile) **et refaits après** son obtention ; attente sans notification ni changement d'état du moteur. (3) Contrat `VerrouOnglets` : `quandObtenue` jamais pendant l'appel ; `IdOnglet` retiré du port (doublure seulement) ; `observer` sans argument. (4) **DT-025** intégrée (§6.6). (5) Steps : 13 phrases nouvelles, repères réels (ni `data-ecran` ni `data-element`), ANO-004 (§12). (6) Tests : UT-US-031-01 à 12, CT-VER-01 à 07, UT-DT-025-01 livrés en rouge (§13). (7) Réalisation en 4 tranches (§15, OPT-15). |
+| 0.4.1 | 2026-11-11 | Anthony | **E13 du rang 13** (`docs/ceremonies/revue-code-LOT-001-rang13.md`). Alignement sur le code livré et sur les réponses : DAT v0.11.13 (Q-ST031-STA-3), guide v0.2.25 (Q-ST031-STE-1 : `role="status"`, §6.3) ; `modeleAutreOnglet` dans le modèle de vue (§3 n° 8) ; `tests/e2e/onglets.e2e.ts` (et non `.spec.ts`), dépendant du build `dist-test-ihm` (§3 n° 17, §14) ; interface réelle des étapes (§12.2 n° 4, 7 à 9 : section « Compte » rendue dans l'espace, bouton « Créer un objectif », Entrée provisoire d'ANO-007). **Correctif d'ANO-006** imposé (§6.7) et tests UT-COMP-US-031-23 à 25 (§14) ; accord CR-60 sur UT-US-031-10 (Q-BRU-1, §13). |
 
 ## 1. Résumé technique
 
@@ -66,7 +67,7 @@
 | 5 | `src/synchronisation/application/coordination-onglets.ts` | Application | Squelette (types complets) | `CoordinationOnglets`, `RoleOnglet`, `EtatCoordination` | B2 |
 | 6 | `src/composition/fin-session-onglets.ts` | Composition | Squelette | `quitterApresFinDeSession`, `ecouterFinDeSession` | B2 |
 | 7 | `src/synchronisation/application/cycle-synchronisation.ts` | Application | **Type seulement** : `DependancesCycle.exclusion?` ajouté, non utilisé | Exclusion (§6.2), DT-025 (§6.6) | B1 |
-| 8 | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts` | Modèle de vue | **Types seulement** : entrée `coordination?`, sortie `autreOnglet?` | §6.3 | D1 |
+| 8 | `src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts` | Modèle de vue | **Types seulement** en E10 : entrée `coordination?`, sortie `autreOnglet?` ; **en D1** (v0.4.1) : fonction locale `modeleAutreOnglet(coordination)` ajoutée à `construireFeuilleSynchronisation` (règle du §6.3) | §6.3 | D1 |
 
 Rangs (`tests/support/rangs/rangs-fichiers.json`) : n° 1 à 6 à `debut = fin = 13` ; n° 7 et 8 inchangés (aucun squelette).
 
@@ -81,7 +82,7 @@ Rangs (`tests/support/rangs/rangs-fichiers.json`) : n° 1 à 6 à `debut = fin =
 | 14 | `src/composition/controleur-interface.ts` | `#feuille` : `coordination: await this.application.lireCoordination()` si défini (§6.3) | D1 |
 | 15 | `src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx` | `<p data-etat="SYN-FEUILLE-AUTRE-ONGLET">` juste après `<BoutonSynchroniser>` (et donc après son explication), avant `<CartesDeLaFeuille>` | D1 |
 | 16 | `tests/steps-ihm/support/monde-ihm.ts`, `tests/steps-ihm/onglets.steps.ts` (nouveau), `compte.steps.ts`, `saisie.steps.ts`, `drive.steps.ts`, `support/ecrans-ihm.ts` | §12 | D2 |
-| 17 | `tests/e2e/onglets.spec.ts` (nouveau) | §14 | D2 |
+| 17 | `tests/e2e/onglets.e2e.ts` (nouveau ; motif `**/*.e2e.ts` de `playwright.config.ts`) | §14 | D2 |
 | 18 | `tests/support/rangs/rang-courant.json` | `rangCourant = 13`, **en dernier** (PR du rang) | D2 |
 
 ### 3.3 Fournis par Anthony (tests, doublures, outils)
@@ -218,7 +219,7 @@ Contraintes de code : `#lancer` reste sous 30 lignes et de complexité ≤ 10 (E
 
 ### 6.3 Feuille (`construireFeuilleSynchronisation`)
 - Entrée `coordination?: EtatCoordination` ; sortie `autreOnglet: { code: 'SYN-FEUILLE-AUTRE-ONGLET', libelle: libelle('SYN-FEUILLE-AUTRE-ONGLET') }` **si et seulement si** `coordination.role = SUIVEUR` et `coordination.autreMeneur` ; propriété absente sinon (`MENEUR`, `SUIVEUR` sans meneur, coordination absente). Aucun autre champ de la feuille ne dépend de la coordination.
-- Composant : `<p data-etat="SYN-FEUILLE-AUTRE-ONGLET">{libelle}</p>`, texte simple (ni rôle d'alerte, ni contrôle), placé **après le bouton « Synchroniser maintenant » et son explication, avant les cartes** (maquette ECR-011, PC, « un autre onglet synchronise »).
+- Composant : `<p data-etat="SYN-FEUILLE-AUTRE-ONGLET" role="status">{libelle}</p>` (guide v0.2.25 §6.6.9, Q-ST031-STE-1), extrait dans le composant local `LigneAutreOnglet` (`max-lines-per-function`), texte simple (ni rôle d'alerte, ni contrôle, ni toast, ni icône), placé **après le bouton « Synchroniser maintenant » et son explication, avant les cartes** (maquette ECR-011, PC, « un autre onglet synchronise »).
 - Contrôleur : `#feuille` passe `coordination` lue par `application.lireCoordination()` (propriété omise si `undefined`). L'indicateur et les bandeaux ne changent pas : aucun message n'interrompt l'onglet suiveur (guide §6.4, DAT-UX-16).
 
 ### 6.4 Fin de session dans un autre onglet (Q-ST031-PEP-1 a), US-022 CA-1 ; guide v0.2.13 §6.6.11 ; DAT §4.1.6, RL-LOT-001-A1)
@@ -252,6 +253,17 @@ Mécanique livrée au **rang 1** (ST-US-022 v0.3 §5.2, §6.5, §6.6, §6.11) :
   - `cycle-signalements-complements.test.ts:209` (UT-COMP-US-017-2-34 : l'objet `etatMoteur` simulé perd `aLire: 7` ; l'assertion `aLire: 0` de la requête reste, elle porte sur l'attente).
   Le prototype de l'E10 a vérifié la liste : ce sont les **9 tests** qui rougissent au retrait du champ (UT-US-017-28, 32, 90, 92 ×2, UT-COMP-US-017-14, 16, 35, 36). `consulter-etat-synchronisation.test.ts:37` porte sur `EtatSynchronisationAffichable` : **ne pas toucher**.
 - UT-DT-025-01 (égalité stricte) vérifie le retrait.
+
+### 6.7 Correctif d'ANO-006 (E13 du rang 13, Benjamin, sonnet)
+**Constat (reproduit en test de composant, 3/3 ; absent au rang 12).** `SeDeconnecter.executer` ferme l'espace **avant** la session (`espaces.fermer()` puis `session.fermer()`, ordre imposé par ST-US-022). `fermerEspace` arrête la coordination ; l'onglet meneur redevient suiveur et la notifie (§6.1, « notification si le rôle a changé ») ; le relais d'`observerSynchronisation` lance `ControleurInterface.rafraichir()`. Ce calcul lit `session.etat()` **au début** (encore `OUVERTE`), attend `consulterEtat()` puis la feuille (`lireCoordination()` compris) et se termine **après** les calculs lancés ensuite (`session.fermer()`, fin d'`actionCompte`), qui lisent `SANS_SESSION` et n'ont rien à attendre : il publie en dernier une vue `racine = APPLICATION`, feuille `SYN-OK` comprise. Le contrôleur reste ainsi alors que la session est `SANS_SESSION` : les données restent affichées après la déconnexion. La cause de fond, présente depuis le rang 1, est que `#calculerVue` publie sans contrôle d'ordre ; le rang 13 la déclenche.
+
+**Correctif imposé** (`src/composition/controleur-interface.ts`, aucune autre modification de `src/`) :
+1. un compteur privé `#dernierCalcul = 0` ; `#calculerVue` prend `const numero = ++this.#dernierCalcul` **avant** toute lecture ;
+2. après la dernière attente, si `numero !== this.#dernierCalcul`, le calcul **ne publie pas** (`#vue` inchangée, observateurs non avertis) : un calcul lancé plus tard publiera ;
+3. `rafraichir()` et `rafraichissementsTermines()` sont inchangés (le calcul abandonné reste attendu par le banc).
+Interdits : modifier l'ordre de `SeDeconnecter` (ST-US-022), supprimer la notification d'`arreter()` (§6.1), relire la session après les attentes sans le compteur (correctif partiel : la feuille resterait celle de l'espace fermé).
+
+**Étapes.** Les deux `When` de fin de session du premier onglet (§12.2 n° 7 et 9) attendent en plus, sur la page 1, l'écran de connexion (`expect.poll` sur `ecranAffiche(page)`, `DELAI_ATTENTE_MS`, valeur `CONNEXION`) : S16b doit rougir sans le correctif.
 
 ## 7. Intégration Google
 Sans nouvelle requête. Chaque onglet a son propre jeton en mémoire (DAT §4.1.6) ; aucun jeton ne transite entre onglets (ni par `BroadcastChannel`, ni par IndexedDB, ni par les verrous).
@@ -292,12 +304,12 @@ Aucun jeton partagé entre onglets ; noms de verrous et canal dérivés de `nomE
 | 1 | `que l'application est ouverte dans deux onglets du {appareil}` | `tests/steps-ihm/onglets.steps.ts` | `exigerAppareil` ; `pageCourante()` (démarrage initial) puis seconde page du **même contexte persistant** (`MondeIhm.ouvrirSecondOnglet()`, à créer : `contexte.newPage()`, `page.goto(ORIGINE_IHM)`, mêmes écouteurs `pageerror`) ; `expect.poll` (10 s) : indicateur des deux pages à `SYN-OK` |
 | 2 | `qu'aucune modification n'est en attente sur le {appareil}` | idem | `exigerAppareil` ; `expect.poll` (10 s) : indicateur de **chaque** page ouverte à `SYN-OK` |
 | 3 | `dans le premier onglet, l'utilisateur renomme la tâche {string} en {string}` | idem | Fonction `renommerTache(page, ancien, nouveau)` extraite de `saisie.steps.ts` (la phrase « sur le {appareil}, … » existante l'appelle aussi : aucune duplication) sur la page 1 |
-| 4 | `dans le second onglet, l'utilisateur crée un objectif {string} sans délai` | idem | Fonction `creerObjectifSansDelai(page, intitule)` dans `saisie.steps.ts` : onglet « Objectifs » de la barre, bouton flottant « Nouvel objectif », champ intitulé, « Créer l'objectif » (libellés de `LIBELLES_*`, jamais recopiés) ; attend le titre de niveau 1 du détail créé ; revient à la liste |
+| 4 | `dans le second onglet, l'utilisateur crée un objectif {string} sans délai` | idem | Fonction `creerObjectifSansDelai(page, intitule)` dans `saisie.steps.ts` : espace « Objectifs » de la barre d'onglets (`choisirEspace`), bouton « Créer un objectif » (`LIBELLES_OBJECTIFS.creerObjectif`, libellé réel de l'interface ; v0.4.1), champ intitulé, « Créer l'objectif » (libellés de `LIBELLES_*`, jamais recopiés) ; attend le titre de niveau 1 du détail créé ; revient à la liste |
 | 5 | `les deux onglets affichent la tâche {string} et l'objectif {string}` | idem | Pour chaque page : `expect.poll` (5 s) sur `ligneTache(page, tache)` (1 ligne) et sur la ligne d'objectif (repère à ajouter dans `ecrans-ihm.ts`, `li.ligne-objectif` + intitulé exact, comme `ligneTache`) après navigation vers l'onglet « Objectifs » puis retour |
 | 6 | `le Drive du compte {string} contient l'objectif {string} exactement une fois` | `tests/steps-ihm/drive.steps.ts` | Comme la tâche : `objectifsDuDrive` de `drive-banc.ts`, `expect.poll` puis `attendreRepos()`, égalité à 1 |
-| 7 | `dans le premier onglet, l'utilisateur se déconnecte` | `tests/steps-ihm/compte.steps.ts` | Page 1 : ouvrir la feuille ECR-011 (bouton de l'indicateur), section « Compte », bouton « Se déconnecter » par rôle ; si `CNF-DECONNEXION` s'affiche (rien en attente : ne doit pas), le scénario échoue |
-| 8 | `dans le premier onglet, l'utilisateur demande la suppression des données de cet appareil` | idem | Page 1 : feuille ECR-011, bouton « Supprimer les données de cet appareil » ; attend le dialogue `alertdialog` |
-| 9 | `dans le premier onglet, l'utilisateur confirme` | idem | Page 1 : bouton d'action du dialogue `alertdialog` (pas « Annuler ») |
+| 7 | `dans le premier onglet, l'utilisateur se déconnecte` | `tests/steps-ihm/compte.steps.ts` | Page 1 : section « Compte », **rendue dans l'espace de l'application** (aucune feuille à ouvrir ; v0.4.1), bouton « Se déconnecter » par rôle (`libelleActionCompte('SE_DECONNECTER')`) ; si `CNF-DECONNEXION` s'affiche (rien en attente : ne doit pas), le scénario échoue ; puis page 1 à l'écran de connexion (§6.7) |
+| 8 | `dans le premier onglet, l'utilisateur demande la suppression des données de cet appareil` | idem | Page 1 : section « Compte » de l'espace, bouton « Supprimer les données de cet appareil » (`libelleActionCompte('SUPPRIMER_DONNEES')`) ; attend le dialogue `alertdialog` |
+| 9 | `dans le premier onglet, l'utilisateur confirme` | idem | Page 1 : bouton d'action du dialogue `alertdialog` (pas « Annuler »), **activé par la touche Entrée tant qu'ANO-007 est ouverte** (le fond intercepte le clic), commentaire de renvoi à ANO-007, **remis au clic** par la correction d'ANO-007 ; puis page 1 à l'écran de connexion (§6.7) |
 | 10 | `dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée` | idem | Page 2 : **attendre le rechargement** (compteur d'événements `load` de la page 2 relevé avant le geste, `expect.poll` jusqu'à +1, 5 s), puis `waitForLoadState('networkidle')`, puis `ecranAffiche(page) = 'CONNEXION'` et `boutonConnexion` seul bouton de la page. **ANO-004** : l'écran de connexion apparaît aussi brièvement pendant toute ouverture ; ne jamais conclure sur un relevé pris avant la fin du chargement |
 | 11 | `dans le second onglet, aucune donnée n'est affichée` | idem | Page 2 : `main.espace-application` absent, 0 `li.ligne-tache`, 0 ligne d'objectif, et aucun texte « Chapitre 1 » ni « Publier le guide » (`getByText`, compte 0) |
 | 12 | `les données du compte {string} sont toujours présentes sur le {appareil}` | idem | `page.evaluate(() => indexedDB.databases())` contient `nomEspace('recette', identite(compte).compte)` (calcul par `nomEspaceDuCompte` de `tests/support/compte/etapes-compte.ts`, l'environnement de la composition `test-ihm` étant `recette`) |
@@ -313,6 +325,8 @@ Repères : `[data-ecran]` et `[data-element]` **n'existent pas** dans `src/` (re
 Total : 30.
 
 ## 13. Tests unitaires (E10 livrée le 2026-11-10, branche `us/US-031-rang13`)
+**Accord CR-60 (E13, Q-BRU-1)** : dans UT-US-031-10 (« request — mode exclusif… »), retirer l'espion `vi.spyOn(gestionnaire, 'request')` et ses trois assertions (l. 63, 74-76), qui attachent des gestionnaires à la promesse rendue et rendent vide l'assertion « aucun rejet non traité » ; les remplacer par `expect(registre.demandes).toBe(2)` (l'autre onglet, puis cette demande) ; le nom et le mode restent vérifiés par l'instantané `pending` (l. 77-79). Aucune autre modification.
+
 Tous les titres commencent par leur identifiant ; règles de rang : `(?:UT-US-031|CT-VER)-\d+` → 13 (existante), `UT-DT-025-\d+` → 13 (ajoutée). Au rang 12, aucun ne s'exécute ; `RANG_COURANT=13 pnpm test` : **32 rouges**, 10 verts (CT-VER-01 à 07 sur la doublure, qui la valident ; 3 cas « aucune ligne » d'UT-US-031-07, gardes de non-régression), toutes les autres suites vertes. Un prototype jetable (non commité) a rendu les 42 verts : les tests sont satisfiables ensemble.
 
 | Id | Fichier | Élément | Cas | Rouge en E10 par | Tranche |
@@ -336,7 +350,8 @@ Tous les titres commencent par leur identifiant ; règles de rang : `(?:UT-US-03
 | Composant | `demarrerWeb` : avis `SESSION_FERMEE` → `recharger` appelé une fois (le test `web-declencheurs.test.ts` peut servir de modèle) | idem | B2 |
 | Composant | `FeuilleSynchronisation` : ligne rendue après le bouton et avant les cartes, `data-etat` | idem | D1 |
 | Bout en bout | S16, S16b, S16c | Profil `ihm` | D2 |
-| Bout en bout | `tests/e2e/onglets.spec.ts` : `VerrouOngletsWeb` sur Chromium réel (build `test-ihm`) ; deux pages : la feuille de la seconde montre `SYN-FEUILLE-AUTRE-ONGLET` ; fermeture de la première → la mention disparaît de la seconde (`expect.poll`, 10 s) | `pnpm e2e` (job `ihm` de la CI, sans modification de `ci.yml`) | D2 |
+| Bout en bout | `tests/e2e/onglets.e2e.ts` : `VerrouOngletsWeb` sur Chromium réel (build `test-ihm`, **produit par `pnpm build:test-ihm`** : le job `ihm` exécute `pnpm cucumber:ihm`, qui le construit, avant `pnpm e2e` ; seul, le fichier échoue avec le message « Build absent » de `serveur-ihm.ts`) ; deux pages : la feuille de la seconde montre `SYN-FEUILLE-AUTRE-ONGLET` ; fermeture de la première → la mention disparaît de la seconde (`expect.poll`, 10 s) | `pnpm e2e` (job `ihm` de la CI, sans modification de `ci.yml`) | D2 |
+| Composant (E13, v0.4.1) | **UT-COMP-US-031-23** (`tests/unitaires/synchronisation/application/cycle-exclusion-complements.test.ts`) : pendant l'attente du verrou « cycle », une création d'objectif puis `synchroniserMaintenant()` → `DEJA_EN_COURS` ; verrou rendu : première issue `TERMINE`, l'objectif est dans le Drive exactement une fois, décompte en attente 0, **2** notifications (une seule exécution du corps). **UT-COMP-US-031-24** (`tests/unitaires/composition/application-coordination-comp.test.ts`) : application assemblée (préparation du fichier) et `ControleurInterface` ; onglet seul meneur, `actionCompte('SE_DECONNECTER')`, puis `vider()` et `rafraichissementsTermines()` : `vue().racine.ecran = 'CONNEXION'`, ni `compte` ni `feuille`. **UT-COMP-US-031-25** (`tests/unitaires/composition/controleur-calculs-ordre-comp.test.ts`, nouveau) : doublure d'`ApplicationInterface` dont `consulterEtat` est réglé à la main ; calcul A lancé session ouverte, calcul B lancé après la fermeture ; B réglé puis A : vue de B (`CONNEXION`), un seul avertissement des observateurs | Règle `UT-COMP-US-031-\d+` → 13 (existante) | Correction E13 |
 | Mutation | Rapportée en revue par chaque tranche (leçon du rang 12) : au moins retrait de l'exclusion, garde non refaite, `if (rendu)` retiré, `arreter` avant `recharger` inversé, ligne de feuille toujours présente | Toutes détectées | Toutes |
 
 ## 15. Plan de réalisation (OPT-15 : une tranche à la fois, chacune < 2 j)
@@ -345,7 +360,7 @@ Tous les titres commencent par leur identifiant ; règles de rang : `(?:UT-US-03
 | **B1** cœur | Bruce (**opus**) | Noms, exclusion, intégration au cycle (§6.2), `VerrouOngletsWeb` (§4.2), DT-025 (§6.6) | §3 n° 2, 3, 4, 7, 9, 10 ; tests de DT-025 listés | CT-VER-01 à 07, UT-US-031-05, 06, 08, 10, 12, UT-DT-025-01 ; toute la suite au rang 12 | 1 j |
 | **B2** coordination et composition | Bruce (**opus**) | `CoordinationOnglets` (§6.1), fin de session (§6.4), composition (§6.5), banc | §3 n° 5, 6, 11, 12, 13 | UT-US-031-01 à 04, 09, 11 ; UT-COMP-US-031 ; `pnpm cucumber` 406/406 | 1 j |
 | **D1** feuille | Benjamin (sonnet) | Modèle de vue, composant, contrôleur (§6.3) | §3 n° 8, 14, 15 | UT-US-031-07 ; UT-COMP | 0,5 j |
-| **D2** chaîne `@ihm` et livraison | Benjamin (sonnet) | Monde à deux pages, 13 phrases (§12.2), `onglets.spec.ts`, `rangCourant = 13` **en dernier** | §3 n° 16, 17, 18 | S16, S16b, S16c ; `pnpm cucumber:ihm` 13/13 ; `pnpm e2e` | 1 j |
+| **D2** chaîne `@ihm` et livraison | Benjamin (sonnet) | Monde à deux pages, 13 phrases (§12.2), `onglets.e2e.ts`, `rangCourant = 13` **en dernier** | §3 n° 16, 17, 18 | S16, S16b, S16c ; `pnpm cucumber:ihm` 13/13 ; `pnpm e2e` | 1 j |
 
 Ordre : **B1 → B2 → D1 → D2** (D1 peut précéder B2 : il ne dépend que des types). Pas de tranche Friday : la CI exécute déjà `pnpm e2e` et `pnpm cucumber:ihm` (job `ihm`). Estimation inchangée : **3,5 j** (DT-025 : 0,25 j inclus dans B1).
 
@@ -357,7 +372,8 @@ Ordre : **B1 → B2 → D1 → D2** (D1 peut précéder B2 : il ne dépend que d
   - **Réponses de Steeve (2026-11-10)** : option a retenue. Emplacement : après le bouton et son explication, avant les cartes, toutes largeurs. Texte inchangé (catalogue et guide §6.6.9 déjà d'accord ; l'espace avant « : » est rendue insécable par `libelle`). `<p data-etat="SYN-FEUILLE-AUTRE-ONGLET" role="status">`, sans toast ni icône ; apparition et disparition sans message ni animation (DAT-UX-16). Guide v0.2.25. Aucun ajout de catalogue en D1.
 - **Hypothèse H-031-1 (RL-LOT-001-A6)** : l'API Web Locks est disponible sur tous les navigateurs cibles (Chrome et Edge pour ordinateur, Chrome Android ; Safari 15.4 et plus pour EPI-001). Sans elle, le cas est journalisé en `erreur`.
 - **ANO-004 et ANO-005** : non corrigées au rang 13 ; les étapes de §12.2 n° 10 en tiennent compte (ANO-004). La correction relève d'une branche `ano/` après qualification par Pepper et Steeve.
-- Dette : DT-025 remboursée par ce rang ; aucune nouvelle dette prévue.
+- Dette : DT-025 réalisée en B1, « Remboursée » à la fusion de la PR #40 ; dette candidate R13-a (registre v0.44, numéro à la fusion, OPT-20).
+- **ANO-006** (E13, Majeure proposée, régression du rang 13) : correctif au §6.7, bloquant pour la fusion du rang. **ANO-007** (E13, antérieure au rang : fond de `BoiteConfirmation` au-dessus des boutons) : hors périmètre du rang, branche `ano/` ; l'étape n° 9 la contourne par la touche Entrée.
 
 ## 17. Checklist
 - [x] Fichiers, signatures, règles, steps, rangs.
