@@ -38,6 +38,7 @@ import type { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-
 import { FauxFournisseurAuth } from '../../doublures/faux-fournisseur-auth';
 import type { FauxGoogle } from '../../doublures/faux-google';
 import { GenerateurIdentifiantsSequentiel } from '../../doublures/generateur-identifiants-sequentiel';
+import { VerrouOngletsEnMemoire } from '../../doublures/verrou-onglets-memoire';
 import { HorlogeSimulee } from '../../doublures/horloge-simulee';
 import { MiseAJourSimulee } from '../../doublures/mise-a-jour-simulee';
 import { PersistanceSimulee } from '../../doublures/persistance-simulee';
@@ -435,6 +436,9 @@ export class AppareilSimule {
         this.onglets.push(url);
       },
       persistance: this.persistance,
+      // ST-US-031 §6.5 n° 10 : une instance = une page neuve, avec sa propre vue des verrous ; une instance abandonnée
+      // (fermée par `fermerApplication`) ne garde pas la main.
+      verrou: new VerrouOngletsEnMemoire().onglet(),
     });
   }
 }

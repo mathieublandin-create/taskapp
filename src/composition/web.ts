@@ -34,6 +34,7 @@ import {
   type ConteneurServiceWorker,
 } from '../synchronisation/infrastructure/mise-a-jour-service-worker';
 import { TransportSynchroDrive } from '../synchronisation/infrastructure/drive/transport-synchro-drive';
+import { verrouOngletsDuNavigateur } from '../synchronisation/infrastructure/verrou-onglets-web';
 import { version as VERSION_APPLICATION } from '../../package.json';
 import {
   assemblerApplication,
@@ -42,6 +43,7 @@ import {
   type Application,
 } from './application';
 import { ControleurInterface } from './controleur-interface';
+import { ecouterFinDeSession, quitterApresFinDeSession } from './fin-session-onglets';
 import { armerReevaluationRappel } from './reevaluation-rappel';
 
 // Composition de la PWA (ADR-013 ; ST-US-022 §3.2 n° 51, §6.2). Appelée par main.tsx, après la consommation du
@@ -137,27 +139,34 @@ const socleWeb = (configuration: Configuration, base: () => BaseTechnique | unde
   };
 };
 
-/** Adaptateurs liés à la page : service worker, rechargement, onglets et persistance du stockage. */
-const adaptateursNavigateur = (navigateur: Navigateur) => ({
+/**
+ * Adaptateurs liés à la page : service worker, rechargement, onglets et persistance du stockage. `quitter` : fermeture
+ * imposée (`versionchange`), coordination arrêtée avant le rechargement (ST-US-031 §6.4, §6.5 n° 9).
+ */
+const adaptateursNavigateur = (navigateur: Navigateur, quitter: () => void) => ({
   miseAJour: new MiseAJourServiceWorker({
     conteneur: navigateur.conteneurServiceWorker,
     recharger: navigateur.recharger,
   }),
   versionApplication: VERSION_APPLICATION,
-  surFermetureImposee: navigateur.recharger,
+  surFermetureImposee: quitter,
   ouvrirOnglet: navigateur.ouvrirOnglet,
   persistance: new PersistanceNavigateur(navigateur.gestionnaireStockage),
 });
 
+/** Ce que la page partage avec l'assemblage : canal d'avis et sortie de fin de session (ST-US-031 §6.5 n° 9). */
+type LiensPage = { readonly avis: AvisOngletsBroadcast; readonly quitter: () => void };
+
 /**
  * Un seul canal d'avis par onglet : un BroadcastChannel ne reçoit pas ses propres messages, mais une autre
- * instance ouverte dans la même page les reçoit (l'onglet qui se déconnecte se rechargerait lui-même).
+ * instance ouverte dans la même page les reçoit (l'onglet qui se déconnecte se rechargerait lui-même). Un seul
+ * lecteur de `navigator.locks` : `verrouOngletsDuNavigateur` (ST-US-031 §6.5 n° 8).
  */
 const assembler = (
   variables: AdaptateursVariables,
   configuration: Configuration,
   navigateur: Navigateur,
-  avis: AvisOngletsBroadcast,
+  { avis, quitter }: LiensPage,
 ): Application => {
   const reference: { base?: BaseTechnique } = {};
   const socle = socleWeb(configuration, () => reference.base);
@@ -172,7 +181,8 @@ const assembler = (
     fournisseur: variables.fournisseur(configuration, socle),
     transport: variables.transport(socle, echangesGoogle),
     echangesGoogle,
-    ...adaptateursNavigateur(navigateur),
+    verrou: verrouOngletsDuNavigateur(socle.journal),
+    ...adaptateursNavigateur(navigateur, quitter),
   });
   reference.base = application.base;
   return application;
@@ -254,13 +264,20 @@ export const demarrerWeb = (
     pointsTactiles: navigateur.pointsTactiles,
   });
   const avis = new AvisOngletsBroadcast(configuration.env);
-  const application = assembler(adaptateurs, configuration, navigateur, avis);
+  // ST-US-031 §6.4, §6.5 n° 9 : référence tardive (l'application n'existe pas encore quand `quitter` est créée).
+  const reference: { application?: Application } = {};
+  const quitter = quitterApresFinDeSession({
+    arreterCoordination: () => reference.application?.arreterCoordination(),
+    recharger: navigateur.recharger,
+  });
+  const application = assembler(adaptateurs, configuration, navigateur, { avis, quitter });
+  reference.application = application;
   const controleur = new ControleurInterface(
     application,
     new HorlogeSysteme(),
     application.objectifs,
   );
-  avis.ecouter(navigateur.recharger);
+  ecouterFinDeSession(avis, quitter);
   ecouterDeclencheurs(application, controleur);
   const ouverture = application.ouvrirApplication.executer(retour);
   void ouverture.then((issue) => apresOuvertureWeb(application, controleur, navigateur, issue));

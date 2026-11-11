@@ -93,6 +93,7 @@ export type ApplicationInterface = Pick<
   | 'lireCorrectionHorloge'
   | 'mettreAJour'
   | 'etatPersistance'
+  | 'lireCoordination'
 >;
 
 /** État de synchronisation lu sur l'espace ouvert. */
@@ -479,11 +480,14 @@ export class ControleurInterface {
   async #feuille(etat: EtatLu, maintenant: Instant): Promise<ModeleVueFeuilleSynchronisation> {
     const dernierEchange = await this.application.lireDernierContact();
     const correctionHorloge = await this.application.lireCorrectionHorloge();
+    // ST-US-031 §6.3 : relue à chaque calcul de la vue (la ligne `SYN-FEUILLE-AUTRE-ONGLET` suit le rôle de l'onglet).
+    const coordination = await this.application.lireCoordination();
     return construireFeuilleSynchronisation({
       etat,
       maintenant,
       ...(dernierEchange === undefined ? {} : { dernierEchange }),
       ...(correctionHorloge === undefined ? {} : { correctionHorloge }),
+      ...(coordination === undefined ? {} : { coordination }),
       persistance: await this.application.etatPersistance(),
       nouvelleVersion: this.#etat.nouvelleVersion,
       elementsEnAttente: await this.application.lireElementsEnAttente(),
