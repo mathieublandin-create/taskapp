@@ -274,6 +274,17 @@ const modeleAlerteVersion = (e: EntreeFeuilleSynchronisation) =>
       }
     : {};
 
+/** ST-US-031 §6.3 : seul un onglet suiveur dont un autre onglet tient le verrou « meneur » affiche la ligne. */
+const modeleAutreOnglet = (coordination: EtatCoordination | undefined) =>
+  coordination?.role === 'SUIVEUR' && coordination.autreMeneur
+    ? {
+        autreOnglet: {
+          code: 'SYN-FEUILLE-AUTRE-ONGLET' as const,
+          libelle: libelle('SYN-FEUILLE-AUTRE-ONGLET'),
+        },
+      }
+    : {};
+
 export const construireFeuilleSynchronisation = (
   e: EntreeFeuilleSynchronisation,
 ): ModeleVueFeuilleSynchronisation => ({
@@ -285,4 +296,5 @@ export const construireFeuilleSynchronisation = (
   ...modeleAlerteHorloge(e.correctionHorloge),
   ...modeleStockage(e.persistance),
   ...modeleAlerteVersion(e),
+  ...modeleAutreOnglet(e.coordination),
 });

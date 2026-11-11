@@ -64,6 +64,17 @@ const BoutonSynchroniser = ({
   </>
 );
 
+/** Guide §6.6.9 : texte simple annoncé en `status`, sans toast, icône ni action ; apparaît et disparaît sans animation. */
+const LigneAutreOnglet = ({
+  ligne,
+}: {
+  readonly ligne: NonNullable<ModeleVueFeuilleSynchronisation['autreOnglet']>;
+}) => (
+  <p data-etat={ligne.code} role="status">
+    {ligne.libelle}
+  </p>
+);
+
 const BoutonCarte = ({
   libelle,
   desactive,
@@ -238,6 +249,7 @@ export const FeuilleSynchronisation = ({
       <p data-etat={vue.horsLigne.code}>{vue.horsLigne.libelle}</p>
     )}
     <BoutonSynchroniser bouton={vue.bouton} surSynchroniser={surSynchroniser} />
+    {vue.autreOnglet === undefined ? null : <LigneAutreOnglet ligne={vue.autreOnglet} />}
     <CartesDeLaFeuille vue={vue} surActionCarte={surActionCarte} miseAJour={miseAJour} />
     {choixRestauration === undefined ? null : <CarteChoixRestauration {...choixRestauration} />}
     <PiedDeFeuille vue={vue} />
