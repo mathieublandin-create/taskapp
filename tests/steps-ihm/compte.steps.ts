@@ -76,6 +76,16 @@ const attendreRechargementDuSecond = async (monde: MondeIhm): Promise<Page> => {
   return second;
 };
 
+/** ANO-006 : le premier onglet, celui du geste, quitte lui aussi les données et revient à l'écran de connexion. */
+const attendreEcranDeConnexion = async (page: Page): Promise<void> => {
+  await expect
+    .poll(() => ecranAffiche(page), {
+      timeout: DELAI_ATTENTE_MS,
+      message: 'Le premier onglet n’est pas revenu à l’écran de connexion',
+    })
+    .toBe('CONNEXION');
+};
+
 When("dans le premier onglet, l'utilisateur se déconnecte", async function (this: MondeIhm) {
   const page = await this.pageCourante();
   await preparerFinDeSession(this);
@@ -84,6 +94,7 @@ When("dans le premier onglet, l'utilisateur se déconnecte", async function (thi
   // la session ne prendrait pas fin et le second onglet ne se rechargerait pas).
   await attendreRechargementDuSecond(this);
   await expect(dialogueConfirmation(page)).toHaveCount(0);
+  await attendreEcranDeConnexion(page);
 });
 
 When(
@@ -97,9 +108,12 @@ When(
 );
 
 When("dans le premier onglet, l'utilisateur confirme", async function (this: MondeIhm) {
-  // ANO à inscrire : le fond (`ion-backdrop`) de la boîte de confirmation recouvre ses boutons et intercepte le clic à la
-  // souris ; l'utilisateur au clavier (Entrée sur le bouton d'action) y parvient. À remettre au clic à la correction.
-  await boutonConfirmer(await this.pageCourante()).press('Enter');
+  // ANO-007 : le fond (`ion-backdrop`) de la boîte de confirmation recouvre ses boutons et intercepte le clic à la
+  // souris ; l'utilisateur au clavier (Entrée sur le bouton d'action) y parvient. Contournement par la touche Entrée,
+  // à remettre au clic à la correction d'ANO-007.
+  const page = await this.pageCourante();
+  await boutonConfirmer(page).press('Enter');
+  await attendreEcranDeConnexion(page);
 });
 
 /**

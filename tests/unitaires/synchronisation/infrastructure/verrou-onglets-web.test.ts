@@ -4,7 +4,7 @@
  * `LockManager` simulé : options de `request`, demande abandonnée sans rejet non traité. Le comportement nominal est
  * couvert par le contrat (CT-VER-01 à 07).
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { VerrouOngletsWeb } from '@src/synchronisation/infrastructure/verrou-onglets-web';
 import { RegistreVerrousSimule } from '@tests/doublures/lock-manager-simule';
 import { JournalEnMemoire } from '@tests/support/compte/doublures-compte';
@@ -60,7 +60,6 @@ describe('VerrouOngletsWeb sur un LockManager simulé', () => {
   it('UT-US-031-10 request — mode exclusif ; une demande abandonnée (AbortError) est absorbée : aucun rejet non traité, aucune entrée de journal', async () => {
     const registre = new RegistreVerrousSimule();
     const gestionnaire = registre.client('client-1');
-    const request = vi.spyOn(gestionnaire, 'request');
     const journal = new JournalEnMemoire();
     const verrou = new VerrouOngletsWeb({ gestionnaire, journal });
     const autre = new VerrouOngletsWeb({ gestionnaire: registre.client('client-2'), journal });
@@ -71,9 +70,7 @@ describe('VerrouOngletsWeb sur un LockManager simulé', () => {
     const obtenues: Array<string> = [];
     const rendre = verrou.demanderLaMain(NOM, () => obtenues.push('jamais'));
     await vider();
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(request.mock.calls[0]?.[0]).toBe(NOM);
-    expect(request.mock.calls[0]?.[1]).toMatchObject({ mode: 'exclusive' });
+    expect(registre.demandes).toBe(2);
     expect((await gestionnaire.query()).pending).toEqual([
       { name: NOM, mode: 'exclusive', clientId: 'client-1' },
     ]);

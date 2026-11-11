@@ -4,6 +4,7 @@
  * `cycleEnCours()` dès la première notification ; une exclusion rejetée sans exécuter la tâche ne bloque pas le cycle
  * de l'onglet.
  */
+import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import type { ExclusionCycle } from '@src/synchronisation/application/exclusion-cycle';
 import { VerrouOngletsWeb } from '@src/synchronisation/infrastructure/verrou-onglets-web';
@@ -13,6 +14,7 @@ import { TempsSimule } from '@tests/support/banc/temps-simule';
 import { JournalEnMemoire } from '@tests/support/compte/doublures-compte';
 import { appliquerModifications, valeurDe } from '@tests/support/environnement';
 import { creationObjectif } from '@tests/support/modifications';
+import { barriere, vider } from '@tests/support/synchronisation/onglets';
 import { creerAppareilCycle } from '@tests/support/synchronisation/appareil-cycle';
 import { idObjectif, instant, PC } from '@tests/support/valeurs';
 
@@ -98,5 +100,38 @@ describe('CycleSynchronisation sous exclusion, compléments (ST-US-031 §6.2)', 
     expect(await env.pc.cycle.synchroniserMaintenant()).toBe('TERMINE');
 
     expect(vusAvantRestitution).toEqual([true, true]);
+  });
+
+  it('UT-COMP-US-031-23 création pendant l’attente du verrou « cycle » — DEJA_EN_COURS, puis l’exécution en file la couvre : TERMINE, objectif une fois dans le Drive, attente 0, deux notifications', async () => {
+    const verrouRendu = barriere();
+    const env = await preparer({
+      executer: async (tache) => {
+        await verrouRendu.promesse;
+        return tache();
+      },
+    });
+    const issue = env.pc.cycle.synchroniserMaintenant();
+    await vider();
+
+    await appliquerModifications(env.pc.service, (_etat, contexte) => [
+      creationObjectif(
+        { id: idObjectif(2), intitule: 'Relire la note de service' },
+        contexte.instant,
+      ),
+    ]);
+    expect(await env.pc.cycle.synchroniserMaintenant()).toBe('DEJA_EN_COURS');
+    verrouRendu.ouvrir();
+
+    expect(await issue).toBe('TERMINE');
+    const dansLeDrive = gunzipSync(env.drive.fichierDe(PC)?.octets ?? new Uint8Array()).toString(
+      'utf8',
+    );
+    expect(dansLeDrive.split('Relire la note de service')).toHaveLength(2);
+    expect(dansLeDrive.split('Publier le guide')).toHaveLength(2);
+    expect(valeurDe(await env.pc.service.lireDecompteEnAttente()).nombre).toBe(0);
+    expect(env.releves).toEqual([
+      { cycle: 'EN_COURS', enCours: true },
+      { cycle: 'REPOS', enCours: false },
+    ]);
   });
 });
