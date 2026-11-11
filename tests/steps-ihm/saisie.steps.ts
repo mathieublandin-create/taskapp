@@ -5,9 +5,12 @@
 import { When } from '@cucumber/cucumber';
 import { expect, type Page } from '@playwright/test';
 import { PAS_DUREE_MINUTES } from '@src/commun/domaine/duree';
-import { LIBELLES_TACHES } from '@src/objectifs-taches/presentation/ui/libelles-ui';
+import {
+  LIBELLES_OBJECTIFS,
+  LIBELLES_TACHES,
+} from '@src/objectifs-taches/presentation/ui/libelles-ui';
 import type { NomAppareil } from '../support/banc/appareil-simule';
-import { ligneTache } from './support/ecrans-ihm';
+import { boutonEspace, ligneTache } from './support/ecrans-ihm';
 import type { MondeIhm } from './support/monde-ihm';
 
 const bouton = (page: Page, nom: string) => page.getByRole('button', { name: nom, exact: true });
@@ -31,18 +34,48 @@ const ouvrirDetail = async (page: Page, intitule: string): Promise<void> => {
 const retournerALaListe = (page: Page): Promise<void> =>
   page.locator('ion-header').getByRole('button', { name: LIBELLES_TACHES.retourListe }).click();
 
+/** Les deux espaces de la barre d'onglets du bas (guide §4.14), désignés par leur libellé d'interface. */
+const LIBELLE_ESPACE = {
+  TACHES: LIBELLES_TACHES.titreListe,
+  OBJECTIFS: LIBELLES_OBJECTIFS.titreListe,
+} as const;
+
+export const choisirEspace = (page: Page, espace: keyof typeof LIBELLE_ESPACE): Promise<void> =>
+  boutonEspace(page, LIBELLE_ESPACE[espace]).click();
+
+/** Renomme la tâche depuis son détail (menu « Actions sur la tâche »), puis revient à la liste (US-018, US-031). */
+export const renommerTache = async (page: Page, ancien: string, nouveau: string): Promise<void> => {
+  await ouvrirDetail(page, ancien);
+  await bouton(page, LIBELLES_TACHES.menuActions).click();
+  await bouton(page, LIBELLES_TACHES.menu.RENOMMER).click();
+  await page.getByLabel(LIBELLES_TACHES.renommage).fill(nouveau);
+  await bouton(page, LIBELLES_TACHES.enregistrer).click();
+  await expect(page.getByRole('heading', { level: 1, name: nouveau })).toBeVisible();
+  await retournerALaListe(page);
+};
+
+/**
+ * Crée un objectif sans délai (choix par défaut de la feuille, RG-002) depuis l'espace « Objectifs » : bouton flottant,
+ * champ « Intitulé », validation ; le détail de l'objectif créé s'ouvre, puis l'utilisateur revient à la liste.
+ */
+export const creerObjectifSansDelai = async (page: Page, intitule: string): Promise<void> => {
+  await choisirEspace(page, 'OBJECTIFS');
+  await bouton(page, LIBELLES_OBJECTIFS.creerObjectif).click();
+  const feuille = feuilleDeSaisie(page);
+  await feuille.getByLabel(LIBELLES_OBJECTIFS.champIntitule).fill(intitule);
+  await bouton(page, LIBELLES_OBJECTIFS.feuille.CREATION.validation).click();
+  await expect(page.getByRole('heading', { level: 1, name: intitule })).toBeVisible();
+  await page
+    .locator('ion-header')
+    .getByRole('button', { name: LIBELLES_OBJECTIFS.retourListe })
+    .click();
+};
+
 When(
   "sur le {appareil}, l'utilisateur renomme la tâche {string} en {string}",
   async function (this: MondeIhm, appareil: NomAppareil, ancien: string, nouveau: string) {
     this.exigerAppareil(appareil);
-    const page = await this.pageCourante();
-    await ouvrirDetail(page, ancien);
-    await bouton(page, LIBELLES_TACHES.menuActions).click();
-    await bouton(page, LIBELLES_TACHES.menu.RENOMMER).click();
-    await page.getByLabel(LIBELLES_TACHES.renommage).fill(nouveau);
-    await bouton(page, LIBELLES_TACHES.enregistrer).click();
-    await expect(page.getByRole('heading', { level: 1, name: nouveau })).toBeVisible();
-    await retournerALaListe(page);
+    await renommerTache(await this.pageCourante(), ancien, nouveau);
   },
 );
 
