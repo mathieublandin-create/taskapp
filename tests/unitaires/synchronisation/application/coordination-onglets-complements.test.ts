@@ -1,7 +1,8 @@
 /**
  * ST-US-031 v0.4 §6.1 (rang 13, tranche B2), tests complémentaires de Bruce sur `CoordinationOnglets` : une seule
  * candidature à la fois (l'accès est notifié `VALIDE` à chaque changement de session, sans changer d'état) ; arrêt
- * avant tout démarrage ; désabonnement d'un observateur. UT-COMP-US-031-7, 8.
+ * avant tout démarrage ; désabonnement d'un observateur ; rejet du cycle d'ouverture par une valeur qui n'est pas une
+ * `Error`. UT-COMP-US-031-7, 8.
  */
 import { describe, expect, it, vi } from 'vitest';
 import { CoordinationOnglets } from '@src/synchronisation/application/coordination-onglets';
@@ -13,22 +14,26 @@ import { vider } from '@tests/support/synchronisation/onglets';
 const ESPACE = 'donejuan-recette-3f5a9c0e';
 const MENEUR = `${ESPACE}:synchronisation-meneur`;
 
-const onglet = (verrous: VerrouOngletsEnMemoire) => {
+const onglet = (
+  verrous: VerrouOngletsEnMemoire,
+  synchroniser: () => Promise<'TERMINE'> = () => Promise.resolve('TERMINE'),
+) => {
   const verrou = verrous.onglet();
   const acces = new AccesCommandable('VALIDE');
+  const journal = new JournalEnMemoire();
   const cycle = {
     demarrer: vi.fn(),
     arreter: vi.fn(),
-    synchroniserMaintenant: vi.fn(() => Promise.resolve('TERMINE' as const)),
+    synchroniserMaintenant: vi.fn(synchroniser),
   };
   const coordination = new CoordinationOnglets({
     verrou,
     cycle,
     acces,
     nomEspace: ESPACE,
-    journal: new JournalEnMemoire(),
+    journal,
   });
-  return { verrou, acces, cycle, coordination };
+  return { verrou, acces, journal, cycle, coordination };
 };
 
 describe('CoordinationOnglets — compléments (ST-US-031 §6.1)', () => {
@@ -77,5 +82,20 @@ describe('CoordinationOnglets — compléments (ST-US-031 §6.1)', () => {
     annuler();
     b.coordination.arreter();
     expect(notifie).toHaveBeenCalledTimes(1);
+  });
+
+  it('UT-COMP-US-031-8 cycle d’ouverture rejeté par une valeur qui n’est pas une Error — journal erreur SynchronisationInterrompue « inconnue », le rôle reste MENEUR', async () => {
+    const verrous = new VerrouOngletsEnMemoire();
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- cas visé : rejet sans Error
+    const a = onglet(verrous, () => Promise.reject('panne'));
+
+    a.coordination.demarrer();
+    await vider();
+
+    expect(a.journal.entrees).toEqual([
+      { niveau: 'info', evenement: 'OngletMeneur' },
+      { niveau: 'erreur', evenement: 'SynchronisationInterrompue', champs: { erreur: 'inconnue' } },
+    ]);
+    expect(await a.coordination.etat()).toEqual({ role: 'MENEUR', autreMeneur: false });
   });
 });
