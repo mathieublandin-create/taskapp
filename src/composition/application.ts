@@ -47,7 +47,13 @@ import {
 } from '../synchronisation/application/cas-usage/choisir-restauration';
 import { DemanderPersistance } from '../synchronisation/application/cas-usage/demander-persistance';
 import { MarquerCommeLue } from '../synchronisation/application/cas-usage/marquer-comme-lue';
+import {
+  CoordinationOnglets,
+  type EtatCoordination,
+} from '../synchronisation/application/coordination-onglets';
 import { CycleSynchronisation } from '../synchronisation/application/cycle-synchronisation';
+import { exclusionParVerrou } from '../synchronisation/application/exclusion-cycle';
+import { nomVerrouCycle } from '../synchronisation/application/noms-verrous';
 import { DepotAvantSortieSynchro } from '../synchronisation/application/depot-avant-sortie-synchro';
 import { MasquageRappel } from '../synchronisation/application/masquage-rappel';
 import type {
@@ -61,6 +67,7 @@ import type {
   MiseAJourApplication,
 } from '../synchronisation/application/ports/mise-a-jour-application';
 import type { TransportSynchro } from '../synchronisation/application/ports/transport-synchro';
+import type { VerrouOnglets } from '../synchronisation/application/ports/verrou-onglets';
 import { PreparationDossierDrive } from '../synchronisation/application/preparation-dossier-drive';
 import {
   consulterModificationsNonRetenues,
@@ -129,6 +136,11 @@ export type AdaptateursApplication = {
   readonly ouvrirOnglet: (url: string) => void;
   /** ST-US-018 v0.4 §3 n° 4 (rang 12) : `PersistanceNavigateur` en production, `PersistanceSimulee` au banc. */
   readonly persistance: PersistanceStockage;
+  /**
+   * ST-US-031 v0.4 §6.5 n° 1 (rang 13) : verrous entre onglets du profil (`verrouOngletsDuNavigateur` en production,
+   * une vue neuve de `VerrouOngletsEnMemoire` par instance au banc). Meneur et exclusion du cycle de chaque espace.
+   */
+  readonly verrou: VerrouOnglets;
 };
 
 /**
@@ -247,21 +259,35 @@ export type Application = {
   readonly journal: JournalTechnique;
   /** Ferme les connexions de cette instance (fin de page, ou instance abandonnée par le banc). */
   readonly arreter: () => void;
+  /** ST-US-031 §4.3 : arrête la coordination de l'espace ouvert (main rendue, cycle arrêté) ; sans effet sans espace. */
+  readonly arreterCoordination: () => void;
+  /** ST-US-031 §4.3 : `coordination.etat()` de l'espace ouvert ; undefined sans espace. */
+  readonly lireCoordination: () => Promise<EtatCoordination | undefined>;
 };
 
 export type EspaceOuvert = {
   readonly depot: DepotLocalDexie;
   readonly service: ServiceEtatLocal;
-  /** ST-US-017 §6.4 : un cycle par espace, démarré à l'ouverture de l'espace, arrêté à sa fermeture. */
+  /** ST-US-017 §6.4 : un cycle par espace ; démarré par la coordination quand l'onglet devient meneur. */
   readonly cycle: CycleSynchronisation;
+  /** ST-US-031 §6.1 : rôle de l'onglet pour cet espace, démarrée à l'ouverture, arrêtée à la fermeture. */
+  readonly coordination: CoordinationOnglets;
   /** ST-US-017 v0.11 §6.8 n° 16 : correction d'horloge de l'espace, abonnée aux échanges avec Google. */
   readonly suivi: SuiviHorloge;
   /** Désabonnement du suivi des échanges avec Google, à la fermeture de l'espace. */
   readonly desabonnerSuivi: Annulation;
 };
 
+/** Cycle et coordination d'un espace (ST-US-031 §6.5 n° 2, 3). */
+type Synchronisation = {
+  readonly cycle: CycleSynchronisation;
+  readonly coordination: CoordinationOnglets;
+};
+
 /** Ce qu'il faut au cycle d'un espace, connu une fois la session et l'accès Google assemblés. */
-type FabriqueCycle = { creer?: (depot: DepotLocalDexie) => CycleSynchronisation };
+type FabriqueCycle = {
+  creer?: (depot: DepotLocalDexie, nomEspace: string) => Synchronisation;
+};
 
 const attenteDe = async (espace: EspaceOuvert | undefined): Promise<AttenteLocale> => {
   if (espace === undefined) return { enAttente: 0 };
@@ -418,28 +444,21 @@ const baseTechnique = (a: AdaptateursApplication): BaseTechnique =>
     },
   });
 
-/** Arrête le suivi d'horloge et le cycle de l'espace, puis ferme sa connexion. */
+/** Arrête le suivi d'horloge et la coordination (main rendue, cycle arrêté) de l'espace, puis ferme sa connexion. */
 const fermerEspace = (espace: EspaceOuvert | undefined): void => {
   espace?.suivi.arreter();
   espace?.desabonnerSuivi();
-  espace?.cycle.arreter();
+  espace?.coordination.arreter();
   espace?.depot.fermer();
 };
 
 /**
- * Ouverture (ST-US-017 §6.4, v0.11 §6.8 n° 3) : suivi d'horloge et déclencheurs installés, puis un cycle si l'accès
- * est déjà valide.
+ * Ouverture (ST-US-017 §6.4, v0.11 §6.8 n° 3 ; ST-US-031 §6.5 n° 4) : suivi d'horloge, puis candidature au rôle de
+ * meneur ; les déclencheurs et le cycle d'ouverture viennent de la coordination, quand cet onglet devient meneur.
  */
-const demarrerEspace = (a: AdaptateursApplication, { cycle, suivi }: EspaceOuvert): void => {
+const demarrerEspace = ({ coordination, suivi }: EspaceOuvert): void => {
   suivi.demarrer();
-  cycle.demarrer();
-  cycle.synchroniserMaintenant().catch((erreur: unknown) => {
-    a.journal.consigner({
-      niveau: 'erreur',
-      evenement: 'SynchronisationInterrompue',
-      champs: { erreur: erreur instanceof Error ? erreur.name : 'inconnue' },
-    });
-  });
+  coordination.demarrer();
 };
 
 /** Base technique (session, redirection) et espaces de compte, ouverts par DepotLocalDexie. */
@@ -455,7 +474,7 @@ const assemblerStockage = (a: AdaptateursApplication, fabriqueCycle: FabriqueCyc
       if (espace === undefined) return echec({ type: 'EspaceInaccessible' });
       if (ouvert !== espace) fermerEspace(ouvert);
       ouvert = espace;
-      demarrerEspace(a, espace);
+      demarrerEspace(espace);
       return succes(undefined);
     },
     surFermeture: () => {
@@ -478,8 +497,8 @@ const ouvrirEspace = async (
   nomBase: string,
   fabriqueCycle: FabriqueCycle,
 ): Promise<EspaceOuvert | undefined> => {
-  const creerCycle = fabriqueCycle.creer;
-  if (creerCycle === undefined) throw new ErreurProgrammation('Cycle non assemblé');
+  const creer = fabriqueCycle.creer;
+  if (creer === undefined) throw new ErreurProgrammation('Cycle non assemblé');
   const ouvert = await DepotLocalDexie.ouvrirEspace({
     nomBase,
     ...avecFabrique(a),
@@ -487,16 +506,18 @@ const ouvrirEspace = async (
     surFermetureImposee: a.surFermetureImposee,
   });
   if (!ouvert.ok) return undefined;
-  return assemblerEspace(a, ouvert.valeur, creerCycle);
+  return assemblerEspace(a, ouvert.valeur, creer(ouvert.valeur, nomBase));
 };
 
-/** Dépôt, service d'écriture (consultation seule comprise), cycle et suivi d'horloge d'un espace (§6.8 n° 9, 16). */
+/**
+ * Dépôt, service d'écriture (consultation seule comprise), cycle, coordination et suivi d'horloge d'un espace
+ * (ST-US-017 §6.8 n° 9, 16 ; ST-US-031 §6.5 n° 3).
+ */
 const assemblerEspace = (
   a: AdaptateursApplication,
   depot: DepotLocalDexie,
-  creerCycle: (depot: DepotLocalDexie) => CycleSynchronisation,
+  { cycle, coordination }: Synchronisation,
 ): EspaceOuvert => {
-  const cycle = creerCycle(depot);
   const suivi = new SuiviHorloge({
     depot,
     horloge: a.horloge,
@@ -516,6 +537,7 @@ const assemblerEspace = (
       estConsultationSeule: () => cycle.etatMoteur().actionRequise === 'FORMAT_PLUS_RECENT',
     }),
     cycle,
+    coordination,
     suivi,
     desabonnerSuivi: a.echangesGoogle.observer(suivi),
   };
@@ -654,24 +676,37 @@ const assemblerHorlogeEtMiseAJour = (a: AdaptateursApplication, n: Noyau) => ({
   },
 });
 
-/** ANO-001 (ST-US-017 §6.9) : le cycle et le dépôt de chaque espace alimentent le relais de `observerSynchronisation`. */
-const fabriquerCycles =
+/**
+ * ST-US-031 §6.5 n° 2, 3 : cycle sous l'exclusion du verrou « cycle » de l'espace et coordination de l'onglet. ANO-001
+ * (ST-US-017 §6.9) : le cycle, la coordination et le dépôt de chaque espace alimentent le relais de
+ * `observerSynchronisation`.
+ */
+const fabriquerSynchronisations =
   (
     a: AdaptateursApplication,
     transport: TransportSynchro,
     acces: AccesGoogle,
     relais: ReadonlySet<() => void>,
-  ): ((depot: DepotLocalDexie) => CycleSynchronisation) =>
-  (depot) => {
-    const cycle = new CycleSynchronisation({ ...a, depot, transport, acces });
+  ): NonNullable<FabriqueCycle['creer']> =>
+  (depot, nomEspace) => {
+    const exclusion = exclusionParVerrou(a.verrou, nomVerrouCycle(nomEspace));
+    const cycle = new CycleSynchronisation({ ...a, depot, transport, acces, exclusion });
+    const coordination = new CoordinationOnglets({
+      verrou: a.verrou,
+      cycle,
+      acces,
+      nomEspace,
+      journal: a.journal,
+    });
     const notifier = (): void => {
       relais.forEach((rappel) => {
         rappel();
       });
     };
     cycle.observer(notifier);
+    coordination.observer(notifier);
     depot.observer(notifier);
-    return cycle;
+    return { cycle, coordination };
   };
 
 /** Session, coffre, fournisseur, transport et accès Google ; la fabrique de cycle est renseignée ici. */
@@ -696,7 +731,7 @@ const assemblerNoyau = (
   const accesGoogle = accesGoogleDe(session, signalerRefus);
   const transport = a.transport(coffre);
   const relais = new Set<() => void>();
-  fabriqueCycle.creer = fabriquerCycles(a, transport, accesGoogle, relais);
+  fabriqueCycle.creer = fabriquerSynchronisations(a, transport, accesGoogle, relais);
   return {
     ...stockage,
     ...{ session, coffre, fournisseur, transport, signalerRefus, accesGoogle },
@@ -764,5 +799,9 @@ export const assemblerApplication = (a: AdaptateursApplication): Application => 
       fermerEspace(stockage.espace());
       stockage.base.fermer();
     },
+    arreterCoordination: () => {
+      stockage.espace()?.coordination.arreter();
+    },
+    lireCoordination: async () => stockage.espace()?.coordination.etat(),
   };
 };
