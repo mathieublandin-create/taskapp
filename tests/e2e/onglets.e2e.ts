@@ -15,7 +15,7 @@ const COMPTE = 'A';
 const DELAI_MS = 10_000;
 const MENTION_AUTRE_ONGLET = '[data-etat="SYN-FEUILLE-AUTRE-ONGLET"]';
 const INDICATEUR = 'div[role="status"][data-etat^="SYN-"]';
-const VERROU_MENEUR = /:synchronisation-meneur$/;
+const SUFFIXE_VERROU_MENEUR = ':synchronisation-meneur';
 
 type EtatVerrous = {
   readonly held: ReadonlyArray<{ name: string }>;
@@ -81,14 +81,16 @@ test.describe('Deux onglets, navigateur réel (ST-US-031 §14)', () => {
     await expect(second.locator(MENTION_AUTRE_ONGLET)).toHaveCount(1, { timeout: DELAI_MS });
     await expect(premier.locator(MENTION_AUTRE_ONGLET)).toHaveCount(0);
     const avant = await verrous(second);
-    expect(avant.held.filter(({ name }) => VERROU_MENEUR.test(name))).toHaveLength(1);
-    expect(avant.pending.filter(({ name }) => VERROU_MENEUR.test(name))).toHaveLength(1);
+    expect(avant.held.filter(({ name }) => name.endsWith(SUFFIXE_VERROU_MENEUR))).toHaveLength(1);
+    expect(avant.pending.filter(({ name }) => name.endsWith(SUFFIXE_VERROU_MENEUR))).toHaveLength(
+      1,
+    );
 
     await premier.close();
 
     await expect(second.locator(MENTION_AUTRE_ONGLET)).toHaveCount(0, { timeout: DELAI_MS });
     const apres = await verrous(second);
-    expect(apres.held.filter(({ name }) => VERROU_MENEUR.test(name))).toHaveLength(1);
+    expect(apres.held.filter(({ name }) => name.endsWith(SUFFIXE_VERROU_MENEUR))).toHaveLength(1);
     expect(apres.pending).toEqual([]);
   });
 });
