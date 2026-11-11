@@ -9,6 +9,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { IdAppareil } from '@src/commun/domaine/identifiants';
 import { nomEspace } from '@src/compte/infrastructure/espaces/nom-espace';
+import { ControleurInterface } from '@src/composition/controleur-interface';
 import {
   assemblerApplication,
   RelaisEchangesGoogle,
@@ -119,7 +120,7 @@ const preparer = () => {
     `${await nomEspace('recette', IDENTITE_A.compte)}:synchronisation-${suffixe}`;
   const entreesMeneur = (o: Onglet) =>
     o.journal.entrees().filter((e) => e.evenement === 'OngletMeneur');
-  return { drive, verrous, onglet, connecter, repos, nomDuVerrou, entreesMeneur };
+  return { drive, verrous, horloge, onglet, connecter, repos, nomDuVerrou, entreesMeneur };
 };
 
 describe('Composition — coordination entre onglets (ST-US-031 §6.5)', () => {
@@ -256,5 +257,28 @@ describe('Composition — coordination entre onglets (ST-US-031 §6.5)', () => {
 
     expect(env.verrous.detenteur(meneur)).toBe(seul.verrou.id);
     expect(env.drive.nombreReponses(seul.vue)).toBeGreaterThan(0);
+  });
+
+  it('UT-COMP-US-031-24 déconnexion de l’onglet meneur — la vue du contrôleur est l’écran de connexion, sans compte ni feuille (ANO-006)', async () => {
+    const env = preparer();
+    const seul = env.onglet();
+    await env.connecter(seul);
+    const controleur = new ControleurInterface(seul.application, env.horloge);
+    await controleur.rafraichir();
+    expect(controleur.vue().racine).toEqual({ ecran: 'APPLICATION' });
+    expect(await seul.application.lireCoordination()).toEqual({
+      role: 'MENEUR',
+      autreMeneur: false,
+    });
+
+    await controleur.actionCompte('SE_DECONNECTER');
+    await controleur.rafraichissementsTermines();
+    await vider();
+    await controleur.rafraichissementsTermines();
+
+    expect(seul.application.session.etat().type).toBe('SANS_SESSION');
+    expect(controleur.vue().racine).toEqual({ ecran: 'CONNEXION' });
+    expect(controleur.vue()).not.toHaveProperty('compte');
+    expect(controleur.vue()).not.toHaveProperty('feuille');
   });
 });

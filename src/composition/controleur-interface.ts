@@ -162,6 +162,8 @@ export class ControleurInterface {
   readonly #etat: Etat = { enCours: false, decisionReportee: false, nouvelleVersion: false };
   readonly #observateurs = new Set<() => void>();
   readonly #rafraichissements = new Set<Promise<void>>();
+  /** Numéro du dernier calcul de vue lancé : seul celui-là publie (ANO-006, ST-US-031 §6.7). */
+  #dernierCalcul = 0;
 
   constructor(
     private readonly application: ApplicationInterface,
@@ -206,11 +208,13 @@ export class ControleurInterface {
   }
 
   async #calculerVue(): Promise<void> {
+    const numero = ++this.#dernierCalcul;
     const session = this.application.session.etat();
     const etatSynchro = await this.application.consulterEtat();
     if (etatSynchro === undefined) this.#oublierChoixRestauration();
     const synchronisation =
       etatSynchro === undefined ? {} : await this.#synchronisation(etatSynchro);
+    if (numero !== this.#dernierCalcul) return;
     const { confirmation, suppressionBloquee, toast } = this.#etat;
     this.#vue = {
       racine: construireRacine(session),
