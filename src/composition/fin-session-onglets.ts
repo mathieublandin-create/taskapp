@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { Annulation } from '../commun/application/ports/planificateur';
 import type { AvisOnglets } from '../compte/application/ports/avis-onglets';
 
@@ -17,9 +16,21 @@ export type DependancesFinDeSession = {
  * Renvoie `quitter` : au premier appel, `arreterCoordination()` puis `recharger()` (rechargement fait même si l'arrêt
  * lève une exception, qui est alors propagée) ; les appels suivants sont sans effet (avis et `versionchange` cumulés).
  */
-export const quitterApresFinDeSession = (d: DependancesFinDeSession): (() => void) =>
-  nonImplemente(`quitterApresFinDeSession(${typeof d.recharger})`);
+export const quitterApresFinDeSession = (d: DependancesFinDeSession): (() => void) => {
+  let quitte = false;
+  return () => {
+    if (quitte) return;
+    quitte = true;
+    try {
+      d.arreterCoordination();
+    } finally {
+      d.recharger();
+    }
+  };
+};
 
 /** Branche `quitter` sur l'avis `SESSION_FERMEE` ; l'annulation retire l'écoute. */
 export const ecouterFinDeSession = (avis: AvisOnglets, quitter: () => void): Annulation =>
-  nonImplemente(`ecouterFinDeSession(${typeof avis.ecouter}, ${typeof quitter})`);
+  avis.ecouter(() => {
+    quitter();
+  });
