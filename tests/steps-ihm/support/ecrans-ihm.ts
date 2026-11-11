@@ -48,6 +48,23 @@ export const ligneTache = (page: Page, intitule: string): Locator =>
     has: page.locator('.ligne-tache-intitule', { hasText: new RegExp(`^${echapper(intitule)}$`) }),
   });
 
+export const lignesObjectifs = (page: Page): Locator => page.locator('li.ligne-objectif');
+
+/** Ligne d'objectif dont l'intitulé est exactement `intitule` (`ligne-objectif.tsx`). */
+export const ligneObjectif = (page: Page, intitule: string): Locator =>
+  lignesObjectifs(page).filter({
+    has: page.locator('.ligne-objectif-intitule', {
+      hasText: new RegExp(`^${echapper(intitule)}$`),
+    }),
+  });
+
+/** Bouton de la barre d'onglets du bas (espaces « Tâches » et « Objectifs », guide §4.14) ; `libelle` vient de `LIBELLES_*`. */
+export const boutonEspace = (page: Page, libelle: string): Locator =>
+  page.locator('nav.barre-onglets').getByRole('button', { name: libelle, exact: true });
+
+/** Boîte de confirmation (`role="alertdialog"`, guide §6.6.7). */
+export const dialogueConfirmation = (page: Page): Locator => page.getByRole('alertdialog');
+
 /** Écran rendu, s'il y en a un : connexion (bouton) ou espace de l'application. */
 export const ecranAffiche = async (page: Page): Promise<EcranAffiche | undefined> => {
   if (await espaceApplication(page).isVisible()) return 'APPLICATION';
