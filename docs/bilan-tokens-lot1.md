@@ -18,7 +18,7 @@ Les totaux sont ceux que les agents rapportent à leur fin (somme des notificati
 | 10 | US-017 incr. 3 | 6 j | fusionné (PR #33) ; ≈ 1 500 k à la reprise du 2026-11-02, valeur finale à relever dans `ccusage` | à compléter | coupures par la limite d'usage ; E13 opus (≈ 5 $), corrections sonnet (≈ 0,5 $), E13 bis sonnet (≈ 0,5 $) le 2026-11-07 ; CI rouge corrigée (UT-COMP-US-002-87) |
 | 11 | US-017 incr. 4 | 7 j | à relever (≈ 55 $ de coût `ccusage` sur 2026-11-07/08, fin du rang 10 comprise) | à compléter | un agent à la fois, 8 tranches H1 à H4 / D1 à D4 sans coupure par la limite ; 5 arbitrages d'Anthony sonnet ; E13 opus, 2 passes de corrections, E13 bis sonnet ; CI verte au premier jet de l'E13 bis |
 | 12 | US-018 Hors ligne smartphone | 6,5 j | à relever (≈ 30 $ de coût `ccusage` sur 2026-11-09/10) | à compléter | un agent à la fois, 6 tranches (B1, D1, D2, B2, D3, F1) sans coupure par la limite ; panne d'accès GitHub (compte suspendu, 403) sans perte ; E13 opus, 2 passes de corrections (Friday, Benjamin), E13 bis sonnet ; CI verte au premier jet |
-| 13 | US-031 Hors ligne PC | 3,5 j | à compléter | | |
+| 13 | US-031 Hors ligne PC | 3,5 j | à relever (≈ 25 $ de coût `ccusage` sur 2026-11-10/11, DT-027 et ANO-007 compris) | à compléter | un agent à la fois, 4 tranches (B1, D1, B2, D2) ; la revue a attrapé une régression (ANO-006, déconnexion) que S16b laissait passer ; correctifs ANO-007 et DT-027 en tranches autonomes ; CI verte au premier jet de l'E13 bis |
 
 Hors rangs (à ventiler au bilan) : ANO-001 (≈ 530 k), dépendances de sécurité (PR #15), test instable (PR #20), catalogue DT-015/017/019 (≈ 600 k avec les réponses de Steeve), OPT-15 à OPT-21 et leur analyse.
 
