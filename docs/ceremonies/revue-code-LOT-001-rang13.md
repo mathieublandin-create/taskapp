@@ -8,7 +8,7 @@
 | Auteurs | Bruce (opus) : B1 (noms des verrous, `ExclusionCycle`, `VerrouOngletsWeb`, exclusion dans `CycleSynchronisation`, DT-025), B2 (`CoordinationOnglets`, fin de session, composition, banc), UT-COMP-US-031-1 à 19. Benjamin (sonnet) : D1 (ligne `SYN-FEUILLE-AUTRE-ONGLET`), D2 (monde à deux onglets, 13 phrases, `onglets.e2e.ts`, `rangCourant = 13`), UT-COMP-US-031-20 à 22 |
 | Périmètre | Différentiel `origin/lot/LOT-001...origin/us/US-031-rang13` : 58 fichiers, + 3 691, − 287 (B1, B2, D1, D2 ; réponses de Steeve, guide v0.2.25, et de Starck, DAT v0.11.13) |
 | Référentiel | ST-US-031 v0.4 (portée à **v0.4.1** par cette revue), DAT v0.11.13 §4.1.6, guide d'ergonomie v0.2.25 §6.6.9, `checklist-revue-code.md`, revue du rang 12 (format) |
-| Passage | 1 |
+| Passage | 1 ; **2** (§10) |
 
 ## 1. Contrôles exécutés
 
@@ -144,3 +144,34 @@ Tout est pour Benjamin (sonnet) ; le cœur (B1, B2) est approuvé en l'état. La
 
 - **Q-ANT-E13-R13-1 (Pepper, avec Steeve)** : qualification d'ANO-006 et d'ANO-007, en particulier le toucher sur smartphone pour ANO-007 (Bloquante ?).
 - **Q-ANT-E13-R13-2 (Pepper)** : pour S16b et S16c, ajouter une ligne explicite « Et dans le premier onglet, seule l'invitation à se connecter … est proposée » ? a) oui ★ (la règle devient lisible dans le scénario ; la vérification de RC-US-031-2 passe alors de l'étape `Quand` à cette étape `Alors`) ; b) non (la vérification reste dans l'étape du geste).
+
+## 10. Passage 2 (2026-11-11, OPT-18)
+
+Périmètre : `fde502b..042ddbd` sur `us/US-031-rang13` (corrections de Benjamin, RC-US-031-1 à 5), contre les remarques du passage 1 et la ST v0.4.1 §6.7. Aucune autre exigence introduite.
+
+| Contrôle | Résultat |
+|---|---|
+| `pnpm test:couverture` (Node 24) | **1 617 / 1 617** (304 fichiers). |
+| Mutations locales (annulées, `git checkout src`) | (a) garde `numero !== #dernierCalcul` retirée : **UT-COMP-US-031-24 et 25 rouges** (`APPLICATION` au lieu de `CONNEXION`). (c) `.catch(() => undefined)` retiré de `demanderLaMain` : **UT-US-031-10 rouge** (`journal`/rejets non traités : `expected [ Array(1) ] to deeply equal []`). (d) `#enCours ??= enCours` retiré : UT-COMP-US-031-23 rouge (seul test à le voir) ; `DEJA_EN_COURS` remplacé par `TERMINE` : UT-COMP-US-031-3 et 23 rouges. (d) `#aRefaire = true` retiré : aucun test rouge (voir RC-5). |
+| Couverture par fichier (écart de procédure) | Contrôle de Benjamin fait sur un rapport de base de son worktree et non sur `/home/user/taskapp-h2-base`. Refait par moi avec `/home/user/taskapp-h2-base` (`01da5ff`, base de la PR) : 5 fichiers comparés, 0 erreur, 9 ignorés (4 de `src/composition/**`, exclus de la mesure par `vitest.config.ts:78` ; 5 nouveaux). Le résultat de Benjamin (10 comparés, 0 erreur, composition « Ignorée ») est cohérent. **Écart accepté**, sans suite : le script ne dépend que du rapport de la base, pas du worktree qui l'a produit, à condition que ce soit `lot/LOT-001`. |
+| S16b rouge sans le correctif (RC-2) | Rapporté par Benjamin, **non rejoué** (`@ihm` non concluant dans ce bac à sable, §1) ; les étapes lues : `attendreEcranDeConnexion` (`expect.poll` sur `ecranAffiche(page) = 'CONNEXION'`, `DELAI_ATTENTE_MS`) après les deux gestes, sur la page 1. Cohérent avec UT-COMP-US-031-24, qui rougit pour la même cause. La CI de la branche fera foi. |
+
+### Remarques
+
+| Id | Verdict | Constat |
+|---|---|---|
+| RC-US-031-1 | **Levée** | `controleur-interface.ts:165-167, 211, 217` : `++#dernierCalcul` avant toute lecture ; la session est lue au début du calcul, donc le dernier lancé lit l'état le plus récent. Cas relus : (1) deux calculs concurrents : le plus ancien réglé en second ne publie pas, réglé en premier il publie puis est remplacé (vue transitoire seulement, comme avant) ; (2) notification pendant un calcul : le calcul en cours est dépassé, le nouveau publie et avertit les observateurs, **aucune notification utile n'est perdue** ; (3) déconnexion et changement de racine : traités par le même mécanisme, la vue finale est celle du dernier calcul (UT-COMP-US-031-24 et 25) ; (4) `confirmation`, `suppressionBloquee`, `toast` lus **après** la garde, et `#retirerMiseAJour` appelé après elle : l'issue de « Mettre à jour » n'est pas consommée par un calcul abandonné ; (5) `rafraichissementsTermines` inchangé (le calcul abandonné reste attendu). Observation (non bloquante, pas de remarque) : si le dernier calcul lève une exception, le calcul dépassé n'a rien publié ; avant le correctif il aurait publié une vue possiblement fausse. L'exception n'était déjà pas gérée (`void this.rafraichir()`), état identique à l'avant-rang 13 sur ce point. |
+| RC-US-031-2 | **Levée** | Voir le tableau ci-dessus. |
+| RC-US-031-3 | **Levée** | Commentaire renvoyant à ANO-007, remise au clic à la correction. |
+| RC-US-031-4 | **Levée** | Espion retiré, `expect(registre.demandes).toBe(2)` ajouté ; l'assertion « aucun rejet non traité » (`rejetsNonTraites`, `journal.entrees`) est intacte et rougit sans le `.catch` (mutation c). Le nom et le mode `exclusive` restent vérifiés par l'instantané `pending`. Aucune assertion affaiblie. |
+| RC-US-031-5 | **Levée** | UT-COMP-US-031-23 : utile, il est le seul à rougir si la promesse d'exclusion ne tient plus lieu de cycle en cours (`#enCours ??= enCours`) ; il couvre la non-perte (objectif une fois dans le Drive, attente 0, 2 notifications). Limite : la mutation `#aRefaire = true` (branche `DEJA_EN_COURS`) ne le fait pas rougir ; elle est **sans effet observable** dans ce scénario, car `#unCycle` remet `#aRefaire` à faux et le cycle lit l'état local à l'exécution, après l'attente : la non-perte est acquise par construction, pas par ce drapeau. Aucun test à ajouter ; le drapeau reste utile quand le cycle est déjà en exécution (couvert par les tests du cycle). |
+
+### Décisions
+
+- **ANO-006** : « Corrigée, en revue » dans `docs/anomalies.md` ; « Corrigée » à la fusion de la PR #40. **ANO-007** reste ouverte (branche `ano/ANO-007`, avant l'E13b de LOT-001).
+- **DT-025** : « Remboursée » à la fusion de la PR #40. **R13-a** : numéro attribué à la fusion (OPT-20).
+- Aucune modification de `src/` ni de test dans ce passage.
+
+### Verdict (passage 2)
+
+**Approuvé.** Aucun bloquant. Réserve unique, hors périmètre de la revue : la CI de la branche doit confirmer S16b et S16c en `@ihm` (non rejouables ici).

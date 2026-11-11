@@ -1,9 +1,10 @@
 # Registre de la dette technique
 
-> **Version 0.44 — 2026-11-11 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
+> **Version 0.45 — 2026-11-11 — Anthony.** Il est tenu par Anthony et vérifié par Jarvis à la clôture de chaque lot (E17).
 
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
+| 0.45 | 2026-11-11 | Anthony | E13 du rang 13, passage 2 (`docs/ceremonies/revue-code-LOT-001-rang13.md` §10) : corrections RC-US-031-1 à 5 approuvées ; DT-025 inchangée (« Remboursée » à la fusion de la PR #40) ; R13-a : numéro à la fusion (OPT-20) ; DT-024 inchangée (rattachée à ANO-007). Aucune dette nouvelle. |
 | 0.44 | 2026-11-11 | Anthony | E13 du rang 13 (US-031, PR #40, `docs/ceremonies/revue-code-LOT-001-rang13.md` §6) : **DT-025 réalisée** (critère vérifié : plus aucune occurrence d'`aLire` dans `suivi-cycle.ts` ni `cycle-synchronisation.ts` ; 15 attendus adaptés, clé `aLire` seule, accord CR-60 respecté), « Remboursée » à la fusion de la PR #40 ; inscription de la dette candidate **R13-a** (rejet de la demande de main absorbé sans distinction dans `VerrouOngletsWeb`), numéro attribué à la fusion (OPT-20) ; DT-024 : remboursement rattaché à la correction d'ANO-007. |
 | 0.1 | 2026-10-20 | Anthony | Registre initialisé, vide. |
 | 0.2 | 2026-10-21 | Anthony | E7 de LOT-001 : inscription de DT-001 (données locales non chiffrées au repos, DS-07, RG-043, DEC-015). |
