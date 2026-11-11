@@ -19,7 +19,7 @@ import { resumeObjectif } from '../fabriques/resumes';
 
 setupIonicReact();
 
-const appels: string[] = [];
+const appels: Array<string> = [];
 Object.assign(window, { __appels: appels });
 const noter = (appel: string) => () => {
   appels.push(appel);
@@ -28,7 +28,10 @@ const noter = (appel: string) => () => {
 const objectif = resumeObjectif({ id: idObjectif(1), intitule: 'Publier le guide' });
 const candidats = [
   { ...objectif, autresSousObjectifs: 0 },
-  { ...resumeObjectif({ id: idObjectif(2), intitule: 'Développer mon activité' }), autresSousObjectifs: 0 },
+  {
+    ...resumeObjectif({ id: idObjectif(2), intitule: 'Développer mon activité' }),
+    autresSousObjectifs: 0,
+  },
 ];
 const selecteur = (nombreSousObjectifs: number) => (
   <SelecteurParent

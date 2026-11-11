@@ -11,7 +11,7 @@ const ouvrir = async (page: Page, boite: Boite): Promise<void> => {
   await page.goto(`${ORIGINE_HARNAIS}/tests/support/harnais/boites.html?boite=${boite}`);
 };
 const appels = (page: Page) =>
-  page.evaluate(() => (window as unknown as { __appels: string[] }).__appels);
+  page.evaluate(() => (window as unknown as { __appels: Array<string> }).__appels);
 const agir = async (page: Page, geste: Geste, nom: string): Promise<void> => {
   const bouton = page.getByRole('button', { name: nom, exact: true });
   await (geste === 'clic' ? bouton.click() : bouton.tap());
@@ -35,20 +35,21 @@ for (const { geste, ecran } of gestes) {
       expect(await appels(page)).toEqual(['annuler', 'confirmer']);
     });
 
-    test('sélecteur de parent : « Annuler » et « Valider » atteignent leur bouton', async ({
+    test('sélecteur de parent : « Annuler » et « Placer » atteignent leur bouton', async ({
       page,
     }) => {
       await ouvrir(page, 'selecteur');
       await agir(page, geste, 'Annuler');
       await page.getByRole('radio', { name: 'Développer mon activité' }).check();
-      await agir(page, geste, 'Valider');
+      await agir(page, geste, 'Placer');
       expect(await appels(page)).toEqual(['fermer', 'choisir']);
     });
 
     test('refus bloquant du sélecteur : « Compris » atteint son bouton', async ({ page }) => {
       await ouvrir(page, 'refus');
+      await expect(page.getByRole('alertdialog')).toBeVisible();
       await agir(page, geste, 'Compris');
-      expect(await appels(page)).toEqual(['refus-compris']);
+      await expect(page.getByRole('alertdialog')).toHaveCount(0);
     });
   });
 }

@@ -108,11 +108,8 @@ When(
 );
 
 When("dans le premier onglet, l'utilisateur confirme", async function (this: MondeIhm) {
-  // ANO-007 : le fond (`ion-backdrop`) de la boîte de confirmation recouvre ses boutons et intercepte le clic à la
-  // souris ; l'utilisateur au clavier (Entrée sur le bouton d'action) y parvient. Contournement par la touche Entrée,
-  // à remettre au clic à la correction d'ANO-007.
   const page = await this.pageCourante();
-  await boutonConfirmer(page).press('Enter');
+  await boutonConfirmer(page).click();
   await attendreEcranDeConnexion(page);
 });
 
