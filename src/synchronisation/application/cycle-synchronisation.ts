@@ -53,6 +53,7 @@ import {
   type ManifesteEcrit,
   type ModeEcritureManifeste,
 } from './ecriture-manifeste';
+import { SANS_EXCLUSION, type ExclusionCycle } from './exclusion-cycle';
 import type { AccesGoogle, EtatAccesGoogle } from './ports/acces-google';
 import type { DepotLocal, ErreurDepotLocal } from './ports/depot-local';
 import type { EtatMoteur, SuiviCycle } from './ports/suivi-cycle';
@@ -89,6 +90,11 @@ export type DependancesCycle = {
   readonly horloge: Horloge;
   readonly journal: JournalTechnique;
   readonly versionApplication: string;
+  /**
+   * ST-US-031 v0.4 §6.2 (rang 13, tranche B1) : exclusion entre onglets de tout le corps d'une exécution, contrôles du
+   * réseau et de l'accès refaits sous l'exclusion ; absente ≡ `SANS_EXCLUSION` (comportement des rangs 3 à 12).
+   */
+  readonly exclusion?: ExclusionCycle;
 };
 
 type ErreurCycle = ErreurTransport | ErreurDepotLocal;
@@ -279,8 +285,11 @@ export class CycleSynchronisation implements SuiviCycle {
   #declencheurs: ReadonlyArray<Annulation> | undefined;
   #premierPlan = true;
   readonly #observateurs = new Set<() => void>();
+  readonly #exclusion: ExclusionCycle;
 
-  constructor(private readonly dependances: DependancesCycle) {}
+  constructor(private readonly dependances: DependancesCycle) {
+    this.#exclusion = dependances.exclusion ?? SANS_EXCLUSION;
+  }
 
   /** Installe les déclencheurs (§6.4) ; idempotent. */
   demarrer(): void {
@@ -361,7 +370,6 @@ export class CycleSynchronisation implements SuiviCycle {
     return {
       cycle: this.#cycle,
       ...(this.#actionRequise === undefined ? {} : { actionRequise: this.#actionRequise }),
-      aLire: 0,
     };
   }
 
@@ -428,10 +436,36 @@ export class CycleSynchronisation implements SuiviCycle {
     }
     const garde = this.#garde();
     if (garde !== undefined) return Promise.resolve(garde);
-    const enCours = this.#executer(executer);
-    this.#enCours = enCours;
-    this.#notifier();
+    return this.#lancerSousExclusion(executer);
+  }
+
+  /**
+   * ST-US-031 §6.2 n° 3 et 5 : pendant l'attente du verrou, la promesse de l'exclusion tient lieu d'exécution en
+   * cours (`DEJA_EN_COURS`, `cycleEnCours()`), sans notification ni changement d'état du moteur. Un corps appelé
+   * pendant l'appel (`SANS_EXCLUSION`) a déjà défini `#enCours` (chemin des rangs 3 à 12). Au règlement de l'exclusion,
+   * y compris sur un rejet sans exécution du corps, le cycle de cet onglet est libéré.
+   */
+  #lancerSousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
+    const enCours = this.#exclusion.executer(() => this.#sousExclusion(executer));
+    this.#enCours ??= enCours;
+    const liberer = (): void => {
+      if (this.#enCours === enCours) this.#enCours = undefined;
+    };
+    enCours.then(liberer, liberer);
     return enCours;
+  }
+
+  /** §6.2 n° 4 : contrôles refaits une fois le verrou obtenu ; en échec, ni notification ni appel au Drive. */
+  #sousExclusion(executer: () => Etape<Fin>): Promise<IssueCycle> {
+    const garde = this.#garde();
+    if (garde !== undefined) {
+      this.#enCours = undefined;
+      return Promise.resolve(garde);
+    }
+    const execution = this.#executer(executer);
+    this.#enCours = execution;
+    this.#notifier();
+    return execution;
   }
 
   #notifier(): void {

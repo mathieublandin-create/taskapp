@@ -200,6 +200,14 @@
     {
       "motif": "(?:UT-US-031|CT-VER)-\\d+",
       "rang": 13
+    },
+    {
+      "motif": "UT-DT-025-\\d+",
+      "rang": 13
+    },
+    {
+      "motif": "UT-COMP-US-031-\\d+",
+      "rang": 13
     }
   ]
 }

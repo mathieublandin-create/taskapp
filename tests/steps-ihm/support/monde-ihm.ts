@@ -66,13 +66,17 @@ export class MondeIhm extends MondeDoneJuan {
   });
   #dossierProfil: string | undefined;
   #contexte: BrowserContext | undefined;
-  #page: Page | undefined;
+  /** Onglets ouverts du contexte : `pages[0]` est le premier onglet, le seul des scénarios à un onglet (US-018). */
+  #pages: Array<Page> = [];
+  /** Nombre d'événements `load` de chaque onglet depuis sa création, et valeur relevée par `marquerChargements`. */
+  readonly #chargements = new Map<Page, number>();
+  readonly #marques = new Map<Page, number>();
   #horsLigne = false;
   #instantFixe: Instant | undefined;
 
   /**
-   * Page courante, après le démarrage initial du navigateur s'il n'a pas eu lieu (premier besoin de la page) ; erreur
-   * si aucune page n'est ouverte (onglet fermé, navigateur neuf jamais ouvert).
+   * Page courante (le premier onglet), après le démarrage initial du navigateur s'il n'a pas eu lieu (premier besoin de
+   * la page) ; erreur si aucune page n'est ouverte (onglet fermé, navigateur neuf jamais ouvert).
    */
   async pageCourante(): Promise<Page> {
     await this.assurerDemarrageInitial();
@@ -80,12 +84,46 @@ export class MondeIhm extends MondeDoneJuan {
   }
 
   #pageOuverte(): Page {
-    if (this.#page === undefined) throw new Error('Aucune page ouverte dans le navigateur');
-    return this.#page;
+    const [premiere] = this.#pages;
+    if (premiere === undefined) throw new Error('Aucune page ouverte dans le navigateur');
+    return premiere;
+  }
+
+  /** Les onglets ouverts, dans l'ordre d'ouverture (US-031, S16 à S16c). */
+  onglets(): ReadonlyArray<Page> {
+    return this.#pages.filter((page) => !page.isClosed());
+  }
+
+  /** Le second onglet, ouvert par `ouvrirSecondOnglet` ; erreur s'il n'existe pas. */
+  ongletSecond(): Page {
+    const [, second] = this.onglets();
+    if (second === undefined) throw new Error("Le second onglet n'est pas ouvert");
+    return second;
+  }
+
+  /** Relève le nombre de chargements de chaque onglet : à prendre **avant** le geste qui doit en provoquer un. */
+  marquerChargements(): void {
+    this.#marques.clear();
+    for (const page of this.onglets()) this.#marques.set(page, this.#chargements.get(page) ?? 0);
+  }
+
+  /** Chargements (ouverture, rechargement) de l'onglet depuis `marquerChargements` ; 0 si aucune marque. */
+  chargementsDepuisLaMarque(page: Page): number {
+    return (this.#chargements.get(page) ?? 0) - (this.#marques.get(page) ?? 0);
   }
 
   aUnePage(): boolean {
-    return this.#page !== undefined && !this.#page.isClosed();
+    return this.onglets().length > 0;
+  }
+
+  /**
+   * Ouvre l'application dans un second onglet du même contexte persistant : il partage la base locale (IndexedDB) et
+   * le service worker du premier, et n'a ni session ni jeton en mémoire (DAT §4.1.6). Le premier onglet est conservé.
+   */
+  async ouvrirSecondOnglet(): Promise<Page> {
+    const second = await this.#creerPage(await this.contexte());
+    await second.goto(`${ORIGINE_IHM}/`);
+    return second;
   }
 
   /** « Nous sommes le … » : la page voit cette date (immobile) dès sa première navigation. */
@@ -110,7 +148,7 @@ export class MondeIhm extends MondeDoneJuan {
    * alors la page d'erreur du navigateur (aucune exception).
    */
   async ouvrirApplication(url = `${ORIGINE_IHM}/`): Promise<void> {
-    const page = await this.#nouvellePage();
+    const page = await this.#nouvelleUniquePage();
     this.pontDrive.retenir();
     try {
       const chargee = await page.goto(url).then(
@@ -151,18 +189,20 @@ export class MondeIhm extends MondeDoneJuan {
   }
 
   /**
-   * Attend la fin de ce que la page entreprenait : appels du pont répondus, indicateur ni hors ligne, ni en cours, ni
-   * en attente de départ (10 s au plus). Sans page, il n'y a rien à attendre.
+   * Attend la fin de ce que les pages entreprenaient : appels du pont répondus, indicateur de chaque onglet ni hors
+   * ligne, ni en cours, ni en attente de départ (10 s au plus). Sans page, il n'y a rien à attendre.
    */
   async attendreRepos(): Promise<void> {
     await expect
-      .poll(
-        async () =>
-          this.pontDrive.appelsEnCours() === 0 &&
-          (!this.aUnePage() || synchronisationStable(await etatIndicateur(this.#pageOuverte()))),
-        { timeout: DELAI_SYNCHRONISATION_MS },
-      )
+      .poll(async () => this.pontDrive.appelsEnCours() === 0 && (await this.#ongletsStables()), {
+        timeout: DELAI_SYNCHRONISATION_MS,
+      })
       .toBe(true);
+  }
+
+  async #ongletsStables(): Promise<boolean> {
+    const etats = await Promise.all(this.onglets().map((page) => etatIndicateur(page)));
+    return etats.every(synchronisationStable);
   }
 
   /** Attend que l'indicateur de synchronisation affiche ce code (10 s au plus). */
@@ -172,17 +212,17 @@ export class MondeIhm extends MondeDoneJuan {
       .toBe(code);
   }
 
-  /** Ferme la page (onglet) ; le contexte, donc les données du navigateur, reste. */
+  /** Ferme les pages (onglets) ; le contexte, donc les données du navigateur, reste. */
   async fermerPage(): Promise<void> {
-    await this.#page?.close();
-    this.#page = undefined;
+    await Promise.all(this.#pages.map((page) => page.close()));
+    this.#pages = [];
   }
 
   /** Ferme le navigateur : le contexte est recréé sur le même dossier de profil à la prochaine ouverture. */
   async fermerNavigateur(): Promise<void> {
     await this.#contexte?.close();
     this.#contexte = undefined;
-    this.#page = undefined;
+    this.#pages = [];
   }
 
   /** Navigateur neuf : aucun profil, aucune donnée, aucun service worker (« jamais ouverte »). */
@@ -236,15 +276,23 @@ export class MondeIhm extends MondeDoneJuan {
     return contexte;
   }
 
-  async #nouvellePage(): Promise<Page> {
+  /** « Ouvrir l'application » : l'onglet remplace ceux déjà ouverts (comme au rang 12, un seul onglet). */
+  async #nouvelleUniquePage(): Promise<Page> {
     const contexte = await this.contexte();
-    await this.#page?.close();
+    await this.fermerPage();
+    return this.#creerPage(contexte);
+  }
+
+  async #creerPage(contexte: BrowserContext): Promise<Page> {
     const page = await contexte.newPage();
     page.setDefaultTimeout(DELAI_ATTENTE_MS);
     page.on('pageerror', (erreur) => {
       this.erreursPage.push(erreur.message);
     });
-    this.#page = page;
+    page.on('load', () => {
+      this.#chargements.set(page, (this.#chargements.get(page) ?? 0) + 1);
+    });
+    this.#pages.push(page);
     return page;
   }
 

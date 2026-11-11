@@ -1116,6 +1116,30 @@
     "src/composition/test-ihm.ts": {
       "debut": 12,
       "fin": 12
+    },
+    "src/composition/fin-session-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/coordination-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/exclusion-cycle.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/noms-verrous.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/ports/verrou-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/infrastructure/verrou-onglets-web.ts": {
+      "debut": 13,
+      "fin": 13
     }
   }
 }

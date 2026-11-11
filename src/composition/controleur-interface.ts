@@ -93,6 +93,7 @@ export type ApplicationInterface = Pick<
   | 'lireCorrectionHorloge'
   | 'mettreAJour'
   | 'etatPersistance'
+  | 'lireCoordination'
 >;
 
 /** État de synchronisation lu sur l'espace ouvert. */
@@ -161,6 +162,8 @@ export class ControleurInterface {
   readonly #etat: Etat = { enCours: false, decisionReportee: false, nouvelleVersion: false };
   readonly #observateurs = new Set<() => void>();
   readonly #rafraichissements = new Set<Promise<void>>();
+  /** Numéro du dernier calcul de vue lancé : seul celui-là publie (ANO-006, ST-US-031 §6.7). */
+  #dernierCalcul = 0;
 
   constructor(
     private readonly application: ApplicationInterface,
@@ -205,11 +208,13 @@ export class ControleurInterface {
   }
 
   async #calculerVue(): Promise<void> {
+    const numero = ++this.#dernierCalcul;
     const session = this.application.session.etat();
     const etatSynchro = await this.application.consulterEtat();
     if (etatSynchro === undefined) this.#oublierChoixRestauration();
     const synchronisation =
       etatSynchro === undefined ? {} : await this.#synchronisation(etatSynchro);
+    if (numero !== this.#dernierCalcul) return;
     const { confirmation, suppressionBloquee, toast } = this.#etat;
     this.#vue = {
       racine: construireRacine(session),
@@ -479,11 +484,14 @@ export class ControleurInterface {
   async #feuille(etat: EtatLu, maintenant: Instant): Promise<ModeleVueFeuilleSynchronisation> {
     const dernierEchange = await this.application.lireDernierContact();
     const correctionHorloge = await this.application.lireCorrectionHorloge();
+    // ST-US-031 §6.3 : relue à chaque calcul de la vue (la ligne `SYN-FEUILLE-AUTRE-ONGLET` suit le rôle de l'onglet).
+    const coordination = await this.application.lireCoordination();
     return construireFeuilleSynchronisation({
       etat,
       maintenant,
       ...(dernierEchange === undefined ? {} : { dernierEchange }),
       ...(correctionHorloge === undefined ? {} : { correctionHorloge }),
+      ...(coordination === undefined ? {} : { coordination }),
       persistance: await this.application.etatPersistance(),
       nouvelleVersion: this.#etat.nouvelleVersion,
       elementsEnAttente: await this.application.lireElementsEnAttente(),

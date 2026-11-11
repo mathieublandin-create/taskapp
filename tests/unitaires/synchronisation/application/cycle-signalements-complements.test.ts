@@ -206,7 +206,7 @@ describe('Tranche B3, compléments (ST-US-017 v0.7)', () => {
         observer: () => () => undefined,
       },
       suivi: {
-        etatMoteur: () => ({ cycle: 'REPOS', actionRequise: 'DRIVE_PLEIN', aLire: 7 }),
+        etatMoteur: () => ({ cycle: 'REPOS', actionRequise: 'DRIVE_PLEIN' }),
       },
       masquage: new MasquageRappel(),
       attente: () => Promise.resolve({ enAttente: 0 }),

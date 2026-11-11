@@ -1,6 +1,7 @@
 /**
  * Appareil minimal pour les tests du cycle (ST-US-017 §13.1) : DepotLocalDexie sur fake-indexeddb,
  * ServiceEtatLocalTransactionnel, CycleSynchronisation sur un FauxDrive partagé, réseau et accès commandables.
+ * Deux « onglets » d'un même appareil : même `appareilId`, même `fabrique`, une exclusion par onglet (ST-US-031 §13).
  */
 import { IDBFactory } from 'fake-indexeddb';
 import type { EtatReseau } from '@src/commun/application/ports/etat-reseau';
@@ -11,6 +12,7 @@ import type {
   EtatAccesGoogle,
 } from '@src/synchronisation/application/ports/acces-google';
 import { CycleSynchronisation } from '@src/synchronisation/application/cycle-synchronisation';
+import type { ExclusionCycle } from '@src/synchronisation/application/exclusion-cycle';
 import { ServiceEtatLocalTransactionnel } from '@src/synchronisation/application/service-etat-local-transactionnel';
 import { DepotLocalDexie } from '@src/synchronisation/infrastructure/depot-local-dexie';
 import type { FauxDrive } from '../../doublures/faux-drive';
@@ -86,6 +88,8 @@ export const creerAppareilCycle = (p: {
   readonly temps: TempsSimule;
   readonly planificateur: PlanificateurSimule;
   readonly fabrique?: IDBFactory;
+  /** ST-US-031 v0.4 §6.2 (rang 13) : exclusion entre onglets ; absente, le cycle s'exécute sans exclusion. */
+  readonly exclusion?: ExclusionCycle;
 }): AppareilCycle => {
   const fabrique = p.fabrique ?? new IDBFactory();
   const horloge = new HorlogeSimulee(p.temps);
@@ -117,6 +121,7 @@ export const creerAppareilCycle = (p: {
     horloge,
     journal,
     versionApplication: '0.1.0',
+    ...(p.exclusion === undefined ? {} : { exclusion: p.exclusion }),
   });
   return {
     appareilId: p.appareilId,
