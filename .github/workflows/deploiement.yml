@@ -11,8 +11,10 @@
 #   2. entrée `confirmation` = `PUBLIER` ;
 #   (+) variable `VITE_GOOGLE_WEB_CLIENT_ID` présente et différente de l'identifiant fictif ;
 #   3. environnement GitHub `production`, à protéger par un relecteur requis (approbation du commanditaire).
-# La recette (`environnement` = `recette`) construit et contrôle à blanc : son origine est distincte (DAT §7.4 bis,
-# Q-ANT26 en attente), elle n'est pas publiée par ce dépôt.
+# La recette (`environnement` = `recette`) construit et contrôle à blanc : elle n'est pas publiée par ce dépôt. Son origine
+# est distincte (DAT §7.4 bis, Q-ANT26 tranchée par DEC-037 : `https://donejuan-recette.github.io/`) et elle est publiée
+# par le workflow du dépôt `donejuan-recette/donejuan-recette.github.io`, livré dans `docs/recette/publier-recette.yml`
+# (un workflow d'ici qui publierait vers ce dépôt exigerait un jeton personnel : écarté).
 name: deploiement
 
 on:
