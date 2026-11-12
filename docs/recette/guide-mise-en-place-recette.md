@@ -53,11 +53,13 @@ Cet identifiant n'est pas un secret : il est visible dans toute application qui 
 
 Faites cette partie avant d'essayer de vous connecter.
 
+> Noms de menus vérifiés le 2026-11-12 sur la documentation de Google (Starck, E13b). La console range désormais l'écran de consentement et les clients sous **Google Auth Platform** (« Plateforme Google Auth » selon la langue), avec les pages **Branding** (image de marque), **Audience**, **Clients** et **Accès aux données** (« Data Access ») ; les anciens chemins par **API et services** mènent aux mêmes pages. Certains libellés peuvent rester en anglais.
+
 ### Étape 6. Autoriser l'adresse de recette
 
 1. Ouvrez `https://console.cloud.google.com/` et choisissez le **projet de développement** (celui du client « Done Juan POC Web »).
-2. Menu **API et services** puis **Identifiants**.
-3. Dans **ID clients OAuth 2.0**, cliquez sur **Done Juan POC Web**.
+2. Menu **Google Auth Platform** puis **Clients** (ou : **API et services** puis **Identifiants**).
+3. Dans la liste des clients (**ID clients OAuth 2.0** dans l'ancien chemin), cliquez sur **Done Juan POC Web**.
 4. Dans **Origines JavaScript autorisées**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io` (**sans** barre finale).
 5. Dans **URI de redirection autorisés**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io/` (**avec** la barre finale).
 6. Cliquez sur **Enregistrer**. Google peut mettre quelques minutes (parfois davantage) à prendre en compte le changement.
@@ -66,10 +68,10 @@ Ne retirez pas les adresses déjà présentes.
 
 ### Étape 7. Écran de consentement et compte de recette
 
-1. Menu **API et services** puis **Écran de consentement OAuth** (ou **Google Auth Platform** puis **Audience**).
+1. Menu **Google Auth Platform** puis **Audience** (l'ancien menu **API et services** puis **Écran de consentement OAuth** mène à la même page).
 2. Vérifiez que l'état de publication est **Test** (et non « En production »).
-3. Dans **Utilisateurs test**, vérifiez que le compte Google de recette figure dans la liste ; sinon, cliquez sur **Add users** et ajoutez-le, puis **Enregistrer**.
-4. Dans **Accès aux données** (ou **Champs d'application**), vérifiez que les trois autorisations suivantes sont déclarées : `openid`, `email` et `https://www.googleapis.com/auth/drive.file`. Il n'en faut pas d'autres.
+3. Sur la même page **Audience**, dans **Utilisateurs test**, vérifiez que le compte Google de recette figure dans la liste ; sinon, cliquez sur **Add users** (« Ajouter des utilisateurs ») et ajoutez-le, puis **Enregistrer**.
+4. Menu **Google Auth Platform** puis **Accès aux données** (« Data Access ») : vérifiez que les trois autorisations suivantes sont déclarées, toutes dans le tableau des niveaux d'accès **non sensibles** : `openid`, `email` (la console peut l'afficher `.../auth/userinfo.email`) et `.../auth/drive.file`. Il n'en faut pas d'autres, et aucune ne doit figurer parmi les niveaux d'accès sensibles ou restreints.
 
 ### Étape 8. Activer l'API Drive
 
