@@ -7,6 +7,8 @@
   --dj-danger: #c42b2b;
   --dj-bord: #dcdce2;
   --dj-surface: #f6f6f8;
+  --dj-focus: #2e5bdb;
+  --dj-marge-fab: 88px;
 }
 
 .scrim {
@@ -325,6 +327,7 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
 .barre-onglets {
   display: flex;
   border-top: 1px solid var(--dj-bord);
+  padding-bottom: env(safe-area-inset-bottom);
   background: var(--ion-background-color, #fff);
 }
 
@@ -363,4 +366,28 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* Focus visible (DT-034, guide §6.6.16 n° 1) : anneau plein de 2 px, jamais au clic souris. */
+:where(a, button, input, select, textarea, summary, [tabindex], ion-button, ion-fab-button, ion-checkbox, ion-item):focus-visible,
+ion-fab-button::part(native):focus-visible,
+ion-button::part(native):focus-visible {
+  outline: 2px solid var(--dj-focus);
+  outline-offset: 2px;
+}
+
+.barre-onglets button:focus-visible,
+.ligne-tache button:focus-visible,
+.ligne-objectif button:focus-visible,
+.ligne-tache > input[type='checkbox']:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Réserve sous le « + » : la dernière ligne reste atteignable (WCAG 2.4.11). */
+ion-content.contenu-avec-fab {
+  --padding-bottom: var(--dj-marge-fab);
+}
+
+ion-content.contenu-avec-fab::part(scroll) {
+  scroll-padding-bottom: var(--dj-marge-fab);
 }
