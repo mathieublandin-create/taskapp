@@ -6,6 +6,10 @@
       "rang": -1
     },
     {
+      "motif": "(?:UT|E2E)-(?:E13B-TXT|DT-014|DT-034|ANO-004|ANO-005-(?:FAB|FEUILLE))-\\d+",
+      "rang": 14
+    },
+    {
       "motif": "TransportParPont.*CT-TRANS-\\d+",
       "rang": 12
     },

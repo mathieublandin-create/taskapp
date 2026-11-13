@@ -3,15 +3,12 @@
 // « meneur » est celui du navigateur (`VerrouOngletsWeb` sur `navigator.locks`) : l'onglet ouvert le premier est meneur,
 // le second attend la main et affiche `SYN-FEUILLE-AUTRE-ONGLET` dans la feuille ; à la fermeture du premier, le
 // navigateur rend le verrou, le second devient meneur et la mention disparaît, sans message.
-// Le build est produit par `pnpm build:test-ihm` (étape `cucumber:ihm` du job `ihm`) ; ce fichier ne le construit pas.
+// Le build est produit par `pnpm build:test-ihm` (étape `cucumber:ihm` du job `ihm`) ; il est servi par le `webServer`
+// de playwright.config.ts, partagé avec les autres fichiers qui l'utilisent (ST-CORR-E13B-LOT-001 §9.2).
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
-import { BancSynchro } from '../support/banc/banc-synchro';
-import { IDENTIFIANTS_APPAREILS } from '../support/banc/appareil-simule';
-import { PontFauxDrive } from '../steps-ihm/support/pont-faux-drive';
-import { PontFauxGoogle } from '../steps-ihm/support/pont-faux-google';
-import { demarrerServeurIhm, ORIGINE_IHM, type ServeurIhm } from '../steps-ihm/support/serveur-ihm';
+import { ORIGINE_IHM } from '../steps-ihm/support/serveur-ihm';
+import { exposerLesPonts } from '../support/e2e/outils-navigateur';
 
-const COMPTE = 'A';
 const DELAI_MS = 10_000;
 const MENTION_AUTRE_ONGLET = '[data-etat="SYN-FEUILLE-AUTRE-ONGLET"]';
 const INDICATEUR = 'div[role="status"][data-etat^="SYN-"]';
@@ -20,35 +17,6 @@ const SUFFIXE_VERROU_MENEUR = ':synchronisation-meneur';
 type EtatVerrous = {
   readonly held: ReadonlyArray<{ name: string }>;
   readonly pending: ReadonlyArray<{ name: string }>;
-};
-
-let serveur: ServeurIhm;
-
-test.beforeAll(async () => {
-  serveur = await demarrerServeurIhm();
-});
-
-test.afterAll(async () => {
-  await serveur.arreter();
-});
-
-/** Ponts Google et Drive du processus de test, sur un compte connecté à Google qui a accordé l'accès. */
-const exposerLesPonts = async (context: BrowserContext): Promise<void> => {
-  const banc = new BancSynchro();
-  const google = new PontFauxGoogle(banc.google, banc.temps);
-  google.ouvrirSession(COMPTE);
-  const drive = new PontFauxDrive({
-    google: banc.google,
-    appareil: () => IDENTIFIANTS_APPAREILS.pc,
-    compte: () => google.compteConnecte(),
-  });
-  await context.clock.setFixedTime(new Date(banc.temps.maintenant()));
-  await context.exposeBinding('donejuanFauxGoogle', (_source, methode: string, json: string) =>
-    google.repondre(methode, json),
-  );
-  await context.exposeBinding('donejuanFauxDrive', (_source, methode: string, json: string) =>
-    drive.repondre(methode, json),
-  );
 };
 
 const verrous = (page: Page): Promise<EtatVerrous> =>
@@ -61,7 +29,7 @@ const attendreSynchronisation = (page: Page) =>
 
 /** Premier onglet connecté (meneur), puis second onglet ouvert sur la session partagée. */
 const ouvrirDeuxOnglets = async (context: BrowserContext): Promise<readonly [Page, Page]> => {
-  await exposerLesPonts(context);
+  await exposerLesPonts(context, 'A');
   const premier = await context.newPage();
   await premier.goto(ORIGINE_IHM);
   await premier.getByRole('button', { name: /continuer avec google/i }).click();
