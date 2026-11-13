@@ -9,6 +9,9 @@
   --dj-surface: #f6f6f8;
   --dj-focus: #2e5bdb;
   --dj-marge-fab: 88px;
+  --dj-on-accent: #fff;
+  --dj-bord-fort: #8a8a94;
+  --dj-texte: #1c1c21;
 }
 
 .scrim {
@@ -405,4 +408,54 @@ ion-content.contenu-avec-fab {
 
 ion-content.contenu-avec-fab::part(scroll) {
   scroll-padding-bottom: var(--dj-marge-fab);
+}
+
+/* Boutons natifs du compte et de la synchronisation (DT-014, guide §4.1) : variante par `data-variante`. */
+.bouton-natif {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--dj-bord-fort);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dj-texte);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.bouton-natif[data-variante='principal'] {
+  border-color: var(--dj-accent);
+  background: var(--dj-accent);
+  color: var(--dj-on-accent);
+}
+
+.bouton-natif[data-variante='tertiaire'] {
+  padding: 0 8px;
+  border: 0;
+  color: var(--dj-accent);
+}
+
+.bouton-natif[data-variante='danger'] {
+  border-color: var(--dj-danger);
+  color: var(--dj-danger);
+}
+
+@media (hover: hover) {
+  .bouton-natif:not([aria-disabled='true']):hover {
+    background-color: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+
+  .bouton-natif[data-variante='principal']:not([aria-disabled='true']):hover {
+    background-color: color-mix(in srgb, var(--dj-accent) 92%, var(--dj-texte));
+  }
+}
+
+.bouton-natif:not([aria-disabled='true']):active {
+  background-color: color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.bouton-natif[aria-disabled='true'],
+.bouton-natif:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

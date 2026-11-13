@@ -25,10 +25,17 @@ export const SuppressionBloquee = ({
       <IonText>
         <p>{libelle('ERR-017', {}, 'texte')}</p>
       </IonText>
-      <button ref={reessayer} type="button" disabled={enCours} onClick={surReessayer}>
+      <button
+        ref={reessayer}
+        type="button"
+        className="bouton-natif"
+        data-variante="principal"
+        disabled={enCours}
+        onClick={surReessayer}
+      >
         {libelle('ERR-017', enCours ? { variante: 'en-cours' } : {}, 'action')}
       </button>
-      <button type="button" onClick={surAllerALaConnexion}>
+      <button type="button" className="bouton-natif" onClick={surAllerALaConnexion}>
         {libelle('ERR-017', {}, 'actionSecondaire')}
       </button>
     </div>

@@ -131,6 +131,7 @@ const BoutonAnnulerDemande = ({ choix, prevoirFocus }: AvecFocus) => (
   <button
     ref={choix.annuler.attacher()}
     type="button"
+    className="bouton-natif"
     data-action="ANNULER_DEMANDE"
     onClick={() => {
       prevoirFocus('RESTAURER');
@@ -152,7 +153,8 @@ const BoutonRestaurer = ({
     <button
       ref={choix.restaurer.attacher()}
       type="button"
-      className="primaire"
+      className="bouton-natif"
+      data-variante="principal"
       data-action="RESTAURER"
       aria-describedby={idPhrase}
       aria-busy={enCours}
@@ -199,7 +201,10 @@ const BoutonRepartirDeZero = ({
     <button
       ref={choix.boutonRepartir.attacher()}
       type="button"
+      className="bouton-natif"
+      data-variante="danger"
       data-action="REPARTIR_DE_ZERO"
+      data-variante="danger"
       data-rouge
       aria-disabled={!disponible}
       aria-describedby={descriptions}
@@ -247,7 +252,9 @@ const DeciderPlusTard = ({
     <section data-option="DECIDER_PLUS_TARD">
       <button
         type="button"
+        className="bouton-natif"
         data-action="DECIDER_PLUS_TARD"
+        data-variante="tertiaire"
         aria-describedby={idPhrase}
         onClick={surDeciderPlusTard}
       >
@@ -334,7 +341,12 @@ export const FeuilleChoixRestauration = (proprietes: ProprietesChoixRestauration
       <div data-message={vue.code}>
         <header>
           <h2>{textes.titreFeuille}</h2>
-          <button type="button" onClick={surDeciderPlusTard}>
+          <button
+            type="button"
+            className="bouton-natif"
+            data-variante="tertiaire"
+            onClick={surDeciderPlusTard}
+          >
             {textes.fermer}
           </button>
         </header>

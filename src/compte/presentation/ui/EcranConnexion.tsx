@@ -54,6 +54,8 @@ export const EcranConnexion = ({ vue, surAction }: ProprietesEcranConnexion) => 
       <button
         ref={bouton}
         type="button"
+        className="bouton-natif"
+        data-variante="principal"
         data-action={vue.action}
         disabled={!vue.actionActive}
         onClick={surAction}

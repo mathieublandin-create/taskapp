@@ -30,7 +30,9 @@ export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
       <button
         key={action}
         type="button"
+        className="bouton-natif"
         data-action={action}
+        {...(action === 'SUPPRIMER_DONNEES' ? { 'data-variante': 'danger' } : {})}
         onClick={() => {
           surAction(action);
         }}
