@@ -358,20 +358,26 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   font-weight: 700;
 }
 
-/* « + » flottant : le libellé visible précède le bouton rond (guide §4.14 : cibles d'au moins 44 px). */
-.bouton-flottant {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* « + » flottant rond de 56 px, sans étiquette (guide §2.2, §6.6.16 n° 5) : à 16 px du bord droit de la colonne. */
+.espaces-contenu ion-fab {
+  right: 16px;
+  bottom: 16px;
 }
 
-.bouton-flottant-etiquette {
-  padding: 12px 16px;
-  border-radius: 24px;
-  background: var(--ion-background-color, #fff);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
-  font-weight: 600;
-  white-space: nowrap;
+.espaces-contenu ion-fab-button {
+  --border-radius: 50%;
+
+  width: 56px;
+  height: 56px;
+}
+
+/* Colonne de contenu de 720 px centrée dès 600 px ; la barre d'onglets, dans `.espaces`, suit la colonne. */
+@media (width >= 600px) {
+  .espaces {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+  }
 }
 
 /* Focus visible (DT-034, guide §6.6.16 n° 1) : anneau plein de 2 px, jamais au clic souris. */

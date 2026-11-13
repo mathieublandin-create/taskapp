@@ -1,5 +1,5 @@
 /**
- * ANO-003 : sur la liste des tâches, le « + » à libellé visible et la touche N ouvrent la saisie rapide d'une tâche,
+ * ANO-003 : sur la liste des tâches, le « + » (nom accessible) et la touche N ouvrent la saisie rapide d'une tâche,
  * sauf pendant une saisie de texte (le geste de création d'objectif reste propre à l'onglet Objectifs).
  */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -11,7 +11,7 @@ import { creerBancObjectifs, nettoyerDocument, ouvrir } from '@tests/support/ui-
 afterEach(nettoyerDocument);
 
 describe('Création d’une tâche depuis l’onglet Tâches (ANO-003)', () => {
-  it('UT-COMP-US-002-190 le « + » affiche « Ajouter une tâche » et la touche N ouvre la saisie rapide, pas pendant une saisie de texte', async () => {
+  it('UT-COMP-US-002-190 le « + » se nomme « Ajouter une tâche » et la touche N ouvre la saisie rapide, pas pendant une saisie de texte', async () => {
     const banc = creerBancObjectifs();
     const { container } = render(
       <>
@@ -20,7 +20,7 @@ describe('Création d’une tâche depuis l’onglet Tâches (ANO-003)', () => {
       </>,
     );
     await waitFor(() => {
-      expect(container.querySelector('.bouton-flottant-etiquette')?.textContent).toBe(
+      expect(container.querySelector('ion-fab-button')?.getAttribute('aria-label')).toBe(
         'Ajouter une tâche',
       );
     });

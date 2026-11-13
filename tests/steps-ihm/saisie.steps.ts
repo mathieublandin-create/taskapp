@@ -19,14 +19,11 @@ const bouton = (page: Page, nom: string) => page.getByRole('button', { name: nom
 const feuilleDeSaisie = (page: Page) => page.locator('ion-modal[is-open]');
 
 /**
- * Ouvre le détail de la tâche (ECR-007) depuis la liste. Le libellé du bouton flottant « Ajouter une tâche » recouvre
- * le centre de la dernière ligne visible : la ligne est touchée à son bord gauche, comme le ferait un utilisateur.
- * ANO-005 : à remettre au centre de la ligne à la correction.
+ * Ouvre le détail de la tâche (ECR-007) depuis la liste : le centre de la ligne est touché, comme le ferait un
+ * utilisateur (le « + » rond ne le recouvre plus, ANO-005).
  */
 const ouvrirDetail = async (page: Page, intitule: string): Promise<void> => {
-  await ligneTache(page, intitule)
-    .locator('button[data-etat]')
-    .click({ position: { x: 16, y: 16 } });
+  await ligneTache(page, intitule).locator('button[data-etat]').click();
   await expect(page.getByRole('heading', { level: 1, name: intitule })).toBeVisible();
 };
 
