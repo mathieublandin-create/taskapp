@@ -311,13 +311,16 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  overflow-y: auto;
 }
 
+/* Tant que le compte et la feuille de synchronisation sont dans la page (avant T5), les espaces gardent au moins
+   70 % de la hauteur de l'écran et la page défile plutôt que d'écraser la liste sous l'en-tête. */
 .espaces {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   flex-direction: column;
-  min-height: 0;
+  min-height: 70dvh;
 }
 
 .espaces-contenu {
