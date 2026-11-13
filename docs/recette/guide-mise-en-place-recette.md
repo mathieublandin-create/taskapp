@@ -57,21 +57,30 @@ Faites cette partie avant d'essayer de vous connecter.
 
 ### Étape 6. Autoriser l'adresse de recette
 
+Google refuse une adresse dont le domaine n'est pas autorisé : faites donc les points 2 et 3 **avant** les points 4 à 8.
+
 1. Ouvrez `https://console.cloud.google.com/` et choisissez le **projet de développement** (celui du client « Done Juan POC Web »).
-2. Menu **Google Auth Platform** puis **Clients** (ou : **API et services** puis **Identifiants**).
-3. Dans la liste des clients (**ID clients OAuth 2.0** dans l'ancien chemin), cliquez sur **Done Juan POC Web**.
-4. Dans **Origines JavaScript autorisées**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io` (**sans** barre finale).
-5. Dans **URI de redirection autorisés**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io/` (**avec** la barre finale).
-6. Cliquez sur **Enregistrer**. Google peut mettre quelques minutes (parfois davantage) à prendre en compte le changement.
+2. Menu **Google Auth Platform** puis **Branding** (image de marque). Descendez jusqu'à la rubrique **Domaines autorisés**. Le domaine `mathieublandin-create.github.io` doit déjà y figurer : ne le retirez pas.
+3. Cliquez sur **Ajouter un domaine**, saisissez `donejuan-recette.github.io` (sans `https://`), puis cliquez sur **Enregistrer**. **N'ajoutez pas de logo** : un logo déclenche une vérification par Google. Si Google annonce qu'une vérification est nécessaire : ne soumettez rien, notez le message et prévenez Jarvis.
+4. Menu **Google Auth Platform** puis **Clients** (ou : **API et services** puis **Identifiants**).
+5. Dans la liste des clients (**ID clients OAuth 2.0** dans l'ancien chemin), cliquez sur **Done Juan POC Web**.
+6. Dans **Origines JavaScript autorisées**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io` (**sans** barre finale).
+7. Dans **URI de redirection autorisés**, cliquez sur **Ajouter un URI** et saisissez : `https://donejuan-recette.github.io/` (**avec** la barre finale).
+8. Cliquez sur **Enregistrer**. Google peut mettre quelques minutes (parfois davantage) à prendre en compte le changement.
 
 Ne retirez pas les adresses déjà présentes.
 
-### Étape 7. Écran de consentement et compte de recette
+### Étape 7. Écran de consentement : « En production »
+
+Le projet doit être **« En production »** (décision DEC-008, confirmée par le commanditaire). Sans cela, Google affiche un avertissement « application non validée » et les autorisations expirent au bout de 7 jours.
 
 1. Menu **Google Auth Platform** puis **Audience** (l'ancien menu **API et services** puis **Écran de consentement OAuth** mène à la même page).
-2. Vérifiez que l'état de publication est **Test** (et non « En production »).
-3. Sur la même page **Audience**, dans **Utilisateurs test**, vérifiez que le compte Google de recette figure dans la liste ; sinon, cliquez sur **Add users** (« Ajouter des utilisateurs ») et ajoutez-le, puis **Enregistrer**.
-4. Menu **Google Auth Platform** puis **Accès aux données** (« Data Access ») : vérifiez que les trois autorisations suivantes sont déclarées, toutes dans le tableau des niveaux d'accès **non sensibles** : `openid`, `email` (la console peut l'afficher `.../auth/userinfo.email`) et `.../auth/drive.file`. Il n'en faut pas d'autres, et aucune ne doit figurer parmi les niveaux d'accès sensibles ou restreints.
+2. Lisez **État de publication**. Attendu : **En production**. Dans ce cas, il n'y a rien à changer.
+3. S'il indique **Test** : cliquez sur **Publier l'application**, puis confirmez. Si le bouton est grisé, vérifiez la page **Branding** (page d'accueil `https://mathieublandin-create.github.io/taskapp/accueil.html`, règles de confidentialité `https://mathieublandin-create.github.io/taskapp/confidentialite.html`, adresse d'assistance renseignée, domaine autorisé de l'étape 6), puis revenez ici.
+4. **Ne cliquez jamais sur « Revenir au mode test ».**
+5. Ne demandez **pas** la vérification de la marque : elle n'est pas nécessaire (elle sert seulement à afficher un nom et un logo). Google affichera donc une adresse en `github.io` à la place du nom « Done Juan » : c'est normal.
+6. Aucune liste d'utilisateurs test n'est nécessaire en production. Si le compte de recette y figure déjà, cela ne gêne pas.
+7. Menu **Google Auth Platform** puis **Accès aux données** (« Data Access ») : vérifiez que les trois autorisations suivantes sont déclarées, toutes dans le tableau des niveaux d'accès **non sensibles** : `openid`, `email` (la console peut l'afficher `.../auth/userinfo.email`) et `.../auth/drive.file`. Il n'en faut pas d'autres, et aucune ne doit figurer parmi les niveaux d'accès sensibles ou restreints.
 
 ### Étape 8. Activer l'API Drive
 
@@ -84,13 +93,13 @@ Ne retirez pas les adresses déjà présentes.
 
 1. Ouvrez `https://donejuan-recette.github.io/` dans Chrome ou Edge.
 2. Vous devez voir l'application avec le nom **« Done Juan (recette) »** et un écran de connexion Google.
-3. Connectez-vous avec le **compte Google de recette** (et pas votre compte habituel). Google affiche un avertissement « application non validée » : c'est normal en mode Test. Cliquez sur **Continuer** et acceptez l'accès à ses propres fichiers Drive.
+3. Connectez-vous avec le **compte Google de recette** (et pas votre compte habituel). Google ne doit afficher **aucun** avertissement « Google n'a pas validé cette application » (c'est ce que vérifie le scénario S13b). Le nom affiché est une adresse en `github.io` au lieu de « Done Juan » : c'est normal. Acceptez l'accès aux fichiers Drive créés par l'application. **Si un avertissement apparaît** : ne continuez pas. Faites une capture d'écran (sans votre adresse e-mail), notez-la dans la grille de retours (S13b en échec), puis revenez à l'étape 7 point 2 : le projet n'est pas en production.
 4. Vous devez arriver dans l'application, connecté. Un dossier est créé dans le Drive du compte de recette.
 
 ### Étape 10. Installer sur Android
 
 1. Sur le téléphone, ouvrez Chrome et saisissez `https://donejuan-recette.github.io/`.
-2. Connectez-vous avec le compte de recette (même avertissement, même réponse).
+2. Connectez-vous avec le compte de recette : mêmes écrans, **aucun** avertissement « application non validée » ; s'il apparaît, ne continuez pas et revenez à l'étape 7.
 3. Menu de Chrome (trois points en haut à droite) puis **Installer l'application** (ou **Ajouter à l'écran d'accueil**). Confirmez.
 4. Une icône **Done Juan (recette)** apparaît sur l'écran d'accueil. Elle est distincte de celle de la production et les deux peuvent coexister.
 
@@ -106,7 +115,8 @@ Pour une nouvelle version : refaites l'étape 5 (**Run workflow**) puis rouvrez 
 | Pas de bouton **Run workflow** | Le fichier n'est pas au bon endroit ou mal nommé | Vérifiez le chemin exact `.github/workflows/publier-recette.yml` (étape 2) |
 | Page « 404 » à l'adresse de recette | Première publication pas finie, ou source Pages non réglée | Attendez la coche verte (étape 5) ; contrôlez l'étape 3 |
 | Google affiche « Erreur 400 : redirect_uri_mismatch » ou « origin_mismatch » | Adresse mal saisie chez Google | Reprenez l'étape 6 : barre finale **seulement** sur l'URI de redirection ; attendez quelques minutes |
-| Google affiche « Accès bloqué » ou « Erreur 403 : access_denied » | Le compte utilisé n'est pas dans les utilisateurs test | Reprenez l'étape 7 ; utilisez le compte de recette |
+| Google affiche « Google n'a pas validé cette application », « Accès bloqué » ou « Erreur 403 : access_denied » | Le projet est encore (ou repassé) en mode Test, ou une autorisation sensible a été ajoutée | Reprenez l'étape 7 (points 2, 3 et 7) ; ne continuez pas avant que l'état soit **En production** |
+| La console refuse l'adresse de recette (domaine non autorisé) | Le domaine n'est pas dans les domaines autorisés | Faites les points 2 et 3 de l'étape 6, puis reprenez les points suivants |
 | Connexion réussie mais pas de dossier Drive, ou erreur de synchronisation | API Drive non activée, ou autorisation `drive.file` refusée | Reprenez l'étape 8 ; déconnectez-vous puis reconnectez-vous en acceptant les autorisations |
 | Un ancien écran reste affiché après une nouvelle publication | Ancienne version en mémoire | Fermez complètement l'application et rouvrez-la ; au besoin, rechargez la page |
 
