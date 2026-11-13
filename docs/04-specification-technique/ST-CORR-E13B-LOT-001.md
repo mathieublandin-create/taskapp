@@ -20,6 +20,7 @@ Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030,
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-11-13 | Anthony | E10 des corrections de l'E13b : conception, 7 tranches, rang 14, 29 tests unitaires (26 rouges, 3 garde-fous verts), 24 tests de navigateur (23 rouges, 1 garde-fou vert), règles de rang, questions non bloquantes Q-CORR-STE-1 à 6. |
+| 0.2 | 2026-11-13 | Anthony | E13 des tranches T1 à T3 (`revue-code-LOT-001-corr-e13b-t1t3.md`) : §2 et §4.5, deux rustines de mise en page déclarées transitoires (retrait à T5b) ; §5.2 bis, retrait des rustines et test E2E-ANO-005-FEUILLE-06 ; §4.2, action de bandeau toujours principale (accord) ; §3.1, place des codes `TXT-…-SOUS-TACHE` ; §9.1 et §12.1, S16b et S16c verts dès T1, revenus au rang 13 ; §13.1, tests UT-DT-014-07 à 10 (variantes non couvertes par UT-DT-014-01 à 06). |
 
 ## 1. Résumé technique
 
@@ -79,6 +80,7 @@ ion-content.contenu-avec-fab::part(scroll) { scroll-padding-bottom: var(--dj-mar
 - `padding-bottom` de `.barre-onglets` est écrit dans la règle `.barre-onglets` existante (sélecteur seul : E2E-DT-034-07 lit la règle par son sélecteur).
 - Aucune déclaration `outline: none` ni `outline: 0` dans `styles.css` (UT-DT-034-02). Si une règle d'Ionic retire le contour d'un composant, la règle `::part(native)` ci-dessus le rétablit ; l'anneau peut être porté par l'hôte ou par le bouton natif du shadow DOM (`contourDuFocus` lit la chaîne du focus).
 - Le contrôle 1.4.11 (contraste ≥ 3:1 du jeton) est porté par le guide (5,9:1) ; il n'est pas re-mesuré par les tests.
+- **Rustine transitoire (v0.2, hors ST v0.1)** : Benjamin a ajouté `overflow: hidden` à `ion-content.contenu-avec-fab`, pour que la réserve de 88 px ne fasse pas déborder le contenu sur la barre d'onglets quand `ion-content` est écrasé à 0 px par le compte et la feuille de synchronisation encore dans la page (mesure de l'E13 : sans la règle, `main.espace-application` déborde de 87 px à 390 × 600 ; avec une hauteur d'hôte normale, la règle est sans effet, le défilement de la liste étant porté par le `.inner-scroll` du shadow DOM, vérifié à 390 × 844, 390 × 500 et 320 × 360). **Acceptée jusqu'à T5b, retirée par T5b** (§5.2 bis, E2E-ANO-005-FEUILLE-06). Le texte de la règle n'est pas dans le §2 : elle n'est pas un patron à reproduire.
 
 ## 3. Textes (tranche T1)
 
@@ -88,7 +90,7 @@ Trois fichiers dans **le même commit** (`verifier:catalogue` exige l'accord des
 
 | Fichier | Changement exact |
 |---|---|
-| `src/commun/presentation/messages/codes.ts` | Ajouter `'TXT-ABANDONNER-SOUS-TACHE'` et `'TXT-TERMINER-SOUS-TACHE'` dans la famille `TXT-`, ordre alphabétique, avant `'TXT-VAL-AUCUNE'` |
+| `src/commun/presentation/messages/codes.ts` | Ajouter `'TXT-ABANDONNER-SOUS-TACHE'` et `'TXT-TERMINER-SOUS-TACHE'` dans la famille `TXT-`, avant `'TXT-VAL-AUCUNE'` (v0.2 : placés après `TXT-INF-PARENT`, comme livré ; l'ordre de la liste n'est ni alphabétique strict ni contrôlé par `verifier:catalogue`, ma formulation v0.1 était contradictoire : conforme) |
 | `src/commun/presentation/messages/catalogue.fr.ts` | `'TXT-ABANDONNER-SOUS-TACHE': { libelle: 'Abandonner la sous-tâche', nomAccessible: 'Abandonner la sous-tâche : « {element} »' }` et `'TXT-TERMINER-SOUS-TACHE': { libelle: 'Terminer la sous-tâche', nomAccessible: 'Terminer la sous-tâche : « {element} »' }` (espaces ordinaires dans le gabarit : `libelle()` pose les insécables) |
 | `docs/02-ux/guide-ergonomie.md` §6.6.12, tableau « Actions de la carte d'incohérence » | Colonne « Code » en premier (`` | `TXT-TERMINER-SOUS-TACHE` | … | `` et `` | `TXT-ABANDONNER-SOUS-TACHE` | … | ``), mêmes cellules, colonne « Libellé » supprimée (§6.6.16 n° 3 : modification autorisée par Steeve, version du guide inchangée) |
 
@@ -120,7 +122,7 @@ Tout `<button>` natif des dossiers `src/compte/presentation/ui/` et `src/synchro
 | `SectionCompte.tsx` | « Se déconnecter » (`SE_DECONNECTER`) | — |
 | | « Supprimer les données de cet appareil » (`SUPPRIMER_DONNEES`) | `danger` |
 | `IndicateurSynchronisation.tsx` | « Reprendre la synchronisation » (`SYN-SESSION`) | — |
-| `Bandeau.tsx` | « Se reconnecter », « Mettre à jour » (consultation seule) | `principal` |
+| `Bandeau.tsx` | « Se reconnecter », « Mettre à jour » (consultation seule), « Reprendre la synchronisation » (`BAN-RAPPEL-24H`, variante `session`) | `principal` (v0.2 : l'action unique d'un bandeau est toujours principale, sans condition ; accord de l'E13, UT-DT-014-10) |
 | | « Masquer le rappel » | `tertiaire` |
 | `FeuilleSynchronisation.tsx` | « Synchroniser maintenant » | — |
 | | Action de carte `METTRE_A_JOUR` (`ALR-016`, `ERR-013`) | `principal` |
@@ -162,6 +164,10 @@ Ajouter au bloc `:root` : `--dj-on-accent: #fff; --dj-bord-fort: #8a8a94; --dj-t
 ```
 
 `color-mix` est admis (Chromium ≥ 111, cible ADR-013). Le principal garde son fond accent au survol, assombri (le guide ne fixe pas cette nuance : choix de conception, signalé à Steeve par le contrôle de l'E14). `:disabled` (bouton de connexion en cours) reçoit la même apparence que `aria-disabled` : ajouter `.bouton-natif:disabled` au dernier sélecteur.
+
+### 4.3 bis Rustine transitoire de mise en page (v0.2, hors ST v0.1)
+
+Avec des boutons de 44 px, le compte et la feuille de synchronisation, encore rendus dans `main.espace-application`, laissaient 88 px (réserve comprise) à la liste dans l'application réelle (mesure de l'E13 à 390 × 844 : hôte de `ion-content` de 88 px de haut ; 160 px avant T3 d'après Benjamin ; scénario S16 en échec). Benjamin a ajouté `overflow-y: auto` à `.espace-application`, `flex: 1 0 auto` et `min-height: 70dvh` à `.espaces` : la page défile et la liste garde au moins 70 % de la hauteur. **Acceptée jusqu'à T5b** (la page est alors à 1 235 px de haut pour 844 : c'est l'état d'ANO-005 lui-même, qui disparaît avec la feuille modale), **retirée par T5b** (§5.2 bis). Aucune règle de CSS nouvelle ne doit s'appuyer sur ces valeurs.
 
 ### 4.4 Périmètre laissé hors correction
 
@@ -258,6 +264,18 @@ ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
 - Focus de fin de « À lire » (DT-028, `useFocusFinALire`) : cible = `BoutonFeuille` quand la feuille est fermée (le hook passe de l'indicateur au bouton : `refElement`), et le titre `h2` de la feuille (`tabIndex={-1}`) quand elle est ouverte (Q-CORR-STE-6, choix par défaut). L'indicateur cesse d'être la cible (`tabIndex={-1}` conservé, sans effet).
 - Ligne d'état, CSS : `.ligne-etat { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; max-height: 48px; padding: 0 8px 0 16px; }`. Le bandeau garde sa hauteur naturelle sous la ligne (Q-CORR-STE-4, choix par défaut : un bandeau à texte et action ne tient pas dans 48 px).
 
+### 5.2 bis Retrait des rustines de T2 et T3 (T5b, v0.2)
+
+À T5b, quand `main.espace-application` ne contient plus que la ligne d'état, le bandeau et les espaces, **retirer** de `styles.css` :
+
+| Règle | Retrait |
+|---|---|
+| `ion-content.contenu-avec-fab { overflow: hidden; }` (et son commentaire) | supprimer la déclaration, garder `--padding-bottom` |
+| `.espace-application { overflow-y: auto; }` | supprimer la déclaration |
+| `.espaces { flex: 1 0 auto; min-height: 70dvh; }` et son commentaire | revenir à `flex: 1; min-height: 0;` |
+
+Test : **E2E-ANO-005-FEUILLE-06** (`tests/e2e/feuille-synchronisation.e2e.ts`, rang 14, à 390 × 844 et à 360 × 480, rouge depuis l'E13 de T1 à T3 : la page défile de 391 et 524 px). Il vérifie, sur l'application réelle : défilement de la page nul (`scrollHeight - clientHeight ≤ 0`), les valeurs calculées des trois règles (`overflow-y: visible`, `min-height: 0px`, `flex: 1 1 0%`, `overflow: visible` de la liste), la liste à plus de la moitié de la hauteur de l'écran, et, avec 8 tâches, la dernière ligne entièrement visible, centre dégagé, au-dessus du « + » après défilement de la liste. Si une autre règle de mise en page est nécessaire à T5b, elle est justifiée par écrit dans la revue de T5b, pas ajoutée en silence.
+
 ### 5.3 Ce qui ne change pas
 
 Modèles de vue de la feuille et du compte, contrôleur (`VueInterface`), `FeuilleSynchronisation` (hors §4), `SectionCompte` (hors §4) : ligne « Fuseau » maintenue dans « Compte » (guide §4.26 ; Q-CORR-STE-2, le §6.6.15 la cite dans « Synchronisation »).
@@ -337,7 +355,7 @@ Aucune erreur métier nouvelle. `matchMedia` absent : feuille basse (§5.1). Rej
 Conséquences (mises en place par cette E10) :
 - `rangs-tests.json` : règle `(?:UT|E2E)-(?:E13B-TXT|DT-014|DT-034|ANO-004|ANO-005-(?:FAB|FEUILLE))-\d+` → 14, en deuxième position (après `UT-OUT`).
 - **Tests de navigateur** : `playwright.config.ts` applique `grepInvert: motifTestsNonLivres(regles, rangCourant)` (`tests/support/rangs/selection-rangs.ts`, UT-OUT-13) ; un test `E2E-…` ne s'exécute qu'à partir de son rang ; les tests sans identifiant s'exécutent toujours. UT-OUT-14 : tout identifiant `E2E-…` a un rang. `RANG_COURANT=14 pnpm e2e -g "E2E-DT-034"` pour une tranche.
-- **Scénarios** : `rangs-scenarios.json` : US-031 S16b et S16c passent de 13 à **14** (leur dernier prérequis devient la feuille modale de T5b ; leurs deux étapes du premier onglet n'existent pas encore) ; les scénarios `@recette` (US-018 S09b, US-022 S13b) passent de 14 à **15** (« Recette (E14) », qui suit désormais les corrections ; `conventions.md` §11.13 v0.4.10).
+- **Scénarios** : `rangs-scenarios.json` : US-031 S16b et S16c passaient de 13 à 14 en v0.1 (étapes du premier onglet absentes) ; **v0.2 : revenus au rang 13** (E13 de T1 à T3 : T1 les a rendus verts, 13 scénarios `@ihm` sur 13 au rang 14, et le prérequis « feuille modale » n'en est pas un tant que la section « Compte » est dans la page ; ils tournent ainsi dans la CI à chaque tranche et gardent ANO-006 ; T5b les rejoue sur la feuille) ; les scénarios `@recette` (US-018 S09b, US-022 S13b) passent de 14 à **15** (« Recette (E14) », qui suit désormais les corrections ; `conventions.md` §11.13 v0.4.10).
 - Pendant T1 à T5b, `rangCourant` reste 13 : `pnpm test`, `pnpm cucumber`, `pnpm cucumber:ihm` et `pnpm e2e` restent verts sur `fix/e13b-lot001` ; chaque tranche se contrôle par `RANG_COURANT=14 pnpm test -t "<famille>"`, `RANG_COURANT=14 pnpm e2e -g "<famille>"`. **T6 porte `rangCourant = 14`** (et le retire de `RANG_COURANT` : plus aucune variable).
 - Un test d'une tranche déjà revue ne doit jamais redevenir rouge : la revue E13 de chaque tranche relance les familles des tranches précédentes avec `RANG_COURANT=14`.
 
@@ -373,6 +391,8 @@ Profil `ihm` seulement ; le profil `default` n'a aucune étape manquante (`pnpm 
 
 `pnpm cucumber:steps-inutilises` doit rester vert (aucune définition orpheline).
 
+v0.2 : livré par T1 comme imposé ; S16b et S16c sont **verts dès T1** (la ST v0.1 les attendait rouges jusqu'à T5b, à tort : la section « Compte » est encore dans la page), d'où leur retour au rang 13 (§9.1).
+
 ### 12.2 Étapes à adapter à la feuille modale (T5b)
 
 | Fichier | Changement |
@@ -401,6 +421,8 @@ Scénarios `@ihm` à rejouer à T5b (`RANG_COURANT=14 pnpm cucumber:ihm`) : les 
 | `tests/unitaires/composition/controleur-ouverture.test.ts` | UT-ANO-004-03 à 07 | T6 | node | 03, 04 rouges ; **05, 06, 07 verts** (garde-fous : l'écran de connexion reste publié après `apresOuverture`, après une session, après un geste) |
 | `tests/unitaires/outillage/selection-rangs.test.ts` | UT-OUT-13, 14 | E10 (outillage) | node | verts (rang −1, toujours exécutés) |
 
+**Ajouts de l'E13 de T1 à T3 (v0.2)** : `tests/unitaires/commun/presentation/ui/boutons-natifs-complements.test.tsx`, **UT-DT-014-07 à 10** (jsdom, rang 14 par la règle existante `UT-DT-014`), garde-fous verts dès leur écriture : variantes de `ChoixRestauration` (`RESTAURER` principal, `REPARTIR_DE_ZERO` danger, `DECIDER_PLUS_TARD` et « Fermer » tertiaires, `ANNULER_DEMANDE` secondaire), de `ModificationsNonRetenues` (quatre boutons tertiaires), et de l'action `REPRENDRE_LA_SYNCHRONISATION` du bandeau (principal). Raison : UT-DT-014-01 à 06 laissaient ces attributions sans test (mutation `danger` → `principal` et `tertiaire` → `danger` survivante, constatée par l'E13 ; les tests rougissent avec la mutation).
+
 Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (rang 13) : **1 621 verts, 29 ignorés** (les tests du rang 14), 0 rouge ; `RANG_COURANT=14` sur les familles du rang : **26 rouges, 3 verts**, chacun rouge pour la raison attendue (assertion ou `ErreurNonImplementee`, aucune erreur de compilation ni de harnais).
 
 ### 13.2 Tests de navigateur (Playwright) — 24 tests, 23 rouges au rang 14
@@ -412,6 +434,8 @@ Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (ra
 | `tests/e2e/bouton-flottant.e2e.ts` | E2E-ANO-005-FAB-01 à 06 | T4 | Harnais : 56 × 56, sans étiquette ; 16 px ; centre des lignes dégagé et toucher au centre de la dernière ; colonne de 720 px à 1280 et 768 px, pleine largeur à 599 px ; nom accessible et `title` |
 | `tests/e2e/feuille-synchronisation.e2e.ts` | E2E-ANO-005-FEUILLE-01 à 05 | T5b | Build `test-ihm` connecté : fermée au lancement, 0,92 de 844 px, liste immobile ; ordre et défilement interne ; Échap, focus rendu, défilement de la liste inchangé ; confirmations depuis la feuille (focus sur « Annuler », centre dégagé, clic) à 390 × 844 et à 1280 × 800 ; panneau de 400 px à droite |
 | `tests/e2e/ouverture.e2e.ts` | E2E-ANO-004-01, 02 | T6 | Observateur de mutations : réouverture d'une session (`test-ihm`) : cadre puis espace, jamais l'invitation ; sans session (production) : cadre vide sans `data-*`, puis connexion |
+
+**E2E-ANO-005-FEUILLE-06** (v0.2, T5b ; deux exécutions : 390 × 844 et 360 × 480) : retrait des rustines de mise en page, §5.2 bis ; rouge depuis l'E13 de T1 à T3 (défilement de la page de 391 et 524 px).
 
 E2E-DT-034-05 (aucun anneau au clic) est **vert** dès l'E10 : garde-fou contre une règle `:focus` au lieu de `:focus-visible`. Retiré : le test sans identifiant « les « + » des deux onglets se distinguent par leur libellé visible » (§6.4).
 
@@ -436,12 +460,12 @@ Toutes par Benjamin (sonnet), **une à la fois**, chacune sur une branche courte
 | 3 | **T3 — Boutons natifs** | §4 | T2 (l'anneau des boutons natifs est contrôlé par E2E-DT-034-06) | UT-DT-014-01 à 06 ; E2E-DT-014-01 à 03 | 0,5 j |
 | 4 | **T4 — « + » rond et colonne** | §6 ; `ouvrirDetail` au centre (§12.2) | T2 | UT-ANO-005-FAB-01 ; E2E-ANO-005-FAB-01 à 06 | 0,5 j |
 | 5 | **T5a — Composant de la feuille** | §5.1 (composant, bouton, CSS) | T3 | UT-ANO-005-FEUILLE-01 à 07 | 0,5 j |
-| 6 | **T5b — Branchement de la feuille** | §5.2 ; §12.2 (étapes `@ihm`) | T5a, T1 | E2E-ANO-005-FEUILLE-01 à 05 ; les 13 scénarios `@ihm` | 0,75 j |
+| 6 | **T5b — Branchement de la feuille** | §5.2 ; §12.2 (étapes `@ihm`) | T5a, T1 | E2E-ANO-005-FEUILLE-01 à 05 ; **E2E-ANO-005-FEUILLE-06 et retrait des trois rustines de T2 et T3 (§5.2 bis)** ; les 13 scénarios `@ihm` | 0,75 j (+ 0,1 j pour le retrait, dans la tranche) |
 | 7 | **T6 — Ouverture et livraison du rang** | §7 ; `rangCourant = 14` (dernier commit) | T5b | UT-ANO-004-01 à 07 ; E2E-ANO-004-01, 02 ; **toutes** les familles du rang 14 et toute la CI au rang 14 | 0,35 j |
 
 **Total : 3,5 j** (Steeve estimait ≈ 2,25 j hors tests et étapes ; l'écart vient des étapes `@ihm`, du branchement de `main.tsx` et des tests de navigateur). Chaque tranche reste sous 1 j. T1 et T2 sont indépendantes (l'ordre peut être inversé) ; T6 ne dépend fonctionnellement de rien mais porte la livraison du rang, donc passe en dernier.
 
-PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` 43 sur 43 ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
+PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` 45 sur 45 (43 + les deux exécutions de E2E-ANO-005-FEUILLE-06, v0.2) ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
 
 ## 16. Dette, hypothèses et points ouverts
 

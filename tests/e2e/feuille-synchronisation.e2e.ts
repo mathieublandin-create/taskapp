@@ -153,3 +153,58 @@ test.describe('Feuille de synchronisation à 1280 × 800 (ANO-005)', () => {
     await expect(feuille(page)).toBeVisible();
   });
 });
+
+// Ajout de l'E13 des tranches T1 à T3 (revue-code-LOT-001-corr-e13b-t1t3.md, RC-CORR-3 ; ST-CORR v0.2 §5.2 bis) : les
+// trois rustines de mise en page de T2 et T3 sont retirées par T5b, parce que le compte et la feuille ne sont plus
+// dans la page (`overflow: hidden` de `ion-content.contenu-avec-fab`, `overflow-y: auto` de `.espace-application`,
+// `flex: 1 0 auto` et `min-height: 70dvh` de `.espaces`). Sur l'application réelle : la page ne défile pas, la liste
+// occupe l'espace restant, et la dernière ligne reste atteignable au défilement de la liste.
+for (const [largeur, hauteur] of [
+  [390, 844],
+  [360, 480],
+] as const) {
+  test.describe(`Mise en page de l’espace à ${String(largeur)} × ${String(hauteur)} (rustines de T2 et T3 retirées)`, () => {
+    test.use({ viewport: { width: largeur, height: hauteur }, hasTouch: true });
+
+    test(`E2E-ANO-005-FEUILLE-06 la page ne défile pas, la liste occupe plus de la moitié de l’écran, la dernière tâche est atteignable (${String(largeur)} × ${String(hauteur)})`, async ({
+      context,
+    }) => {
+      const page = await ouvrirApplicationConnectee(context);
+      const mesures = await page.evaluate(() => {
+        const espace = document.querySelector('main.espace-application');
+        const espaces = document.querySelector('.espaces');
+        const liste = document.querySelector('ion-content.contenu-avec-fab');
+        if (espace === null || espaces === null || liste === null)
+          throw new Error('mise en page absente');
+        return {
+          pageDefilable: espace.scrollHeight - espace.clientHeight,
+          overflowEspace: getComputedStyle(espace).overflowY,
+          minHauteurEspaces: getComputedStyle(espaces).minHeight,
+          flexEspaces:
+            getComputedStyle(espaces).flexGrow +
+            ' ' +
+            getComputedStyle(espaces).flexShrink +
+            ' ' +
+            getComputedStyle(espaces).flexBasis,
+          overflowListe: getComputedStyle(liste).overflow,
+          hauteurListe: liste.getBoundingClientRect().height,
+        };
+      });
+      expect(mesures.pageDefilable).toBeLessThanOrEqual(0);
+      expect(mesures.overflowEspace).toBe('visible');
+      expect(mesures.minHauteurEspaces).toBe('0px');
+      expect(mesures.flexEspaces).toBe('1 1 0%');
+      expect(mesures.overflowListe).toBe('visible');
+      expect(mesures.hauteurListe).toBeGreaterThan(hauteur / 2);
+
+      await creerTaches(page, 8);
+      const derniere = page.locator('li.ligne-tache').last();
+      await derniere.scrollIntoViewIfNeeded();
+      await expect(derniere).toBeInViewport({ ratio: 1 });
+      expect(await centreDegage(derniere.locator('button[data-etat]'))).toBe(true);
+      const fab = await boite(page.locator('ion-fab-button'));
+      const ligne = await boite(derniere);
+      expect(ligne.y + ligne.height).toBeLessThanOrEqual(fab.y + 0.5);
+    });
+  });
+}
