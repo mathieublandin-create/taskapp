@@ -204,7 +204,6 @@ const BoutonRepartirDeZero = ({
       className="bouton-natif"
       data-variante="danger"
       data-action="REPARTIR_DE_ZERO"
-      data-variante="danger"
       data-rouge
       aria-disabled={!disponible}
       aria-describedby={descriptions}
@@ -321,6 +320,21 @@ export const CarteChoixRestauration = (proprietes: ProprietesChoixRestauration):
   );
 };
 
+const EnTeteFeuille = ({
+  textes,
+  surFermer,
+}: {
+  readonly textes: ProprietesChoixRestauration['textes'];
+  readonly surFermer: () => void;
+}) => (
+  <header>
+    <h2>{textes.titreFeuille}</h2>
+    <button type="button" className="bouton-natif" data-variante="tertiaire" onClick={surFermer}>
+      {textes.fermer}
+    </button>
+  </header>
+);
+
 /**
  * Feuille de choix « Action requise », ouverte d'elle-même tant que `propose`. « Fermer » et Échap ont l'effet de
  * « Décider plus tard » ; Échap ne ferme pas la feuille quand la confirmation est ouverte (elle ferme la boîte seule).
@@ -339,17 +353,7 @@ export const FeuilleChoixRestauration = (proprietes: ProprietesChoixRestauration
       }}
     >
       <div data-message={vue.code}>
-        <header>
-          <h2>{textes.titreFeuille}</h2>
-          <button
-            type="button"
-            className="bouton-natif"
-            data-variante="tertiaire"
-            onClick={surDeciderPlusTard}
-          >
-            {textes.fermer}
-          </button>
-        </header>
+        <EnTeteFeuille textes={textes} surFermer={surDeciderPlusTard} />
         <h3>{vue.titre}</h3>
         <p>{vue.texte}</p>
         <Options choix={choix} prevoirFocus={prevoirFocus} avecDeciderPlusTard />
