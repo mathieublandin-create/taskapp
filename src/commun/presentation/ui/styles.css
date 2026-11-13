@@ -7,6 +7,11 @@
   --dj-danger: #c42b2b;
   --dj-bord: #dcdce2;
   --dj-surface: #f6f6f8;
+  --dj-focus: #2e5bdb;
+  --dj-marge-fab: 88px;
+  --dj-on-accent: #fff;
+  --dj-bord-fort: #8a8a94;
+  --dj-texte: #1c1c21;
 }
 
 .scrim {
@@ -306,13 +311,16 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  overflow-y: auto;
 }
 
+/* Tant que le compte et la feuille de synchronisation sont dans la page (avant T5), les espaces gardent au moins
+   70 % de la hauteur de l'écran et la page défile plutôt que d'écraser la liste sous l'en-tête. */
 .espaces {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   flex-direction: column;
-  min-height: 0;
+  min-height: 70dvh;
 }
 
 .espaces-contenu {
@@ -325,6 +333,7 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
 .barre-onglets {
   display: flex;
   border-top: 1px solid var(--dj-bord);
+  padding-bottom: env(safe-area-inset-bottom);
   background: var(--ion-background-color, #fff);
 }
 
@@ -349,18 +358,113 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   font-weight: 700;
 }
 
-/* « + » flottant : le libellé visible précède le bouton rond (guide §4.14 : cibles d'au moins 44 px). */
-.bouton-flottant {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* « + » flottant rond de 56 px, sans étiquette (guide §2.2, §6.6.16 n° 5) : à 16 px du bord droit de la colonne. */
+.espaces-contenu ion-fab {
+  right: 16px;
+  bottom: 16px;
 }
 
-.bouton-flottant-etiquette {
-  padding: 12px 16px;
-  border-radius: 24px;
-  background: var(--ion-background-color, #fff);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+.espaces-contenu ion-fab-button {
+  --border-radius: 50%;
+
+  width: 56px;
+  height: 56px;
+}
+
+/* Colonne de contenu de 720 px centrée dès 600 px ; la barre d'onglets, dans `.espaces`, suit la colonne. */
+@media (width >= 600px) {
+  .espaces {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+}
+
+/* Focus visible (DT-034, guide §6.6.16 n° 1) : anneau plein de 2 px, jamais au clic souris. */
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex],
+  ion-button,
+  ion-fab-button,
+  ion-checkbox,
+  ion-item
+):focus-visible,
+ion-fab-button::part(native):focus-visible,
+ion-button::part(native):focus-visible {
+  outline: 2px solid var(--dj-focus);
+  outline-offset: 2px;
+}
+
+.barre-onglets button:focus-visible,
+.ligne-tache button:focus-visible,
+.ligne-objectif button:focus-visible,
+.ligne-tache > input[type='checkbox']:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Réserve sous le « + » : la dernière ligne reste atteignable (WCAG 2.4.11). */
+ion-content.contenu-avec-fab {
+  --padding-bottom: var(--dj-marge-fab);
+
+  /* Sans ce découpage, la réserve fait déborder le contenu d'un contenu très court sur la barre d'onglets. */
+  overflow: hidden;
+}
+
+ion-content.contenu-avec-fab::part(scroll) {
+  scroll-padding-bottom: var(--dj-marge-fab);
+}
+
+/* Boutons natifs du compte et de la synchronisation (DT-014, guide §4.1) : variante par `data-variante`. */
+.bouton-natif {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--dj-bord-fort);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dj-texte);
+  font: inherit;
+  font-size: 15px;
   font-weight: 600;
-  white-space: nowrap;
+}
+
+.bouton-natif[data-variante='principal'] {
+  border-color: var(--dj-accent);
+  background: var(--dj-accent);
+  color: var(--dj-on-accent);
+}
+
+.bouton-natif[data-variante='tertiaire'] {
+  padding: 0 8px;
+  border: 0;
+  color: var(--dj-accent);
+}
+
+.bouton-natif[data-variante='danger'] {
+  border-color: var(--dj-danger);
+  color: var(--dj-danger);
+}
+
+@media (hover: hover) {
+  .bouton-natif:not([aria-disabled='true']):hover {
+    background-color: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+
+  .bouton-natif[data-variante='principal']:not([aria-disabled='true']):hover {
+    background-color: color-mix(in srgb, var(--dj-accent) 92%, var(--dj-texte));
+  }
+}
+
+.bouton-natif:not([aria-disabled='true']):active {
+  background-color: color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.bouton-natif[aria-disabled='true'],
+.bouton-natif:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

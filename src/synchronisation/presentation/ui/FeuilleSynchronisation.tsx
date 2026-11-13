@@ -51,6 +51,7 @@ const BoutonSynchroniser = ({
   <>
     <button
       type="button"
+      className="bouton-natif"
       data-etat={bouton.code}
       aria-disabled={!bouton.disponible}
       {...(bouton.explication === undefined ? {} : { 'aria-describedby': ID_EXPLICATION })}
@@ -79,14 +80,18 @@ const BoutonCarte = ({
   libelle,
   desactive,
   surClic,
+  variante,
 }: {
   readonly libelle: string;
   /** `aria-disabled` : le bouton reste focalisable, son activation est sans effet (retour `rechargement`). */
   readonly desactive: boolean;
   readonly surClic: () => void;
+  readonly variante?: 'principal';
 }) => (
   <button
     type="button"
+    className="bouton-natif"
+    {...(variante === undefined ? {} : { 'data-variante': variante })}
     {...(desactive ? { 'aria-disabled': true } : {})}
     onClick={() => {
       if (!desactive) surClic();
@@ -95,6 +100,10 @@ const BoutonCarte = ({
     {libelle}
   </button>
 );
+
+/** Seule l'action « Mettre à jour » est principale ; les autres actions de carte sont secondaires (ST-CORR §4.2). */
+const varianteDeLaCarte = (type: ActionCarteFeuille) =>
+  type === 'METTRE_A_JOUR' ? ({ variante: 'principal' } as const) : {};
 
 /** Retour de « Mettre à jour » (guide §6.6.14 a) : ligne `role="status"` sous le texte de la carte `ERR-013`. */
 const retourDeLaCarte = (carte: CarteErreurFeuille, miseAJour: IssueMiseAJour | undefined) =>
@@ -119,6 +128,7 @@ const CarteErreur = ({
         {carte.action.type === 'METTRE_A_JOUR' ? <p role="status">{retour?.texte}</p> : null}
         <BoutonCarte
           libelle={carte.action.libelle}
+          {...varianteDeLaCarte(carte.action.type)}
           desactive={desactive}
           surClic={() => {
             surActionCarte(carte.action.type);
@@ -182,6 +192,7 @@ const CarteNouvelleVersion = ({
         <p role="status">{retour?.texte}</p>
         <BoutonCarte
           libelle={alerte.action.libelle}
+          {...varianteDeLaCarte(alerte.action.type)}
           desactive={retour?.actionDesactivee === true}
           surClic={() => {
             surActionCarte(alerte.action.type);

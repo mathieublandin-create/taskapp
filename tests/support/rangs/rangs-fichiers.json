@@ -1061,6 +1061,10 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/presentation/ui/FeuilleCompteEtSynchronisation.tsx": {
+      "debut": 14,
+      "fin": 14
+    },
     "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
       "debut": 1,
       "fin": 1
@@ -1072,6 +1076,10 @@
     "src/synchronisation/presentation/ui/focus-fin-a-lire.ts": {
       "debut": 10,
       "fin": 10
+    },
+    "src/synchronisation/presentation/ui/libelles-feuille.ts": {
+      "debut": 14,
+      "fin": 14
     },
     "src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx": {
       "debut": 9,

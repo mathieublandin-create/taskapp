@@ -240,22 +240,29 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # Q-ST031-PEP-1 (2026-10-27, précision sans changement de règle) : la session est celle de l'appareil ; quand elle prend fin dans un onglet,
   # l'autre onglet revient à l'écran de connexion (US-022 CA-1, CA-6 et CA-10 ; RG-019, RG-043, RG-055).
+  # Q-ANT-E13-R13-2 (2026-11-12, E13b, ANO-006 ; précision sans changement de règle) : l'onglet qui a fait le geste revient lui aussi à l'écran de connexion
+  # et n'affiche plus aucune donnée (US-022 CA-1 et CA-6 : retour à l'écran de connexion sur l'appareil ; RG-019, RG-043). Il l'était déjà par la règle ;
+  # le scénario ne le vérifiait pas, d'où l'anomalie ANO-006 non détectée. Le premier onglet est celui du geste.
   @US-031 @RG-019 @RG-043 @ihm @LOT-001
-  Scénario: S16b — Déconnexion dans un onglet : l'autre onglet revient à l'écran de connexion et n'affiche plus aucune donnée, qui reste sur le PC
+  Scénario: S16b — Déconnexion dans un onglet : les deux onglets reviennent à l'écran de connexion et n'affichent plus aucune donnée, qui reste sur le PC
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et qu'aucune modification n'est en attente sur le PC
     Quand dans le premier onglet, l'utilisateur se déconnecte
-    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Alors dans le premier onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le premier onglet, aucune donnée n'est affichée
+    Et dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
     Et dans le second onglet, aucune donnée n'est affichée
     Et les données du compte "A" sont toujours présentes sur le PC
 
   @US-031 @RG-019 @RG-055 @ihm @LOT-001
-  Scénario: S16c — Suppression des données de cet appareil dans un onglet : l'autre onglet revient à l'écran de connexion
+  Scénario: S16c — Suppression des données de cet appareil dans un onglet : les deux onglets reviennent à l'écran de connexion
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et qu'aucune modification n'est en attente sur le PC
     Quand dans le premier onglet, l'utilisateur demande la suppression des données de cet appareil
     Et dans le premier onglet, l'utilisateur confirme
-    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Alors dans le premier onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le premier onglet, aucune donnée n'est affichée
+    Et dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
     Et dans le second onglet, aucune donnée n'est affichée
     Et les données du compte "A" ne sont plus présentes sur le PC
 

@@ -113,30 +113,46 @@ When("dans le premier onglet, l'utilisateur confirme", async function (this: Mon
   await attendreEcranDeConnexion(page);
 });
 
+type Onglet = 'premier' | 'second';
+
 /**
  * ANO-004 : l'écran de connexion s'affiche aussi brièvement pendant toute ouverture ; la conclusion n'est tirée qu'après
- * le rechargement du second onglet (un chargement de plus depuis le geste) et la fin de ses échanges.
+ * le rechargement du second onglet (un chargement de plus depuis le geste) et la fin de ses échanges. Le premier onglet,
+ * lui, ne se recharge pas : il revient seul à l'écran de connexion (ANO-006), attendu par sondage.
  */
+const ecranDeConnexionDe = async (monde: MondeIhm, onglet: Onglet): Promise<Page> => {
+  if (onglet === 'premier') {
+    const page = await monde.pageCourante();
+    await attendreEcranDeConnexion(page);
+    return page;
+  }
+  const page = await attendreRechargementDuSecond(monde);
+  await page.waitForLoadState('networkidle');
+  return page;
+};
+
 Then(
-  "dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée",
-  async function (this: MondeIhm) {
-    const page = await attendreRechargementDuSecond(this);
-    await page.waitForLoadState('networkidle');
+  /^dans le (premier|second) onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée$/,
+  async function (this: MondeIhm, onglet: Onglet) {
+    const page = await ecranDeConnexionDe(this, onglet);
     expect(await ecranAffiche(page)).toBe('CONNEXION');
     await expect(page.getByRole('button')).toHaveCount(1);
     await expect(boutonConnexion(page)).toBeVisible();
   },
 );
 
-Then("dans le second onglet, aucune donnée n'est affichée", async function (this: MondeIhm) {
-  const page = this.ongletSecond();
-  await expect(espaceApplication(page)).toHaveCount(0);
-  await expect(lignesTaches(page)).toHaveCount(0);
-  await expect(lignesObjectifs(page)).toHaveCount(0);
-  for (const intitule of INTITULES_DU_CONTEXTE) {
-    await expect(page.getByText(intitule)).toHaveCount(0);
-  }
-});
+Then(
+  /^dans le (premier|second) onglet, aucune donnée n'est affichée$/,
+  async function (this: MondeIhm, onglet: Onglet) {
+    const page = onglet === 'premier' ? await this.pageCourante() : this.ongletSecond();
+    await expect(espaceApplication(page)).toHaveCount(0);
+    await expect(lignesTaches(page)).toHaveCount(0);
+    await expect(lignesObjectifs(page)).toHaveCount(0);
+    for (const intitule of INTITULES_DU_CONTEXTE) {
+      await expect(page.getByText(intitule)).toHaveCount(0);
+    }
+  },
+);
 
 const basesDuNavigateur = async (page: Page): Promise<ReadonlyArray<string | undefined>> =>
   (await page.evaluate(() => indexedDB.databases())).map((base) => base.name);

@@ -31,6 +31,25 @@ export const motifSelection = (regles: ReadonlyArray<RegleRang>, rangCourant: nu
   return new RegExp(branches.length === 0 ? '(?!)' : branches.join('|'));
 };
 
+/**
+ * Motif pour `grepInvert` de Playwright (tests de navigateur, `tests/e2e/`, ST-CORR-E13B-LOT-001 §9.1) : reconnaît
+ * exactement les tests dont `rangDuTest` est **strictement supérieur** au rang courant. Un test sans règle n'est pas
+ * reconnu (il s'exécute toujours : les tests de navigateur antérieurs aux corrections de l'E13b n'ont pas d'identifiant).
+ * Aucune règle au-delà du rang courant : motif qui ne reconnaît rien.
+ */
+export const motifTestsNonLivres = (
+  regles: ReadonlyArray<RegleRang>,
+  rangCourant: number,
+): RegExp => {
+  const branches = regles.flatMap((regle, i) => {
+    if (regle.rang <= rangCourant) return [];
+    const precedentes = regles.slice(0, i).map((r) => `(?:${r.motif})`);
+    const exclusion = precedentes.length === 0 ? '' : `(?!.*(?:${precedentes.join('|')}))`;
+    return [`^${exclusion}.*(?:${regle.motif})`];
+  });
+  return new RegExp(branches.length === 0 ? '(?!)' : branches.join('|'));
+};
+
 /** Fichiers de `src/` dont la couverture est mesurée : créés à un rang inférieur ou égal au rang courant. */
 export const fichiersCouverts = (
   fichiers: Readonly<Record<string, RangsFichier>>,

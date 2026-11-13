@@ -58,10 +58,6 @@ test.describe('Écran connecté à 390 × 844 (ANO-002, ANO-003)', () => {
     expect(await etatLocal(page)).toEqual({ objectifs: 1, taches: 0 });
   });
 
-  test('les « + » des deux onglets se distinguent par leur libellé visible', async ({ page }) => {
-    await page.goto(HARNAIS);
-    await expect(page.locator('ion-fab')).toContainText('Ajouter une tâche');
-    await page.getByRole('button', { name: 'Objectifs' }).click();
-    await expect(page.locator('ion-fab')).toContainText('Créer un objectif');
-  });
+  // « les « + » des deux onglets se distinguent par leur libellé visible » : remplacé par E2E-ANO-005-FAB-06
+  // (bouton-flottant.e2e.ts) : guide v0.2.26 §2.2, le « + » n'a plus d'étiquette visible (ST-CORR-E13B-LOT-001 §6.4).
 });
