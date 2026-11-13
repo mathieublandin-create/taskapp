@@ -1,5 +1,7 @@
 # Guide d'ergonomie
 
+> **Version 0.2.27, 2026-11-13 (Steeve).** Réponses aux questions Q-CORR-STE-1 à 6 de `ST-CORR-E13B-LOT-001.md` (§6.6.17) : ouverture de la feuille par un bouton distinct (et non par l'indicateur : corrige §2.2, §4.8, §4.26, §6.6.16 n° 5, §11), nom « Créer un objectif », ligne d'état sans hauteur maximale. Aucune règle de gestion modifiée.
+>
 > **Version 0.2.26, 2026-11-12 (Steeve).** LOT-001, E13b (volet Steeve, `ceremonies/e13b-LOT-001.md` §5.3) : décisions de forme et de texte avant l'E14, réunies au §6.6.16. Focus visible global et marges de défilement sous le « + » et la barre d'onglets (DT-034 points 1 et 3, §9) ; « + » rond sans étiquette et feuille « Compte et synchronisation » en feuille modale, jamais en ligne (ANO-005, §2.2, §4.26) ; cadre neutre à l'ouverture (ANO-004, §6.2) ; style des boutons natifs (DT-014, §4.1) ; deux nouveaux codes `TXT-TERMINER-SOUS-TACHE` et `TXT-ABANDONNER-SOUS-TACHE` (E13b-a, Q-ST024-STE-1, §6.6.12 et §6.6.16, lignes à ajouter par Benjamin avec `codes.ts` et `catalogue.fr.ts`) ; ordre des cartes de la feuille (§6.6.15). Aucune règle de gestion modifiée ; maquettes inchangées (elles montraient déjà le « + » rond et la feuille haute).
 >
 > **Version 0.2.25, 2026-11-10 (Steeve).** LOT-001, rang 13 (US-031, tranche D1), réponse à Q-ST031-STE-1 d'Anthony : `SYN-FEUILLE-AUTRE-ONGLET` s'affiche sur toutes les largeurs, après le bouton et son explication, avant les cartes (§6.6.9). Aucun nouveau code ni changement de libellé.
@@ -165,7 +167,7 @@ Références : Things (calme, rythme « Aujourd'hui »), Todoist (saisie rapide)
 
 Le **bilan du soir** (ECR-004) n'est pas une vue permanente : c'est un parcours ponctuel, ouvert depuis la carte « Bilan du soir » d'Aujourd'hui ou depuis le lien du rappel de 21 h.
 
-Les **réglages** (capacité, plages, heures des rappels, thème) sont accessibles depuis l'avatar, en haut de l'écran. Ils sont peu fréquents et n'ont donc pas leur place dans la barre de navigation. **(v0.2)** Au lot 1, l'avatar et l'indicateur de synchronisation ouvrent la même **feuille « Compte et synchronisation »** (ECR-011) : état de la synchronisation, modifications non retenues, compte, « Se déconnecter », « Supprimer les données de cet appareil ». Les réglages (ECR-009) s'y ajouteront avec leurs lots.
+Les **réglages** (capacité, plages, heures des rappels, thème) sont accessibles depuis l'avatar, en haut de l'écran. Ils sont peu fréquents et n'ont donc pas leur place dans la barre de navigation. **(v0.2)** Au lot 1, un **bouton « Compte et synchronisation »**, placé à droite de l'indicateur de synchronisation (v0.2.27, Q-CORR-STE-1), ouvre la **feuille « Compte et synchronisation »** (ECR-011) : état de la synchronisation, modifications non retenues, compte, « Se déconnecter », « Supprimer les données de cet appareil ». Les réglages (ECR-009) s'y ajouteront avec leurs lots.
 
 Les **indicateurs** (évolution du backlog et de la vélocité, US-012, US-013) arriveront dans un lot ultérieur. Ils seront accessibles depuis le détail d'un objectif (vue par objectif) et depuis une entrée « Indicateurs » des réglages ou de la barre latérale sur PC. Leur emplacement définitif sera décidé à la conception du lot « Vélocité et pilotage » ; la barre de navigation mobile reste limitée à 4 entrées.
 
@@ -177,7 +179,7 @@ Les **indicateurs** (évolution du backlog et de la vélocité, US-012, US-013) 
 | Tablette ou petite fenêtre (600 à 1023 px) | **Rail vertical** à gauche (icônes et libellés courts), contenu sur une colonne. |
 | PC (≥ 1024 px) | **Barre latérale** à gauche (vues, liste courte des objectifs, état de synchronisation en pied). Contenu au centre. **Panneau de détail** à droite, qui s'ouvre sur sélection d'une tâche ou d'un objectif, sans quitter la liste. |
 
-**Le « + » ne recouvre jamais une ligne (v0.2.26, ANO-005).** Besoin : toucher une ligne ouvre son détail, toujours. Règles : (1) le « + » est **rond, 56 px, sans étiquette visible** (§4.1) ; son nom accessible est le libellé de l'action (« Ajouter une tâche », « Nouvel objectif ») et le texte est aussi donné par `title` au survol sur PC ; (2) il est à 16 px du bord droit et à 16 px au-dessus de la barre d'onglets ; (3) la zone de défilement des vues qui portent un « + » réserve **88 px** en bas (56 + 16 + 16, jeton `--dj-marge-fab`) : à la fin du défilement, la dernière ligne s'arrête au-dessus du « + » ; (4) les lignes gardent 16 px de marge à droite pour que, en cours de défilement, le « + » ne recouvre que de la marge et du texte secondaire, jamais la cible entière d'une ligne. De 600 px et plus (avant DT-033) : colonne de contenu de 720 px au plus, centrée, et « + » aligné sur le bord droit de cette colonne (`max(16px, calc((100vw - 720px) / 2 + 16px))`), pas sur le bord de la fenêtre. Justification : l'étiquette, large de 150 px, recouvrait le centre de la dernière ligne à 390 px de large ; l'onglet actif dit déjà dans quelle vue l'utilisateur ajoute.
+**Le « + » ne recouvre jamais une ligne (v0.2.26, ANO-005).** Besoin : toucher une ligne ouvre son détail, toujours. Règles : (1) le « + » est **rond, 56 px, sans étiquette visible** (§4.1) ; son nom accessible est le libellé de l'action (« Ajouter une tâche », « Créer un objectif » ; v0.2.27, §6.6.17 n° 5) et le texte est aussi donné par `title` au survol sur PC ; (2) il est à 16 px du bord droit et à 16 px au-dessus de la barre d'onglets ; (3) la zone de défilement des vues qui portent un « + » réserve **88 px** en bas (56 + 16 + 16, jeton `--dj-marge-fab`) : à la fin du défilement, la dernière ligne s'arrête au-dessus du « + » ; (4) les lignes gardent 16 px de marge à droite pour que, en cours de défilement, le « + » ne recouvre que de la marge et du texte secondaire, jamais la cible entière d'une ligne. De 600 px et plus (avant DT-033) : colonne de contenu de 720 px au plus, centrée, et « + » aligné sur le bord droit de cette colonne (`max(16px, calc((100vw - 720px) / 2 + 16px))`), pas sur le bord de la fenêtre. Justification : l'étiquette, large de 150 px, recouvrait le centre de la dernière ligne à 390 px de large ; l'onglet actif dit déjà dans quelle vue l'utilisateur ajoute.
 
 Pourquoi 4 onglets et pas 5 : chaque onglet supplémentaire réduit la cible tactile et dilue la hiérarchie. Le bilan du soir est quotidien, mais il est porté par une carte contextuelle au bon moment, ce qui évite un onglet vide 23 heures sur 24.
 
@@ -412,7 +414,7 @@ Conteneur des alertes et propositions (§7). Fond `surface.raised` + `shadow.1`,
 ### 4.8 Indicateur de synchronisation (`SyncStatus`)
 - Smartphone : icône 20 px en haut à droite de l'en-tête, à côté de l'avatar. Libellé texte affiché seulement pour les états « Hors ligne » et « Action requise ».
 - PC : pied de la barre latérale, icône + libellé toujours visible (« À jour · il y a 2 min »).
-- Un appui ouvre la **feuille « Compte et synchronisation »** (ECR-011, §4.26) : dernier échange avec l'espace de stockage (et, plus tard, avec Google Calendar), modifications en attente (nombre et liste), modifications non retenues par la règle de conflit (RG-036, RG-047, RG-048), bouton « Synchroniser maintenant », compte et actions de compte.
+- **(v0.2.27)** L'indicateur n'est pas le bouton d'ouverture : il reste un simple état (`role="status"`) ; la feuille « Compte et synchronisation » (ECR-011, §4.26) s'ouvre par le **bouton distinct** placé à sa droite (§6.6.17 n° 1). Elle contient : dernier échange avec l'espace de stockage (et, plus tard, avec Google Calendar), modifications en attente (nombre et liste), modifications non retenues par la règle de conflit (RG-036, RG-047, RG-048), bouton « Synchroniser maintenant », compte et actions de compte.
 - **(v0.2)** Huit états (§6.5). Le plus grave est seul affiché. **(v0.2.7, Q-US-017-6)** Le point accent « à lire » n'est **pas un état** mais un signal indépendant : il se superpose à l'icône dans **chacun** des huit états (RG-056 a : « discret et permanent » tant qu'une information n'est pas lue). Chaque état a un nom accessible, y compris sur smartphone où seules les icônes « Hors ligne », « Action requise » et « Session à renouveler » portent un libellé visible.
 
 ### 4.9 Bandeau (`Banner`)
@@ -1165,7 +1167,7 @@ Réserve pour Starck : l'« invite » du DAT §7.4 est ici la carte de la feuill
 **Ordre des cartes de la feuille ECR-011 (v0.2.26, E13b).** De haut en bas, quel que soit l'état ; une carte ou section absente disparaît sans laisser de vide :
 1. **« À lire »** (`SYN-FEUILLE-A-LIRE`, lignes `DiscardedItem` avec « Compris ») : dès qu'au moins une information est à lire ; c'est la seule chose que l'utilisateur n'a pas encore vue ;
 2. **`ALR-016`** « Une nouvelle version est disponible » : la seule action à faire dans la feuille ; jamais en même temps que la variante `carte` d'`ERR-013` ;
-3. **Section « Synchronisation »** : dernier échange, modifications en attente, mention hors ligne, bouton « Synchroniser maintenant » et son explication, `SYN-FEUILLE-AUTRE-ONGLET`, cartes d'erreur, `ALR-015` en pied, ligne « Stockage », ligne « Fuseau » ;
+3. **Section « Synchronisation »** : dernier échange, modifications en attente, mention hors ligne, bouton « Synchroniser maintenant » et son explication, `SYN-FEUILLE-AUTRE-ONGLET`, cartes d'erreur, `ALR-015` en pied, ligne « Stockage » ; la ligne « Fuseau » est dans la section « Compte » (v0.2.27, Q-CORR-STE-2) ;
 4. **Section « Compte »** (actions de compte, §4.27 en dernier).
 Règle de lecture : ce qui demande un geste de lecture ou de décision passe avant l'état ordinaire. Le choix de restauration (ECR-011 E) n'est pas une carte de cette feuille : il a sa propre feuille (§4.26).
 
@@ -1202,13 +1204,35 @@ Point 2 (icônes Lucide, trait de 1,5 px, icône « liste à puces cochées » p
 
 | Largeur | « + » | Feuille de synchronisation | Contenu |
 |---|---|---|---|
-| 390 × 844 (< 600 px) | Rond 56 px sans étiquette, 16 px du bord droit et au-dessus de la barre | Feuille basse haute, 0,92 de la hauteur, défilement interne ; ouverte par l'indicateur, fermée au lancement | Zone de défilement : 88 px de réserve en bas ; en-tête, indicateur et bandeau sur une ligne fixe ; au repos, au moins 5 lignes de liste visibles |
+| 390 × 844 (< 600 px) | Rond 56 px sans étiquette, 16 px du bord droit et au-dessus de la barre | Feuille basse haute, 0,92 de la hauteur, défilement interne ; ouverte par le bouton « Compte et synchronisation » à droite de l'indicateur (v0.2.27, §6.6.17), fermée au lancement | Zone de défilement : 88 px de réserve en bas ; en-tête, indicateur et bandeau sur une ligne fixe ; au repos, au moins 5 lignes de liste visibles |
 | 600 à 1023 px | Idem, aligné sur le bord droit de la colonne de 720 px | Feuille basse de 640 px au plus, centrée | Colonne de 720 px centrée (DT-033 en attente) |
 | 1280 × 800 (≥ 1024 px) | Idem, aligné sur le bord droit de la colonne de 720 px | Panneau de 400 px à droite, pleine hauteur | Colonne de 720 px centrée ; barre d'onglets en bas à largeur de colonne |
 
 Critères de contrôle : (a) à 390 × 844, un toucher au centre de chaque ligne visible, y compris la dernière après défilement, ouvre le détail ; l'étape `@ihm` doit toucher le centre et non plus le bord gauche ; (b) feuille ouverte puis fermée, la position de défilement de la liste est inchangée ; (c) à l'ouverture de la feuille, la liste n'a pas bougé (aucun déplacement du contenu derrière). Gravités proposées : ANO-005 **Majeure** (la saisie remplace l'ouverture d'une tâche sur le geste le plus fréquent, à la taille d'écran prioritaire ; contournable, sans perte de donnée) ; ANO-004 **Mineure** (flash, sans perte ni blocage).
 
 **6. DT-033 : reportée à LOT-002.** Une barre d'onglets en bas reste utilisable sur PC (aucune perte de fonction), et la colonne centrée de 720 px (§2.2) supprime l'écart le plus visible. Le rail et la barre latérale avec panneau de détail sont inscrits en limitation connue pour la recette ; à rouvrir si le commanditaire juge la navigation PC inacceptable (question en §5.3 de l'E13b).
+
+#### 6.6.17 Réponses de Steeve aux questions Q-CORR-STE-1 à 6 (v0.2.27, rang 14)
+
+| N° | Décision | Besoin et raison |
+|---|---|---|
+| 1 | **Bouton distinct** « Compte et synchronisation », à droite de l'indicateur (défaut confirmé). Je corrige mes textes de la v0.2.26 qui disaient « ouverte par l'indicateur » (§2.2, §4.8, §6.6.16 n° 5, §11). | Un état n'est pas une commande ; l'indicateur `SYN-SESSION` porte déjà un bouton. Un bouton nommé par son libellé visible dit où l'on va (2.5.3). Cible tactile ≥ 44 px. |
+| 2 | **« Fuseau » reste dans « Compte »** (défaut confirmé). Le §6.6.15 qui la cite dans « Synchronisation » est corrigé : elle suit « Compte » (§4.26). | Le fuseau est un réglage de l'utilisateur, pas un état d'échange. |
+| 3 | **Compte et synchronisation seulement** ; boutons d'`objectifs-taches` = dette CORR-a, P3 (défaut confirmé). | Écrans de confiance d'abord. Condition : rôle, nom et anneau de focus global (§6.6.16 n° 1) restent vrais sur ces boutons ; limitation connue à l'E14. |
+| 4 | **Ligne d'état de 48 px minimum, bandeau dessous (défaut corrigé sur un point)** : `min-height: 48px` **sans `max-height`**. | Avec texte agrandi (200 %, 1.4.4) ou espacement (1.4.12), une hauteur maximale couperait le libellé. Le libellé du bouton peut passer sur deux lignes, jamais tronqué. |
+| 5 | **« Créer un objectif »** (défaut confirmé). Le §2.2 disait « Nouvel objectif » : corrigé. « Nouvel objectif » reste le nom du formulaire. | Même geste, même nom que l'état vide (§6.3) ; un bouton et un formulaire ne portent pas le même nom. |
+| 6 | **Titre de la feuille** (défaut confirmé). | Après le dernier « Compris », le contexte reste le haut de la feuille ; « Fermer » inciterait à quitter, « Synchroniser maintenant » à agir sans l'avoir décidé. |
+
+**Texte exact et nom accessible.** Bouton : « Compte et synchronisation » (nom accessible identique, `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`). Feuille : nom « Compte et synchronisation » ; titre `h2` identique ; bouton « Fermer ». Aucun espace insécable requis dans ces libellés ; les guillemets des messages restent ceux du catalogue.
+
+**Comportement dans `IonModal` (contrôle de l'E14).**
+- Ordre de focus : titre (programmatique, `tabIndex=-1`) puis « Fermer » puis le contenu dans l'ordre visuel (« À lire », « Synchronisation », « Compte »). Le focus ne sort pas de la feuille tant qu'elle est ouverte (piège d'Ionic) ; le contenu derrière n'est pas atteignable (`inert`/`aria-hidden` par Ionic).
+- Ouverture : le focus va **sur le titre** (annonce « Compte et synchronisation, boîte de dialogue »). Fermeture (« Fermer », Échap, fond, glissement) : le focus revient **au bouton d'ouverture**. Si le bouton n'a pas le focus au moment de la fermeture (Safari), le code le lui donne.
+- Échap : ferme la feuille ; si une confirmation est ouverte dans la feuille, Échap ferme **la confirmation seule**.
+- Lecteur d'écran : l'hôte `ion-modal` porte `role="dialog"` et `aria-modal="true"` (posés par Ionic, à vérifier) ; le titre nomme la feuille ; la liste « À lire » est annoncée par ses titres de carte.
+- Après le dernier « Compris » : focus sur le titre (feuille ouverte) ou sur le bouton d'ouverture (feuille fermée).
+
+**Rappel des trois accords du commanditaire** : barre d'onglets conservée sur PC (DT-033 reportée à LOT-002) ; pas de mode sombre au lot 1 ; modifications en attente par intitulé seul (Q-ST017-STE-1).
 
 ## 7. Alertes et propositions
 
@@ -1428,7 +1452,7 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 ### 12.1 bis Décisions de conception prises par Steeve en v0.2 (pour information, sans question)
 - **Dossier Drive** : « Done Juan » (CA-3 de US-022 : « son nom est fixé en E4 »).
 - **Mention « Heure de Paris »** : forme au §4.21 (A-F6).
-- **Un seul endroit** pour la synchronisation et le compte (ECR-011), ouvert par l'avatar ou l'indicateur.
+- **Un seul endroit** pour la synchronisation et le compte (ECR-011), ouvert par un bouton « Compte et synchronisation » à côté de l'indicateur (v0.2.27).
 - **Estimation d'une tâche** : icône horloge au lot 1 (le sablier est réservé au reste à faire).
 - **Heure d'apparition de la carte « Bilan du soir »** : dès 17 h (valeur de conception ; RG-039 n'en fixe pas).
 - **Regroupement « Atteints »** replié dans la liste des objectifs (P2), confirmé en E9 (§5.8, Q-US-001-6).
@@ -1518,3 +1542,4 @@ Questions à transmettre au commanditaire par Jarvis. Elles portent sur des choi
 | 0.2.24 | 2026-11-09 | Steeve | Q-ST018-STE-2 et 3 (rang 12) : §6.6.15, nouveau code `ALR-016` (invite « nouvelle version », carte de la feuille, retours d'`ERR-013`), `ALR-015` confirmée en pied de la section « Synchronisation ». |
 | 0.2.25 | 2026-11-10 | Steeve | Q-ST031-STE-1 (rang 13) : `SYN-FEUILLE-AUTRE-ONGLET` sur toutes les largeurs, après le bouton, avant les cartes (§6.6.9). |
 | 0.2.26 | 2026-11-12 | Steeve | E13b de LOT-001 (§6.6.16) : focus global et marges (§9, §2.2) ; « + » rond sans étiquette ; feuille de synchronisation modale (§4.26) ; cadre neutre à l'ouverture (§6.2) ; style des boutons natifs (§4.1) ; codes `TXT-TERMINER-SOUS-TACHE` et `TXT-ABANDONNER-SOUS-TACHE` (§6.6.12) ; ordre des cartes (§6.6.15) ; Q-ST017-STE-1. |
+| 0.2.27 | 2026-11-13 | Steeve | Réponses Q-CORR-STE-1 à 6 (§6.6.17) : bouton distinct d'ouverture de la feuille (corrige §2.2, §4.8, §6.6.16 n° 5, §11), « Créer un objectif » (§2.2), ligne d'état sans hauteur maximale, focus de la feuille. |

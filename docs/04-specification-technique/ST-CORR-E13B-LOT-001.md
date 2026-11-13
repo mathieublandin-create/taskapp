@@ -262,7 +262,7 @@ ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
 - `Application` rend `<Dialogues …/>` à la racine **seulement si la feuille est fermée** (un seul exemplaire monté).
 - `FeuilleChoixRestauration` (ECR-011 E) reste hors de la feuille, inchangée (guide §6.6.15 : « elle a sa propre feuille »).
 - Focus de fin de « À lire » (DT-028, `useFocusFinALire`) : cible = `BoutonFeuille` quand la feuille est fermée (le hook passe de l'indicateur au bouton : `refElement`), et le titre `h2` de la feuille (`tabIndex={-1}`) quand elle est ouverte (Q-CORR-STE-6, choix par défaut). L'indicateur cesse d'être la cible (`tabIndex={-1}` conservé, sans effet).
-- Ligne d'état, CSS : `.ligne-etat { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; max-height: 48px; padding: 0 8px 0 16px; }`. Le bandeau garde sa hauteur naturelle sous la ligne (Q-CORR-STE-4, choix par défaut : un bandeau à texte et action ne tient pas dans 48 px).
+- Ligne d'état, CSS : `.ligne-etat { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 0 8px 0 16px; }`. Le bandeau garde sa hauteur naturelle sous la ligne (Q-CORR-STE-4, choix par défaut : un bandeau à texte et action ne tient pas dans 48 px).
 
 ### 5.2 bis Retrait des rustines de T2 et T3 (T5b, v0.2)
 
@@ -498,6 +498,10 @@ Pas de question à Starck : ni port, ni flux, ni ADR touché ; le `webServer` pa
 ### 16.3 Effet sur le calendrier de la recette
 
 Sept tranches d'une demi-journée environ, une à la fois, chacune suivie d'une E13 courte : **4 à 5 jours ouvrés** avant la PR finale, puis la nouvelle E13b limitée. L'E14 ne peut pas commencer avant (FD-LOT-001-2 et 4 bloquants). La publication de la recette (FD-LOT-001-1) avance en parallèle et n'est pas retardée. Le jeu de données de Pepper est calé sur novembre 2026 : si l'E16 glisse après le 2026-11-30, les dates sont à recaler (§5.2 e de l'E13b).
+
+### 16.2 bis Réponses de Steeve (guide v0.2.27, §6.6.17 ; Anthony intègre)
+
+Q-CORR-STE-1 à 3, 5 et 6 : **défauts confirmés**. Q-CORR-STE-4 : **corrigée** : `.ligne-etat` en `min-height: 48px` **sans `max-height`** (texte agrandi, WCAG 1.4.4 et 1.4.12), libellé du bouton sur deux lignes si besoin, jamais tronqué. Ajout non couvert par un test rouge : à l'ouverture de la feuille, focus sur le titre `h2` (`onDidPresent`), et au retour le bouton d'ouverture reprend le focus s'il l'a perdu ; Échap ferme la confirmation seule si elle est ouverte. Aucun test rouge existant à modifier (aucun ne contrôle la hauteur maximale ni le focus d'ouverture). Voir `docs/02-ux/guide-ergonomie.md` §6.6.17.
 
 ## 17. Checklist de complétude
 
