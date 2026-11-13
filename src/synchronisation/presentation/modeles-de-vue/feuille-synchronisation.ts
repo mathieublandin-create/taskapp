@@ -197,7 +197,7 @@ const carte = (
   message: CarteErreurFeuille['message'],
   type: ActionCarteFeuille,
   variables: Readonly<Record<string, number>>,
-  variante?: 'carte',
+  variante?: 'carte' | 'une' | 'aucune',
 ): CarteErreurFeuille => {
   const options = variante === undefined ? variables : { ...variables, variante };
   return {
@@ -208,6 +208,12 @@ const carte = (
   };
 };
 
+/** Q-ST017-STE-1 b : `aucune` sans modification en attente, `une` pour une seule, texte de base au-delà. */
+const varianteEchec = (nombreLignes: number): 'une' | 'aucune' | undefined => {
+  if (nombreLignes === 0) return 'aucune';
+  return nombreLignes === 1 ? 'une' : undefined;
+};
+
 const modeleCartes = (
   etat: EtatSynchronisationAffichable,
   nombreLignes: number,
@@ -216,7 +222,9 @@ const modeleCartes = (
   if (etat.actionRequise === 'FORMAT_PLUS_RECENT')
     return [carte('ERR-013', 'METTRE_A_JOUR', {}, 'carte')];
   if (etat.actionRequise === 'ECHEC_PERSISTANT') {
-    return [carte('ERR-016', 'REESSAYER_MAINTENANT', { n: nombreLignes })];
+    return [
+      carte('ERR-016', 'REESSAYER_MAINTENANT', { n: nombreLignes }, varianteEchec(nombreLignes)),
+    ];
   }
   return [];
 };
