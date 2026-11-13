@@ -44,7 +44,7 @@ const BoutonAction = ({
     type="button"
     className="bouton-natif"
     data-action={action}
-    {...(action === 'REPRENDRE_LA_SYNCHRONISATION' ? {} : { 'data-variante': 'principal' })}
+    data-variante="principal"
     {...(desactive ? { 'aria-disabled': true } : {})}
     onClick={() => {
       if (!desactive) surAction(action);
