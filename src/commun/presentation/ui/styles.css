@@ -398,6 +398,9 @@ ion-button::part(native):focus-visible {
 /* Réserve sous le « + » : la dernière ligne reste atteignable (WCAG 2.4.11). */
 ion-content.contenu-avec-fab {
   --padding-bottom: var(--dj-marge-fab);
+
+  /* Sans ce découpage, la réserve fait déborder le contenu d'un contenu très court sur la barre d'onglets. */
+  overflow: hidden;
 }
 
 ion-content.contenu-avec-fab::part(scroll) {
