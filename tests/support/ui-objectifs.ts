@@ -1,0 +1,215 @@
+/**
+ * Outils des tests de composants d'US-001 (ST-US-001 §14) : services d'objectifs réels sur l'environnement d'écriture
+ * (fake-indexeddb), magasin Zustand et gestes utilisateur sur les composants Ionic.
+ */
+import { cleanup, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { expect } from 'vitest';
+import { assemblerObjectifsTaches, type ObjectifsTaches } from '@src/composition/objectifs-taches';
+import type { IdObjectif } from '@src/commun/domaine/identifiants';
+import { echec } from '@src/commun/domaine/resultat';
+import { creerMagasinObjectifsTaches } from '@src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches';
+import type { ServiceEtatLocal } from '@src/synchronisation/application/service-etat-local';
+import { PlanificateurSimule } from '../doublures/planificateur-simule';
+import { creerEnvironnement, valeurDe, type Environnement } from './environnement';
+
+export type BancObjectifs = {
+  readonly env: Environnement;
+  /** Tous les cas d'usage et requêtes assemblés (objectifs et tâches). */
+  readonly services: ObjectifsTaches;
+  readonly magasin: ReturnType<typeof creerMagasinObjectifsTaches>;
+  /** Crée un objectif par le cas d'usage et rend son identifiant. */
+  readonly creer: (intitule: string, delai?: string) => Promise<IdObjectif>;
+};
+
+const DEPART = '2026-10-21T08:00:00.000Z';
+
+const banc = (env: Environnement, service: ServiceEtatLocal): BancObjectifs => {
+  const services = assemblerObjectifsTaches({
+    service,
+    generateur: env.generateur,
+    horloge: env.horloge,
+    observer: (rappel) => env.depot.observer(rappel),
+    planificateur: new PlanificateurSimule(env.temps),
+  });
+  return {
+    env,
+    services,
+    magasin: creerMagasinObjectifsTaches(services),
+    creer: async (intitule, delai) =>
+      valeurDe(
+        await services.creerObjectif.executer({
+          intitule,
+          ...(delai === undefined ? {} : { delai: delai as never }),
+        }),
+      ),
+  };
+};
+
+export const creerBancObjectifs = (depart: string = DEPART): BancObjectifs => {
+  const env = creerEnvironnement(depart);
+  return banc(env, env.service);
+};
+
+/**
+ * Banc dont les écritures peuvent échouer comme un espace local inaccessible (ERR-014) ; les lectures fonctionnent.
+ * `interrompre()` rend les écritures suivantes impossibles.
+ */
+export const creerBancEcritureInterruptible = (): BancObjectifs & {
+  readonly interrompre: () => void;
+} => {
+  const env = creerEnvironnement(DEPART);
+  let interrompu = false;
+  const service: ServiceEtatLocal = {
+    lire: () => env.service.lire(),
+    lireJournal: (element) => env.service.lireJournal(element),
+    lireDecompteEnAttente: () => env.service.lireDecompteEnAttente(),
+    modifier: (decision) =>
+      interrompu
+        ? Promise.resolve(echec({ type: 'EcritureLocaleImpossible' as const }))
+        : env.service.modifier(decision),
+  };
+  return {
+    ...banc(env, service),
+    interrompre: () => {
+      interrompu = true;
+    },
+  };
+};
+
+/** Banc dont toutes les écritures échouent. */
+export const creerBancEcritureImpossible = (): BancObjectifs => {
+  const interruptible = creerBancEcritureInterruptible();
+  interruptible.interrompre();
+  return interruptible;
+};
+
+/** Champ natif d'un composant Ionic (IonInput, IonTextarea) retrouvé par son libellé. */
+const composantChamp = (
+  libelle: RegExp | string,
+): Promise<HTMLIonInputElement | HTMLIonTextareaElement> =>
+  waitFor(() => {
+    const trouve = Array.from(
+      document.querySelectorAll<HTMLIonInputElement | HTMLIonTextareaElement>(
+        'ion-input, ion-textarea',
+      ),
+    ).find((e) =>
+      typeof libelle === 'string' ? e.label === libelle : libelle.test(e.label ?? ''),
+    );
+    if (trouve === undefined) throw new Error(`Champ « ${String(libelle)} » absent`);
+    return trouve;
+  });
+
+export const champ = async (
+  libelle: RegExp | string,
+): Promise<HTMLInputElement | HTMLTextAreaElement> => {
+  const composant = await composantChamp(libelle);
+  const natif = composant.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
+  if (natif === null) throw new Error(`Champ natif « ${String(libelle)} » absent`);
+  return natif;
+};
+
+/** Bouton Ionic (ion-button, ion-fab-button) retrouvé par son texte ou son nom accessible. */
+export const boutonIon = async (nom: string): Promise<HTMLElement> =>
+  waitFor(() => {
+    const trouve = Array.from(
+      document.querySelectorAll<HTMLElement>('ion-button, ion-fab-button'),
+    ).find((b) => b.textContent.trim() === nom || b.getAttribute('aria-label') === nom);
+    if (trouve === undefined) throw new Error(`Bouton « ${nom} » absent`);
+    return trouve;
+  });
+
+export const cliquerBoutonIon = async (nom: string): Promise<void> => {
+  await userEvent.click(await boutonIon(nom));
+};
+
+/**
+ * Écoute `ionModalDidPresent` : à appeler **avant** d'ouvrir la modale, puis à attendre une fois qu'elle l'est. La
+ * modale prend le focus à la fin de sa présentation ; renseigner et valider avant ferait reprendre le focus au champ
+ * invalide (RC-US-017-12).
+ */
+export const surPresentationModale = (): Promise<void> =>
+  new Promise<void>((resoudre) => {
+    document.addEventListener(
+      'ionModalDidPresent',
+      () => {
+        resoudre();
+      },
+      { once: true },
+    );
+  });
+
+/**
+ * Renseigne un champ Ionic comme le fait le composant : valeur posée, puis événement `ionInput`. La frappe simulée
+ * touche par touche (`userEvent.type`) concourt avec le rendu contrôlé du champ : sous charge, des caractères sont
+ * perdus ou permutés (DT-029) ; c'est donc le seul moyen de saisir dans les tests de composants Ionic.
+ */
+export const renseigner = async (libelle: RegExp | string, texte: string): Promise<void> => {
+  const composant = await composantChamp(libelle);
+  composant.value = texte;
+  composant.dispatchEvent(new CustomEvent('ionInput', { detail: { value: texte } }));
+  await waitFor(() => {
+    expect(composant.value).toBe(texte);
+  });
+};
+
+/**
+ * Saisie dans un champ Ionic : depuis DT-029, synonyme de `renseigner` (la frappe touche par touche perd ou permute des
+ * caractères sous charge). Conservé pour les tests qui l'appellent (UT-COMP-US-001-190, ANO-003).
+ */
+export const saisir = renseigner;
+
+/**
+ * Choisit un bouton d'une feuille d'actions Ionic et attend sa fermeture : l'action choisie s'exécute à la fermeture
+ * (`onDidDismiss`), émise après la transition ; une assertion immédiate la précéderait (DT-029).
+ */
+export const choixDuMenu = async (texte: string): Promise<void> => {
+  const fermee = apresEvenement('ionActionSheetDidDismiss');
+  await userEvent.click(await screen.findByRole('button', { name: texte }));
+  await fermee;
+};
+
+const ATTENTE_FERMETURE_MS = 150;
+
+const apresEvenement = (nom: string): Promise<void> =>
+  new Promise((resolve) => {
+    document.addEventListener(
+      nom,
+      () => {
+        resolve();
+      },
+      { once: true },
+    );
+  });
+
+/**
+ * Exécute un geste qui ouvre une superposition Ionic et attend la fin de sa présentation : avant, Ionic déplace le
+ * focus et une saisie en cours serait interrompue.
+ */
+export type Superposition = 'Modal' | 'ActionSheet';
+
+/** Attend la fin de la fermeture d'une superposition (Ionic démonte mal une superposition encore présentée). */
+export const apresFermeture = async (superposition: Superposition): Promise<void> => {
+  await apresEvenement(`ion${superposition}DidDismiss`);
+  // Ionic retire encore la superposition de la page après l'événement : le démontage doit attendre.
+  await new Promise((resolve) => setTimeout(resolve, ATTENTE_FERMETURE_MS));
+};
+
+export const ouvrir = async (
+  superposition: Superposition,
+  geste: () => Promise<void>,
+): Promise<void> => {
+  const presentee = apresEvenement(`ion${superposition}DidPresent`);
+  await geste();
+  await presentee;
+};
+
+/**
+ * Démonte les composants puis retire les superpositions Ionic téléportées dans le corps de la page, après avoir laissé
+ * à Ionic le temps d'achever leur fermeture (sinon il tente de retirer un élément déjà détaché).
+ */
+export const nettoyerDocument = async (): Promise<void> => {
+  cleanup();
+  await new Promise((resolve) => setTimeout(resolve, ATTENTE_FERMETURE_MS));
+  document.body.replaceChildren();
+};

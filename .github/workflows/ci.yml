@@ -1,0 +1,183 @@
+# Intégration continue de l'application (conventions.md §14.1, §14.3 ; Q-BEN-LOT001-4).
+# Rang 0 : tous les contrôles du §14.1 sauf le job `ihm` (ajouté au rang 12) et la mutation (fin de lot).
+# Rang 3 : job `e2e`, test de fumée de la CSP en navigateur réel (DT-012). Rang 12 : repris par le job `ihm`.
+# Aucun secret : l'application n'en a pas (DS-04). Actions épinglées par empreinte de commit (§9.5).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ['us/**', 'ano/**', 'lot/**', 'main']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualite:
+    name: qualite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Formatage
+        run: pnpm format:verifier
+      - name: Lint
+        run: pnpm lint
+      - name: Types
+        run: pnpm types
+      - name: Architecture (dependency-cruiser)
+        run: pnpm architecture
+      - name: Catalogue des codes
+        run: pnpm verifier:catalogue
+      - name: Tags des scénarios
+        run: pnpm verifier:tags
+      - name: Rangs des scénarios (le rang ne recule pas)
+        run: |
+          base="$(git show "origin/${{ github.base_ref || github.ref_name }}:tests/support/rangs/rang-courant.json" 2>/dev/null | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).rangCourant' 2>/dev/null || true)"
+          RANG_BASE="${base}" pnpm verifier:rangs
+      - name: Hygiène du dépôt
+        run: pnpm verifier:depot
+      - name: Étapes Cucumber inutilisées
+        run: pnpm cucumber:steps-inutilises
+
+  tests:
+    name: tests (${{ matrix.fuseau }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Le fuseau Europe/Paris n'est volontairement pas un fuseau de CI (§14.1).
+        fuseau: [UTC, Pacific/Auckland, America/New_York]
+    env:
+      TZ: ${{ matrix.fuseau }}
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Historique complet : la non-régression de couverture compare la PR à sa branche de base (DT-005).
+          fetch-depth: 0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Tests unitaires, de contrat et d'intégration (couverture dans le job UTC)
+        run: |
+          if [ "${{ matrix.fuseau }}" = "UTC" ]; then pnpm test:couverture; else pnpm test; fi
+      - name: Non-régression de la couverture par fichier (conventions.md §12, DT-005)
+        if: github.event_name == 'pull_request' && matrix.fuseau == 'UTC'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: |
+          # Couverture de la branche de base dans un arbre séparé, puis comparaison fichier par fichier. Le
+          # rapport json-summary est demandé en ligne de commande : la configuration de la base peut ne pas le produire.
+          racine_base="${RUNNER_TEMP}/base"
+          git worktree add --detach "${racine_base}" "${BASE_REF}"
+          (cd "${racine_base}" && pnpm install --frozen-lockfile && pnpm exec vitest run --coverage --coverage.reporter=json-summary)
+          pnpm verifier:couverture-fichiers "${racine_base}/coverage/coverage-summary.json" "${racine_base}" "${BASE_REF}"
+      - name: Cucumber (scénarios exécutables au rang courant)
+        run: pnpm cucumber
+      - name: Performance indicative (UTC seulement, non bloquante)
+        if: matrix.fuseau == 'UTC'
+        continue-on-error: true
+        run: pnpm test:performance
+
+  securite:
+    name: securite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GITLEAKS_VERSION: 8.28.0
+      GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+      OSV_SCANNER_VERSION: 2.7.0
+      OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+      SEMGREP_VERSION: 1.182.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git --no-banner --redact --verbose > gitleaks.log 2>&1 || { echo "::error title=gitleaks::$(tail -c 2500 gitleaks.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: osv-scanner
+        run: |
+          curl -sSfL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  osv-scanner" | sha256sum --check -
+          chmod +x osv-scanner
+          ./osv-scanner scan source --lockfile=pnpm-lock.yaml > osv.log 2>&1 || { echo "::error title=osv-scanner::$(tail -c 3500 osv.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: Licences
+        run: pnpm licences > licences.log 2>&1 || { echo "::error title=licences::$(tail -c 2500 licences.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: Semgrep
+        run: pipx run "semgrep==${SEMGREP_VERSION}" scan --config p/typescript --config p/react --config p/owasp-top-ten --config p/secrets --config p/security-audit --error --metrics=off src > semgrep.log 2>&1 || { echo "::error title=semgrep::$(tail -c 3500 semgrep.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VITE_ENV: production
+      VITE_BASE_PATH: /taskapp/
+      VITE_APP_ORIGIN: https://mathieublandin-create.github.io
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Construction de la PWA
+        run: pnpm build
+      - name: Aucune composition de test dans dist/ (ST-US-018 §6.4 n° 6)
+        run: pnpm verifier:dist
+
+  # Conventions §14.3 : job `ihm` (build `test-ihm`, Cucumber `@ihm`, Playwright), qui absorbe l'ancien job `e2e` (DT-012).
+  # Le contrôle requis par la protection de `main` s'appelle « e2e (CSP, navigateur réel) » : l'intitulé est conservé
+  # pour que la protection reste satisfaite sans réglage (le job couvre toujours ce parcours). Une fois le contrôle
+  # requis renommé « ihm » par le propriétaire du dépôt, remplacer `name` par « ihm ».
+  ihm:
+    name: e2e (CSP, navigateur réel)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Valeurs fictives (aucun secret, aucun accès à Google) : le build `test-ihm` n'a pas de fichier `.env.test-ihm`.
+      VITE_BASE_PATH: /
+      VITE_APP_ORIGIN: http://localhost:4175
+      VITE_GOOGLE_WEB_CLIENT_ID: ihm-fictif.apps.googleusercontent.com
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Chromium de Playwright (version figée par le lockfile)
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Cucumber @ihm (build test-ihm, navigateur réel)
+        run: pnpm cucumber:ihm
+      - name: Test de fumée de la CSP et parcours Playwright (ADR-014, DT-012)
+        run: pnpm e2e

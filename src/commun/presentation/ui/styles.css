@@ -1,0 +1,366 @@
+/* Styles de l'interface (guide d'ergonomie §3 : jetons ; maquettes ECR-003, ECR-008). Les composants Ionic portent
+   l'essentiel ; ces règles complètent les éléments sémantiques maison (anneau de progression, lignes, boîte de
+   confirmation). Aucune couleur ne porte seule une information : l'état est toujours écrit. */
+:root {
+  --dj-accent: #2e5bdb;
+  --dj-succes: #1e7a4c;
+  --dj-danger: #c42b2b;
+  --dj-bord: #dcdce2;
+  --dj-surface: #f6f6f8;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Au-dessus du fond : l'hôte `ion-backdrop` est en z-index: 2 (position absolute) dans le même contexte `.scrim`;
+   en dessous, il intercepterait clic et toucher destinés aux boutons (ANO-007). */
+.boite-confirmation {
+  position: relative;
+  z-index: 3;
+  width: min(92vw, 420px);
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--ion-background-color, #fff);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
+}
+
+.selecteur-parent fieldset {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+
+.selecteur-parent ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selecteur-parent li {
+  display: flex;
+  flex-direction: column;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.boite-confirmation .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.boite-confirmation button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--dj-bord);
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+}
+
+.boite-confirmation button[data-rouge='true'] {
+  border-color: var(--dj-danger);
+  background: var(--dj-danger);
+  color: #fff;
+}
+
+.etat-vide {
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.liste-objectifs,
+.liste-taches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ligne-objectif button,
+.ligne-tache button {
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--dj-bord);
+  background: transparent;
+  font: inherit;
+  text-align: start;
+}
+
+.ligne-tache {
+  display: flex;
+  align-items: center;
+}
+
+.ligne-tache > button {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Case « Terminer » : cible de 44 px (guide §4.2, WCAG 2.5.8). */
+.ligne-tache > input[type='checkbox'] {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+}
+
+/* Intitulé barré dès le geste « Terminer », y compris pendant le maintien de 3 s (guide §4.2, DT-030). */
+.ligne-tache-intitule[data-barre] {
+  text-decoration: line-through;
+}
+
+.ligne-tache-incoherence {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.ligne-objectif[data-niveau='SOUS_OBJECTIF'] button,
+.ligne-tache[data-niveau='SOUS_TACHE'] button {
+  padding-inline-start: 44px;
+}
+
+.ligne-objectif-texte,
+.ligne-objectif-meta,
+.ligne-tache-texte,
+.ligne-tache-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.ligne-objectif-meta,
+.ligne-tache-meta {
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 14px;
+}
+
+.ligne-objectif-intitule {
+  font-size: 16px;
+}
+
+.objectifs-atteints > button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+}
+
+.progression-objectif {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--dj-accent) var(--progression), var(--dj-surface) 0);
+}
+
+.progression-objectif[data-atteint='true'] {
+  background: conic-gradient(var(--dj-succes) var(--progression), var(--dj-surface) 0);
+}
+
+.progression-objectif::after {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ion-background-color, #fff);
+  content: '';
+}
+
+.progression-objectif-petit {
+  width: 24px;
+  height: 24px;
+}
+
+.progression-objectif-petit::after {
+  width: 16px;
+  height: 16px;
+}
+
+.detail-objectif-puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detail-objectif-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.icone-abandonnee {
+  flex: none;
+  vertical-align: middle;
+  margin-inline-end: 4px;
+}
+
+.ligne-tache-etiquette {
+  font-size: 13px;
+  color: var(--dj-text-tertiary, inherit);
+}
+
+.point-attente {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dj-accent, currentColor);
+}
+
+[data-code='MEN-EN-RETARD'] {
+  color: var(--dj-danger);
+  font-weight: 600;
+}
+
+/* Feuille de saisie : feuille basse sur smartphone, panneau de 400 px à droite sur PC (ECR-008 B et G). */
+ion-modal.feuille-objectif .feuille-objectif-contenu,
+ion-modal.saisie-rapide .saisie-rapide-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+@media (width >= 1024px) {
+  ion-modal.feuille-objectif {
+    --width: 400px;
+    --height: 100%;
+    --border-radius: 0;
+
+    justify-content: flex-end;
+  }
+}
+
+/* Filtres, puces et sélecteur de durée des tâches (guide §4.3, §4.4, §5.7) : l'état « actif » est écrit par aria-pressed. */
+.filtre-etat,
+.filtre-objectif,
+.puces-objectif,
+.selecteur-duree {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.filtre-etat button,
+.filtre-objectif button,
+.puces-objectif button,
+.selecteur-duree button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--dj-bord);
+  border-radius: 22px;
+  background: transparent;
+  font: inherit;
+}
+
+.filtre-etat button[aria-pressed='true'],
+.filtre-objectif button[aria-pressed='true'],
+.puces-objectif button[aria-pressed='true'] {
+  border-color: var(--dj-accent);
+  font-weight: 600;
+}
+
+.selecteur-duree [role='spinbutton'] {
+  min-width: 72px;
+  text-align: center;
+}
+
+.champ-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--dj-bord);
+}
+
+.champ-detail-nom {
+  font-weight: 600;
+}
+
+/* Mise en page de l'application (guide §2.2, §4.14) : l'espace occupe la hauteur de l'écran, le contenu défile dans
+   `ion-content`, la barre d'onglets reste en bas, au-dessus du « + » flottant de la vue (zone du pouce). */
+.espace-application {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.espaces {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.espaces-contenu {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.barre-onglets {
+  display: flex;
+  border-top: 1px solid var(--dj-bord);
+  background: var(--ion-background-color, #fff);
+}
+
+.barre-onglets button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  min-width: 44px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.barre-onglets button[aria-current='page'] {
+  color: var(--dj-accent);
+  font-weight: 700;
+}
+
+/* « + » flottant : le libellé visible précède le bouton rond (guide §4.14 : cibles d'au moins 44 px). */
+.bouton-flottant {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bouton-flottant-etiquette {
+  padding: 12px 16px;
+  border-radius: 24px;
+  background: var(--ion-background-color, #fff);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  font-weight: 600;
+  white-space: nowrap;
+}

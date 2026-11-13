@@ -213,6 +213,7 @@ describe('construireListeTaches (guide §5.7, US-002 CA-11)', () => {
 
     expect(construireLigneTache(incoherente, aujourdhui).incoherence).toEqual({
       code: 'MEN-INCOHERENCE',
+      libelle: 'Incohérence',
     });
     expect(construireLigneTache(resumeTache({ id: t(3) }), aujourdhui).incoherence).toBeUndefined();
   });

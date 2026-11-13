@@ -1,0 +1,135 @@
+/**
+ * Refus et confirmations des objectifs (glossaire d'étapes v1.4 §9 ; conventions.md §8.5, §8.6 ; ST-US-001 §12
+ * n° 13 et 26).
+ */
+import assert from 'node:assert/strict';
+import { Then } from '@cucumber/cucumber';
+import { messagesDeRefus, type MessageRefus, type RefusMetier } from '@src/objectifs-taches';
+import type { NomAppareil } from '../../support/banc/appareil-simule';
+import type { NatureCommande } from '../../support/commandes-en-attente';
+import type { MondeDoneJuan } from '../../support/monde';
+import { etapeAssertion, type ContexteEtape } from '../../support/prefixes';
+
+/** Motif écrit dans les scénarios : « ERR-021, ERR-022 » ou « ERR-030 variante <v> » (guide §6.6.10). */
+const motifDe = (messages: ReadonlyArray<MessageRefus>): string =>
+  messages
+    .map((m) => (m.variante === undefined ? m.code : `${m.code} variante ${m.variante}`))
+    .join(', ');
+
+const verifierRefus = ({ monde, appareil }: ContexteEtape, motif: unknown): void => {
+  const resultat = monde.resultats.get(appareil.nom);
+  assert.ok(
+    resultat && !resultat.ok,
+    `Aucun refus sur le ${appareil.nom} : ${JSON.stringify(resultat)}`,
+  );
+  assert.equal(motifDe(messagesDeRefus(resultat.erreur as RefusMetier)), motif);
+};
+
+etapeAssertion(/^l'enregistrement est refusé avec le motif "([^"]*)"$/, verifierRefus);
+
+// ST-US-002 §12 n° 19 : comme l'enregistrement, pour la modification d'une tâche.
+etapeAssertion(/^la modification est refusée avec le motif "([^"]*)"$/, verifierRefus);
+
+// ST-US-023 §12 n° 14 : même logique, pour une action autre qu'un enregistrement.
+etapeAssertion(/^l'action est refusée avec le motif "([^"]*)"$/, verifierRefus);
+
+// ST-US-024 §12 n° 13 (livrée au rang 3 pour US-022 S11) : dernier résultat de l'appareil = Succes.
+etapeAssertion(/^l'opération est acceptée$/, ({ monde, appareil }) => {
+  const resultat = monde.resultats.get(appareil.nom);
+  assert.ok(resultat?.ok, `Opération refusée sur le ${appareil.nom} : ${JSON.stringify(resultat)}`);
+});
+
+// ST-US-017 v0.11 §12.7 V9 (S30b, S31) : la saisie n'est pas bloquée (lecture de la vue, aucune écriture).
+etapeAssertion(/^la saisie n'est (?:plus|pas) bloquée$/, async ({ appareil }) => {
+  assert.equal((await appareil.vueAffichee()).consultationSeule, false, 'La saisie est bloquée');
+});
+
+// V11 (US-017 S01) : toutes les actions du scénario sur cet appareil ont été acceptées (au moins une).
+etapeAssertion(/^toutes ces opérations ont été acceptées$/, ({ monde, appareil }) => {
+  const resultats = monde.resultatsDuScenario.get(appareil.nom) ?? [];
+  assert.ok(resultats.length > 0, `Aucune opération sur le ${appareil.nom}`);
+  const refus = resultats.filter((r) => !r.ok);
+  assert.deepEqual(refus, [], `Opérations refusées sur le ${appareil.nom}`);
+});
+
+/** L'appareil qui a exactement une confirmation en attente (H-5, sans la consommer). */
+const nomUniqueEnAttente = (monde: MondeDoneJuan): NomAppareil => {
+  const noms = [...monde.commandesEnAttente.keys()];
+  const nom = noms.length === 1 ? noms[0] : undefined;
+  assert.ok(nom, 'Aucune confirmation en attente, ou une sur chaque appareil');
+  return nom;
+};
+
+const confirmationAffichee = (monde: MondeDoneJuan) =>
+  monde.commandesEnAttente.get(nomUniqueEnAttente(monde))?.confirmation;
+
+// Pluriels « (s) » : expression régulière (conventions.md §11.6).
+Then(
+  /^une confirmation est demandée, qui annonce (\d+) tâches?(?:\(s\))? détachées?(?:\(s\))? et (\d+) sous-objectifs?(?:\(s\))? devenus?(?:\(s\))? objectifs? principal$/,
+  function (this: MondeDoneJuan, taches: string, sousObjectifs: string) {
+    assert.deepEqual(confirmationAffichee(this), {
+      code: 'CNF-SUPPR-OBJECTIF',
+      taches: Number(taches),
+      sousObjectifs: Number(sousObjectifs),
+    });
+  },
+);
+
+// ST-US-002 §12 n° 18 : CNF-SUPPR-TACHE et le nombre de sous-tâches annoncé (variable `n`).
+Then(
+  /^une confirmation est demandée, qui annonce (\d+) sous-tâches?(?:\(s\))? supprimées?(?:\(s\))? avec la tâche$/,
+  function (this: MondeDoneJuan, n: string) {
+    assert.deepEqual(confirmationAffichee(this), { code: 'CNF-SUPPR-TACHE', n: Number(n) });
+  },
+);
+
+// ST-US-024 §12 n° 12 et ST-US-003 §12 n° 11 : une seule phrase, mais le code exact dépend de la nature de la
+// commande en attente (ajout d'une sous-tâche à une tâche terminée, ou réouverture d'une sous-tâche).
+const CONFIRMATION_DE_REOUVERTURE: Readonly<Record<NatureCommande, string>> = {
+  AJOUT_SOUS_TACHE: 'CNF-AJOUT-SOUS-TACHE-TERMINEE',
+  REOUVERTURE: 'CNF-ROUVRIR-SOUS-TACHE',
+};
+
+Then(
+  /^une confirmation est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
+  function (this: MondeDoneJuan, tache: string) {
+    const nom = nomUniqueEnAttente(this);
+    const { nature, confirmation } = this.commandesEnAttente.get(nom) ?? {};
+    assert.ok(nature, 'La commande en attente ne déclare pas sa nature');
+    assert.deepEqual(
+      { code: confirmation?.code, element: confirmation?.element },
+      { code: CONFIRMATION_DE_REOUVERTURE[nature], element: tache },
+    );
+  },
+);
+
+// ST-US-025 §12 n° 3c : le code est celui de la commande en attente ; la tâche annoncée est la tâche parente pour
+// CNF-REPRENDRE-SOUS-TACHE (`element` de la commande), la sous-tâche pour les deux autres codes. Préfixe d'appareil admis.
+etapeAssertion(
+  /^une confirmation "([^"]*)" est demandée, qui annonce la réouverture de la tâche "([^"]*)"$/,
+  ({ monde, appareil }, code, tache) => {
+    const confirmation = monde.commandesEnAttente.get(appareil.nom)?.confirmation;
+    assert.deepEqual(
+      { code: confirmation?.code, element: confirmation?.element },
+      { code: String(code), element: String(tache) },
+    );
+  },
+);
+
+// ST-US-025 §12 n° 4 et 5 : CNF-ABANDON-TACHE (sans sous-tâche) ou CNF-ABANDON-TACHE-CASCADE (avec `n`).
+Then(
+  /^une confirmation est demandée, qui rappelle que la tâche pourra être reprise$/,
+  function (this: MondeDoneJuan) {
+    assert.match(String(confirmationAffichee(this)?.code), /^CNF-ABANDON-TACHE(-CASCADE)?$/);
+  },
+);
+
+Then(
+  /^une confirmation est demandée, qui annonce (\d+) sous-tâches?(?:\(s\))? abandonnées?(?:\(s\))? avec la tâche$/,
+  function (this: MondeDoneJuan, n: string) {
+    assert.deepEqual(confirmationAffichee(this), {
+      code: 'CNF-ABANDON-TACHE-CASCADE',
+      n: Number(n),
+    });
+  },
+);

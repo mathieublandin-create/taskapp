@@ -65,13 +65,24 @@ describe('estConnue (DAT §4.2.1, RG-036)', () => {
     expect(estConnue(b, a)).toBe(false);
   });
 
-  it('UT-SOC-16 estConnue — une écriture d’un appareil est toujours connue d’une autre écriture du même appareil', () => {
-    const autre: EcritureDatee = {
+  it('UT-SOC-16 estConnue — une écriture antérieure ou égale du même appareil est connue (DAT v0.11.9 §4.2.1, « ses propres écritures antérieures »)', () => {
+    const anterieure: EcritureDatee = { hlc: hA, contexte: CONTEXTE_VIDE };
+    const gagnante: EcritureDatee = {
+      hlc: hlc('2026-10-21T09:00:00.000Z', 0, PC),
+      contexte: CONTEXTE_VIDE,
+    };
+
+    expect(estConnue(gagnante, anterieure)).toBe(true);
+    expect(estConnue(gagnante, gagnante)).toBe(true);
+  });
+
+  it('UT-SOC-16 estConnue — une écriture postérieure du même appareil n’est pas connue (condition J1 de Starck, Q-BRU-4 : pierre tombale et réparation RG-048 écrite après elle)', () => {
+    const posterieure: EcritureDatee = {
       hlc: hlc('2026-10-21T09:00:00.000Z', 0, PC),
       contexte: CONTEXTE_VIDE,
     };
     const gagnante: EcritureDatee = { hlc: hA, contexte: CONTEXTE_VIDE };
 
-    expect(estConnue(gagnante, autre)).toBe(true);
+    expect(estConnue(gagnante, posterieure)).toBe(false);
   });
 });

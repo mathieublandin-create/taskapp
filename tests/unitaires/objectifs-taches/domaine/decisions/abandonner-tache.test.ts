@@ -76,6 +76,7 @@ describe('Abandon d’une tâche (RG-027)', () => {
           tacheId: t(1),
           intitule: 'Refaire le logo',
           sousTachesAbandonnees: 0,
+          sousTachesTerminees: 0,
         },
       }),
     );
@@ -90,6 +91,7 @@ describe('Abandon d’une tâche (RG-027)', () => {
           tacheId: t(1),
           intitule: 'Chapitre 1',
           sousTachesAbandonnees: 2,
+          sousTachesTerminees: 1,
         },
       }),
     );

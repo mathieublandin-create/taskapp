@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { construireListeObjectifs } from '@src/objectifs-taches/presentation/modeles-de-vue/liste-objectifs';
-import type { LigneObjectif } from '@src/objectifs-taches/presentation/modeles-de-vue/ligne-objectif';
+import {
+  construireLigneObjectif,
+  type LigneObjectif,
+} from '@src/objectifs-taches/presentation/modeles-de-vue/ligne-objectif';
 import { creeAuRang, resumeObjectif } from '@tests/support/fabriques/resumes';
 import { horlogeSur } from '@tests/support/horloge';
 import { date, idObjectif, NEW_YORK } from '@tests/support/valeurs';
@@ -235,5 +238,28 @@ describe('construireListeObjectifs (ECR-008)', () => {
       'Sous atteint 11-30',
       'Sous sans délai',
     ]);
+  });
+});
+
+describe('construireLigneObjectif — point « en attente » (ST-US-017 v0.4 §4.5, DT-011)', () => {
+  it('UT-US-001-36 construireLigneObjectif — attente MEN-ATTENTE sans texte visible, avec le nom accessible du catalogue, seulement pour un objectif en attente ; nom accessible de la ligne inchangé', () => {
+    const enAttente = construireLigneObjectif(
+      resumeObjectif({ id: o(1), intitule: 'Publier le guide', enAttente: true }),
+      date('2026-10-21'),
+    );
+    expect(enAttente).toMatchObject({
+      attente: {
+        code: 'MEN-ATTENTE',
+        libelle: '',
+        nomAccessible: 'Modification en attente d’envoi',
+      },
+    });
+
+    const envoye = construireLigneObjectif(
+      resumeObjectif({ id: o(1), intitule: 'Publier le guide', enAttente: false }),
+      date('2026-10-21'),
+    );
+    expect(envoye).not.toHaveProperty('attente');
+    expect(enAttente.nomAccessible).toBe(envoye.nomAccessible);
   });
 });

@@ -17,6 +17,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/application/ports/observateur-echanges-google.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/commun/application/ports/planificateur.ts": {
       "debut": 0,
       "fin": 0
@@ -53,6 +57,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/domaine/temps/date-http.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/commun/domaine/temps/ecart-temps.ts": {
       "debut": 0,
       "fin": 0
@@ -73,6 +81,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/infrastructure/etat-reseau-navigateur.ts": {
+      "debut": 0,
+      "fin": 0
+    },
     "src/commun/infrastructure/generateur-uuid-v7.ts": {
       "debut": 0,
       "fin": 0
@@ -85,6 +97,18 @@
       "debut": 0,
       "fin": 0
     },
+    "src/commun/infrastructure/planificateur-navigateur.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/infrastructure/source-aleatoire-crypto.ts": {
+      "debut": 0,
+      "fin": 0
+    },
+    "src/commun/presentation/format/appareil.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/format/date.ts": {
       "debut": 2,
       "fin": 2
@@ -93,6 +117,14 @@
       "debut": 5,
       "fin": 5
     },
+    "src/commun/presentation/format/heure.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/commun/presentation/messages/catalogue.fr.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/commun/presentation/messages/codes.ts": {
       "debut": 2,
       "fin": 2
@@ -100,6 +132,54 @@
     "src/commun/presentation/messages/libelle.ts": {
       "debut": 2,
       "fin": 2
+    },
+    "src/commun/presentation/modeles-de-vue/mention-heure-paris.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/saisie/registre-saisie.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/boite-confirmation.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/bouton-flottant.tsx": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/commun/presentation/ui/consultation-seule.tsx": {
+      "debut": 11,
+      "fin": 11
+    },
+    "src/commun/presentation/ui/etat-vide.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/mention-heure-paris.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/commun/presentation/ui/toast.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/composition/application.ts": {
+      "debut": 1,
+      "fin": 12
+    },
+    "src/composition/controleur-interface.ts": {
+      "debut": 1,
+      "fin": 9
+    },
+    "src/composition/objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/composition/web.ts": {
+      "debut": 0,
+      "fin": 1
     },
     "src/compte/application/cas-usage/ouvrir-application.ts": {
       "debut": 1,
@@ -126,6 +206,10 @@
       "fin": 1
     },
     "src/compte/application/evaluation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/issue-erreur-auth.ts": {
       "debut": 1,
       "fin": 1
     },
@@ -165,7 +249,15 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/application/requetes/consulter-compte.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/application/session-courante.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/application/session-ouverte.ts": {
       "debut": 1,
       "fin": 1
     },
@@ -189,6 +281,26 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/index.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/fournisseur-auth-web.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/lecture-identite.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/passerelle-gis-navigateur.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/auth/passerelle-gis.ts": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/compte/infrastructure/auth/retour-redirection.ts": {
       "debut": 1,
       "fin": 1
@@ -205,7 +317,19 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/infrastructure/avis-onglets-broadcast.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/base-technique.ts": {
+      "debut": 1,
+      "fin": 12
+    },
     "src/compte/infrastructure/coffre-jetons-memoire.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/configuration.ts": {
       "debut": 1,
       "fin": 1
     },
@@ -214,6 +338,14 @@
       "fin": 1
     },
     "src/compte/infrastructure/espaces/nom-espace.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/infrastructure/zod-sans-compilation.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/compte/presentation/modeles-de-vue/confirmations-compte.ts": {
       "debut": 1,
       "fin": 1
     },
@@ -233,13 +365,41 @@
       "debut": 1,
       "fin": 1
     },
+    "src/compte/presentation/ui/DialogueConfirmation.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/EcranConnexion.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/Racine.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/SectionCompte.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/compte/presentation/ui/SuppressionBloquee.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
     "src/infrastructure-google/client-google.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/infrastructure-google/index.ts": {
       "debut": 1,
       "fin": 1
     },
     "src/infrastructure-google/reprise.ts": {
       "debut": 0,
       "fin": 1
+    },
+    "src/main.tsx": {
+      "debut": 0,
+      "fin": 9
     },
     "src/objectifs-taches/application/cas-usage/abandonner-tache.ts": {
       "debut": 8,
@@ -414,8 +574,8 @@
       "fin": 4
     },
     "src/objectifs-taches/domaine/incoherence.ts": {
-      "debut": 6,
-      "fin": 6
+      "debut": 9,
+      "fin": 9
     },
     "src/objectifs-taches/domaine/intitule.ts": {
       "debut": 2,
@@ -433,7 +593,15 @@
       "debut": 5,
       "fin": 5
     },
+    "src/objectifs-taches/domaine/types-actions.ts": {
+      "debut": 2,
+      "fin": 2
+    },
     "src/objectifs-taches/domaine/vue-metier.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/index.ts": {
       "debut": 2,
       "fin": 2
     },
@@ -447,7 +615,7 @@
     },
     "src/objectifs-taches/presentation/modeles-de-vue/detail-tache.ts": {
       "debut": 6,
-      "fin": 8
+      "fin": 9
     },
     "src/objectifs-taches/presentation/modeles-de-vue/formulaire-sous-tache.ts": {
       "debut": 6,
@@ -481,6 +649,10 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/modeles-de-vue/phrases-tache-parente.ts": {
+      "debut": 8,
+      "fin": 8
+    },
     "src/objectifs-taches/presentation/modeles-de-vue/selecteur-parent.ts": {
       "debut": 4,
       "fin": 4
@@ -489,9 +661,141 @@
       "debut": 2,
       "fin": 2
     },
+    "src/objectifs-taches/presentation/ui/composants/action-fin.tsx": {
+      "debut": 7,
+      "fin": 7
+    },
+    "src/objectifs-taches/presentation/ui/composants/carte-incoherence.tsx": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/objectifs-taches/presentation/ui/composants/champ-detail.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/commande-confirmee.tsx": {
+      "debut": 8,
+      "fin": 8
+    },
+    "src/objectifs-taches/presentation/ui/composants/feuille-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/filtre-etat.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/ligne-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/ligne-tache.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/menu-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/messages-refus.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/progression-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/composants/puces-objectif.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/saisie-rapide.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/section-sous-taches.tsx": {
+      "debut": 6,
+      "fin": 6
+    },
+    "src/objectifs-taches/presentation/ui/composants/sections-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/selecteur-duree.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/composants/selecteur-parent.tsx": {
+      "debut": 4,
+      "fin": 4
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/detail-objectif.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/detail-tache.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espace-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espace-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/espaces.tsx": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/liste-objectifs.tsx": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/ecrans/liste-taches.tsx": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/etat/issues.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/etat/magasin-objectifs-taches.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/objectifs-taches/presentation/ui/etat/magasin-taches.ts": {
+      "debut": 5,
+      "fin": 5
+    },
+    "src/objectifs-taches/presentation/ui/libelles-ui.ts": {
+      "debut": 2,
+      "fin": 2
+    },
+    "src/synchronisation/application/cas-usage/choisir-restauration.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/application/cas-usage/marquer-comme-lue.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/application/cycle-synchronisation.ts": {
       "debut": 3,
+      "fin": 10
+    },
+    "src/synchronisation/application/depot-avant-sortie-synchro.ts": {
+      "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/application/ecriture-manifeste.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/application/masquage-rappel.ts": {
+      "debut": 1,
+      "fin": 1
     },
     "src/synchronisation/application/ports/acces-google.ts": {
       "debut": 1,
@@ -500,6 +804,10 @@
     "src/synchronisation/application/ports/depot-local.ts": {
       "debut": 0,
       "fin": 3
+    },
+    "src/synchronisation/application/ports/mise-a-jour-application.ts": {
+      "debut": 11,
+      "fin": 11
     },
     "src/synchronisation/application/ports/suivi-cycle.ts": {
       "debut": 1,
@@ -513,6 +821,18 @@
       "debut": 1,
       "fin": 1
     },
+    "src/synchronisation/application/requetes/consulter-etat-synchronisation.ts": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/application/requetes/consulter-modifications-non-retenues.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/application/service-etat-local-consultation-seule.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/application/service-etat-local-transactionnel.ts": {
       "debut": 0,
       "fin": 0
@@ -520,6 +840,14 @@
     "src/synchronisation/application/service-etat-local.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/application/suivi-horloge.ts": {
+      "debut": 11,
+      "fin": 11
+    },
+    "src/synchronisation/domaine/condensat-sha256.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/contenu-fichier.ts": {
       "debut": 3,
@@ -529,13 +857,41 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/controle-drive.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/domaine/copie-locale.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/domaine/correction-horloge.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/domaine/depot.ts": {
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/domaine/detail-valeurs-ecartees.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/donnees-effacees.ts": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/synchronisation/domaine/ecriture.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/elements-en-attente.ts": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/domaine/entree-reparation.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/etat-local.ts": {
       "debut": 0,
@@ -561,6 +917,10 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/inconnus.ts": {
+      "debut": 11,
+      "fin": 11
+    },
     "src/synchronisation/domaine/index-en-attente.ts": {
       "debut": 0,
       "fin": 0
@@ -568,6 +928,14 @@
     "src/synchronisation/domaine/information.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/lectures.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/manifeste.ts": {
+      "debut": 10,
+      "fin": 10
     },
     "src/synchronisation/domaine/meta-synchronisation.ts": {
       "debut": 3,
@@ -589,9 +957,25 @@
       "debut": 0,
       "fin": 0
     },
+    "src/synchronisation/domaine/planifier-synchronisation.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/domaine/projection.ts": {
       "debut": 0,
       "fin": 0
+    },
+    "src/synchronisation/domaine/reparation-hierarchie.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/signalements.ts": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/synchronisation/domaine/valeurs-ecartees.ts": {
+      "debut": 9,
+      "fin": 9
     },
     "src/synchronisation/domaine/version-schema.ts": {
       "debut": 3,
@@ -603,7 +987,7 @@
     },
     "src/synchronisation/infrastructure/depot-local-dexie.ts": {
       "debut": 0,
-      "fin": 3
+      "fin": 11
     },
     "src/synchronisation/infrastructure/drive/compression.ts": {
       "debut": 3,
@@ -613,17 +997,41 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/infrastructure/drive/schemas/v1.ts": {
+      "debut": 3,
+      "fin": 3
+    },
     "src/synchronisation/infrastructure/drive/serialisation-canonique.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/infrastructure/drive/transport-synchro-drive.ts": {
+      "debut": 1,
+      "fin": 10
+    },
+    "src/synchronisation/infrastructure/mise-a-jour-service-worker.ts": {
+      "debut": 11,
+      "fin": 11
+    },
+    "src/synchronisation/infrastructure/stockage-local/schemas.ts": {
+      "debut": 0,
+      "fin": 11
     },
     "src/synchronisation/presentation/modeles-de-vue/bandeau.ts": {
       "debut": 1,
       "fin": 1
     },
+    "src/synchronisation/presentation/modeles-de-vue/choix-restauration.ts": {
+      "debut": 10,
+      "fin": 10
+    },
     "src/synchronisation/presentation/modeles-de-vue/etat-synchronisation-affichable.ts": {
       "debut": 1,
       "fin": 1
+    },
+    "src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation.ts": {
+      "debut": 3,
+      "fin": 3
     },
     "src/synchronisation/presentation/modeles-de-vue/indicateur-synchronisation.ts": {
       "debut": 1,
@@ -633,9 +1041,105 @@
       "debut": 3,
       "fin": 3
     },
+    "src/synchronisation/presentation/modeles-de-vue/modifications-non-retenues.ts": {
+      "debut": 9,
+      "fin": 9
+    },
     "src/synchronisation/presentation/modeles-de-vue/ordre-feuille.ts": {
       "debut": 3,
       "fin": 3
+    },
+    "src/synchronisation/presentation/modeles-de-vue/retour-mise-a-jour.ts": {
+      "debut": 11,
+      "fin": 11
+    },
+    "src/synchronisation/presentation/ui/Bandeau.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/ui/FeuilleSynchronisation.tsx": {
+      "debut": 3,
+      "fin": 3
+    },
+    "src/synchronisation/presentation/ui/IndicateurSynchronisation.tsx": {
+      "debut": 1,
+      "fin": 1
+    },
+    "src/synchronisation/presentation/ui/ChoixRestauration.tsx": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/presentation/ui/focus-fin-a-lire.ts": {
+      "debut": 10,
+      "fin": 10
+    },
+    "src/synchronisation/presentation/ui/ModificationsNonRetenues.tsx": {
+      "debut": 9,
+      "fin": 9
+    },
+    "src/commun/application/ports/persistance-stockage.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/commun/infrastructure/persistance-navigateur.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/synchronisation/application/cas-usage/demander-persistance.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/reevaluation-rappel.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/synchronisation/infrastructure/enregistrement-service-worker.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/codec-pont.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/transport-par-pont.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/fournisseur-auth-test-ihm.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm/ponts.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/test-ihm.ts": {
+      "debut": 12,
+      "fin": 12
+    },
+    "src/composition/fin-session-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/coordination-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/exclusion-cycle.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/noms-verrous.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/application/ports/verrou-onglets.ts": {
+      "debut": 13,
+      "fin": 13
+    },
+    "src/synchronisation/infrastructure/verrou-onglets-web.ts": {
+      "debut": 13,
+      "fin": 13
     }
   }
 }

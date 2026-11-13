@@ -7,5 +7,11 @@ export type NomVue =
   | 'FORMULAIRE_TACHE'
   | 'FORMULAIRE_SOUS_TACHE';
 
-/** Squelette E10 : liste à remplir en E12 (UT-US-001-34). */
-export const VUES_EXPOSEES: ReadonlyArray<NomVue> = [];
+export const VUES_EXPOSEES: ReadonlyArray<NomVue> = [
+  'LISTE_OBJECTIFS',
+  'DETAIL_OBJECTIF',
+  'LISTE_TACHES',
+  'DETAIL_TACHE',
+  'FORMULAIRE_TACHE',
+  'FORMULAIRE_SOUS_TACHE',
+];

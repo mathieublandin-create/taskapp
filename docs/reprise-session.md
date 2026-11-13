@@ -1,32 +1,35 @@
-# Reprise de session (état au 2026-10-30)
+# Reprise de session (état au 2026-11-11)
 
-Fichier à lire en premier par Jarvis dans une session neuve. Le détail de l'historique est dans `docs/suivi-projet.md`, l'avancement dans `docs/etat-des-lieux.html`.
+Fichier à lire en premier par Jarvis dans une session neuve. Détail de l'historique : `docs/suivi-projet.md` ; avancement : `docs/etat-des-lieux.html` ; consommation : `docs/analyse-tokens.md` et `docs/bilan-tokens-lot1.md`.
 
 ## État du lot 1 (LOT-001)
-- Branche du lot : `lot/LOT-001` (dernière fusion : PR #8, DT-012, commit `90cd7d5`). Avancement : 42 % (38,5 j sur 91).
-- Rangs 0 à 3 fusionnés. DT-005, DT-007, DT-008 (CSP, DEC-041) et DT-012 (job `e2e` en CI) remboursées.
+- Branche du lot : `lot/LOT-001` (dernières fusions : PR #40 rang 13, commit `9fee052` ; PR #41 ANO-007, `ecf1a3f`). **Les 13 rangs du développement sont fusionnés : 92 j sur 92, soit 100 % du développement** ; DT-027 (PR #39), DT-025 (PR #40) et DT-024 (PR #41) remboursées. Restent l'E13b, l'E14 (recette des agents), l'E15 (anomalies), l'E16 (recette du commanditaire) et l'E17 (clôture, bilan de tokens).
+- **Anomalies** : ANO-001, 006 et 007 corrigées ; ANO-002 et 003 « Corrigée, en revue » (PR #32), à confirmer par la recette du commanditaire ; ANO-004 (écran de connexion bref au lancement) et ANO-005 (bouton flottant et feuille à 390 × 844) ouvertes, mineures, à qualifier par Pepper avec Steeve (Q-ANT-E13-R13-1).
+- **Règle « un agent à la fois »** (OPT-22) : lire `npx --yes ccusage@latest blocks --active --json` avant chaque lancement, s'arrêter vers 80 % de la fenêtre de 5 h (≈ 25 $ sur ≈ 32 $). Fusion des PR vers `lot/LOT-001` par Jarvis après E13 approuvée et CI verte sur les 7 contrôles (autorisation du commanditaire, 2026-11-07) ; `main` au commanditaire.
+- **Suite : E13b** (revue de fin de développement, tous) : dettes à solder ou statuer (DT-014, DT-016 avant l'E14 ; DT-023, DT-034, DT-035, DT-029 (critère des 50 exécutions non mesuré), DT-033 si Steeve l'exige, DT-008 à constater en E14 ; DT-039 avant l'E16 ; DT-040 à DT-042 à l'E17), précision du guide §6.6.15 par Steeve (ordre « À lire » / `ALR-016`), relecture des textes des pages publiques par Starck (conditionne la production), RC-US-018-5 close ? Puis E14 : US-022 S13b, US-018 S09b (`@recette`), CSP sur Android et PC (flux GIS compris), deux onglets hors ligne (DAT-UX-16), contrôles de Steeve, guide `donejuan-recette`, grille de retours de Pepper.
+- **Q-ANT-E13-R13-2 (Pepper)** : ajouter un « Alors » sur le premier onglet à S16b et S16c (option a recommandée). Questions ouvertes : Q-ANT-E13-R12-1 et 2 (commanditaire), Q-ANT26 (origine de recette), Q-ST017-STE-1 et Q-ST024-STE-1 (Steeve).
+- **À faire par le commanditaire (GitHub)** : variable de dépôt `VITE_GOOGLE_WEB_CLIENT_ID` (identifiant client non secret) ; environnement `production` avec relecteur requis ; contrôle requis `e2e (CSP, navigateur réel)` (le job `ihm` en porte le nom ; renommage en « ihm » = DT-040, facultatif) sur `lot/*` et `main` ; variable `DEPLOIEMENT_PRODUCTION_AUTORISE` = `true` seulement après la relecture des pages par Starck à l'E13b ; recette sur l'origine isolée `donejuan-recette.github.io` (Pages Actions, console Google). **Au retour de la recette du commanditaire** : confirmer ANO-002, ANO-003, ANO-006 (déconnexion : l'onglet revient-il à la connexion ?) et ANO-007 (les boutons des boîtes répondent-ils au clic et au toucher ?).
+- Couverture : rapport de base sur un worktree de `origin/lot/LOT-001`, puis `pnpm verifier:couverture-fichiers "<racine_base>/coverage/coverage-summary.json" "<racine_base>" origin/lot/LOT-001`.
 
-## Travail en cours : reliquat du rang 3
-- Branche `us/US-017-reliquat-rang3`, poussée, commit `bcd6245` : **E10 terminée** par Anthony (tests UT-US-017-34 à 39, UT-US-001-36 et 37 ; 22 tests rouges attendus, squelettes dans `src/`). `pnpm verifier` passe.
-- **Reste, par Benjamin (sonnet), E12 sur cette branche** : DT-006 (composants du rang 1 en Ionic), DT-009 (magasin abonné à `DepotLocal.observer`), DT-011 (feuille ECR-011 `construireFeuilleSynchronisation` et `MEN-ATTENTE`), RC-R3-4, RC-DT8-1 (`toEqual(COMPOSANTS_IONIC)` dans `tests/e2e/csp.e2e.ts:67`).
-- Piège : Anthony a inscrit les 3 squelettes dans `tests/support/rangs/rangs-fichiers.json` au **rang 4** ; Benjamin doit les ramener au rang 3 (sinon UT-OUT-06 et « aucun orphelin » deviennent rouges).
-- Ensuite : pousser, ouvrir la PR vers `lot/LOT-001`, E13 par Anthony (sur le diff), annoncer « vous pouvez fusionner la PR #N » après CI verte. Puis rang 4 (US-023, Benjamin).
+## Jalon testable (rang 10 fusionné le 2026-11-07) (décidé le 2026-11-02)
+- Le commanditaire a créé la page GitHub de recette et l'authentification Google (test technique) et vérifie les informations à me communiquer : adresse publique, option du DAT §7.4 bis, client OAuth Web (origines et redirection), écran de consentement en mode test avec son compte. Ne jamais demander ni stocker de secret.
+- **Informations reçues le 2026-11-02** : URI de redirection autorisée du client OAuth Web (nommé « Done Juan POC Web » dans la console Google) = `https://mathieublandin-create.github.io/taskapp/`, c'est-à-dire l'URI du PoC et de la production du DAT (§4.1.7, l.305), PAS une adresse de recette isolée. **Décision du commanditaire (2026-11-02) : option 2**, adresse de recette conforme au DAT §7.4 bis (option c `https://mathieublandin-create.github.io/taskapp-recette/` ou d `https://donejuan-recette.github.io/`, à choisir), avec son URI ajoutée au client OAuth. **Identifiant client OAuth Web (non secret, à utiliser comme `VITE_GOOGLE_WEB_CLIENT_ID`)** : `275071465945-44uks3etb61qm9lqs9bc6upvlet616v7.apps.googleusercontent.com`. À faire par le commanditaire : créer le dépôt ou l'organisation de recette, ajouter l'URI de recette et l'origine aux « URI de redirection autorisés » et « origines JavaScript autorisées » du client, confirmer l'écran de consentement en mode test.
+- À préparer (le rang 10 est fusionné) : workflow de construction et de déploiement de la recette (`VITE_ENV=recette`, `VITE_BASE_PATH`, `VITE_APP_ORIGIN`, identifiant client) avec une notice de pose pour l'organisation du commanditaire (hors du périmètre des agents) ; guide de test court de Pepper ; grille de retours que Jarvis transformera en anomalies (ANO-xxx).
+- Ce que le jalon ne couvre pas : hors ligne smartphone et PC (rangs 12 et 13), compatibilité de version et horloge (rang 11).
 
-## À faire par le commanditaire
-- Ajouter le contrôle requis `e2e (CSP, navigateur réel)` à la protection de `lot/*` et `main` (DEC-029, RC-DT12-4).
+## PR et branches ouvertes
+- Aucune PR du lot en cours. Les branches `us/US-017-rang10*` sont fusionnées.
 
-## Questions ouvertes
-- Q-ST017-STE-1 (Steeve, non bloquante) : codes de catalogue pour la nature des modifications en attente ; texte d'`ERR-016` pour n = 0 ou 1. Et `BTN-ANNULER` (RC-R2-8 a).
-- Retirer `.claude/settings.local.json` du dépôt ? Guide de recette `donejuan-recette` avant l'E14. Vérification de la CSP sur Android et PC, flux GIS compris (PO-13, E14).
-- Avant la PR `lot/LOT-001` → `main` : le contrôle de couverture par fichier ne doit pas bloquer.
-
-## Règles de conduite (DEC-040, OPT-1 à OPT-14)
-- Un agent neuf par sujet ; modèle imposé à chaque délégation ; au plus 2 agents opus en parallèle ; lectures ciblées ; E13 sur le diff.
-- Pas d'abonnement aux PR (lire la CI avec `GH_TOKEN= gh api`). Push et ouverture de PR confiés à Friday (haiku). Messages de 3 à 5 lignes.
-- État des lieux : modifier `docs/etat-des-lieux-avancement.json` puis `python3 docs/outils/maj-etat-des-lieux.py`, republier avec l'outil Artifact (`edits` ou fichier), url https://claude.ai/artifact/6JR94eWLfHtgvvPgXoU187.
-- Les agents ne poussent pas ; l'utilisateur fusionne lui-même les PR. Aucun secret, aucune adresse e-mail dans le dépôt public.
+## Règles de conduite (DEC-040, OPT-1 à OPT-22)
+- Un agent neuf par sujet ; modèle imposé à chaque délégation ; au plus 2 agents opus en parallèle ; lectures ciblées ; E13 sur le diff ; E13 « bis » sur sonnet si les remarques sont mécaniques (OPT-18).
+- Un rang se découpe par couche (OPT-15), PR en brouillon jusqu'à l'E13 approuvée et la CI verte (OPT-16). Chaque développeur a son worktree et sa branche et pousse sa seule branche (push simple, jamais `--force`, jamais `lot/*` ni `main`, OPT-17) ; Jarvis ouvre les PR. Le dossier principal reste sur `lot/LOT-001`, propre.
+- **Fusion (autorisation du commanditaire, 2026-11-07)** : Jarvis peut fusionner lui-même les PR vers `lot/LOT-001` avec l'outil GitHub `merge_pull_request` (fusion classique, jamais de squash ni de force), uniquement après l'E13 approuvée et la CI verte sur les 6 jobs du dernier commit (lue par Jarvis), et il le dit au commanditaire. Les PR vers `main` (dont `lot/LOT-001` → `main`) restent fusionnées par le commanditaire. Un agent autre que Jarvis ne fusionne jamais. Au moindre conflit ou doute, s'arrêter et demander.
+- Pas d'abonnement aux PR : lire la CI avec `GH_TOKEN= gh api`. Messages de 3 à 5 lignes.
+- État des lieux : modifier `docs/etat-des-lieux-avancement.json` (champ `etape`, rang fusionné = 100 %), puis `python3 docs/outils/maj-etat-des-lieux.py`. Vérifier que TOUS les rangs fusionnés y sont marqués (le rang 7 avait été oublié le 2026-11-01).
+- Aucun secret, aucune adresse e-mail dans le dépôt public.
 
 ## Commandes utiles
 - `export PATH=$HOME/.local/node24/bin:$PATH`, `pnpm install --frozen-lockfile`, `pnpm verifier`, `pnpm test`, `TZ=UTC pnpm test:couverture`, `pnpm cucumber`, `pnpm build`.
-- `pnpm e2e` ; en local : `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome pnpm e2e`.
-- PR : `GH_TOKEN= gh api repos/mathieublandin-create/taskapp/pulls -X POST --input fichier.json`.
+- `RANG_COURANT=10 pnpm test` (rang en développement) ; `pnpm verifier:couverture-fichiers <rapport base> <racine base> origin/lot/LOT-001` (la couverture de la base se génère dans un worktree séparé sur `origin/lot/LOT-001`).
+- `pnpm e2e` ; en local : `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome pnpm e2e`.
+- PR : outils GitHub MCP (`create_pull_request`, `update_pull_request` avec `draft`).

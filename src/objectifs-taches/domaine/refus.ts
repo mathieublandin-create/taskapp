@@ -1,5 +1,5 @@
 import type { RefElementMetier } from '../../synchronisation';
-import type { ActionObjectif, ActionTache } from './actions';
+import type { ActionObjectif, ActionTache } from './types-actions';
 
 // ST-US-001 §4.1, complété par ST-US-023, 002, 024, 003. Le code ERR-… est attribué par messagesDeRefus.
 export type DefautSaisie =

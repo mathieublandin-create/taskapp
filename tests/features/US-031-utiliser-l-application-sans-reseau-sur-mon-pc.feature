@@ -118,6 +118,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et que la session Google du navigateur du PC a expiré
     Quand sur le PC, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
     Alors sur le PC, l'opération est acceptée
+    Et l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
@@ -134,6 +135,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors sur le PC, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
     Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le PC
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
     Exemples:
@@ -182,14 +185,15 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   @US-031 @RG-049 @LOT-001
   Scénario: S12 — Au retour du réseau sur le PC, une incohérence d'état est signalée sans correction
     Étant donné les tâches suivantes :
-      | intitulé  | état     | délai      | estimation | objectifs | tâche parente |
-      | Section A | terminée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
+      | Chapitre 2 | à faire  | 2026-11-30 | 2 h        | Publier le guide |               |
+      | Section A  | terminée | 2026-11-20 | 1 h        |                  | Chapitre 2    |
     Et que le PC est sans réseau
-    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 1"
+    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 2"
     Et sur le PC, l'utilisateur rouvre la tâche "Section A"
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
-    Alors sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
+    Alors sur les deux appareils, la tâche "Chapitre 2" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
 
   # ---------------------------------------------------------------- Perte de l'accès Google (CA-9)
 
@@ -339,6 +343,9 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et l'utilisateur ouvre l'application sur le PC depuis son adresse web
     Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
     Quand le réseau revient sur le PC
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
 
   @US-031 @RG-057 @RG-035 @LOT-001

@@ -60,8 +60,35 @@ describe('construireDetailTache (ECR-007)', () => {
 
     const ligne = modele(detail(tache, [sousTache])).sousTaches?.lignes[0];
 
-    expect(ligne?.caseTerminer).toEqual({ nomAccessible: 'Terminer « Section A »' });
+    expect(ligne?.caseTerminer).toEqual({
+      nomAccessible: 'Terminer «\u00a0Section A\u00a0»',
+      // ST-US-024 v0.7 §6.8 (UT-US-024-25) : une sous-tâche à faire porte l'action TERMINER.
+      action: 'TERMINER',
+    });
     expect(ligne?.nomAccessible).toMatch(/^Section A, à faire, délai /);
+  });
+
+  it('UT-COMP-US-024-11 construireDetailTache — la case d’une sous-tâche terminée porte la variante « Rouvrir » d’ETA-TACHE-CASE', () => {
+    const tache = resumeTache({
+      id: PARENTE,
+      intitule: 'Chapitre 1',
+      estimationCalculee: true,
+      sousTaches: { terminees: 1, nonAbandonnees: 1 },
+    });
+    const sousTache = resumeTache({
+      id: t(2),
+      intitule: 'Section A',
+      tacheParente: parente,
+      cycleDeVie: terminee('2026-10-20'),
+    });
+
+    const ligne = modele(detail(tache, [sousTache])).sousTaches?.lignes[0];
+
+    expect(ligne?.caseTerminer).toEqual({
+      nomAccessible: 'Rouvrir «\u00a0Section A\u00a0»',
+      // ST-US-024 v0.7 §6.8 : une sous-tâche terminée porte l'action ROUVRIR.
+      action: 'ROUVRIR',
+    });
   });
 
   it('UT-US-024-16 construireDetailTache — pas d’ALR-013 quand aucune sous-tâche n’est à faire (US-024 CA-8)', () => {

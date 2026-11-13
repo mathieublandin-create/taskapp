@@ -145,6 +145,7 @@ Chaque revue produit un compte rendu `docs/04-specification-technique/revues/REV
 |---|---|
 | CR-70 | Toute dette introduite est déclarée, qualifiée et inscrite au registre (`dette-technique.md`) avec un plan de remboursement. |
 | CR-71 | Aucune dette non déclarée détectée en revue (sinon : remarque, puis inscription au registre). |
+| CR-72b | Aucune assertion immédiate après une saisie Ionic (`saisir`, `renseigner`) : elle passe par `waitFor` (conventions §11.12). |
 | CR-72 | Commits conformes à la convention ; commits atomiques ; aucun fichier généré, local ou secret versionné. |
 | CR-73 | Documentation technique et glossaire code à jour. |
 

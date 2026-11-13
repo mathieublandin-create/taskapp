@@ -1,11 +1,12 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '../../../commun/application/ports/horloge';
-import type { Resultat } from '../../../commun/domaine/resultat';
+import { echec, succes, type Resultat } from '../../../commun/domaine/resultat';
 import type { ErreurDepotLocal, ServiceEtatLocal } from '../../../synchronisation';
 import type { IdTache } from '../../../commun/domaine/identifiants';
-import type { ActionTache } from '../../domaine/actions';
+import { actionsTache, type ActionTache } from '../../domaine/actions';
 import type { RefusMetier } from '../../domaine/refus';
-import type { ResumeTache } from './resumes';
+import { sousTachesDe, tacheActive } from '../../domaine/vue-metier';
+import { lireVueCourante } from './lecture-courante';
+import { resumerTache, type ResumeTache } from './resumes';
 
 // ST-US-002 §4.2 ; ST-US-024 §4.2 (sous-tâches, sous-tâches à faire).
 export type DetailTache = {
@@ -21,7 +22,18 @@ export class ConsulterDetailTache {
     private readonly horloge: Horloge,
   ) {}
 
-  executer(_id: IdTache): Promise<Resultat<DetailTache, RefusMetier | ErreurDepotLocal>> {
-    return nonImplemente('ConsulterDetailTache.executer');
+  async executer(id: IdTache): Promise<Resultat<DetailTache, RefusMetier | ErreurDepotLocal>> {
+    const lecture = await lireVueCourante(this.service, this.horloge);
+    if (!lecture.ok) return lecture;
+    const { vue, jour } = lecture.valeur;
+    const tache = tacheActive(vue, id);
+    if (!tache.ok) return echec(tache.erreur);
+    const sousTaches = sousTachesDe(vue, id);
+    return succes({
+      tache: resumerTache(vue, tache.valeur, jour),
+      sousTaches: sousTaches.map((sousTache) => resumerTache(vue, sousTache, jour)),
+      sousTachesAFaire: sousTaches.filter((s) => s.cycleDeVie.etat === 'A_FAIRE').length,
+      actions: actionsTache(vue, id),
+    });
   }
 }

@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import type { EtatSession } from '../../application/session-courante';
 
 // ST-US-022 §4.5 ; US-022 CA-1 (RG-019) ; guide v0.2.15 §6.6.2 (SYN-REDIRECTION, 10 s au plus).
@@ -12,5 +11,17 @@ export type ModeleVueRacine =
     }
   | { readonly ecran: 'APPLICATION' };
 
-export const construireRacine = (_etat: EtatSession): ModeleVueRacine =>
-  nonImplemente('construireRacine');
+export const construireRacine = (etat: EtatSession): ModeleVueRacine => {
+  switch (etat.type) {
+    case 'SANS_SESSION':
+      return { ecran: 'CONNEXION' };
+    case 'ATTENTE_GOOGLE':
+      return {
+        ecran: 'ATTENTE_GOOGLE',
+        etat: 'SYN-REDIRECTION',
+        nomAccessible: 'Connexion à Google en cours',
+      };
+    case 'OUVERTE':
+      return { ecran: 'APPLICATION' };
+  }
+};

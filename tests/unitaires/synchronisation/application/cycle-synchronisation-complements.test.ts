@@ -1,0 +1,307 @@
+/**
+ * Tests complémentaires de CycleSynchronisation (ST-US-017 §6.3, §6.4) et de DepotAvantSortieSynchro (§6.5), au-delà
+ * des UT-US-017-17 à 32 : demandes concurrentes, arrêt, premier plan, erreurs non transitoires, fichiers ignorés.
+ */
+import { describe, expect, it } from 'vitest';
+import type { IdAppareil } from '@src/commun/domaine/identifiants';
+import { echec } from '@src/commun/domaine/resultat';
+import {
+  CycleSynchronisation,
+  type IssueCycle,
+} from '@src/synchronisation/application/cycle-synchronisation';
+import { DepotAvantSortieSynchro } from '@src/synchronisation/application/depot-avant-sortie-synchro';
+import type { EtatMoteur } from '@src/synchronisation/application/ports/suivi-cycle';
+import type { TransportSynchro } from '@src/synchronisation/application/ports/transport-synchro';
+import { FauxDrive } from '@tests/doublures/faux-drive';
+import { HorlogeSimulee } from '@tests/doublures/horloge-simulee';
+import { PlanificateurSimule } from '@tests/doublures/planificateur-simule';
+import { SourceAleatoireDeterministe } from '@tests/doublures/source-aleatoire-deterministe';
+import { TempsSimule } from '@tests/support/banc/temps-simule';
+import { JournalEnMemoire } from '@tests/support/compte/doublures-compte';
+import { appliquerModifications, valeurDe } from '@tests/support/environnement';
+import { creationObjectif } from '@tests/support/modifications';
+import {
+  AccesCommandable,
+  creerAppareilCycle,
+  ReseauCommandable,
+  type AppareilCycle,
+} from '@tests/support/synchronisation/appareil-cycle';
+import {
+  ecart,
+  idObjectif,
+  instant,
+  MINUTE,
+  PC,
+  SMARTPHONE,
+  TROISIEME,
+} from '@tests/support/valeurs';
+
+const preparer = () => {
+  const temps = new TempsSimule(instant('2026-10-21T08:00:00.000Z'));
+  const planificateur = new PlanificateurSimule(temps);
+  const drive = new FauxDrive(temps);
+  const appareil = (appareilId: IdAppareil, prefixe: string) =>
+    creerAppareilCycle({ appareilId, prefixe, drive, temps, planificateur });
+  const avancer = async (ms: number, a: AppareilCycle) => {
+    temps.avancer(ecart(ms));
+    planificateur.executerEchus();
+    await (a.cycle.cycleEnCours() ?? Promise.resolve(undefined));
+  };
+  return { temps, planificateur, drive, appareil, avancer };
+};
+
+const creer = (a: AppareilCycle, n: number) =>
+  appliquerModifications(a.service, (_etat, contexte) => [
+    creationObjectif({ id: idObjectif(n), intitule: `Objectif ${String(n)}` }, contexte.instant),
+  ]);
+const enAttente = async (a: AppareilCycle) =>
+  valeurDe(await a.service.lireDecompteEnAttente()).nombre;
+const avertissements = (a: AppareilCycle) =>
+  a.journal.entrees.filter((e) => e.niveau === 'avertissement').map((e) => e.evenement);
+
+describe('CycleSynchronisation, compléments (ST-US-017 §6.3, §6.4)', () => {
+  it('UT-COMP-US-017-10 une demande pendant un cycle rend DEJA_EN_COURS et fait relancer un cycle complet à sa fin', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    await creer(smartphone, 1);
+
+    const premier = smartphone.cycle.synchroniserMaintenant();
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('DEJA_EN_COURS');
+    const reponsesAvant = env.drive.nombreReponses(SMARTPHONE);
+
+    expect(await premier).toBe('TERMINE');
+    expect(smartphone.cycle.cycleEnCours()).toBeUndefined();
+    expect(env.drive.nombreReponses(SMARTPHONE)).toBeGreaterThan(reponsesAvant + 1);
+  });
+
+  it('UT-COMP-US-017-11 deposerMaintenant attend la fin du cycle en cours, puis dépose seul', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    const enCours = smartphone.cycle.synchroniserMaintenant();
+    await creer(smartphone, 1);
+
+    expect(await smartphone.cycle.deposerMaintenant()).toBe('TERMINE');
+    expect(await enCours).toBe('TERMINE');
+    expect(await enAttente(smartphone)).toBe(0);
+  });
+
+  it('UT-COMP-US-017-12 arreter retire les déclencheurs ; demarrer est idempotent ; ni réseau coupé ni accès inchangé ne déclenchent', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    smartphone.cycle.demarrer();
+    smartphone.cycle.demarrer();
+    smartphone.reseau.changer(false);
+    smartphone.reseau.changer(true);
+    await smartphone.cycle.cycleEnCours();
+    const ecritures = env.drive.ecrituresPar(SMARTPHONE);
+    smartphone.acces.changer('VALIDE');
+    expect(smartphone.cycle.cycleEnCours()).toBeUndefined();
+
+    smartphone.cycle.arreter();
+    await creer(smartphone, 1);
+    await env.avancer(5 * MINUTE, smartphone);
+
+    expect(env.drive.ecrituresPar(SMARTPHONE)).toBe(ecritures);
+    expect(await enAttente(smartphone)).toBe(1);
+  });
+
+  it('UT-COMP-US-017-13 page masquée : plus de cycle toutes les 2 min ; retour au premier plan : un cycle, et la période reprend', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    smartphone.cycle.definirPremierPlan(true);
+    expect(smartphone.cycle.cycleEnCours()).toBeUndefined();
+    smartphone.cycle.demarrer();
+    smartphone.cycle.definirPremierPlan(false);
+    const reponses = env.drive.nombreReponses(SMARTPHONE);
+
+    await env.avancer(10 * MINUTE, smartphone);
+    expect(env.drive.nombreReponses(SMARTPHONE)).toBe(reponses);
+
+    smartphone.cycle.definirPremierPlan(true);
+    await smartphone.cycle.cycleEnCours();
+    const apresRetour = env.drive.nombreReponses(SMARTPHONE);
+    expect(apresRetour).toBeGreaterThan(reponses);
+    await env.avancer(2 * MINUTE, smartphone);
+    expect(env.drive.nombreReponses(SMARTPHONE)).toBeGreaterThan(apresRetour);
+  });
+
+  it('UT-COMP-US-017-14 Drive désactivé (403) : action requise, échec persistant, sans nouvelle tentative programmée', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    env.drive.desactiverPourLeCompte();
+
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
+
+    expect(smartphone.cycle.etatMoteur()).toEqual({
+      cycle: 'REPOS',
+      actionRequise: 'ECHEC_PERSISTANT',
+    });
+    expect(env.planificateur.prochaineEcheance()).toBeUndefined();
+    expect(avertissements(smartphone)).toContain('SynchronisationEchec');
+  });
+
+  it('UT-COMP-US-017-15 un fichier d’un autre appareil illisible est ignoré et journalisé, sans arrêter le cycle ; un manifeste illisible est une altération (ERR-012), attendu ou non : rien n’est fusionné ni écrit (ST-US-017 v0.10.1 §6.7 n° 4, 6, 12)', async () => {
+    const env = preparer();
+    const pc = env.appareil(PC, '02');
+    await creer(pc, 1);
+    await pc.cycle.synchroniserMaintenant();
+    const fichiersDe = (role: string) =>
+      env.drive.fichiers().filter((f) => !f.supprime && f.appProperties['donejuan'] === role);
+    fichiersDe('appareil').forEach((f) => {
+      env.drive.modifierFichierALaMain(f.id);
+    });
+    const smartphone = env.appareil(SMARTPHONE, '01');
+
+    // Fichier d'un autre appareil illisible, manifeste intact : ignoré sans message (n° 6).
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('TERMINE');
+    expect(avertissements(smartphone)).toEqual(['FichierAppareilIgnore']);
+    expect(smartphone.cycle.etatMoteur().actionRequise).toBeUndefined();
+    expect(valeurDe(await smartphone.service.lire()).objectifs.size).toBe(0);
+
+    // Manifeste illisible : altération sur l'appareil qui l'attend comme sur un nouvel appareil (n° 4, 12).
+    const manifestes = fichiersDe('manifeste');
+    expect(manifestes).toHaveLength(1);
+    manifestes.forEach((f) => {
+      env.drive.modifierFichierALaMain(f.id);
+    });
+    const troisieme = env.appareil(TROISIEME, '03');
+    const ecritures = [env.drive.ecrituresPar(SMARTPHONE), env.drive.ecrituresPar(TROISIEME)];
+    const metaAvant = valeurDe(await smartphone.depot.lireMeta());
+
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+    expect(await troisieme.cycle.synchroniserMaintenant()).toBe('DONNEES_ALTEREES');
+
+    expect(smartphone.cycle.etatMoteur().actionRequise).toBe('DONNEES_ABSENTES');
+    expect(troisieme.cycle.etatMoteur().actionRequise).toBe('DONNEES_ABSENTES');
+    expect([env.drive.ecrituresPar(SMARTPHONE), env.drive.ecrituresPar(TROISIEME)]).toEqual(
+      ecritures,
+    );
+    expect(valeurDe(await smartphone.depot.lireMeta())).toEqual(metaAvant);
+    expect(valeurDe(await troisieme.service.lire()).objectifs.size).toBe(0);
+    expect(avertissements(smartphone)).not.toContain('ManifesteIgnore');
+  });
+
+  it('UT-COMP-US-017-16 dépôt interrompu par le réseau : échec transitoire, au repos, sans tentative ni action', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    await creer(smartphone, 1);
+    env.drive.interrompreDepots(1);
+
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
+
+    expect(smartphone.cycle.etatMoteur()).toEqual({ cycle: 'REPOS' });
+    expect(await enAttente(smartphone)).toBe(1);
+  });
+
+  it('UT-COMP-US-017-17 espace local fermé : échec transitoire journalisé ; exception d’un adaptateur propagée, moteur au repos, consignée en erreur par un déclencheur', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    smartphone.depot.fermer();
+    expect(await smartphone.cycle.synchroniserMaintenant()).toBe('ECHEC_TRANSITOIRE');
+    expect(avertissements(smartphone)).toContain('SynchronisationEchec');
+
+    const reseau = new ReseauCommandable(false);
+    const journal = new JournalEnMemoire();
+    const panne = (): never => {
+      throw new Error('panne');
+    };
+    const cycle = new CycleSynchronisation({
+      depot: env.appareil(PC, '02').depot,
+      transport: { preparerDossier: panne } as unknown as TransportSynchro,
+      acces: new AccesCommandable(),
+      reseau,
+      planificateur: env.planificateur,
+      aleatoire: new SourceAleatoireDeterministe([0]),
+      horloge: new HorlogeSimulee(env.temps),
+      journal,
+      versionApplication: '0.1.0',
+    });
+    cycle.demarrer();
+    reseau.changer(true);
+    await expect(cycle.cycleEnCours()).rejects.toThrow('panne');
+    await Promise.resolve();
+
+    expect(cycle.etatMoteur().cycle).toBe('REPOS');
+    expect(journal.entrees).toContainEqual({
+      niveau: 'erreur',
+      evenement: 'SynchronisationInterrompue',
+      champs: { erreur: 'Error' },
+    });
+  });
+});
+
+describe('DepotAvantSortieSynchro (ST-US-017 §6.5)', () => {
+  const sortie = (p: {
+    readonly connecte: boolean;
+    readonly acces?: AccesCommandable;
+    readonly issue?: IssueCycle;
+    readonly actionRequise?: EtatMoteur['actionRequise'];
+  }) => {
+    const appels: Array<string> = [];
+    const depot = new DepotAvantSortieSynchro({
+      depot: { lire: () => Promise.resolve(echec({ type: 'EspaceLocalNonOuvert' } as const)) },
+      cycle: {
+        deposerMaintenant: () => {
+          appels.push('deposer');
+          return Promise.resolve(p.issue ?? 'TERMINE');
+        },
+        etatMoteur: (): EtatMoteur => ({
+          cycle: 'REPOS',
+          ...(p.actionRequise === undefined ? {} : { actionRequise: p.actionRequise }),
+        }),
+      },
+      reseau: new ReseauCommandable(p.connecte),
+      acces: p.acces ?? new AccesCommandable(),
+    });
+    return { depot, appels };
+  };
+
+  it('UT-COMP-US-017-20 deposerSiPossible — NON_TENTE hors ligne ou sans accès valide ; DEPOSE si le dépôt aboutit, ECHEC sinon', async () => {
+    const horsLigne = sortie({ connecte: false });
+    expect(await horsLigne.depot.deposerSiPossible()).toBe('NON_TENTE');
+    expect(horsLigne.appels).toEqual([]);
+    expect(
+      await sortie({
+        connecte: true,
+        acces: new AccesCommandable('PERDU'),
+      }).depot.deposerSiPossible(),
+    ).toBe('NON_TENTE');
+    expect(await sortie({ connecte: true }).depot.deposerSiPossible()).toBe('DEPOSE');
+    expect(await sortie({ connecte: true, issue: 'DRIVE_PLEIN' }).depot.deposerSiPossible()).toBe(
+      'ECHEC',
+    );
+  });
+
+  it('UT-COMP-US-017-4-38 deposerSiPossible — consultation seule : NON_TENTE sans appel au cycle, avant le contrôle du réseau et de l’accès ; toute autre action requise laisse le dépôt tenté (ST-US-017 v0.11 §6.8 n° 8)', async () => {
+    for (const p of [
+      { connecte: true },
+      { connecte: false },
+      { connecte: true, acces: new AccesCommandable('PERDU') },
+    ]) {
+      const consultation = sortie({ ...p, actionRequise: 'FORMAT_PLUS_RECENT' });
+      expect(await consultation.depot.deposerSiPossible()).toBe('NON_TENTE');
+      expect(consultation.appels).toEqual([]);
+    }
+    for (const actionRequise of ['DONNEES_ABSENTES', 'DRIVE_PLEIN', 'ECHEC_PERSISTANT'] as const) {
+      const autre = sortie({ connecte: true, actionRequise });
+      expect(await autre.depot.deposerSiPossible()).toBe('DEPOSE');
+      expect(autre.appels).toEqual(['deposer']);
+    }
+  });
+
+  it('UT-COMP-US-017-21 compterEnAttente — décompte par élément ; espace illisible : 0', async () => {
+    const env = preparer();
+    const smartphone = env.appareil(SMARTPHONE, '01');
+    await creer(smartphone, 1);
+    await creer(smartphone, 2);
+    const reel = new DepotAvantSortieSynchro({
+      depot: smartphone.depot,
+      cycle: smartphone.cycle,
+      reseau: smartphone.reseau,
+      acces: smartphone.acces,
+    });
+
+    expect(await reel.compterEnAttente()).toBe(2);
+    expect(await sortie({ connecte: true }).depot.compterEnAttente()).toBe(0);
+  });
+});

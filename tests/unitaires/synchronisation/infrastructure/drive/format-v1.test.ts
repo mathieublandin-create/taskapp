@@ -126,7 +126,13 @@ describe('Format Drive, schéma 1 (ST-US-017 §5.2)', () => {
     });
     const plusRecent = await resceller({ ...brut, schemaVersion: 2 });
 
-    expect(await decoderFichierAppareil(futur)).toEqual(succes(CONTENU));
+    // v0.11 (rang 11, E10) : le registre de champ inconnu n'est plus ignoré mais conservé à part (`inconnus`,
+    // UT-US-017-86, §5.3) ; les éléments connus restent exactement ceux du contenu.
+    const lu = await decoderFichierAppareil(futur);
+    expect(lu.ok && { ...lu.valeur, inconnus: undefined }).toEqual({
+      ...CONTENU,
+      inconnus: undefined,
+    });
     expect(await decoderFichierAppareil(plusRecent)).toEqual(
       echec({ type: 'FormatPlusRecent', schemaVersion: 2 }),
     );

@@ -3,7 +3,6 @@ export type EtatMoteur = {
   readonly cycle: 'REPOS' | 'EN_COURS' | 'RETENTATIVE';
   readonly actionRequise?:
     'DRIVE_PLEIN' | 'DONNEES_ABSENTES' | 'FORMAT_PLUS_RECENT' | 'ECHEC_PERSISTANT';
-  readonly aLire: number;
 };
 
 export interface SuiviCycle {
@@ -12,5 +11,5 @@ export interface SuiviCycle {
 
 /** Utilisé par la composition aux rangs 1 et 2 ; remplacé au rang 3 par CycleSynchronisation. */
 export const SUIVI_CYCLE_AU_REPOS: SuiviCycle = {
-  etatMoteur: () => ({ cycle: 'REPOS', aLire: 0 }),
+  etatMoteur: () => ({ cycle: 'REPOS' }),
 };

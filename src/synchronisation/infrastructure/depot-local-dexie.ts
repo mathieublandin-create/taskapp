@@ -1,14 +1,45 @@
-import { nonImplemente } from '@non-implemente';
+import Dexie from 'dexie';
 import type { GenerateurIdentifiants } from '../../commun/application/ports/generateur-identifiants';
-import type { IdAppareil } from '../../commun/domaine/identifiants';
-import type { Resultat } from '../../commun/domaine/resultat';
-import type { EtatLocal } from '../domaine/etat-local';
-import type { MetaSynchronisation, PlanSynchronisation } from '../domaine/meta-synchronisation';
+import { ErreurProgrammation } from '../../commun/domaine/erreur-programmation';
+import { IdAppareil } from '../../commun/domaine/identifiants';
+import { echec, succes, type Resultat } from '../../commun/domaine/resultat';
 import type {
   DepotLocal,
   ErreurDepotLocal,
   IssueTransaction,
 } from '../application/ports/depot-local';
+import { ETAT_LOCAL_VIDE, type EtatLocal } from '../domaine/etat-local';
+import { sontVides, type Inconnus } from '../domaine/inconnus';
+import { comparerHlc } from '../domaine/hlc';
+import { cleEnTexte } from '../domaine/information';
+import {
+  META_INITIALE,
+  type MetaSynchronisation,
+  type PlanSynchronisation,
+} from '../domaine/meta-synchronisation';
+import type { PlanEcriture } from '../domaine/planifier-ecritures';
+import type { AjoutsSignalements, Signalements } from '../domaine/signalements';
+import {
+  decoderEnAttente,
+  decoderEvenement,
+  decoderEvenementInconnu,
+  decoderLecture,
+  decoderMeta,
+  decoderMetaSynchronisation,
+  decoderRegistre,
+  decoderRegistreInconnu,
+  decoderValeurEcartee,
+  encoderEnAttente,
+  encoderEvenement,
+  encoderEvenementInconnu,
+  encoderLecture,
+  encoderMeta,
+  encoderMetaSynchronisation,
+  NOMS_META_REINITIALISES,
+  encoderRegistre,
+  encoderRegistreInconnu,
+  encoderValeurEcartee,
+} from './stockage-local/schemas';
 
 /**
  * Options (ST-socle-ecriture.md §4.4). `fabrique` : IDBFactory à utiliser (une par appareil simulé
@@ -38,51 +69,587 @@ export type OptionsOuvertureEspace = {
   readonly surFermetureImposee?: () => void;
 };
 
+const TABLES_SIGNALEMENTS = ['valeursEcartees', 'lectures'];
+/** ST-US-017 v0.11 §5.1 (base version 4) : éléments inconnus de même `schemaVersion` (RG-058, ANT-19). */
+const TABLES_INCONNUS = ['registresInconnus', 'evenementsInconnus'];
+/** Tables vidées par `reinitialiser` (la méta est traitée à part). */
+const TABLES_VIDEES = [
+  'registres',
+  'journal',
+  'enAttente',
+  ...TABLES_SIGNALEMENTS,
+  ...TABLES_INCONNUS,
+];
+const TABLES = [
+  'registres',
+  'journal',
+  'enAttente',
+  'meta',
+  ...TABLES_SIGNALEMENTS,
+  ...TABLES_INCONNUS,
+];
+
+type Ouverture = Resultat<undefined, { readonly type: 'DonneesLocalesIllisibles' }>;
+
+const ESPACE_ILLISIBLE = echec({ type: 'DonneesLocalesIllisibles' } as const);
+const ESPACE_NON_OUVERT = echec({ type: 'EspaceLocalNonOuvert' } as const);
+
+/** Base Dexie d'un espace, en durabilité stricte (conventions.md §10.1, ADR-013). */
+const creerBase = (nomBase: string, fabrique: IDBFactory | undefined): Dexie => {
+  const base = new Dexie(nomBase, {
+    chromeTransactionDurability: 'strict',
+    ...(fabrique === undefined ? {} : { indexedDB: fabrique }),
+  });
+  const tables = {
+    registres: 'cle, [type+id]',
+    journal: 'id, [elementType+elementId], hlcTri',
+    enAttente: 'cle',
+    meta: 'nom',
+  };
+  base.version(1).stores(tables);
+  // ST-US-017 §5.1 : version 2, aucune nouvelle table ; la méta reçoit les clés de synchronisation.
+  base.version(2).stores(tables);
+  // ST-US-017 v0.5 §5.1 (DAT v0.11.7 §4.2) : version 3, ajout pur des tables de signalements, sans `upgrade`.
+  const signalements = { valeursEcartees: 'id', lectures: 'id' };
+  base.version(3).stores({ ...tables, ...signalements });
+  // ST-US-017 v0.11 §5.1 : version 4, ajout pur des tables d'éléments inconnus, sans `upgrade`.
+  base.version(4).stores({
+    ...tables,
+    ...signalements,
+    registresInconnus: 'cle',
+    evenementsInconnus: 'id',
+  });
+  return base;
+};
+
+/**
+ * Lit `meta.appareilId`, ou le crée avec une `meta` vide si l'espace est neuf, dans une transaction stricte
+ * résolue à `complete` ; le générateur n'est appelé que pour un espace neuf. Illisible → undefined.
+ */
+const etablirAppareil = async (
+  base: Dexie,
+  generateur: GenerateurIdentifiants,
+): Promise<IdAppareil | undefined> =>
+  base.transaction('rw', ['meta'], async () => {
+    const meta = base.table('meta');
+    const lignes = await meta.toArray();
+    if (lignes.length > 0) return decoderMeta(lignes)?.appareilId;
+    const appareilId = IdAppareil.depuisUuid(generateur.genererUuidV7());
+    await meta.bulkPut([...encoderMeta(ETAT_LOCAL_VIDE(appareilId))]);
+    return appareilId;
+  });
+const ECRITURE_IMPOSSIBLE = echec({ type: 'EcritureLocaleImpossible' } as const);
+
+const planEstVide = (plan: PlanEcriture): boolean =>
+  plan.registresEcrits.length === 0 &&
+  plan.evenementsAjoutes.length === 0 &&
+  plan.enAttenteEcrites.length === 0 &&
+  plan.enAttenteRetirees.length === 0;
+
+/**
+ * ST-US-017 v0.10.1 §6.7 n° 9 (2), n° 11 c (2) : un plan qui ne fait qu'avancer `dernierHlc` (HLC d'un choix, condition
+ * C3) n'est pas vide : `dernierHlc` est écrit, `version` augmente.
+ */
+const avanceDernierHlc = (avant: EtatLocal, plan: PlanEcriture): boolean => {
+  const apres = plan.etatApres.dernierHlc;
+  return (
+    apres !== undefined &&
+    (avant.dernierHlc === undefined || comparerHlc(apres, avant.dernierHlc) > 0)
+  );
+};
+
+const signalementsVides = (ajouts: AjoutsSignalements | undefined): boolean =>
+  ajouts === undefined || (ajouts.valeursEcartees.length === 0 && ajouts.lectures.length === 0);
+
+/** ST-US-017 v0.11 §5.1, §6.8 n° 2 : un plan qui change la correction d'horloge n'est pas vide. */
+const changeCorrection = (avant: EtatLocal, plan: PlanEcriture): boolean =>
+  plan.etatApres.correctionHorloge !== avant.correctionHorloge;
+
+const inconnusVides = (inconnus: Inconnus | undefined): boolean =>
+  inconnus === undefined || sontVides(inconnus);
+
+/** Plan de synchronisation sans écriture d'état (seule la méta est écrite) : version et observateurs inchangés. */
+const synchronisationVide = (s: PlanSynchronisation, avant: EtatLocal): boolean =>
+  planEstVide(s.plan) &&
+  !avanceDernierHlc(avant, s.plan) &&
+  !changeCorrection(avant, s.plan) &&
+  signalementsVides(s.signalements) &&
+  inconnusVides(s.inconnus);
+
+/** Décode toutes les lignes ; undefined si l'une d'elles est invalide. */
+const decoderTout = <T>(
+  lignes: ReadonlyArray<unknown>,
+  decoder: (ligne: unknown) => T | undefined,
+): ReadonlyArray<T> | undefined => {
+  const decodees = lignes.flatMap((ligne) => {
+    const decodee = decoder(ligne);
+    return decodee === undefined ? [] : [decodee];
+  });
+  return decodees.length === lignes.length ? decodees : undefined;
+};
+
+/** Exception levée par le calcul de l'appelant : elle est propagée telle quelle, jamais traduite. */
+type Surveillance = { exception: Error | undefined };
+
+type IssueExecution<T, E> = Resultat<
+  { readonly valeur: T; readonly etatApres?: EtatLocal },
+  E | ErreurDepotLocal
+>;
+
 export class DepotLocalDexie implements DepotLocal {
-  constructor(private readonly options: OptionsDepotLocalDexie) {}
+  private readonly base: Dexie;
+  private readonly observateurs = new Set<() => void>();
+  private cache: EtatLocal | undefined;
+  private ouverture: Promise<Ouverture> | undefined;
+  private versionNotifiee = 0;
+  private desabonnementStockage: (() => void) | undefined;
+  private ferme = false;
+
+  constructor(private readonly options: OptionsDepotLocalDexie) {
+    // Durabilité stricte (conventions.md §10.1, ADR-013) : toute transaction d'écriture l'exige.
+    this.base = creerBase(options.nomBase, options.fabrique);
+    // RL-LOT-001-A1 : une autre connexion supprime ou monte la base ; fermeture sans réouverture automatique.
+    // Rendre false empêche la fermeture par défaut de Dexie, qui autoriserait une réouverture.
+    this.base.on('versionchange', () => {
+      const dejaFerme = this.ferme;
+      this.fermer();
+      if (!dejaFerme) options.surFermetureImposee?.();
+      return false;
+    });
+  }
 
   /**
    * L'`appareilId` naît avec l'espace : base neuve → nouvel identifiant (UUID v7 du générateur), écrit dans
    * `meta.appareilId` par une transaction stricte confirmée à `complete` ; base existante → identifiant relu,
    * générateur non appelé. Base supprimée puis rouverte → nouvel identifiant. Ligne illisible → Echec.
    */
-  static ouvrirEspace(
-    _options: OptionsOuvertureEspace,
+  static async ouvrirEspace(
+    options: OptionsOuvertureEspace,
   ): Promise<Resultat<DepotLocalDexie, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.ouvrirEspace');
+    const provisoire = creerBase(options.nomBase, options.fabrique);
+    let appareilId: IdAppareil | undefined;
+    try {
+      appareilId = await etablirAppareil(provisoire, options.generateur);
+    } catch {
+      return ECRITURE_IMPOSSIBLE;
+    } finally {
+      provisoire.close({ disableAutoOpen: true });
+    }
+    if (appareilId === undefined) return ESPACE_ILLISIBLE;
+    const depot = new DepotLocalDexie({
+      nomBase: options.nomBase,
+      appareilId,
+      ...(options.fabrique === undefined ? {} : { fabrique: options.fabrique }),
+      ...(options.surFermetureImposee === undefined
+        ? {}
+        : { surFermetureImposee: options.surFermetureImposee }),
+    });
+    // La connexion reste ouverte : l'instance reçoit `versionchange` (RL-LOT-001-A1).
+    const ouverture = await depot.lire();
+    return ouverture.ok ? succes(depot) : ouverture;
   }
 
-  /** Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Idempotent. */
+  /**
+   * Ferme la connexion sans réouverture automatique ; ensuite, toute méthode rend EspaceLocalNonOuvert. Libère les
+   * observateurs et l'écoute globale du stockage (RC-ANO-001-1). Idempotent.
+   */
   fermer(): void {
-    nonImplemente('DepotLocalDexie.fermer');
+    this.ferme = true;
+    this.observateurs.clear();
+    this.desabonnementStockage?.();
+    this.desabonnementStockage = undefined;
+    this.base.close({ disableAutoOpen: true });
   }
 
   /** Identifiant de l'appareil pour cet espace (celui du constructeur ou de `ouvrirEspace`). */
   appareil(): IdAppareil {
-    return nonImplemente('DepotLocalDexie.appareil');
+    return this.options.appareilId;
   }
 
-  lire(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.lire');
+  async lire(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', TABLES, () => this.etatAJour());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
   }
 
-  appliquer<T, E extends { readonly type: string }>(
-    _calcul: (etat: EtatLocal) => Resultat<IssueTransaction<T>, E>,
+  async appliquer<T, E extends { readonly type: string }>(
+    calcul: (etat: EtatLocal) => Resultat<IssueTransaction<T>, E>,
   ): Promise<Resultat<T, E | ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.appliquer');
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    const surveillance: Surveillance = { exception: undefined };
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      const issue = await this.base.transaction('rw', TABLES, () =>
+        this.executer(calcul, surveillance),
+      );
+      if (!issue.ok) return issue;
+      // La promesse de la transaction n'est résolue qu'à `complete` (UT-SOC-45) : le cache et les rappels
+      // ne sont mis à jour qu'à partir d'ici.
+      if (issue.valeur.etatApres !== undefined) this.confirmer(issue.valeur.etatApres);
+      return succes(issue.valeur.valeur);
+    } catch (erreur) {
+      if (surveillance.exception !== undefined) throw surveillance.exception;
+      return this.traduire(erreur);
+    }
   }
 
-  observer(_rappel: () => void): () => void {
-    return nonImplemente('DepotLocalDexie.observer');
+  observer(rappel: () => void): () => void {
+    this.observateurs.add(rappel);
+    this.desabonnementStockage ??= this.ecouterAutresInstances();
+    return () => {
+      this.observateurs.delete(rappel);
+      if (this.observateurs.size === 0) {
+        this.desabonnementStockage?.();
+        this.desabonnementStockage = undefined;
+      }
+    };
   }
 
-  lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.lireMeta');
+  async lireMeta(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', ['meta'], () => this.metaSynchronisation());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
   }
 
-  appliquerSynchronisation(
-    _calcul: (etat: EtatLocal, meta: MetaSynchronisation) => PlanSynchronisation,
+  /** ST-US-017 v0.5 §4.6 : tables `valeursEcartees` et `lectures` (version 3), lues dans une transaction. */
+  async lireSignalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', TABLES_SIGNALEMENTS, () => this.signalements());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
+  }
+
+  /**
+   * ST-US-017 v0.11 §4.8, §5.1 (rang 11, tranche H2) : tables `registresInconnus` et `evenementsInconnus` (base
+   * version 4), lues dans une transaction `r`, triées comme `Inconnus` ; ligne illisible → DonneesLocalesIllisibles.
+   */
+  async lireInconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      return await this.base.transaction('r', TABLES_INCONNUS, () => this.inconnus());
+    } catch (erreur) {
+      return this.traduire(erreur);
+    }
+  }
+
+  /**
+   * Une seule transaction `rw` stricte (ST-US-017 §4.2) : état, méta et signalements lus, calcul, puis plan, méta et
+   * signalements écrits ensemble (v0.5 §4.6). La méta est fusionnée clé à clé ; `version`, `dernierHlc` et les
+   * observateurs ne changent que si le plan ou les signalements sont non vides (v0.10.1 : un plan qui avance
+   * `dernierHlc` n'est pas vide). Une exception du calcul est propagée et rien n'est écrit.
+   */
+  async appliquerSynchronisation(
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
   ): Promise<Resultat<undefined, ErreurDepotLocal>> {
-    return nonImplemente('DepotLocalDexie.appliquerSynchronisation');
+    if (this.ferme) return ESPACE_NON_OUVERT;
+    const surveillance: Surveillance = { exception: undefined };
+    try {
+      const ouverture = await this.ouvrir();
+      if (!ouverture.ok) return ouverture;
+      const issue = await this.base.transaction('rw', TABLES, () =>
+        this.executerSynchronisation(calcul, surveillance),
+      );
+      if (!issue.ok) return issue;
+      if (issue.valeur.etatApres !== undefined) this.confirmer(issue.valeur.etatApres);
+      return succes(undefined);
+    } catch (erreur) {
+      if (surveillance.exception !== undefined) throw surveillance.exception;
+      return this.traduire(erreur);
+    }
+  }
+
+  /**
+   * Première ouverture : écrit `meta.appareilId` ; ensuite, vérifie qu'il est identique (sinon ErreurProgrammation).
+   * Une `meta` illisible donne DonneesLocalesIllisibles, sans mémoriser l'échec : l'ouverture peut être retentée.
+   */
+  private ouvrir(): Promise<Ouverture> {
+    this.ouverture ??= this.initialiser().then(
+      (ouverture) => {
+        if (!ouverture.ok) this.ouverture = undefined;
+        return ouverture;
+      },
+      (erreur: unknown) => {
+        this.ouverture = undefined;
+        throw erreur;
+      },
+    );
+    return this.ouverture;
+  }
+
+  private async initialiser(): Promise<Ouverture> {
+    const meta = this.base.table('meta');
+    const lignes = await meta.toArray();
+    if (lignes.length === 0) {
+      await meta.bulkPut([...encoderMeta(ETAT_LOCAL_VIDE(this.options.appareilId))]);
+      return succes(undefined);
+    }
+    const lues = decoderMeta(lignes);
+    if (lues === undefined) return ESPACE_ILLISIBLE;
+    if (lues.appareilId !== this.options.appareilId) {
+      throw new ErreurProgrammation("L'espace local appartient à un autre appareil");
+    }
+    return succes(undefined);
+  }
+
+  /** État à jour : le cache si `meta.version` n'a pas changé, sinon rechargement complet (autre onglet). */
+  private async etatAJour(): Promise<Resultat<EtatLocal, ErreurDepotLocal>> {
+    const meta = decoderMeta(await this.base.table('meta').toArray());
+    if (meta === undefined) return ESPACE_ILLISIBLE;
+    if (this.cache?.version === meta.version) return succes(this.cache);
+    const registres = decoderTout(await this.base.table('registres').toArray(), decoderRegistre);
+    const evenements = decoderTout(await this.base.table('journal').toArray(), decoderEvenement);
+    const enAttente = decoderTout(await this.base.table('enAttente').toArray(), decoderEnAttente);
+    if (registres === undefined || evenements === undefined || enAttente === undefined) {
+      return ESPACE_ILLISIBLE;
+    }
+    this.cache = {
+      appareilId: meta.appareilId,
+      version: meta.version,
+      ...(meta.dernierHlc === undefined ? {} : { dernierHlc: meta.dernierHlc }),
+      correctionHorloge: meta.correctionHorloge,
+      registres: new Map(registres.map((r) => [cleEnTexte(r.cle), r])),
+      journal: new Map(evenements.map((e) => [e.id, e])),
+      enAttente: new Map(enAttente.map((e) => [cleEnTexte(e.cle), e])),
+    };
+    return succes(this.cache);
+  }
+
+  /** Dans la transaction : lit l'état, appelle le calcul (synchrone, pur) et écrit son plan. */
+  private async executer<T, E extends { readonly type: string }>(
+    calcul: (etat: EtatLocal) => Resultat<IssueTransaction<T>, E>,
+    surveillance: Surveillance,
+  ): Promise<IssueExecution<T, E>> {
+    const etat = await this.etatAJour();
+    if (!etat.ok) return etat;
+    const issue = this.calculer(calcul, etat.valeur, surveillance);
+    if (!issue.ok) return issue;
+    const { plan, valeur } = issue.valeur;
+    if (planEstVide(plan)) return succes({ valeur });
+    const etatApres = { ...plan.etatApres, version: etat.valeur.version + 1 };
+    await this.ecrire(plan, etatApres);
+    return succes({ valeur, etatApres });
+  }
+
+  /** Dans une transaction qui couvre les deux tables : signalements relus, ou DonneesLocalesIllisibles. */
+  private async signalements(): Promise<Resultat<Signalements, ErreurDepotLocal>> {
+    const valeurs = decoderTout(
+      await this.base.table('valeursEcartees').toArray(),
+      decoderValeurEcartee,
+    );
+    const lectures = decoderTout(await this.base.table('lectures').toArray(), decoderLecture);
+    if (valeurs === undefined || lectures === undefined) return ESPACE_ILLISIBLE;
+    return succes({
+      valeursEcartees: new Map(valeurs.map((v) => [v.id, v])),
+      lectures: new Map(lectures.map((l) => [l.id, l])),
+    });
+  }
+
+  /**
+   * Dans une transaction qui couvre les deux tables : inconnus relus, ou DonneesLocalesIllisibles. Triés par clé
+   * primaire (`cle`, puis `id`) : l'ordre des clés texte d'IndexedDB est celui des unités de code (n° 12).
+   */
+  private async inconnus(): Promise<Resultat<Inconnus, ErreurDepotLocal>> {
+    const registres = decoderTout(
+      await this.base.table('registresInconnus').toArray(),
+      decoderRegistreInconnu,
+    );
+    const evenements = decoderTout(
+      await this.base.table('evenementsInconnus').toArray(),
+      decoderEvenementInconnu,
+    );
+    if (registres === undefined || evenements === undefined) return ESPACE_ILLISIBLE;
+    return succes({ registres, evenements });
+  }
+
+  private async metaSynchronisation(): Promise<Resultat<MetaSynchronisation, ErreurDepotLocal>> {
+    const meta = decoderMetaSynchronisation(await this.base.table('meta').toArray());
+    return meta === undefined ? ESPACE_ILLISIBLE : succes(meta);
+  }
+
+  /** Dans la transaction : lit l'état et la méta, appelle le calcul, écrit la méta puis le plan s'il est non vide. */
+  private async executerSynchronisation(
+    calcul: (
+      etat: EtatLocal,
+      meta: MetaSynchronisation,
+      signalements: Signalements,
+    ) => PlanSynchronisation,
+    surveillance: Surveillance,
+  ): Promise<IssueExecution<undefined, never>> {
+    const etat = await this.etatAJour();
+    if (!etat.ok) return etat;
+    const meta = await this.metaSynchronisation();
+    if (!meta.ok) return meta;
+    const signalements = await this.signalements();
+    if (!signalements.ok) return signalements;
+    const synchronisation = this.proteger(
+      () => calcul(etat.valeur, meta.valeur, signalements.valeur),
+      surveillance,
+    );
+    if (synchronisation.reinitialiser === true) {
+      return this.reinitialiser(synchronisation, etat.valeur.version);
+    }
+    return this.ecrireSynchronisation(synchronisation, etat.valeur);
+  }
+
+  /** Dans la transaction en cours : écrit la méta, puis le plan et les signalements ajoutés s'ils sont non vides. */
+  private async ecrireSynchronisation(
+    synchronisation: PlanSynchronisation,
+    etatAvant: EtatLocal,
+  ): Promise<IssueExecution<undefined, never>> {
+    const { plan, meta: metaEcrite, signalements: ajouts, inconnus } = synchronisation;
+    await this.base.table('meta').bulkPut([...encoderMetaSynchronisation(metaEcrite)]);
+    if (synchronisationVide(synchronisation, etatAvant)) return succes({ valeur: undefined });
+    const etatApres = { ...plan.etatApres, version: etatAvant.version + 1 };
+    await this.ecrire(plan, etatApres);
+    if (ajouts !== undefined) await this.ecrireSignalements(ajouts);
+    if (inconnus !== undefined) await this.ecrireInconnus(inconnus);
+    return succes({ valeur: undefined, etatApres });
+  }
+
+  /**
+   * ST-US-017 v0.10 §4.7 (CT-DEPOT-14), dans la transaction en cours : vide les tables d'état, de signalements et
+   * d'inconnus, REMPLACE les clés de synchronisation de la méta par `{ ...META_INITIALE, ...meta }`, écrit l'état vide
+   * (`appareilId`, `dernierHlc`, `correctionHorloge` de `plan.etatApres`, version + 1) puis les signalements et les
+   * inconnus du plan. v0.11 §5.1 (CT-DEPOT-17) : la méta d'appareil (`CLES_META_APPAREIL`) n'est pas retirée ; une
+   * valeur fournie par `meta` la remplace.
+   */
+  private async reinitialiser(
+    synchronisation: PlanSynchronisation,
+    versionAvant: number,
+  ): Promise<IssueExecution<undefined, never>> {
+    const etatApres: EtatLocal = {
+      ...synchronisation.plan.etatApres,
+      version: versionAvant + 1,
+      registres: new Map(),
+      journal: new Map(),
+      enAttente: new Map(),
+    };
+    await Promise.all(TABLES_VIDEES.map((table) => this.base.table(table).clear()));
+    await this.base.table('meta').bulkDelete([...NOMS_META_REINITIALISES]);
+    await this.base
+      .table('meta')
+      .bulkPut([
+        ...encoderMetaSynchronisation({ ...META_INITIALE, ...synchronisation.meta }),
+        ...encoderMeta(etatApres),
+      ]);
+    if (synchronisation.signalements !== undefined) {
+      await this.ecrireSignalements(synchronisation.signalements);
+    }
+    if (synchronisation.inconnus !== undefined) await this.ecrireInconnus(synchronisation.inconnus);
+    return succes({ valeur: undefined, etatApres });
+  }
+
+  /** Appelle le calcul de l'appelant ; une exception est mémorisée (pour être propagée telle quelle) puis relancée. */
+  private proteger<T>(calcul: () => T, surveillance: Surveillance): T {
+    try {
+      return calcul();
+    } catch (exception) {
+      if (exception instanceof Error) surveillance.exception = exception;
+      throw exception;
+    }
+  }
+
+  private calculer<T, E extends { readonly type: string }>(
+    calcul: (etat: EtatLocal) => Resultat<IssueTransaction<T>, E>,
+    etat: EtatLocal,
+    surveillance: Surveillance,
+  ): Resultat<IssueTransaction<T>, E> {
+    try {
+      return calcul(etat);
+    } catch (exception) {
+      if (exception instanceof Error) surveillance.exception = exception;
+      throw exception;
+    }
+  }
+
+  private async ecrire(plan: PlanEcriture, etatApres: EtatLocal): Promise<void> {
+    const entreesEcrites = plan.enAttenteEcrites.flatMap((cle) => {
+      const entree = etatApres.enAttente.get(cle);
+      return entree === undefined ? [] : [encoderEnAttente(entree)];
+    });
+    await this.base.table('registres').bulkPut(plan.registresEcrits.map(encoderRegistre));
+    await this.base.table('journal').bulkAdd(plan.evenementsAjoutes.map(encoderEvenement));
+    await this.base.table('enAttente').bulkPut(entreesEcrites);
+    await this.base.table('enAttente').bulkDelete([...plan.enAttenteRetirees]);
+    await this.base.table('meta').bulkPut([...encoderMeta(etatApres)]);
+  }
+
+  /** Ajout ou remplacement par identifiant, dans la transaction en cours. */
+  private async ecrireSignalements(ajouts: AjoutsSignalements): Promise<void> {
+    await this.base
+      .table('valeursEcartees')
+      .bulkPut(ajouts.valeursEcartees.map(encoderValeurEcartee));
+    await this.base.table('lectures').bulkPut(ajouts.lectures.map(encoderLecture));
+  }
+
+  /** Ajout ou remplacement par clé (`cleInconnue`) et par identifiant, dans la transaction en cours. */
+  private async ecrireInconnus(inconnus: Inconnus): Promise<void> {
+    await this.base
+      .table('registresInconnus')
+      .bulkPut(inconnus.registres.map(encoderRegistreInconnu));
+    await this.base
+      .table('evenementsInconnus')
+      .bulkPut(inconnus.evenements.map(encoderEvenementInconnu));
+  }
+
+  private confirmer(etatApres: EtatLocal): void {
+    this.cache = etatApres;
+    this.versionNotifiee = etatApres.version;
+    this.notifier();
+  }
+
+  private notifier(): void {
+    this.observateurs.forEach((rappel) => {
+      rappel();
+    });
+  }
+
+  /** Écritures d'une autre instance (autre onglet) : événement de mutation du stockage de Dexie. */
+  private ecouterAutresInstances(): () => void {
+    const prefixe = `idb://${this.options.nomBase}/`;
+    const surMutation = (parties: object): void => {
+      if (Object.keys(parties).some((cle) => cle.startsWith(prefixe))) void this.verifierVersion();
+    };
+    Dexie.on('storagemutated', surMutation);
+    return () => {
+      Dexie.on('storagemutated').unsubscribe(surMutation);
+    };
+  }
+
+  private async verifierVersion(): Promise<void> {
+    try {
+      const meta = decoderMeta(await this.base.table('meta').toArray());
+      if (meta === undefined || meta.version <= this.versionNotifiee) return;
+      this.versionNotifiee = meta.version;
+      this.notifier();
+    } catch {
+      // Base fermée ou indisponible : l'écriture d'une autre instance sera vue à la prochaine lecture.
+    }
+  }
+
+  private traduire(erreur: unknown): Resultat<never, ErreurDepotLocal> {
+    if (erreur instanceof ErreurProgrammation) throw erreur;
+    return this.ferme ? ESPACE_NON_OUVERT : ECRITURE_IMPOSSIBLE;
   }
 }
