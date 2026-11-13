@@ -369,7 +369,19 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
 }
 
 /* Focus visible (DT-034, guide §6.6.16 n° 1) : anneau plein de 2 px, jamais au clic souris. */
-:where(a, button, input, select, textarea, summary, [tabindex], ion-button, ion-fab-button, ion-checkbox, ion-item):focus-visible,
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex],
+  ion-button,
+  ion-fab-button,
+  ion-checkbox,
+  ion-item
+):focus-visible,
 ion-fab-button::part(native):focus-visible,
 ion-button::part(native):focus-visible {
   outline: 2px solid var(--dj-focus);
