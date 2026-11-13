@@ -23,7 +23,7 @@ const BoutonFermeture = ({
   readonly surMasquer: () => void;
 }) =>
   libelle === undefined ? null : (
-    <button type="button" onClick={surMasquer}>
+    <button type="button" className="bouton-natif" data-variante="tertiaire" onClick={surMasquer}>
       {libelle}
     </button>
   );
@@ -42,7 +42,9 @@ const BoutonAction = ({
 }) => (
   <button
     type="button"
+    className="bouton-natif"
     data-action={action}
+    data-variante="principal"
     {...(desactive ? { 'aria-disabled': true } : {})}
     onClick={() => {
       if (!desactive) surAction(action);

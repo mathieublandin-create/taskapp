@@ -11,6 +11,26 @@ export type ProprietesSectionCompte = {
   readonly surAction: (action: ActionCompte) => void;
 };
 
+const BoutonActionCompte = ({
+  action,
+  surAction,
+}: {
+  readonly action: ActionCompte;
+  readonly surAction: (action: ActionCompte) => void;
+}) => (
+  <button
+    type="button"
+    className="bouton-natif"
+    data-action={action}
+    {...(action === 'SUPPRIMER_DONNEES' ? { 'data-variante': 'danger' } : {})}
+    onClick={() => {
+      surAction(action);
+    }}
+  >
+    {libelleActionCompte(action)}
+  </button>
+);
+
 export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
   <section aria-labelledby="compte-titre">
     <h2 id="compte-titre">Compte</h2>
@@ -27,16 +47,7 @@ export const SectionCompte = ({ vue, surAction }: ProprietesSectionCompte) => (
       </IonText>
     )}
     {vue.actions.map((action) => (
-      <button
-        key={action}
-        type="button"
-        data-action={action}
-        onClick={() => {
-          surAction(action);
-        }}
-      >
-        {libelleActionCompte(action)}
-      </button>
+      <BoutonActionCompte key={action} action={action} surAction={surAction} />
     ))}
   </section>
 );

@@ -131,6 +131,7 @@ const BoutonAnnulerDemande = ({ choix, prevoirFocus }: AvecFocus) => (
   <button
     ref={choix.annuler.attacher()}
     type="button"
+    className="bouton-natif"
     data-action="ANNULER_DEMANDE"
     onClick={() => {
       prevoirFocus('RESTAURER');
@@ -152,7 +153,8 @@ const BoutonRestaurer = ({
     <button
       ref={choix.restaurer.attacher()}
       type="button"
-      className="primaire"
+      className="bouton-natif"
+      data-variante="principal"
       data-action="RESTAURER"
       aria-describedby={idPhrase}
       aria-busy={enCours}
@@ -199,6 +201,8 @@ const BoutonRepartirDeZero = ({
     <button
       ref={choix.boutonRepartir.attacher()}
       type="button"
+      className="bouton-natif"
+      data-variante="danger"
       data-action="REPARTIR_DE_ZERO"
       data-rouge
       aria-disabled={!disponible}
@@ -247,7 +251,9 @@ const DeciderPlusTard = ({
     <section data-option="DECIDER_PLUS_TARD">
       <button
         type="button"
+        className="bouton-natif"
         data-action="DECIDER_PLUS_TARD"
+        data-variante="tertiaire"
         aria-describedby={idPhrase}
         onClick={surDeciderPlusTard}
       >
@@ -314,6 +320,21 @@ export const CarteChoixRestauration = (proprietes: ProprietesChoixRestauration):
   );
 };
 
+const EnTeteFeuille = ({
+  textes,
+  surFermer,
+}: {
+  readonly textes: ProprietesChoixRestauration['textes'];
+  readonly surFermer: () => void;
+}) => (
+  <header>
+    <h2>{textes.titreFeuille}</h2>
+    <button type="button" className="bouton-natif" data-variante="tertiaire" onClick={surFermer}>
+      {textes.fermer}
+    </button>
+  </header>
+);
+
 /**
  * Feuille de choix « Action requise », ouverte d'elle-même tant que `propose`. « Fermer » et Échap ont l'effet de
  * « Décider plus tard » ; Échap ne ferme pas la feuille quand la confirmation est ouverte (elle ferme la boîte seule).
@@ -332,12 +353,7 @@ export const FeuilleChoixRestauration = (proprietes: ProprietesChoixRestauration
       }}
     >
       <div data-message={vue.code}>
-        <header>
-          <h2>{textes.titreFeuille}</h2>
-          <button type="button" onClick={surDeciderPlusTard}>
-            {textes.fermer}
-          </button>
-        </header>
+        <EnTeteFeuille textes={textes} surFermer={surDeciderPlusTard} />
         <h3>{vue.titre}</h3>
         <p>{vue.texte}</p>
         <Options choix={choix} prevoirFocus={prevoirFocus} avecDeciderPlusTard />
