@@ -128,7 +128,7 @@ When("dans le premier onglet, l'utilisateur confirme", async function (this: Mon
 type Onglet = 'premier' | 'second';
 
 /**
- * ANO-004 : l'écran de connexion s'affiche aussi brièvement pendant toute ouverture ; la conclusion n'est tirée qu'après
+ * ANO-004 (corrigée en T6 : cadre neutre pendant l'ouverture) : la conclusion n'est tirée qu'après
  * le rechargement du second onglet (un chargement de plus depuis le geste) et la fin de ses échanges. Le premier onglet,
  * lui, ne se recharge pas : il revient seul à l'écran de connexion (ANO-006), attendu par sondage.
  */

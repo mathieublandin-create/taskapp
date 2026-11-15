@@ -236,6 +236,19 @@ const apresOuvertureWeb = async (
   );
 };
 
+/** Suite de l'ouverture ; un rejet (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment (ANO-004). */
+const suivreOuverture = (
+  ouverture: Promise<IssueOuverture>,
+  application: Application,
+  controleur: ControleurInterface,
+  navigateur: Navigateur,
+): void => {
+  void ouverture.then(
+    (issue) => apresOuvertureWeb(application, controleur, navigateur, issue),
+    () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }),
+  );
+};
+
 /** Ce que `main.tsx` reçoit de l'ouverture : le contrôleur de l'interface et le journal (enregistrement du service worker). */
 export type DemarrageWeb = {
   readonly controleur: ControleurInterface;
@@ -280,6 +293,6 @@ export const demarrerWeb = (
   ecouterFinDeSession(avis, quitter);
   ecouterDeclencheurs(application, controleur);
   const ouverture = application.ouvrirApplication.executer(retour);
-  void ouverture.then((issue) => apresOuvertureWeb(application, controleur, navigateur, issue));
+  suivreOuverture(ouverture, application, controleur, navigateur);
   return { controleur, journal: application.journal };
 };

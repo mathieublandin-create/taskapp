@@ -510,3 +510,9 @@ ion-content.contenu-avec-fab::part(scroll) {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ANO-004 : cadre neutre de l'ouverture, sans texte ni animation (guide §6.2). */
+.cadre-ouverture {
+  min-height: 100dvh;
+  background: var(--ion-background-color, #fff);
+}
