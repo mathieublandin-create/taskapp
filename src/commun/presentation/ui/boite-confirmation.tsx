@@ -18,15 +18,20 @@ export type ProprietesBoiteConfirmation = {
 /** Libellé générique du guide (§4.12, §6.6.7), sans code de catalogue (RC-R2-8 a). */
 export const LIBELLE_ANNULER = 'Annuler';
 
-/** Échap = Annuler (guide §6.6.7), écouté sur le document tant que la boîte est affichée. */
+/**
+ * Échap = Annuler (guide §6.6.7), écouté sur le document tant que la boîte est affichée. Écoute en phase de capture et
+ * `stopPropagation` : sinon Ionic (bouillonnement, même nœud) ferme aussi l'overlay qui contient la boîte (ST-CORR §5.1 bis).
+ */
 const useToucheEchap = (surAnnuler: () => void): void => {
   useEffect(() => {
     const surTouche = (evenement: globalThis.KeyboardEvent): void => {
-      if (evenement.key === 'Escape') surAnnuler();
+      if (evenement.key !== 'Escape') return;
+      evenement.stopPropagation();
+      surAnnuler();
     };
-    document.addEventListener('keydown', surTouche);
+    document.addEventListener('keydown', surTouche, true);
     return () => {
-      document.removeEventListener('keydown', surTouche);
+      document.removeEventListener('keydown', surTouche, true);
     };
   }, [surAnnuler]);
 };

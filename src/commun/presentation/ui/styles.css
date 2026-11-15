@@ -255,6 +255,54 @@ ion-modal.saisie-rapide .saisie-rapide-contenu {
   }
 }
 
+/* Feuille « Compte et synchronisation » (ECR-011, ANO-005) : feuille basse sur smartphone, panneau de 400 px sur PC. */
+ion-modal.feuille-synchronisation .feuille-contenu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+ion-modal.feuille-synchronisation .feuille-entete {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 0 8px 0 16px;
+}
+
+ion-modal.feuille-synchronisation .feuille-corps {
+  flex: 1;
+}
+
+@media (width >= 600px) and (width < 1024px) {
+  ion-modal.feuille-synchronisation {
+    --width: 640px;
+  }
+}
+
+@media (width >= 1024px) {
+  ion-modal.feuille-synchronisation {
+    --width: 400px;
+    --height: 100%;
+    --border-radius: 0;
+
+    justify-content: flex-end;
+  }
+}
+
+/* Ligne d'état : indicateur puis bouton « Compte et synchronisation ». Aucune hauteur maximale : avec le texte agrandi,
+   le libellé passe sur deux lignes, jamais tronqué (guide §6.6.17 n° 4). */
+.ligne-etat {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 8px 0 16px;
+}
+
 /* Filtres, puces et sélecteur de durée des tâches (guide §4.3, §4.4, §5.7) : l'état « actif » est écrit par aria-pressed. */
 .filtre-etat,
 .filtre-objectif,
