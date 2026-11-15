@@ -1,6 +1,17 @@
-import { nonImplemente } from '@non-implemente';
-import type { ReactElement, ReactNode, Ref, RefObject } from 'react';
-import type { ProprietesFeuilleSynchronisation } from './FeuilleSynchronisation';
+import { IonContent, IonModal } from '@ionic/react';
+import {
+  useMemo,
+  useRef,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type RefObject,
+} from 'react';
+import {
+  FeuilleSynchronisation,
+  type ProprietesFeuilleSynchronisation,
+} from './FeuilleSynchronisation';
+import { LIBELLES_FEUILLE } from './libelles-feuille';
 
 // Squelette (ST-CORR-E13B-LOT-001 §5, tranche T5a) : feuille modale « Compte et synchronisation » d'ECR-011 (guide
 // v0.2.26 §4.26, §6.6.15, §6.6.16 n° 5 ; ANO-005). Fermée à l'ouverture de l'application, ouverte par `BoutonFeuille`.
@@ -31,11 +42,103 @@ export type ProprietesFeuilleCompteEtSynchronisation = {
    * §6.6.17 ; ST-CORR-E13B-LOT-001 v0.3 §5.1 bis.
    */
   readonly refBoutonOuverture?: RefObject<HTMLButtonElement | null>;
+  /** Titre `h2` de la feuille, qui reçoit le focus à la présentation ; sert aussi de cible au focus de fin de « À lire ». */
+  readonly refTitre?: RefObject<HTMLHeadingElement | null>;
 };
 
-export const FeuilleCompteEtSynchronisation = (
-  p: ProprietesFeuilleCompteEtSynchronisation,
-): ReactElement => nonImplemente(`FeuilleCompteEtSynchronisation(${String(p.ouverte)})`);
+/** Rend le focus au bouton d'ouverture s'il ne l'a pas (Safari : un clic ne le lui donne pas). */
+const rendreLeFocus = (bouton: HTMLButtonElement | null | undefined): void => {
+  if (bouton != null && document.activeElement !== bouton) bouton.focus();
+};
+
+/** Géométrie de la feuille, lue à chaque ouverture (pas d'écoute du redimensionnement : limite acceptée, ST §5.1). */
+const usePanneauLateral = (ouverte: boolean): boolean =>
+  useMemo(() => {
+    // `matchMedia` est absent de jsdom : le type du DOM le déclare toujours présent.
+    const fenetre: Partial<Window> = window;
+    return ouverte && fenetre.matchMedia?.(MEDIA_PANNEAU_LATERAL).matches === true;
+  }, [ouverte]);
+
+type ProprietesFocus = Pick<
+  ProprietesFeuilleCompteEtSynchronisation,
+  'surFermee' | 'refBoutonOuverture' | 'refTitre'
+>;
+
+/** Focus de la feuille (ST §5.1 bis n° 1 et 2) : sur le titre à la présentation, rendu au bouton d'ouverture à la fin. */
+const useFocusDeLaFeuille = ({ surFermee, refBoutonOuverture, refTitre }: ProprietesFocus) => {
+  const titreInterne = useRef<HTMLHeadingElement>(null);
+  const refH2 = refTitre ?? titreInterne;
+  // Ionic ne déplace plus le focus s'il est déjà dans la feuille : posé ici, de façon synchrone, il y reste.
+  const focaliserLeTitre = (): void => {
+    refH2.current?.focus();
+  };
+  // Le report par micro-tâche est obligatoire : pendant `didDismiss`, le piège de focus d'Ionic reprendrait le focus.
+  const surFinDeFermeture = (): void => {
+    surFermee();
+    queueMicrotask(() => {
+      rendreLeFocus(refBoutonOuverture?.current);
+    });
+  };
+  return { refH2, focaliserLeTitre, surFinDeFermeture };
+};
+
+type ProprietesEntete = {
+  readonly refH2: RefObject<HTMLHeadingElement | null>;
+  readonly surFermee: () => void;
+};
+
+const EnteteFeuille = ({ refH2, surFermee }: ProprietesEntete): ReactElement => (
+  <header className="feuille-entete">
+    <h2 tabIndex={-1} ref={refH2}>
+      {LIBELLES_FEUILLE.titre}
+    </h2>
+    <button type="button" className="bouton-natif" data-variante="tertiaire" onClick={surFermee}>
+      {LIBELLES_FEUILLE.fermer}
+    </button>
+  </header>
+);
+
+type ProprietesCorps = Pick<
+  ProprietesFeuilleCompteEtSynchronisation,
+  'aLire' | 'synchronisation' | 'compte'
+>;
+
+const CorpsFeuille = ({ aLire, synchronisation, compte }: ProprietesCorps): ReactElement => (
+  <IonContent className="feuille-corps">
+    {aLire}
+    {synchronisation === undefined ? null : <FeuilleSynchronisation {...synchronisation} />}
+    {compte}
+  </IonContent>
+);
+
+export const FeuilleCompteEtSynchronisation = ({
+  ouverte,
+  dialogues,
+  ...autres
+}: ProprietesFeuilleCompteEtSynchronisation): ReactElement => {
+  const panneau = usePanneauLateral(ouverte);
+  const { refH2, focaliserLeTitre, surFinDeFermeture } = useFocusDeLaFeuille(autres);
+  return (
+    <IonModal
+      id={ID_FEUILLE_SYNCHRONISATION}
+      className="feuille-synchronisation"
+      aria-label={LIBELLES_FEUILLE.titre}
+      isOpen={ouverte}
+      initialBreakpoint={panneau ? 1 : 0.92}
+      breakpoints={panneau ? [0, 1] : [0, 0.92]}
+      expandToScroll={false}
+      handle={!panneau}
+      onDidPresent={focaliserLeTitre}
+      onDidDismiss={surFinDeFermeture}
+    >
+      <div className="feuille-contenu">
+        <EnteteFeuille refH2={refH2} surFermee={autres.surFermee} />
+        <CorpsFeuille {...autres} />
+        {dialogues}
+      </div>
+    </IonModal>
+  );
+};
 
 export type ProprietesBoutonFeuille = {
   /** Reflète l'état de la feuille (`aria-expanded`). */
@@ -46,5 +149,22 @@ export type ProprietesBoutonFeuille = {
 };
 
 /** Bouton d'ouverture de la feuille, sur la ligne d'état, juste après l'indicateur (Q-CORR-STE-1, option a). */
-export const BoutonFeuille = (p: ProprietesBoutonFeuille): ReactElement =>
-  nonImplemente(`BoutonFeuille(${String(p.ouverte)})`);
+export const BoutonFeuille = ({
+  ouverte,
+  surOuvrir,
+  refElement,
+}: ProprietesBoutonFeuille): ReactElement => (
+  <button
+    ref={refElement}
+    type="button"
+    className="bouton-natif"
+    data-variante="tertiaire"
+    data-action="OUVRIR_FEUILLE"
+    aria-haspopup="dialog"
+    aria-expanded={ouverte}
+    aria-controls={ID_FEUILLE_SYNCHRONISATION}
+    onClick={surOuvrir}
+  >
+    {LIBELLES_FEUILLE.ouvrir}
+  </button>
+);
