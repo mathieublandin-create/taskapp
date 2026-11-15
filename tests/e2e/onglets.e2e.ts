@@ -7,6 +7,7 @@
 // de playwright.config.ts, partagé avec les autres fichiers qui l'utilisent (ST-CORR-E13B-LOT-001 §9.2).
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { ORIGINE_IHM } from '../steps-ihm/support/serveur-ihm';
+import { LIBELLES_FEUILLE } from '../../src/synchronisation/presentation/ui/libelles-feuille';
 import { exposerLesPonts } from '../support/e2e/outils-navigateur';
 
 const DELAI_MS = 10_000;
@@ -27,6 +28,12 @@ const attendreSynchronisation = (page: Page) =>
     timeout: DELAI_MS,
   });
 
+/** La mention est dans la feuille « Compte et synchronisation » (fermée par défaut) : on l'ouvre avant de la lire. */
+const ouvrirLaFeuille = async (page: Page): Promise<void> => {
+  await page.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir }).click();
+  await expect(page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre })).toBeVisible();
+};
+
 /** Premier onglet connecté (meneur), puis second onglet ouvert sur la session partagée. */
 const ouvrirDeuxOnglets = async (context: BrowserContext): Promise<readonly [Page, Page]> => {
   await exposerLesPonts(context, 'A');
@@ -46,6 +53,8 @@ test.describe('Deux onglets, navigateur réel (ST-US-031 §14)', () => {
   }) => {
     const [premier, second] = await ouvrirDeuxOnglets(context);
 
+    await ouvrirLaFeuille(second);
+    await ouvrirLaFeuille(premier);
     await expect(second.locator(MENTION_AUTRE_ONGLET)).toHaveCount(1, { timeout: DELAI_MS });
     await expect(premier.locator(MENTION_AUTRE_ONGLET)).toHaveCount(0);
     const avant = await verrous(second);

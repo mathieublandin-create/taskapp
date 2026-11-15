@@ -11,7 +11,7 @@
 | Rédacteur | Anthony (E10 des corrections) |
 | Réalisation | Benjamin (sonnet), **sept tranches d'au plus 1 j, une à la fois** (OPT-15), §15 |
 | Effort | **3,6 j** de développement (hors revues) ; v0.3 : T5a passe de 0,5 à 0,6 j (§15) ; **reste 1,8 j** (T5a 0,6, T5b 0,85, T6 0,35) |
-| Statut | v0.3 : T1 à T4 réalisées et approuvées ; conception de T5a complétée (§5.1 bis, §5.1 ter), tests rouges de T5a et T5b livrés (§13) ; aucune question bloquante |
+| Statut | v0.4 : T5b arbitrée (tests E2E corrigés, §13.2 bis) ; v0.3 : T1 à T4 réalisées et approuvées ; conception de T5a complétée (§5.1 bis, §5.1 ter), tests rouges de T5a et T5b livrés (§13) ; aucune question bloquante |
 
 Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030, DT-031 ont été spécifiés dans la ST de leur US) ; ici, les corrections touchent cinq US et l'outillage : un document unique est plus lisible. Les ST d'US ne sont pas modifiées ; celles qui sont concernées sont citées au §1.1.
 
@@ -22,6 +22,7 @@ Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030,
 | 0.1 | 2026-11-13 | Anthony | E10 des corrections de l'E13b : conception, 7 tranches, rang 14, 29 tests unitaires (26 rouges, 3 garde-fous verts), 24 tests de navigateur (23 rouges, 1 garde-fou vert), règles de rang, questions non bloquantes Q-CORR-STE-1 à 6. |
 | 0.3 | 2026-11-15 | Anthony | Arbitrages de T4 (§6.5 : E2E-ANO-005-FAB-03 borné à la zone visible de la liste, FAB-05 à 650, 600 et 599 px, UT-COMP-US-002-190 validé) ; conception complétée de la feuille modale d'après le guide v0.2.27 §6.6.17 (§5.1 bis : focus sur le titre, focus rendu au bouton, Échap qui ferme la confirmation seule ; §5.1 ter : ligne d'état sans hauteur maximale, passée de T5b à T5a) ; §5.2 : focus de fin de « À lire » (hook à cible calculée) ; §5.4 : intégration de T5a et T5b sans CI rouge, tranches gardées séparées ; tests UT-ANO-005-FEUILLE-08 à 12, E2E-ANO-005-FEUILLE-07 et 08, règle de rang `UT-COMP-CORR` ; UT-ANO-005-FEUILLE-03 corrigé (rôle `dialog` dans le shadow DOM, défaut de l'E10) ; §15 efforts. |
 | 0.2 | 2026-11-13 | Anthony | E13 des tranches T1 à T3 (`revue-code-LOT-001-corr-e13b-t1t3.md`) : §2 et §4.5, deux rustines de mise en page déclarées transitoires (retrait à T5b) ; §5.2 bis, retrait des rustines et test E2E-ANO-005-FEUILLE-06 ; §4.2, action de bandeau toujours principale (accord) ; §3.1, place des codes `TXT-…-SOUS-TACHE` ; §9.1 et §12.1, S16b et S16c verts dès T1, revenus au rang 13 ; §13.1, tests UT-DT-014-07 à 10 (variantes non couvertes par UT-DT-014-01 à 06). |
+| 0.4 | 2026-11-15 | Anthony | Arbitrage de T5b : six tests E2E corrigés sans être affaiblis (§13.2 bis) ; E2E-ANO-005-FEUILLE-09 (ANO-007 au toucher dans la feuille) ; « Voir » depuis « À lire » ferme la feuille avant de naviguer (§5.2, décision de Benjamin intégrée) ; étapes `@ihm` : écart accepté (§12.2). |
 
 ## 1. Résumé technique
 
@@ -288,6 +289,7 @@ Hors de ces trois points, rien n'est ajouté : pas de piège de focus maison (ce
   - `focus-fin-a-lire.ts` : signature étendue, compatible : `useFocusFinALire<T extends HTMLElement>(sectionPresente: boolean, cible?: () => HTMLElement | null): RefObject<T | null>` ; si `cible` est fournie, l'effet focalise `cible()` au lieu de la référence rendue (même condition : section disparue et focus sur `body`). UT-COMP-US-017-3-15 et 16 inchangés.
   - `EspaceApplication` : `const refBouton = useRef<HTMLButtonElement>(null); const refTitre = useRef<HTMLHeadingElement>(null);` ; `useFocusFinALire(vue.nonRetenues !== undefined, () => (feuilleOuverte ? refTitre.current : refBouton.current))` ; `BoutonFeuille refElement={refBouton}` ; `FeuilleCompteEtSynchronisation refBoutonOuverture={refBouton} refTitre={refTitre}`.
   - Test à écrire par Benjamin dans T5b : **UT-COMP-CORR-01** (jsdom, `tests/unitaires/synchronisation/presentation/ui/focus-fin-a-lire-feuille.test.tsx`, rang 14 par la règle `UT-COMP-CORR-\d+` déjà posée) : feuille ouverte, `aLire` avec un bouton « Compris » qui retire la section, hook appelé avec la cible calculée : après le clic, `document.activeElement` est le `h2` de la feuille ; feuille fermée : le bouton d'ouverture. Il doit rougir si `refTitre` est ignorée par la feuille ou si `cible` est ignorée par le hook.
+- **« Voir » depuis « À lire » (v0.4, décision de Benjamin intégrée)** : `surVoir` ferme la feuille (`surFermerFeuille()`) puis navigue (`voir(element)`). Raison : la feuille est modale et couvre la liste, l'élément visé resterait masqué et inatteignable derrière le fond. Ce comportement n'est pas écrit au guide (§6.6.15) : question de confirmation à Steeve (Q-CORR-STE-7, non bloquante). `main.tsx` est exclu de la couverture : pas de test unitaire ; couverture par revue de code uniquement (dette de test ouverte, reliquat noté pour Benjamin : un scénario `@ihm` « Voir » serait à ajouter à LOT-002 si une entrée « À lire » est simulable).
 - Ligne d'état : CSS posée par T5a (§5.1 ter), **sans hauteur maximale** (Q-CORR-STE-4 corrigée par Steeve). Le bandeau garde sa hauteur naturelle sous la ligne.
 
 ### 5.2 bis Retrait des rustines de T2 et T3 (T5b, v0.2)
@@ -437,6 +439,8 @@ v0.2 : livré par T1 comme imposé ; S16b et S16c sont **verts dès T1** (la ST 
 
 ### 12.2 Étapes à adapter à la feuille modale (T5b)
 
+**Écarts de Benjamin, acceptés en v0.4** : (a) les étapes `@ihm` sont écrites directement dans leur état final, parce qu'elles s'exécutent sur l'application réelle et que `RANG_COURANT=14 pnpm cucumber:ihm` (13 sur 13) en est la preuve ; (b) `actionDuCompte` ouvre la feuille sans la refermer, car les deux gestes concernés (S16b, S16c) terminent la session et la feuille ne lui survit pas (§5.2).
+
 | Fichier | Changement |
 |---|---|
 | `tests/steps-ihm/compte.steps.ts`, `boutonDeLaSectionCompte` | Ouvrir la feuille si elle est fermée (`page.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir })`, puis attendre `page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre })` visible), puis chercher le bouton **dans la feuille** (`dialog`), plus dans `espaceApplication(page)` |
@@ -501,6 +505,18 @@ E2E-DT-034-05 (aucun anneau au clic) est **vert** dès l'E10 : garde-fou contre 
 
 Mesures (Chromium local, `PLAYWRIGHT_CHROMIUM_EXECUTABLE`) : `pnpm e2e` au rang 13 : **19 verts** sur 19 (20 avant le retrait), dont `onglets.e2e.ts` sur le serveur `test-ihm` partagé ; `RANG_COURANT=14` : 43 tests, les 24 nouveaux donnent **23 rouges et 1 vert**, chaque rouge pour la raison attendue (contour par défaut du navigateur, style par défaut des boutons, étiquette présente, colonne pleine largeur, bouton d'ouverture de la feuille absent, écran de connexion vu à l'ouverture), aucun pour une erreur de harnais. Remarque : le build `test-ihm` exige `VITE_BASE_PATH`, `VITE_APP_ORIGIN` et `VITE_GOOGLE_WEB_CLIENT_ID` ; le `webServer` les pose (valeurs fictives du job `ihm`).
 
+### 13.2 bis Arbitrage de T5b (v0.4, tests E2E corrigés par Anthony)
+
+Constat vérifié par relance : six tests ne pouvaient pas passer tels qu'écrits (défauts de mon E10, pas de la réalisation). Corrections, sans affaiblissement :
+
+1. **Repères** : le rôle `dialog` est sur l'enveloppe du shadow DOM d'Ionic, le contenu est projeté. `presentee(page)` (`getByRole('dialog', …)`) attend la présentation et la fermeture ; `feuille(page)` = `ion-modal.feuille-synchronisation[is-open]` sert aux recherches de contenu (FEUILLE-02, 04, 05, 07, 08).
+2. **Animation** : `ouvrirFeuille` attend la stabilisation (trois lectures identiques de la boîte à 100 ms d'intervalle, 5 s au plus, sans `waitForTimeout` fixe) avant toute mesure (FEUILLE-01, 05).
+3. **FEUILLE-01, 0,92** : Ionic applique le point d'arrêt à la hauteur de son enveloppe `.modal-wrapper` (834 px à 844 de fenêtre, marge haute d'Ionic) : la partie visible fait 0,92 × 834 = 767,3 px (y = 76,7), pas 0,92 × 844. L'attendu 67,5 était faux. Nouvelle assertion : (844 − y) / hauteur de l'enveloppe = 0,92 ± 0,005, enveloppe > 0,95 × 844, contenu aligné sur la partie visible (poignée comprise, ±1 px). Mutation vérifiée : 0,5 donne 0,42 d'écart, le test rougit ; 1,0 rougit aussi.
+4. **Onglets** : `onglets.e2e.ts` ouvre la feuille de chaque onglet avant de lire `SYN-FEUILLE-AUTRE-ONGLET` (le « 0 » du premier onglet n'est plus vacuant).
+5. **E2E-ANO-005-FEUILLE-09 (nouveau)** : ANO-007 au toucher (`tap()`, `hasTouch`, 390 × 844) sur les boutons de la confirmation ouverte dans la feuille ; `click()` de FEUILLE-04 est un clic souris même avec `hasTouch`.
+
+Mutations locales annulées : FEUILLE-01 (0,92 → 0,5), FEUILLE-04 et 05 (confirmation recouverte), FEUILLE-07 (`.ligne-etat` en `row-reverse`), FEUILLE-09 (confirmation recouverte) rougissent. `RANG_COURANT=14 pnpm e2e` : 46 verts, seuls E2E-ANO-004-01 et 02 (T6) rouges.
+
 ### 13.3 Assertions précises (résistance aux mutations)
 
 Chaque test vérifie une valeur exacte et la mutation qui le ferait passer à tort est exclue : contour comparé en entier (`style`, `largeur`, `couleur`, `decalage`) ; `-2px` contre `2px` distingués ; couleurs calculées des jetons ; `undefined` exigé pour la variante secondaire (un `data-variante="secondaire"` ou une variante oubliée échouent) ; ordre de la feuille vérifié élément par élément ; `initialBreakpoint` et `breakpoints` exacts ; `toEqual(['CADRE','ESPACE'])` (et non « contient ») ; texte exact des variantes d'`ERR-016` avec insécables ; décompte des balises `<button>` contre les classes.
@@ -552,6 +568,7 @@ Numéros des dettes candidates : à la fusion (OPT-20).
 | Q-CORR-STE-4 | Steeve | Ligne d'état de 48 px : (a) indicateur et bouton de feuille, le bandeau dessous à sa hauteur naturelle ; (b) autre forme (laquelle) ? | (a) | T5b |
 | Q-CORR-STE-5 | Steeve | Nom du « + » des objectifs : (a) « Créer un objectif » (inchangé, comme l'état vide) ; (b) « Nouvel objectif » (exemple du §2.2 ; S23 de Pepper) ? | (a) | T4 |
 | Q-CORR-STE-6 | Steeve | Focus après « Compris » sur la dernière entrée de « À lire », feuille ouverte : (a) titre de la feuille ; (b) « Fermer » ; (c) bouton « Synchroniser maintenant » ? | (a) | T5b |
+| Q-CORR-STE-7 | Steeve | « Voir » depuis « À lire » : fermer la feuille avant de naviguer vers l'élément (v0.4, réalisé par Benjamin), ou autre comportement ? | Fermer | T5b (réalisé) |
 
 Pas de question à Starck : ni port, ni flux, ni ADR touché ; le `webServer` partagé et la sélection par rang des tests de navigateur relèvent de l'outillage de test (`conventions.md` §11.14). Pour information de Pepper : S16b et S16c passent au rang 14, les `@recette` au rang 15 (§9.1) ; les scénarios de non-régression d'ANO-004 et d'ANO-005 qu'elle propose (glossaire v1.15) peuvent s'ajouter à l'E17 sans changer cette conception (les repères `boutonFeuille`, `feuilleCompte` et `centreDegage` existent).
 

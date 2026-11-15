@@ -10,11 +10,56 @@ import { LIBELLES_FEUILLE } from '../../src/synchronisation/presentation/ui/libe
 import { boite, centreDegage, ouvrirApplicationConnectee } from '../support/e2e/outils-navigateur';
 
 const ouvrir = (page: Page) => page.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir });
-const feuille = (page: Page) => page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre });
-/** Contenu de la feuille (premier enfant de l'`ion-modal`) : sa boîte est la partie visible de la feuille. */
+/**
+ * Le rôle `dialog` est porté par l'enveloppe du shadow DOM d'Ionic ; le contenu y est projeté (slot) et n'est pas un
+ * descendant du `dialog` pour Playwright. `presentee` sert donc à attendre la présentation (et la fermeture), `feuille`
+ * à chercher le contenu dans l'`ion-modal` ouvert.
+ */
+const presentee = (page: Page) => page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre });
+const feuille = (page: Page) => page.locator('ion-modal.feuille-synchronisation[is-open]');
+/** Contenu de la feuille (premier enfant de l'`ion-modal`). */
 const contenu = (page: Page) => page.locator('ion-modal.feuille-synchronisation .feuille-contenu');
+
+type Rectangle = {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+};
+
+/** Boîte de l'enveloppe (`.modal-wrapper`, shadow DOM de l'`ion-modal`) : poignée d'Ionic comprise (ST §5.1). */
+const enveloppe = (page: Page): Promise<Rectangle> =>
+  page.locator('ion-modal.feuille-synchronisation').evaluate((modale) => {
+    const e = modale.shadowRoot?.querySelector('.modal-wrapper');
+    if (e === null || e === undefined) throw new Error('enveloppe de la feuille absente');
+    const { x, y, width, height } = e.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+
+/** Attend la fin de l'animation : la mesure est reprise tant qu'elle change (trois lectures identiques de suite). */
+const stable = async (mesure: () => Promise<Rectangle>): Promise<Rectangle> => {
+  let precedente = await mesure();
+  let identiques = 0;
+  const echeance = Date.now() + 5_000;
+  while (identiques < 3) {
+    if (Date.now() > echeance) throw new Error('la feuille ne se stabilise pas');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const courante = await mesure();
+    identiques = JSON.stringify(courante) === JSON.stringify(precedente) ? identiques + 1 : 0;
+    precedente = courante;
+  }
+  return precedente;
+};
+
+/** Ouvre la feuille par le bouton et attend sa présentation complète. */
+const ouvrirFeuille = async (page: Page): Promise<void> => {
+  await ouvrir(page).click();
+  await expect(presentee(page)).toBeVisible();
+  await stable(() => enveloppe(page));
+};
+
 const supprimer = (page: Page) =>
-  feuille(page).getByRole('button', { name: libelleActionCompte('SUPPRIMER_DONNEES') });
+  feuille(page).locator(`button:has-text("${libelleActionCompte('SUPPRIMER_DONNEES')}")`);
 
 /** Crée `n` tâches par la saisie rapide, qui reste ouverte entre deux ajouts (guide §4.3), puis la ferme. */
 const creerTaches = async (page: Page, n: number): Promise<void> => {
@@ -53,11 +98,17 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
     await creerTaches(page, 1);
     const avant = await boite(page.locator('li.ligne-tache').first());
 
-    await ouvrir(page).click();
-    await expect(feuille(page)).toBeVisible();
+    await ouvrirFeuille(page);
     await expect(ouvrir(page)).toHaveAttribute('aria-expanded', 'true');
-    const visible = await boite(contenu(page));
-    expect(Math.abs(visible.y - 844 * 0.08)).toBeLessThanOrEqual(3);
+    // Ionic applique le point d'arrêt 0,92 à la hauteur de son enveloppe (`.modal-wrapper`, ici 834 px : la fenêtre moins
+    // la marge haute d'Ionic) et la fait glisser depuis le bas : la partie visible va de `y` au bas de l'écran. La poignée
+    // (ST §5.1) est dans cette partie visible, le contenu commence donc à la même ordonnée. Le test rougit pour 0,5 ou 1,0.
+    const visible = await stable(() => enveloppe(page));
+    expect(visible.height).toBeGreaterThan(844 * 0.95);
+    expect(Math.abs((844 - visible.y) / visible.height - 0.92)).toBeLessThanOrEqual(0.005);
+    const interne = await boite(contenu(page));
+    expect(Math.abs(interne.y - visible.y)).toBeLessThanOrEqual(1);
+    expect(Math.abs(interne.y + interne.height - 844)).toBeLessThanOrEqual(1);
     expect(await boite(page.locator('li.ligne-tache').first())).toEqual(avant);
   });
 
@@ -65,7 +116,7 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
     context,
   }) => {
     const page = await ouvrirApplicationConnectee(context);
-    await ouvrir(page).click();
+    await ouvrirFeuille(page);
     const bouton = feuille(page).locator('[data-etat="SYN-FEUILLE-BOUTON"]');
     const compte = feuille(page).locator('section[aria-labelledby="compte-titre"]');
     await expect(bouton).toHaveCount(1);
@@ -96,9 +147,9 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
 
     await ouvrir(page).focus();
     await page.keyboard.press('Enter');
-    await expect(feuille(page)).toBeVisible();
+    await expect(presentee(page)).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(feuille(page)).toHaveCount(0);
+    await expect(presentee(page)).toHaveCount(0);
     await expect(ouvrir(page)).toBeFocused();
     expect(await defilement(page)).toBe(position);
   });
@@ -107,7 +158,7 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
     context,
   }) => {
     const page = await ouvrirApplicationConnectee(context);
-    await ouvrir(page).click();
+    await ouvrirFeuille(page);
     await supprimer(page).click();
     const dialogue = page.getByRole('alertdialog');
     const annuler = dialogue.getByRole('button', { name: LIBELLE_ANNULER });
@@ -115,7 +166,7 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
     expect(await centreDegage(annuler)).toBe(true);
     await annuler.click();
     await expect(dialogue).toHaveCount(0);
-    await expect(feuille(page)).toBeVisible();
+    await expect(presentee(page)).toBeVisible();
 
     await supprimer(page).click();
     const confirmer = page.getByRole('alertdialog').getByRole('button').filter({
@@ -123,6 +174,28 @@ test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
     });
     expect(await centreDegage(confirmer)).toBe(true);
     await confirmer.click();
+    await expect(page.getByRole('button', { name: /continuer avec google/i })).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+
+  test('E2E-ANO-005-FEUILLE-09 au toucher (ANO-007), les boutons de la confirmation ouverte dans la feuille sont atteints sans force : « Annuler » laisse la feuille ouverte, la confirmation mène à l’écran de connexion', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    await supprimer(page).tap();
+    const dialogue = page.getByRole('alertdialog');
+    await dialogue.getByRole('button', { name: LIBELLE_ANNULER }).tap();
+    await expect(dialogue).toHaveCount(0);
+    await expect(presentee(page)).toBeVisible();
+
+    await supprimer(page).tap();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button')
+      .filter({ hasNotText: LIBELLE_ANNULER })
+      .tap();
     await expect(page.getByRole('button', { name: /continuer avec google/i })).toBeVisible({
       timeout: 10_000,
     });
@@ -136,9 +209,8 @@ test.describe('Feuille de synchronisation à 1280 × 800 (ANO-005)', () => {
     context,
   }) => {
     const page = await ouvrirApplicationConnectee(context);
-    await ouvrir(page).click();
-    await expect(feuille(page)).toBeVisible();
-    const panneau = await boite(contenu(page));
+    await ouvrirFeuille(page);
+    const panneau = await stable(() => boite(contenu(page)));
     expect(Math.abs(panneau.x - 880)).toBeLessThanOrEqual(1);
     expect(Math.abs(panneau.width - 400)).toBeLessThanOrEqual(1);
     expect(Math.abs(panneau.y)).toBeLessThanOrEqual(1);
@@ -150,7 +222,7 @@ test.describe('Feuille de synchronisation à 1280 × 800 (ANO-005)', () => {
     expect(await centreDegage(annuler)).toBe(true);
     await annuler.click();
     await expect(page.getByRole('alertdialog')).toHaveCount(0);
-    await expect(feuille(page)).toBeVisible();
+    await expect(presentee(page)).toBeVisible();
   });
 });
 
@@ -183,12 +255,12 @@ test.describe('Ligne d’état, focus et Échap de la feuille à 390 × 844 (gui
     expect(milieu(boiteIndicateur)).toBeLessThan(boiteLigne.y + boiteLigne.height);
     expect(await ligne.evaluate((e) => getComputedStyle(e).maxHeight)).toBe('none');
 
-    const titre = feuille(page).getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre });
+    const titre = feuille(page).locator('h2', { hasText: LIBELLES_FEUILLE.titre });
     await ouvrir(page).focus();
     await page.keyboard.press('Enter');
     await expect(titre).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(feuille(page)).toHaveCount(0);
+    await expect(presentee(page)).toHaveCount(0);
     await expect(ouvrir(page)).toBeFocused();
 
     // Safari : un clic ne donne pas le focus au bouton ; l'ouverture part du corps du document.
@@ -198,7 +270,7 @@ test.describe('Ligne d’état, focus et Échap de la feuille à 390 × 844 (gui
     });
     await expect(titre).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(feuille(page)).toHaveCount(0);
+    await expect(presentee(page)).toHaveCount(0);
     await expect(ouvrir(page)).toBeFocused();
   });
 
@@ -206,16 +278,16 @@ test.describe('Ligne d’état, focus et Échap de la feuille à 390 × 844 (gui
     context,
   }) => {
     const page = await ouvrirApplicationConnectee(context);
-    await ouvrir(page).click();
+    await ouvrirFeuille(page);
     await supprimer(page).click();
     const annuler = page.getByRole('alertdialog').getByRole('button', { name: LIBELLE_ANNULER });
     await expect(annuler).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('alertdialog')).toHaveCount(0);
-    await expect(feuille(page)).toBeVisible();
+    await expect(presentee(page)).toBeVisible();
     await expect(supprimer(page)).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(feuille(page)).toHaveCount(0);
+    await expect(presentee(page)).toHaveCount(0);
   });
 });
 
