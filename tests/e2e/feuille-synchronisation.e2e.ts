@@ -154,6 +154,71 @@ test.describe('Feuille de synchronisation à 1280 × 800 (ANO-005)', () => {
   });
 });
 
+// v0.3 (ST-CORR §5.1 bis et ter, guide v0.2.27 §6.6.17) : ligne d'état et comportements de focus et d'Échap dans la
+// feuille, en navigateur réel (la logique est aussi contrôlée dans jsdom par UT-ANO-005-FEUILLE-08 à 12).
+test.describe('Ligne d’état, focus et Échap de la feuille à 390 × 844 (guide v0.2.27 §6.6.17)', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('E2E-ANO-005-FEUILLE-07 bouton distinct « Compte et synchronisation » à droite de l’indicateur sur la ligne d’état (≥ 48 px, sans hauteur maximale) ; ouverture au clavier : focus sur le titre ; ouverture sans focus sur le bouton (Safari) puis Échap : focus rendu au bouton', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    const ligne = page.locator('main.espace-application > .ligne-etat');
+    const indicateur = ligne.locator('div[role="status"][data-etat^="SYN-"]');
+    await expect(
+      ligne.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir, exact: true }),
+    ).toHaveCount(1);
+    await expect(indicateur).toHaveCount(1);
+    await expect(indicateur.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir })).toHaveCount(0);
+    const boiteLigne = await boite(ligne);
+    const boiteIndicateur = await boite(indicateur);
+    const boiteBouton = await boite(ouvrir(page));
+    expect(boiteLigne.height).toBeGreaterThanOrEqual(48);
+    expect(boiteBouton.height).toBeGreaterThanOrEqual(44);
+    expect(boiteIndicateur.x + boiteIndicateur.width).toBeLessThanOrEqual(boiteBouton.x);
+    const milieu = (b: { y: number; height: number }) => b.y + b.height / 2;
+    expect(milieu(boiteBouton)).toBeGreaterThan(boiteLigne.y);
+    expect(milieu(boiteBouton)).toBeLessThan(boiteLigne.y + boiteLigne.height);
+    expect(milieu(boiteIndicateur)).toBeGreaterThan(boiteLigne.y);
+    expect(milieu(boiteIndicateur)).toBeLessThan(boiteLigne.y + boiteLigne.height);
+    expect(await ligne.evaluate((e) => getComputedStyle(e).maxHeight)).toBe('none');
+
+    const titre = feuille(page).getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre });
+    await ouvrir(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(titre).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(feuille(page)).toHaveCount(0);
+    await expect(ouvrir(page)).toBeFocused();
+
+    // Safari : un clic ne donne pas le focus au bouton ; l'ouverture part du corps du document.
+    await ouvrir(page).evaluate((bouton) => {
+      (bouton as HTMLButtonElement).blur();
+      (bouton as HTMLButtonElement).click();
+    });
+    await expect(titre).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(feuille(page)).toHaveCount(0);
+    await expect(ouvrir(page)).toBeFocused();
+  });
+
+  test('E2E-ANO-005-FEUILLE-08 Échap avec une confirmation ouverte dans la feuille ferme la confirmation seule ; un second Échap ferme la feuille', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrir(page).click();
+    await supprimer(page).click();
+    const annuler = page.getByRole('alertdialog').getByRole('button', { name: LIBELLE_ANNULER });
+    await expect(annuler).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    await expect(feuille(page)).toBeVisible();
+    await expect(supprimer(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(feuille(page)).toHaveCount(0);
+  });
+});
+
 // Ajout de l'E13 des tranches T1 à T3 (revue-code-LOT-001-corr-e13b-t1t3.md, RC-CORR-3 ; ST-CORR v0.2 §5.2 bis) : les
 // trois rustines de mise en page de T2 et T3 sont retirées par T5b, parce que le compte et la feuille ne sont plus
 // dans la page (`overflow: hidden` de `ion-content.contenu-avec-fab`, `overflow-y: auto` de `.espace-application`,

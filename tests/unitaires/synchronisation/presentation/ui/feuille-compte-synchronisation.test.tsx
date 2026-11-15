@@ -3,10 +3,14 @@
  * (guide v0.2.26 §4.26, §6.6.15, §6.6.16 n° 5). Fermée par défaut, ouverte par `BoutonFeuille` ; ordre « À lire »,
  * `ALR-016`, section « Synchronisation » (`ALR-015` en pied), « Compte » ; confirmations rendues dans la modale
  * (piège d'ANO-007). Géométrie réelle (0,92, panneau de 400 px) : E2E-ANO-005-FEUILLE-01 à 05. Rang 14.
+ * v0.3 (guide v0.2.27 §6.6.17, comportement dans `IonModal`) : focus sur le titre à la présentation, focus rendu au
+ * bouton d'ouverture s'il ne l'a plus à la fermeture (Safari), Échap qui ferme la confirmation seule (UT-…-08 à 11).
  */
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createRef, type RefObject } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { BoiteConfirmation } from '@src/commun/presentation/ui/boite-confirmation';
 import type { ModeleVueFeuilleSynchronisation } from '@src/synchronisation/presentation/modeles-de-vue/feuille-synchronisation';
 import {
   BoutonFeuille,
@@ -141,7 +145,11 @@ describe('FeuilleCompteEtSynchronisation (ANO-005, guide §4.26, §6.6.15)', () 
     await rendreOuverte();
     const feuille = modale();
     expect(feuille.id).toBe(ID_FEUILLE_SYNCHRONISATION);
-    expect(screen.getByRole('dialog', { name: LIBELLES_FEUILLE.titre })).toBe(feuille);
+    // v0.3 : Ionic porte le rôle `dialog` (et l'`aria-label` hérité de l'hôte) sur l'enveloppe du shadow DOM
+    // (`.modal-wrapper`), que `getByRole` de jsdom ne traverse pas ; Playwright, lui, la trouve (E2E-ANO-005-FEUILLE-*).
+    const dialogue = feuille.shadowRoot?.querySelector('[role="dialog"]');
+    expect(dialogue?.getAttribute('aria-label')).toBe(LIBELLES_FEUILLE.titre);
+    expect(dialogue?.getAttribute('aria-modal')).toBe('true');
     const titre = screen.getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre });
     const fermer = screen.getByRole('button', { name: LIBELLES_FEUILLE.fermer });
     expect(feuille.contains(titre)).toBe(true);
@@ -192,5 +200,133 @@ describe('FeuilleCompteEtSynchronisation (ANO-005, guide §4.26, §6.6.15)', () 
     const feuille = modale();
     expect(feuille.initialBreakpoint).toBe(1);
     expect(feuille.breakpoints).toEqual([0, 1]);
+  });
+});
+
+// v0.3 (ST-CORR §5.1 bis, guide v0.2.27 §6.6.17) : les trois comportements de focus et d'Échap dans l'`IonModal` réelle
+// (composants Ionic définis dans jsdom). Le focus de départ est le corps du document : c'est le cas de Safari, où un
+// clic ne donne pas le focus au bouton ; Ionic ne peut alors rien rendre à la fermeture (il rend l'élément actif à la
+// présentation), c'est le code qui doit le faire.
+
+/** Promesse résolue à la fin de la fermeture de la prochaine modale (`ionModalDidDismiss`). */
+const surFermetureModale = (): Promise<void> =>
+  new Promise<void>((resoudre) => {
+    document.addEventListener(
+      'ionModalDidDismiss',
+      () => {
+        resoudre();
+      },
+      { once: true },
+    );
+  });
+
+type ProprietesBanc = {
+  readonly ouverte: boolean;
+  readonly surFermee: () => void;
+  readonly refBouton: RefObject<HTMLButtonElement | null>;
+  readonly confirmation?: { readonly surAnnuler: () => void };
+};
+
+/** Ligne d'état réduite au bouton d'ouverture, et la feuille, reliés par la même référence (comme `main.tsx`). */
+const Banc = ({ ouverte, surFermee, refBouton, confirmation }: ProprietesBanc) => (
+  <>
+    <BoutonFeuille ouverte={ouverte} surOuvrir={vi.fn()} refElement={refBouton} />
+    <FeuilleCompteEtSynchronisation
+      ouverte={ouverte}
+      surFermee={surFermee}
+      refBoutonOuverture={refBouton}
+      synchronisation={SYNCHRONISATION}
+      compte={<section data-test="compte">Compte</section>}
+      dialogues={
+        confirmation === undefined ? undefined : (
+          <BoiteConfirmation
+            code="CNF-DECONNEXION"
+            titre="Se déconnecter ?"
+            actionLibelle="Se déconnecter"
+            rouge={false}
+            surConfirmer={vi.fn()}
+            surAnnuler={confirmation.surAnnuler}
+          />
+        )
+      }
+    />
+  </>
+);
+
+/** Rend le banc feuille fermée, le focus sur le corps du document, puis ouvre la feuille et attend sa présentation. */
+const ouvrirLeBanc = async (
+  surFermee: () => void,
+  confirmation?: ProprietesBanc['confirmation'],
+) => {
+  const refBouton = createRef<HTMLButtonElement>();
+  const proprietes = {
+    surFermee,
+    refBouton,
+    ...(confirmation === undefined ? {} : { confirmation }),
+  };
+  const rendu = render(<Banc ouverte={false} {...proprietes} />);
+  expect(document.activeElement).toBe(document.body);
+  const presentee = surPresentationModale();
+  rendu.rerender(<Banc ouverte {...proprietes} />);
+  await presentee;
+  const bouton = refBouton.current;
+  if (bouton === null) throw new Error('bouton d’ouverture absent');
+  return { ...rendu, bouton, proprietes };
+};
+
+const titreDeLaFeuille = (): HTMLElement =>
+  screen.getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre });
+
+describe('FeuilleCompteEtSynchronisation : focus et Échap dans IonModal (guide v0.2.27 §6.6.17)', () => {
+  it('UT-ANO-005-FEUILLE-08 à la présentation, le focus va sur le titre h2 de la feuille (tabIndex -1), ni sur l’hôte ion-modal ni sur « Fermer »', async () => {
+    await ouvrirLeBanc(vi.fn());
+    const titre = titreDeLaFeuille();
+    expect(titre.tabIndex).toBe(-1);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(titre);
+    });
+  });
+
+  it('UT-ANO-005-FEUILLE-09 fermeture par le parent (« Fermer », isOpen faux) alors que le bouton d’ouverture n’avait pas le focus (Safari) : à la fin de la fermeture, le focus est sur le bouton d’ouverture', async () => {
+    const surFermee = vi.fn();
+    const { bouton, rerender, proprietes } = await ouvrirLeBanc(surFermee);
+    const fermee = surFermetureModale();
+    rerender(<Banc ouverte={false} {...proprietes} />);
+    await fermee;
+    await waitFor(() => {
+      expect(document.activeElement).toBe(bouton);
+    });
+  });
+
+  it('UT-ANO-005-FEUILLE-10 Échap sans confirmation ouverte : la feuille se ferme (surFermee appelée une fois, par onDidDismiss) et le focus revient au bouton d’ouverture', async () => {
+    const surFermee = vi.fn();
+    const { bouton } = await ouvrirLeBanc(surFermee);
+    const fermee = surFermetureModale();
+    await userEvent.keyboard('{Escape}');
+    await fermee;
+    expect(surFermee).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(bouton);
+    });
+  });
+
+  it('UT-ANO-005-FEUILLE-11 Échap avec une confirmation ouverte dans la feuille : la confirmation seule est annulée (surAnnuler une fois) ; la feuille ne commence pas à se fermer (aucun ionModalWillDismiss, surFermee jamais appelée)', async () => {
+    const surFermee = vi.fn();
+    const surAnnuler = vi.fn();
+    await ouvrirLeBanc(surFermee, { surAnnuler });
+    const annuler = screen.getByRole('button', { name: 'Annuler' });
+    annuler.focus();
+    const fermetures = vi.fn();
+    document.addEventListener('ionModalWillDismiss', fermetures);
+    try {
+      await userEvent.keyboard('{Escape}');
+      await new Promise((resoudre) => setTimeout(resoudre, 50));
+      expect(surAnnuler).toHaveBeenCalledTimes(1);
+      expect(fermetures).not.toHaveBeenCalled();
+      expect(surFermee).not.toHaveBeenCalled();
+      expect(modale().contains(annuler)).toBe(true);
+    } finally {
+      document.removeEventListener('ionModalWillDismiss', fermetures);
+    }
   });
 });

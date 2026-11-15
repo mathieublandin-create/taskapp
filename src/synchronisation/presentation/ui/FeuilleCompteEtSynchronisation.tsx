@@ -1,9 +1,10 @@
 import { nonImplemente } from '@non-implemente';
-import type { ReactElement, ReactNode, Ref } from 'react';
+import type { ReactElement, ReactNode, Ref, RefObject } from 'react';
 import type { ProprietesFeuilleSynchronisation } from './FeuilleSynchronisation';
 
 // Squelette (ST-CORR-E13B-LOT-001 §5, tranche T5a) : feuille modale « Compte et synchronisation » d'ECR-011 (guide
 // v0.2.26 §4.26, §6.6.15, §6.6.16 n° 5 ; ANO-005). Fermée à l'ouverture de l'application, ouverte par `BoutonFeuille`.
+// v0.3 : focus et Échap dans l'`IonModal` (guide v0.2.27 §6.6.17), ST §5.1 bis.
 
 /** `id` de la feuille, cible d'`aria-controls` du bouton d'ouverture. */
 export const ID_FEUILLE_SYNCHRONISATION = 'feuille-synchronisation';
@@ -24,6 +25,12 @@ export type ProprietesFeuilleCompteEtSynchronisation = {
   readonly compte?: ReactNode;
   /** Confirmations et `ERR-017` ouvertes depuis la feuille : rendues **dans** la modale (piège d'ANO-007, focus). */
   readonly dialogues?: ReactNode;
+  /**
+   * Bouton d'ouverture (`BoutonFeuille`, même référence que son `refElement`) : à la fin de la fermeture, il reçoit le
+   * focus s'il ne l'a pas (Safari : un clic ne donne pas le focus, Ionic n'a donc rien à rendre). Guide v0.2.27
+   * §6.6.17 ; ST-CORR-E13B-LOT-001 v0.3 §5.1 bis.
+   */
+  readonly refBoutonOuverture?: RefObject<HTMLButtonElement | null>;
 };
 
 export const FeuilleCompteEtSynchronisation = (

@@ -33,30 +33,36 @@ test.describe('« + » à 390 × 844 (ANO-005)', () => {
     expect(barre.y - (fab.y + fab.height)).toBeCloseTo(16, 0);
   });
 
-  test('E2E-ANO-005-FAB-03 au bout du défilement, le centre de chaque ligne visible est dégagé et le toucher au centre de la dernière ouvre son détail', async ({
+  // v0.3 (arbitrage de T4) : la zone contrôlée est la zone visible de la liste (boîte de l'`ion-content` qui porte le
+  // « + »), et non toute la fenêtre : une ligne dont le centre est sous la barre d'en-tête, hors de la liste, n'est pas
+  // une ligne visible. Le test exige au moins 5 lignes contrôlées, dont la dernière, pour ne jamais passer à vide.
+  test('E2E-ANO-005-FAB-03 au bout du défilement, le centre de chaque ligne visible dans la liste est dégagé et le toucher au centre de la dernière ouvre son détail', async ({
     page,
   }) => {
     await ouvrirHarnais(page, 15);
     const lignes = page.locator('li.ligne-tache');
-    await lignes.last().scrollIntoViewIfNeeded();
-    await page
-      .locator('ion-content')
-      .first()
-      .evaluate(async (contenu) => {
-        await (contenu as HTMLIonContentElement).scrollToBottom(0);
-      });
-    for (const ligne of await lignes.all()) {
-      const bouton = ligne.locator('button[data-etat]');
-      if (await bouton.isVisible()) {
-        const visible = await bouton.evaluate((e) => {
-          const b = e.getBoundingClientRect();
-          const y = b.top + b.height / 2;
-          return y > 0 && y < window.innerHeight;
-        });
-        if (visible) expect(await centreDegage(bouton)).toBe(true);
+    const contenu = page.locator('ion-content.contenu-avec-fab').first();
+    await contenu.evaluate(async (element) => {
+      await (element as HTMLIonContentElement).scrollToBottom(0);
+    });
+    const zone = await boite(contenu);
+    const centreDansLaListe = (b: { y: number; height: number }): boolean => {
+      const y = b.y + b.height / 2;
+      return y > zone.y && y < zone.y + zone.height;
+    };
+    const boutons = await lignes.locator('button[data-etat]').all();
+    let controlees = 0;
+    for (const bouton of boutons) {
+      const b = await bouton.boundingBox();
+      if (b !== null && centreDansLaListe(b)) {
+        expect(await centreDegage(bouton)).toBe(true);
+        controlees += 1;
       }
     }
-    await lignes.last().locator('button[data-etat]').tap();
+    expect(controlees).toBeGreaterThanOrEqual(5);
+    const derniere = lignes.last().locator('button[data-etat]');
+    expect(centreDansLaListe(await boite(derniere))).toBe(true);
+    await derniere.tap();
     await expect(page.getByRole('heading', { level: 1, name: 'Tâche 15' })).toBeVisible();
   });
 });
@@ -77,7 +83,9 @@ test.describe('Colonne de 720 px (ANO-005)', () => {
     expect(280 + 720 - (fab.x + fab.width)).toBeCloseTo(16, 0);
   });
 
-  test('E2E-ANO-005-FAB-05 à 768 × 1024 : colonne de 720 px centrée ; à 599 × 844 : pleine largeur', async ({
+  // v0.3 (arbitrage de T4) : le seuil est protégé à sa borne exacte (600 : colonne ; 599 : pleine largeur) et entre les
+  // deux tailles de référence (650 : colonne de 650 px, centrée à 0) ; un seuil déplacé à 640 ou 768 rougit.
+  test('E2E-ANO-005-FAB-05 colonne de 720 px centrée à 768 × 1024 ; à 650 et à 600 px, colonne à la largeur de la fenêtre (≤ 720) par la règle de colonne ; à 599 × 844 : pleine largeur sans la règle', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -85,10 +93,19 @@ test.describe('Colonne de 720 px (ANO-005)', () => {
     const colonne = await boite(page.locator('.espaces'));
     expect(colonne.width).toBeCloseTo(720, 0);
     expect(colonne.x).toBeCloseTo(24, 0);
+    const largeurMax = () => page.locator('.espaces').evaluate((e) => getComputedStyle(e).maxWidth);
+    for (const largeur of [650, 600]) {
+      await page.setViewportSize({ width: largeur, height: 844 });
+      await expect
+        .poll(async () => Math.round((await boite(page.locator('.espaces'))).width))
+        .toBe(largeur);
+      expect(await largeurMax()).toBe('720px');
+    }
     await page.setViewportSize({ width: 599, height: 844 });
     await expect
       .poll(async () => Math.round((await boite(page.locator('.espaces'))).width))
       .toBe(599);
+    expect(await largeurMax()).toBe('none');
   });
 
   test('E2E-ANO-005-FAB-06 les « + » des deux onglets se distinguent par leur nom accessible et leur title (remplace le contrôle du libellé visible d’ANO-002)', async ({

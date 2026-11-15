@@ -7,11 +7,11 @@
 | Objet | Corrections exigées avant la recette (E14) par les volets de Steeve et de Pepper de l'E13b de LOT-001 (`docs/ceremonies/e13b-LOT-001.md` §5.2, §5.3) : FD-LOT-001-2 (DT-034 points 1 et 3, DT-014, E13b-a, Q-ST017-STE-1 b), FD-LOT-001-4 (ANO-005), FD-LOT-001-5 (ANO-004), FD-LOT-001-7 (étapes `@ihm` du premier onglet) |
 | Lot | [LOT-001](../lots/LOT-001.md) — **rang 14** « Corrections de l'E13b » (retour en E12 décidé par l'E13b : « Non mature ») |
 | Branche d'intégration | `fix/e13b-lot001` (depuis `origin/docs/e13b-starck`, puis fusion de `origin/lot/LOT-001`, PR #45) ; une branche courte par tranche, fusionnée dans `fix/e13b-lot001` après sa revue E13 courte ; une seule PR finale vers `lot/LOT-001` |
-| Référentiel | Guide d'ergonomie **v0.2.26** (§2.2, §4.1, §4.8, §4.26, §6.2, §6.6.8, §6.6.12, §6.6.15, §6.6.16) ; glossaire d'étapes **v1.14** (§12) ; `anomalies.md` (ANO-004 Mineure, ANO-005 Majeure) ; registre de la dette **v0.48** (DT-014, DT-034, E13b-a) ; ST-US-017, ST-US-018, ST-US-022, ST-US-024, ST-US-031 ; `conventions.md` v0.4.10 ; `checklist-revue-code.md` |
+| Référentiel | Guide d'ergonomie **v0.2.27** (§6.6.17 ajouté à v0.3 ; v0.2.26 : §2.2, §4.1, §4.8, §4.26, §6.2, §6.6.8, §6.6.12, §6.6.15, §6.6.16) ; glossaire d'étapes **v1.14** (§12) ; `anomalies.md` (ANO-004 Mineure, ANO-005 Majeure) ; registre de la dette **v0.48** (DT-014, DT-034, E13b-a) ; ST-US-017, ST-US-018, ST-US-022, ST-US-024, ST-US-031 ; `conventions.md` v0.4.10 ; `checklist-revue-code.md` |
 | Rédacteur | Anthony (E10 des corrections) |
 | Réalisation | Benjamin (sonnet), **sept tranches d'au plus 1 j, une à la fois** (OPT-15), §15 |
-| Effort | **3,5 j** de développement (hors revues) |
-| Statut | Rédigée, tests rouges livrés (§13) ; aucune question bloquante (§16.2) |
+| Effort | **3,6 j** de développement (hors revues) ; v0.3 : T5a passe de 0,5 à 0,6 j (§15) ; **reste 1,8 j** (T5a 0,6, T5b 0,85, T6 0,35) |
+| Statut | v0.3 : T1 à T4 réalisées et approuvées ; conception de T5a complétée (§5.1 bis, §5.1 ter), tests rouges de T5a et T5b livrés (§13) ; aucune question bloquante |
 
 Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030, DT-031 ont été spécifiés dans la ST de leur US) ; ici, les corrections touchent cinq US et l'outillage : un document unique est plus lisible. Les ST d'US ne sont pas modifiées ; celles qui sont concernées sont citées au §1.1.
 
@@ -20,6 +20,7 @@ Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030,
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-11-13 | Anthony | E10 des corrections de l'E13b : conception, 7 tranches, rang 14, 29 tests unitaires (26 rouges, 3 garde-fous verts), 24 tests de navigateur (23 rouges, 1 garde-fou vert), règles de rang, questions non bloquantes Q-CORR-STE-1 à 6. |
+| 0.3 | 2026-11-15 | Anthony | Arbitrages de T4 (§6.5 : E2E-ANO-005-FAB-03 borné à la zone visible de la liste, FAB-05 à 650, 600 et 599 px, UT-COMP-US-002-190 validé) ; conception complétée de la feuille modale d'après le guide v0.2.27 §6.6.17 (§5.1 bis : focus sur le titre, focus rendu au bouton, Échap qui ferme la confirmation seule ; §5.1 ter : ligne d'état sans hauteur maximale, passée de T5b à T5a) ; §5.2 : focus de fin de « À lire » (hook à cible calculée) ; §5.4 : intégration de T5a et T5b sans CI rouge, tranches gardées séparées ; tests UT-ANO-005-FEUILLE-08 à 12, E2E-ANO-005-FEUILLE-07 et 08, règle de rang `UT-COMP-CORR` ; UT-ANO-005-FEUILLE-03 corrigé (rôle `dialog` dans le shadow DOM, défaut de l'E10) ; §15 efforts. |
 | 0.2 | 2026-11-13 | Anthony | E13 des tranches T1 à T3 (`revue-code-LOT-001-corr-e13b-t1t3.md`) : §2 et §4.5, deux rustines de mise en page déclarées transitoires (retrait à T5b) ; §5.2 bis, retrait des rustines et test E2E-ANO-005-FEUILLE-06 ; §4.2, action de bandeau toujours principale (accord) ; §3.1, place des codes `TXT-…-SOUS-TACHE` ; §9.1 et §12.1, S16b et S16c verts dès T1, revenus au rang 13 ; §13.1, tests UT-DT-014-07 à 10 (variantes non couvertes par UT-DT-014-01 à 06). |
 
 ## 1. Résumé technique
@@ -46,7 +47,8 @@ Hors périmètre : S23 et S24 proposés par Pepper (nom accessible « Nouvel obj
 | Q-ST017-STE-1 b (§6.6.8, §6.6.16 n° 3) | `ERR-016` variantes `une`, `aucune` | §3.2 | T1 | UT-E13B-TXT-05, 06 |
 | FD-LOT-001-7 (Pepper §5.2 b) | Étapes du premier onglet de S16b, S16c | §12.1 | T1 | S16b, S16c (`@ihm`) |
 | ANO-005 n° 1 (§2.2, §6.6.16 n° 5) | « + » rond 56 px sans étiquette, `title` ; colonne de 720 px | §6 | T4 | UT-ANO-005-FAB-01 ; E2E-ANO-005-FAB-01 à 06 |
-| ANO-005 n° 2 (§4.26, §6.6.15, §6.6.16 n° 5) | Feuille modale, ordre, confirmations cliquables | §5 | T5a, T5b | UT-ANO-005-FEUILLE-01 à 07 ; E2E-ANO-005-FEUILLE-01 à 05 ; S16b, S16c, US-022 et US-018 `@ihm` |
+| ANO-005 n° 2 (§4.26, §6.6.15, §6.6.16 n° 5) | Feuille modale, ordre, confirmations cliquables | §5 | T5a, T5b | UT-ANO-005-FEUILLE-01 à 07 ; E2E-ANO-005-FEUILLE-01 à 06 ; S16b, S16c, US-022 et US-018 `@ihm` |
+| Guide v0.2.27 §6.6.17 (réponses de Steeve) | Focus sur le titre, focus rendu au bouton (Safari), Échap qui ferme la confirmation seule ; ligne d'état ≥ 48 px sans hauteur maximale ; bouton distinct à droite de l'indicateur | §5.1 bis, §5.1 ter, §5.2 | T5a (composant, CSS), T5b (branchement) | UT-ANO-005-FEUILLE-08 à 12 ; E2E-ANO-005-FEUILLE-07, 08 ; UT-COMP-CORR-01 (Benjamin, T5b) |
 | ANO-004 (§6.2, §6.6.16 n° 4) | Vue `OUVERTURE` | §7 | T6 | UT-ANO-004-01 à 07 ; E2E-ANO-004-01, 02 |
 
 US concernées (aucun critère, aucune règle ni aucun scénario modifié, contrôle de Pepper §5.2 a) : US-001 et US-002 (« + »), US-017, US-018, US-022, US-031 (feuille, ouverture), US-024 (carte d'incohérence).
@@ -189,6 +191,8 @@ export type ProprietesFeuilleCompteEtSynchronisation = {
   readonly synchronisation?: ProprietesFeuilleSynchronisation;
   readonly compte?: ReactNode;
   readonly dialogues?: ReactNode;
+  readonly refBoutonOuverture?: RefObject<HTMLButtonElement | null>; // v0.3, §5.1 bis
+  readonly refTitre?: RefObject<HTMLHeadingElement | null>;          // v0.3, §5.1 bis
 };
 export const FeuilleCompteEtSynchronisation: (p: ProprietesFeuilleCompteEtSynchronisation) => ReactElement;
 export type ProprietesBoutonFeuille = { readonly ouverte: boolean; readonly surOuvrir: () => void; readonly refElement?: Ref<HTMLButtonElement> };
@@ -207,11 +211,12 @@ Rendu imposé de `FeuilleCompteEtSynchronisation` :
   breakpoints={panneau ? [0, 1] : [0, 0.92]}
   expandToScroll={false}
   handle={!panneau}
-  onDidDismiss={surFermee}
+  onDidPresent={focaliserLeTitre}
+  onDidDismiss={surFinDeFermeture}
 >
   <div className="feuille-contenu">
     <header className="feuille-entete">
-      <h2 tabIndex={-1} ref={refTitre}>{LIBELLES_FEUILLE.titre}</h2>
+      <h2 tabIndex={-1} ref={refH2}>{LIBELLES_FEUILLE.titre}</h2>
       <button type="button" className="bouton-natif" data-variante="tertiaire" onClick={surFermee}>{LIBELLES_FEUILLE.fermer}</button>
     </header>
     <IonContent className="feuille-corps">
@@ -225,7 +230,7 @@ Rendu imposé de `FeuilleCompteEtSynchronisation` :
 ```
 
 - `panneau` = `window.matchMedia?.(MEDIA_PANNEAU_LATERAL).matches === true`, lu **à chaque ouverture** (hook `usePanneauLateral(ouverte)` local au fichier ; `matchMedia` absent, comme dans jsdom : `false`). Pas d'écoute du redimensionnement (feuille ouverte puis fenêtre redimensionnée : la géométrie suit à la prochaine ouverture ; limite acceptée).
-- « Fermer » appelle `surFermee` directement (la feuille se démonte par `isOpen=false`) ; Échap, geste retour, glissement et fond passent par `onDidDismiss`. `surFermee` doit être idempotent (le parent remet `ouverte` à `false`).
+- « Fermer » appelle `surFermee` directement (la feuille se démonte par `isOpen=false`) ; Échap, geste retour, glissement et fond passent par `onDidDismiss`. `surFermee` doit être idempotent (le parent remet `ouverte` à `false`). v0.3 : `onDidDismiss` passe par `surFinDeFermeture` (§5.1 bis), qui appelle aussi `surFermee`.
 - `dialogues` est rendu **dans** la modale, après le corps : une boîte `.scrim` hors de la modale verrait son focus repris par le piège de focus d'Ionic (`trapKeyboardFocus`, `ion-modal` est le dernier overlay présenté) ; c'est la variante « focus » du piège d'ANO-007. Dans la modale, `.scrim` (`position: fixed`) est positionné par rapport au conteneur transformé de la feuille : la boîte est centrée dans la feuille (comme la confirmation de la saisie rapide).
 - Ordre du corps (guide §6.6.15) : `aLire`, puis la section « Synchronisation » (qui commence déjà par `ALR-016` et finit par `ALR-015` puis « Stockage »), puis `compte`. `FeuilleSynchronisation` n'est pas modifiée (hors §4).
 
@@ -250,6 +255,24 @@ ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
 @media (width >= 1024px) { ion-modal.feuille-synchronisation { --width: 400px; --height: 100%; --border-radius: 0; justify-content: flex-end; } }
 ```
 
+### 5.1 bis Focus et Échap dans l'`IonModal` (T5a, v0.3, guide v0.2.27 §6.6.17)
+
+Trois comportements, dans `FeuilleCompteEtSynchronisation.tsx` et `boite-confirmation.tsx`. Mesures faites sur Ionic 9.0.9 (code de `overlays`) et vérifiées par une réalisation locale annulée (§13.1, ajouts de la v0.3).
+
+| # | Comportement | Réalisation imposée | Raison technique |
+|---|---|---|---|
+| 1 | **Ouverture : focus sur le titre `h2`** | `const titreInterne = useRef<HTMLHeadingElement>(null); const refH2 = refTitre ?? titreInterne;` ; `<h2 tabIndex={-1} ref={refH2}>` ; `focaliserLeTitre = () => { refH2.current?.focus(); }` passé à `onDidPresent` | Ionic émet `didPresent` puis, si le focus n'est pas dans l'overlay, focalise l'enveloppe du shadow DOM (`keyboardClose`) : un focus posé dans `onDidPresent` (synchrone) est dans la feuille et n'est donc plus déplacé. Pas de `autoFocus`, pas de `useEffect` (la feuille n'est pas encore présentée). |
+| 2 | **Fermeture : focus rendu au bouton d'ouverture s'il ne l'a pas** | `surFinDeFermeture = () => { surFermee(); queueMicrotask(rendreLeFocus); }` avec `rendreLeFocus = () => { const bouton = refBoutonOuverture?.current; if (bouton != null && document.activeElement !== bouton) bouton.focus(); }` | Ionic rend le focus à l'élément actif **au moment de la présentation**, et seulement si le focus est sur `body` à la fin. Sous Safari, un clic ne donne pas le focus au bouton : l'élément mémorisé est `body`, rien n'est rendu. **Le report par `queueMicrotask` est obligatoire** : pendant `didDismiss`, l'overlay n'a pas encore la classe `overlay-hidden` ; il est donc encore « au sommet » et le piège de focus d'Ionic ramène dans la feuille tout focus posé dehors (constaté : focus sur `body` à la fin, UT-ANO-005-FEUILLE-09 et 10 rouges si l'appel est synchrone). Pas de `setTimeout` (ordre non garanti face au rendu). |
+| 3 | **Échap avec une confirmation ouverte dans la feuille : la confirmation seule se ferme** | `boite-confirmation.tsx`, `useToucheEchap` : écoute en **phase de capture** sur `document` (`addEventListener('keydown', surTouche, true)`, même retrait), et pour `Escape` seulement : `evenement.stopPropagation()` puis `surAnnuler()` ; les autres touches ne sont pas touchées | Ionic écoute `keydown` sur `document` en phase de bouillonnement et ferme l'overlay du sommet (`backdropDismiss`) ; la boîte écoutait au même endroit, après lui : les deux se fermaient. La capture sur `document` passe avant, et `stopPropagation` empêche l'écoute d'Ionic (même nœud, phase suivante). Effet global voulu : une boîte de confirmation est toujours au-dessus de tout overlay ; la confirmation de la saisie rapide (dans `ion-modal.saisie-rapide`) en bénéficie aussi. Ni `canDismiss`, ni `backdropDismiss={false}` (le fond doit continuer de fermer la feuille). |
+
+Hors de ces trois points, rien n'est ajouté : pas de piège de focus maison (celui d'Ionic suffit, guide §6.6.17 « Ordre de focus »), pas d'écoute de `keydown` dans la feuille. Le rôle `dialog`, `aria-modal="true"` et le nom (`aria-label`, hérité de l'hôte) sont portés par Ionic sur l'enveloppe `.modal-wrapper` du shadow DOM : c'est là qu'UT-ANO-005-FEUILLE-03 les lit (v0.3).
+
+### 5.1 ter Ligne d'état (T5a pour la CSS, T5b pour le rendu ; guide v0.2.27 §6.6.17 n° 1 et 4)
+
+- CSS (`styles.css`, règle unique, sélecteur seul, ajoutée par T5a) : `.ligne-etat { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 0 8px 0 16px; }`. **Aucune** déclaration `max-height`, `height`, `block-size`, `overflow`, `white-space`, `text-overflow` ni `line-clamp` dans une règle qui vise `.ligne-etat` ou ses descendants (UT-ANO-005-FEUILLE-12) : avec le texte agrandi, le libellé « Compte et synchronisation » passe sur deux lignes, jamais tronqué.
+- Bouton : `BoutonFeuille` (§5.1), **distinct** de l'indicateur, rendu après lui dans la `div.ligne-etat` (donc à sa droite) ; nom accessible exact « Compte et synchronisation » (son texte visible, WCAG 2.5.3) ; jamais à l'intérieur du `role="status"` (E2E-ANO-005-FEUILLE-07).
+- La règle est sans effet avant T5b (aucun élément `.ligne-etat` dans la page) : elle n'introduit aucune régression à T5a.
+
 ### 5.2 Branchement dans `src/main.tsx` (T5b)
 
 - État d'interface `feuilleOuverte: boolean` (`useState(false)`) **dans `Application`** (il commande aussi l'emplacement des dialogues). Remis à `false` quand `vue.racine.ecran !== 'APPLICATION'` (fin de session : la feuille ne survit pas à la déconnexion).
@@ -261,8 +284,11 @@ ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
 - `FeuilleCompteEtSynchronisation` est rendue par `EspaceApplication` (hors de `main` : fragment après `</main>`), avec `aLire={<ALire …/>}`, `synchronisation` (props actuelles de `FeuilleSynchronisation`, choix de restauration compris), `compte={<SectionCompte …/>}`, `dialogues={feuilleOuverte ? <Dialogues …/> : undefined}`.
 - `Application` rend `<Dialogues …/>` à la racine **seulement si la feuille est fermée** (un seul exemplaire monté).
 - `FeuilleChoixRestauration` (ECR-011 E) reste hors de la feuille, inchangée (guide §6.6.15 : « elle a sa propre feuille »).
-- Focus de fin de « À lire » (DT-028, `useFocusFinALire`) : cible = `BoutonFeuille` quand la feuille est fermée (le hook passe de l'indicateur au bouton : `refElement`), et le titre `h2` de la feuille (`tabIndex={-1}`) quand elle est ouverte (Q-CORR-STE-6, choix par défaut). L'indicateur cesse d'être la cible (`tabIndex={-1}` conservé, sans effet).
-- Ligne d'état, CSS : `.ligne-etat { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 0 8px 0 16px; }`. Le bandeau garde sa hauteur naturelle sous la ligne (Q-CORR-STE-4, choix par défaut : un bandeau à texte et action ne tient pas dans 48 px).
+- Focus de fin de « À lire » (DT-028, `useFocusFinALire`) : cible = `BoutonFeuille` quand la feuille est fermée, et le titre `h2` de la feuille (`tabIndex={-1}`) quand elle est ouverte (Q-CORR-STE-6, confirmé par Steeve). L'indicateur cesse d'être la cible (`tabIndex={-1}` conservé, sans effet). **v0.3, réalisation imposée** :
+  - `focus-fin-a-lire.ts` : signature étendue, compatible : `useFocusFinALire<T extends HTMLElement>(sectionPresente: boolean, cible?: () => HTMLElement | null): RefObject<T | null>` ; si `cible` est fournie, l'effet focalise `cible()` au lieu de la référence rendue (même condition : section disparue et focus sur `body`). UT-COMP-US-017-3-15 et 16 inchangés.
+  - `EspaceApplication` : `const refBouton = useRef<HTMLButtonElement>(null); const refTitre = useRef<HTMLHeadingElement>(null);` ; `useFocusFinALire(vue.nonRetenues !== undefined, () => (feuilleOuverte ? refTitre.current : refBouton.current))` ; `BoutonFeuille refElement={refBouton}` ; `FeuilleCompteEtSynchronisation refBoutonOuverture={refBouton} refTitre={refTitre}`.
+  - Test à écrire par Benjamin dans T5b : **UT-COMP-CORR-01** (jsdom, `tests/unitaires/synchronisation/presentation/ui/focus-fin-a-lire-feuille.test.tsx`, rang 14 par la règle `UT-COMP-CORR-\d+` déjà posée) : feuille ouverte, `aLire` avec un bouton « Compris » qui retire la section, hook appelé avec la cible calculée : après le clic, `document.activeElement` est le `h2` de la feuille ; feuille fermée : le bouton d'ouverture. Il doit rougir si `refTitre` est ignorée par la feuille ou si `cible` est ignorée par le hook.
+- Ligne d'état : CSS posée par T5a (§5.1 ter), **sans hauteur maximale** (Q-CORR-STE-4 corrigée par Steeve). Le bandeau garde sa hauteur naturelle sous la ligne.
 
 ### 5.2 bis Retrait des rustines de T2 et T3 (T5b, v0.2)
 
@@ -275,6 +301,14 @@ ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
 | `.espaces { flex: 1 0 auto; min-height: 70dvh; }` et son commentaire | revenir à `flex: 1; min-height: 0;` |
 
 Test : **E2E-ANO-005-FEUILLE-06** (`tests/e2e/feuille-synchronisation.e2e.ts`, rang 14, à 390 × 844 et à 360 × 480, rouge depuis l'E13 de T1 à T3 : la page défile de 391 et 524 px). Il vérifie, sur l'application réelle : défilement de la page nul (`scrollHeight - clientHeight ≤ 0`), les valeurs calculées des trois règles (`overflow-y: visible`, `min-height: 0px`, `flex: 1 1 0%`, `overflow: visible` de la liste), la liste à plus de la moitié de la hauteur de l'écran, et, avec 8 tâches, la dernière ligne entièrement visible, centre dégagé, au-dessus du « + » après défilement de la liste. Si une autre règle de mise en page est nécessaire à T5b, elle est justifiée par écrit dans la revue de T5b, pas ajoutée en silence.
+
+### 5.2 ter Intégration continue de T5a et de T5b (v0.3)
+
+**Décision : T5a et T5b restent deux tranches séparées** ; les fusionner n'est pas nécessaire pour garder `fix/e13b-lot001` verte.
+
+- **T5a laisse la branche intégrable** : le composant, le bouton, la CSS de la feuille et de `.ligne-etat` ne sont branchés nulle part (`main.tsx` inchangé) ; seul effet visible dans l'application : la boîte de confirmation consomme Échap (§5.1 bis n° 3), sans changement pour les confirmations hors overlay (mesuré : `pnpm test` au rang 13 vert, `boites-confirmation.e2e.ts` 9 sur 9, avec cette modification). `cucumber:ihm` ne voit aucune différence : S16b, S16c et les 13 scénarios restent verts. Contrôle de T5a : `RANG_COURANT=14 pnpm test -t "UT-ANO-005-FEUILLE"` (12 sur 12), plus les familles des tranches précédentes (§9.1).
+- **T5b se livre en un seul commit atomique** (ou une suite de commits dont **chacun** garde `cucumber:ihm` vert) : le déplacement de « Compte » et d'« À lire » dans la feuille (`main.tsx`) rend rouges les étapes qui lisent « Compte » dans la page ; l'adaptation des étapes (§12.2, ouverture de la feuille dans `boutonDeLaSectionCompte`) et le branchement vont donc **ensemble**. Ordre conseillé dans la branche courte, sans pousser d'état intermédiaire : (1) étapes `@ihm` écrites pour fonctionner **dans les deux états** (si le bouton « Compte et synchronisation » existe et que la feuille est fermée, l'ouvrir ; chercher dans le `dialog` s'il est présent, sinon dans `espaceApplication`) : la branche reste verte ; (2) branchement de `main.tsx` ; (3) retrait des trois rustines (§5.2 bis) ; (4) suppression de la branche « sans feuille » des étapes (étape définitive du §12.2). La revue E13 de T5b vérifie que le dernier état ne garde aucune double voie.
+- **Pourquoi pas une fusion** : T5a est testable seule (12 tests jsdom et CSS), son E13 courte isole les points délicats (focus, Échap, report par micro-tâche) avant le branchement ; T5a + T5b ferait 1,45 j, au-delà de la limite d'1 j par tranche (OPT-15).
 
 ### 5.3 Ce qui ne change pas
 
@@ -309,6 +343,14 @@ Le « + » est positionné dans l'`ion-content` de la liste ; la colonne le cont
 ### 6.4 Tests de navigateur antérieurs
 
 Le test « les « + » des deux onglets se distinguent par leur libellé visible » (`mise-en-page-smartphone.e2e.ts`, ANO-002) est **retiré** par cette E10 et remplacé par E2E-ANO-005-FAB-06 (nom accessible et `title`) : la décision de Steeve supprime l'étiquette visible (traçabilité : commentaire en place, §13.2).
+
+### 6.5 Arbitrages de T4 (v0.3)
+
+| # | Point soulevé par Benjamin | Décision | Preuve |
+|---|---|---|---|
+| a | E2E-ANO-005-FAB-03 rouge : la seule ligne contrôlée « recouverte » a son centre à y = 48, sous la barre d'en-tête, hors de la liste ; le test prenait toute la fenêtre (`0 < y < innerHeight`) comme zone visible | **Test corrigé (défaut de mon E10), sans affaiblissement.** La zone contrôlée est la boîte de l'`ion-content.contenu-avec-fab` (la liste, qui contient le « + »). Renforcé : au moins 5 lignes contrôlées et la dernière obligatoirement dans la zone (le test ne peut plus passer à vide) ; défilement par `scrollToBottom` de cette même liste. | Vert sur T4. Mutations locales annulées, **toutes rouges** : « + » déplacé sur la liste (`right: 120px; bottom: 300px`) ; « + » de 300 px de large sans réserve (`--dj-marge-fab: 0px`, cas de l'ancienne étiquette). |
+| b | Seuil de 600 px non protégé (768 et 599 seulement) | **Cas ajoutés à E2E-ANO-005-FAB-05** : à 650 et à 600 px, colonne de la largeur de la fenêtre **et** `max-width` calculé `720px` (la règle s'applique) ; à 599 px, `max-width: none`. | Mutations rouges : seuil à 640 px, `width > 600px`, seuil à 599 px. |
+| c | UT-COMP-US-002-190 modifié : `.bouton-flottant-etiquette` → `aria-label` d'`ion-fab-button` | **Validé.** L'étiquette n'existe plus par décision de Steeve (§6.1) ; le test lit maintenant le nom accessible, même valeur exacte (`toBe('Ajouter une tâche')`), même force ; la seconde moitié (touche N) est inchangée. `title` est contrôlé en navigateur par E2E-ANO-005-FAB-06. Pas un affaiblissement. | Diff de `c23822b`. |
 
 ## 7. ANO-004 : vue initiale `OUVERTURE` (tranche T6)
 
@@ -423,6 +465,22 @@ Scénarios `@ihm` à rejouer à T5b (`RANG_COURANT=14 pnpm cucumber:ihm`) : les 
 
 **Ajouts de l'E13 de T1 à T3 (v0.2)** : `tests/unitaires/commun/presentation/ui/boutons-natifs-complements.test.tsx`, **UT-DT-014-07 à 10** (jsdom, rang 14 par la règle existante `UT-DT-014`), garde-fous verts dès leur écriture : variantes de `ChoixRestauration` (`RESTAURER` principal, `REPARTIR_DE_ZERO` danger, `DECIDER_PLUS_TARD` et « Fermer » tertiaires, `ANNULER_DEMANDE` secondaire), de `ModificationsNonRetenues` (quatre boutons tertiaires), et de l'action `REPRENDRE_LA_SYNCHRONISATION` du bandeau (principal). Raison : UT-DT-014-01 à 06 laissaient ces attributions sans test (mutation `danger` → `principal` et `tertiaire` → `danger` survivante, constatée par l'E13 ; les tests rougissent avec la mutation).
 
+**Ajouts de la v0.3 (conception complétée de T5a)** :
+
+| Fichier | Identifiants | Tranche | Projet | Contrôle | Mutation qui le rougit (vérifiée sur une réalisation locale annulée) |
+|---|---|---|---|---|---|
+| `feuille-compte-synchronisation.test.tsx` | UT-ANO-005-FEUILLE-08 | T5a | jsdom (`IonModal` réelle) | Focus de départ sur `body` ; à `ionModalDidPresent`, `document.activeElement` est le `h2` (`tabIndex` −1) | `onDidPresent` retiré |
+| idem | UT-ANO-005-FEUILLE-09 | T5a | jsdom | Ouverture sans focus sur le bouton (Safari) ; fermeture par `ouverte=false` ; à `ionModalDidDismiss`, focus sur le bouton d'ouverture | appel retiré ; appel **synchrone** dans `onDidDismiss` (piège d'Ionic) |
+| idem | UT-ANO-005-FEUILLE-10 | T5a | jsdom | Échap sans confirmation : `surFermee` une fois, focus sur le bouton (garde-fou : prouve que l'écoute d'Échap d'Ionic est active dans jsdom, sans quoi 11 serait vide) | idem 09 |
+| idem | UT-ANO-005-FEUILLE-11 | T5a | jsdom | Échap avec une `BoiteConfirmation` réelle dans la feuille : `surAnnuler` une fois, aucun `ionModalWillDismiss`, `surFermee` jamais appelée | `useToucheEchap` d'origine ; capture sans `stopPropagation` ; `stopPropagation` sans capture |
+| `tests/unitaires/synchronisation/presentation/ligne-etat-e13b.test.ts` | UT-ANO-005-FEUILLE-12 | T5a | node | Règle `.ligne-etat` exacte (7 déclarations) ; aucune règle visant `.ligne-etat` ou ses descendants avec `max-height`, `height`, `overflow`, `white-space`, `text-overflow`, `line-clamp` | `height: 48px` ; `max-height` dans la règle ; `.ligne-etat .bouton-natif { max-height }` ; `white-space: nowrap` sous `@media` |
+| `tests/e2e/feuille-synchronisation.e2e.ts` | E2E-ANO-005-FEUILLE-07 | T5b | navigateur | Bouton distinct dans `.ligne-etat`, hors du `role="status"`, à droite de l'indicateur, même ligne ; ligne ≥ 48 px, `max-height: none` ; bouton ≥ 44 px ; ouverture au clavier : titre focalisé ; ouverture par clic sans focus (Safari) puis Échap : focus sur le bouton | rouge aujourd'hui (bouton absent de la page) |
+| idem | E2E-ANO-005-FEUILLE-08 | T5b | navigateur | Échap avec la confirmation de suppression ouverte depuis la feuille : la confirmation se ferme, la feuille reste visible ; second Échap : la feuille se ferme | rouge aujourd'hui (bouton absent) |
+
+**UT-ANO-005-FEUILLE-03 corrigé (v0.3, défaut de mon E10)** : il cherchait `getByRole('dialog')` sur l'hôte `ion-modal` ; Ionic 9 porte `role="dialog"`, `aria-modal="true"` et l'`aria-label` hérité sur l'enveloppe `.modal-wrapper` du shadow DOM, que jsdom ne traverse pas : le test n'aurait jamais pu passer avec le rendu imposé. Il lit désormais ces trois attributs sur l'enveloppe (rougit si l'`aria-label` est retiré de l'`IonModal`). Les E2E (Playwright traverse le shadow DOM) sont inchangés.
+
+Réalisation locale de contrôle (annulée, non livrée) : avec le rendu du §5.1 et les trois points du §5.1 bis, UT-ANO-005-FEUILLE-01 à 12 sont **verts** ; `pnpm test` au rang 13 reste vert avec la modification de `boite-confirmation.tsx`.
+
 Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (rang 13) : **1 621 verts, 29 ignorés** (les tests du rang 14), 0 rouge ; `RANG_COURANT=14` sur les familles du rang : **26 rouges, 3 verts**, chacun rouge pour la raison attendue (assertion ou `ErreurNonImplementee`, aucune erreur de compilation ni de harnais).
 
 ### 13.2 Tests de navigateur (Playwright) — 24 tests, 23 rouges au rang 14
@@ -434,6 +492,8 @@ Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (ra
 | `tests/e2e/bouton-flottant.e2e.ts` | E2E-ANO-005-FAB-01 à 06 | T4 | Harnais : 56 × 56, sans étiquette ; 16 px ; centre des lignes dégagé et toucher au centre de la dernière ; colonne de 720 px à 1280 et 768 px, pleine largeur à 599 px ; nom accessible et `title` |
 | `tests/e2e/feuille-synchronisation.e2e.ts` | E2E-ANO-005-FEUILLE-01 à 05 | T5b | Build `test-ihm` connecté : fermée au lancement, 0,92 de 844 px, liste immobile ; ordre et défilement interne ; Échap, focus rendu, défilement de la liste inchangé ; confirmations depuis la feuille (focus sur « Annuler », centre dégagé, clic) à 390 × 844 et à 1280 × 800 ; panneau de 400 px à droite |
 | `tests/e2e/ouverture.e2e.ts` | E2E-ANO-004-01, 02 | T6 | Observateur de mutations : réouverture d'une session (`test-ihm`) : cadre puis espace, jamais l'invitation ; sans session (production) : cadre vide sans `data-*`, puis connexion |
+
+**v0.3** : E2E-ANO-005-FEUILLE-07 et 08 (T5b, §13.1) ; E2E-ANO-005-FAB-03 et 05 corrigés et renforcés (§6.5).
 
 **E2E-ANO-005-FEUILLE-06** (v0.2, T5b ; deux exécutions : 390 × 844 et 360 × 480) : retrait des rustines de mise en page, §5.2 bis ; rouge depuis l'E13 de T1 à T3 (défilement de la page de 391 et 524 px).
 
@@ -447,7 +507,7 @@ Chaque test vérifie une valeur exacte et la mutation qui le ferait passer à to
 
 ## 14. Tests attendus de Benjamin
 
-Tests complémentaires `UT-COMP-CORR-nn` si la couverture d'un fichier modifié baisse (règle de non-régression, §12 des conventions) : en particulier `main.tsx` est exclu de la couverture, mais `bouton-flottant.tsx`, `Racine.tsx`, `racine.ts`, `FeuilleCompteEtSynchronisation.tsx` ne doivent pas baisser. Règle de rang ajoutée par Anthony à l'E13 de la tranche qui les introduit (`UT-COMP-CORR-\d+` → 14).
+Tests complémentaires `UT-COMP-CORR-nn` si la couverture d'un fichier modifié baisse (règle de non-régression, §12 des conventions) : en particulier `main.tsx` est exclu de la couverture, mais `bouton-flottant.tsx`, `Racine.tsx`, `racine.ts`, `FeuilleCompteEtSynchronisation.tsx` ne doivent pas baisser. Règle de rang `UT-COMP-CORR-\d+` → 14 **posée en v0.3** (`rangs-tests.json`, troisième règle). **UT-COMP-CORR-01 est obligatoire à T5b** (§5.2, focus de fin de « À lire »).
 
 ## 15. Plan de réalisation : tranches (OPT-15)
 
@@ -459,13 +519,13 @@ Toutes par Benjamin (sonnet), **une à la fois**, chacune sur une branche courte
 | 2 | **T2 — Focus et zone sûre** | §2 bis ; classe `contenu-avec-fab` (§6.3) | — | UT-DT-034-01, 02 ; E2E-DT-034-01 à 07 ; 08 (la réserve suffit : le centre de la dernière ligne est dégagé même avec l'étiquette actuelle) | 0,5 j |
 | 3 | **T3 — Boutons natifs** | §4 | T2 (l'anneau des boutons natifs est contrôlé par E2E-DT-034-06) | UT-DT-014-01 à 06 ; E2E-DT-014-01 à 03 | 0,5 j |
 | 4 | **T4 — « + » rond et colonne** | §6 ; `ouvrirDetail` au centre (§12.2) | T2 | UT-ANO-005-FAB-01 ; E2E-ANO-005-FAB-01 à 06 | 0,5 j |
-| 5 | **T5a — Composant de la feuille** | §5.1 (composant, bouton, CSS) | T3 | UT-ANO-005-FEUILLE-01 à 07 | 0,5 j |
-| 6 | **T5b — Branchement de la feuille** | §5.2 ; §12.2 (étapes `@ihm`) | T5a, T1 | E2E-ANO-005-FEUILLE-01 à 05 ; **E2E-ANO-005-FEUILLE-06 et retrait des trois rustines de T2 et T3 (§5.2 bis)** ; les 13 scénarios `@ihm` | 0,75 j (+ 0,1 j pour le retrait, dans la tranche) |
+| 5 | **T5a — Composant de la feuille** | §5.1, §5.1 bis (focus, Échap, `boite-confirmation.tsx`), §5.1 ter (CSS de `.ligne-etat`) | T3 | UT-ANO-005-FEUILLE-01 à 12 | 0,6 j (v0.3 : +0,1 j) |
+| 6 | **T5b — Branchement de la feuille** | §5.2 ; §5.2 ter (intégration) ; §12.2 (étapes `@ihm`) | T5a, T1 | E2E-ANO-005-FEUILLE-01 à 05, **07, 08** ; UT-COMP-CORR-01 ; **E2E-ANO-005-FEUILLE-06 et retrait des trois rustines de T2 et T3 (§5.2 bis)** ; les 13 scénarios `@ihm` | 0,75 j (+ 0,1 j pour le retrait, dans la tranche) |
 | 7 | **T6 — Ouverture et livraison du rang** | §7 ; `rangCourant = 14` (dernier commit) | T5b | UT-ANO-004-01 à 07 ; E2E-ANO-004-01, 02 ; **toutes** les familles du rang 14 et toute la CI au rang 14 | 0,35 j |
 
-**Total : 3,5 j** (Steeve estimait ≈ 2,25 j hors tests et étapes ; l'écart vient des étapes `@ihm`, du branchement de `main.tsx` et des tests de navigateur). Chaque tranche reste sous 1 j. T1 et T2 sont indépendantes (l'ordre peut être inversé) ; T6 ne dépend fonctionnellement de rien mais porte la livraison du rang, donc passe en dernier.
+**Total : 3,6 j** (v0.3 ; **reste 1,8 j** après T4 : T5a 0,6, T5b 0,85, T6 0,35) (Steeve estimait ≈ 2,25 j hors tests et étapes ; l'écart vient des étapes `@ihm`, du branchement de `main.tsx` et des tests de navigateur). Chaque tranche reste sous 1 j. T1 et T2 sont indépendantes (l'ordre peut être inversé) ; T6 ne dépend fonctionnellement de rien mais porte la livraison du rang, donc passe en dernier.
 
-PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` 45 sur 45 (43 + les deux exécutions de E2E-ANO-005-FEUILLE-06, v0.2) ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
+PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` 47 sur 47 (43 + les deux exécutions de E2E-ANO-005-FEUILLE-06, v0.2, + E2E-ANO-005-FEUILLE-07 et 08, v0.3) ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
 
 ## 16. Dette, hypothèses et points ouverts
 
@@ -476,7 +536,7 @@ PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles
 | DT-014 | **Planifiée** (T3) ; « Remboursée » à la fusion de la PR finale, sur le périmètre §4 |
 | DT-034 | Points 1 et 3 **planifiés** (T2) ; point 2 (icônes) reporté à LOT-002 (décision de Steeve) |
 | E13b-a (candidate) | **Planifiée** (T1) ; close à la fusion (plus de `TODO(` dans `src/`) ; numéro attribué à la fusion de l'E13b (OPT-20) |
-| **CORR-a** (candidate, P3, si Q-CORR-STE-3 = défaut) | Boutons natifs d'`objectifs-taches` sans le style commun (§4.4). Plan : même règle que §4, ≈ 0,5 j, LOT-002 ou E17 |
+| **CORR-a** (candidate, P3 ; v0.3 : condition remplie, Q-CORR-STE-3 = défaut confirmé par Steeve, guide §6.6.17 n° 3) | Boutons natifs d'`objectifs-taches` sans le style commun (§4.4). Plan : même règle que §4, ≈ 0,5 j, LOT-002 ou E17 |
 | **CORR-b** (candidate, P3) | Message de « plus de 10 s » du cadre neutre (guide §6.2) non réalisé (§7.3) ; sans effet observable (lecture locale). Plan : si une lecture distante est un jour ajoutée à l'ouverture |
 | DT-035 (harnais qui recopie `main.tsx`) | Inchangée ; les tests de la feuille utilisent l'application réelle (`test-ihm`), pas le harnais |
 
@@ -502,6 +562,8 @@ Sept tranches d'une demi-journée environ, une à la fois, chacune suivie d'une 
 ### 16.2 bis Réponses de Steeve (guide v0.2.27, §6.6.17 ; Anthony intègre)
 
 Q-CORR-STE-1 à 3, 5 et 6 : **défauts confirmés**. Q-CORR-STE-4 : **corrigée** : `.ligne-etat` en `min-height: 48px` **sans `max-height`** (texte agrandi, WCAG 1.4.4 et 1.4.12), libellé du bouton sur deux lignes si besoin, jamais tronqué. Ajout non couvert par un test rouge : à l'ouverture de la feuille, focus sur le titre `h2` (`onDidPresent`), et au retour le bouton d'ouverture reprend le focus s'il l'a perdu ; Échap ferme la confirmation seule si elle est ouverte. Aucun test rouge existant à modifier (aucun ne contrôle la hauteur maximale ni le focus d'ouverture). Voir `docs/02-ux/guide-ergonomie.md` §6.6.17.
+
+**Intégré en v0.3** : §5.1 bis (trois comportements, réalisation imposée), §5.1 ter (ligne d'état), §5.2 (focus de fin de « À lire »), tests UT-ANO-005-FEUILLE-08 à 12 et E2E-ANO-005-FEUILLE-07 et 08 (§13.1). Le contrôle « `role="dialog"` et `aria-modal` posés par Ionic, à vérifier » du §6.6.17 est fait : ils sont sur l'enveloppe du shadow DOM (UT-ANO-005-FEUILLE-03 v0.3).
 
 ## 17. Checklist de complétude
 
