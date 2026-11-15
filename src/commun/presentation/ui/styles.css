@@ -272,12 +272,15 @@ ion-modal.feuille-synchronisation .feuille-entete {
 }
 
 ion-modal.feuille-synchronisation .feuille-corps {
+  --padding-start: 16px;
+  --padding-end: 16px;
+
   flex: 1;
 }
 
 @media (width >= 600px) and (width < 1024px) {
   ion-modal.feuille-synchronisation {
-    --width: 640px;
+    --width: min(640px, 100%);
   }
 }
 
