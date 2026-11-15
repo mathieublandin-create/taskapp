@@ -112,3 +112,9 @@ Numéros attribués par Jarvis à la fusion (OPT-20) ; ordre proposé = ordre d'
 **Changements requis** (passage 1), limités à **T6 bis** : RC-CORR-5 et RC-CORR-6, deux déclarations dans `styles.css`, par Benjamin (≈ 0,1 j), jusqu'à E2E-ANO-005-FEUILLE-13 et 14 verts, `pnpm e2e` 54 sur 54. Le code de T4, T5a, T5b et T6 est **approuvé** pour le reste : aucune autre remarque Bloquante, Majeure ou Mineure ouverte. La nouvelle revue ne portera que sur ces deux déclarations (§1.5 de la grille).
 
 Question non bloquante : Q-CORR-STE-7 complétée (Steeve, via Jarvis). Après T6 bis : PR #46 prête, puis nouvelle E13b limitée.
+
+## 8. E13 bis de T6 bis (2026-11-15)
+
+Diff `893c3c3..HEAD` (`ce1c51f`, Benjamin) : `--width: min(640px, 100%)` et `--padding-start/end: 16px` sur `.feuille-corps` dans `styles.css`. Conformes à la ST v0.5 §5.1, aucune autre modification. `pnpm test` code 0 (1 661 tests), `RANG_COURANT=14 pnpm e2e` 54 sur 54 (FEUILLE-13 et 14 verts), `pnpm cucumber:ihm` 13/13, `pnpm verifier` vert.
+
+**Verdict : Approuvé.** RC-CORR-5 et RC-CORR-6 levées. Registre de la dette v0.52 : DT-043 à DT-047 attribués, DT-014 Remboursée, DT-034 points 1 et 3 remboursés.
