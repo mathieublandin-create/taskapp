@@ -89,6 +89,12 @@
    "contenu": "US-031 Hors ligne PC",
    "jours": 3.5,
    "etape": "Fusionné"
+  },
+  {
+   "rang": 14,
+   "contenu": "Corrections de l'E13b (interface)",
+   "jours": 3.6,
+   "etape": "Fusionné"
   }
  ]
 }
