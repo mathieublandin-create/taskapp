@@ -280,6 +280,10 @@ export const demarrerWeb = (
   ecouterFinDeSession(avis, quitter);
   ecouterDeclencheurs(application, controleur);
   const ouverture = application.ouvrirApplication.executer(retour);
-  void ouverture.then((issue) => apresOuvertureWeb(application, controleur, navigateur, issue));
+  // Un rejet de l'ouverture (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment.
+  void ouverture.then(
+    (issue) => apresOuvertureWeb(application, controleur, navigateur, issue),
+    () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }),
+  );
   return { controleur, journal: application.journal };
 };
