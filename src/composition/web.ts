@@ -236,14 +236,14 @@ const apresOuvertureWeb = async (
   );
 };
 
-/** Lance l'ouverture ; un rejet (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment (ANO-004). */
-const lancerOuverture = (
+/** Suite de l'ouverture ; un rejet (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment (ANO-004). */
+const suivreOuverture = (
+  ouverture: Promise<IssueOuverture>,
   application: Application,
   controleur: ControleurInterface,
   navigateur: Navigateur,
-  retour: RetourGoogle,
 ): void => {
-  void application.ouvrirApplication.executer(retour).then(
+  void ouverture.then(
     (issue) => apresOuvertureWeb(application, controleur, navigateur, issue),
     () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }),
   );
@@ -292,6 +292,7 @@ export const demarrerWeb = (
   );
   ecouterFinDeSession(avis, quitter);
   ecouterDeclencheurs(application, controleur);
-  lancerOuverture(application, controleur, navigateur, retour);
+  const ouverture = application.ouvrirApplication.executer(retour);
+  suivreOuverture(ouverture, application, controleur, navigateur);
   return { controleur, journal: application.journal };
 };
