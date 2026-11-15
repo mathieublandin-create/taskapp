@@ -16,7 +16,8 @@ import type { MondeIhm } from './support/monde-ihm';
 const bouton = (page: Page, nom: string) => page.getByRole('button', { name: nom, exact: true });
 
 /** Feuille de saisie d'une tâche ou d'une sous-tâche : ses champs ne se confondent pas avec ceux du détail dessous. */
-const feuilleDeSaisie = (page: Page) => page.locator('ion-modal[is-open]');
+const feuilleDeSaisie = (page: Page) =>
+  page.locator('ion-modal[is-open]:not(.feuille-synchronisation)');
 
 /**
  * Ouvre le détail de la tâche (ECR-007) depuis la liste : le centre de la ligne est touché, comme le ferait un

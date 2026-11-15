@@ -5,7 +5,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-import { StrictMode, useSyncExternalStore } from 'react';
+import { StrictMode, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErreurProgrammation } from './commun/domaine/erreur-programmation';
 import {
@@ -17,16 +17,25 @@ import { EcranConnexion } from './compte/presentation/ui/EcranConnexion';
 import { Racine } from './compte/presentation/ui/Racine';
 import { SectionCompte } from './compte/presentation/ui/SectionCompte';
 import { SuppressionBloquee } from './compte/presentation/ui/SuppressionBloquee';
-import { EcransObjectifs, useNavigation } from './objectifs-taches/presentation/ui/ecrans/espaces';
+import {
+  EcransObjectifs,
+  useNavigation,
+  type NavigationUi,
+} from './objectifs-taches/presentation/ui/ecrans/espaces';
 import type {
   ChoixRestaurationAffichable,
   ControleurInterface,
+  VueInterface,
 } from './composition/controleur-interface';
 import type { ProprietesChoixRestauration } from './synchronisation/presentation/ui/ChoixRestauration';
 import { demarrerWeb } from './composition/web';
 import { appareilDepuisAgent } from './commun/presentation/format/appareil';
 import { Toast } from './commun/presentation/ui/toast';
-import { FeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
+import type { ProprietesFeuilleSynchronisation } from './synchronisation/presentation/ui/FeuilleSynchronisation';
+import {
+  BoutonFeuille,
+  FeuilleCompteEtSynchronisation,
+} from './synchronisation/presentation/ui/FeuilleCompteEtSynchronisation';
 import { FeuilleChoixRestauration } from './synchronisation/presentation/ui/ChoixRestauration';
 import { useFocusFinALire } from './synchronisation/presentation/ui/focus-fin-a-lire';
 import { enregistrerServiceWorker } from './synchronisation/infrastructure/enregistrement-service-worker';
@@ -92,32 +101,6 @@ const ALire = ({
   );
 };
 
-/** Indicateur et bandeau de synchronisation, présents avec l'état de synchronisation. */
-const IndicateurEtBandeau = ({ controleur }: { readonly controleur: ControleurInterface }) => {
-  const vue = useSyncExternalStore(controleur.observer, controleur.vue);
-  const refIndicateur = useFocusFinALire<HTMLDivElement>(vue.nonRetenues !== undefined);
-  return (
-    <>
-      {vue.indicateur === undefined ? null : (
-        <IndicateurSynchronisation
-          vue={vue.indicateur}
-          refElement={refIndicateur}
-          surReprendre={() => void controleur.reprendre()}
-        />
-      )}
-      {vue.bandeau === undefined ? null : (
-        <Bandeau
-          vue={vue.bandeau}
-          appareil={APPAREIL}
-          surAction={(a) => void controleur.actionBandeau(a)}
-          surMasquer={() => void controleur.masquerRappel()}
-          miseAJour={vue.miseAJour}
-        />
-      )}
-    </>
-  );
-};
-
 /** Gestes du choix d'`ERR-012` vers le contrôleur ; `surRestaurer` et `surRepartirDeZero` ne rejettent pas. */
 const proprietesChoix = (
   controleur: ControleurInterface,
@@ -132,59 +115,204 @@ const proprietesChoix = (
   surDeciderPlusTard: () => void controleur.deciderPlusTard(),
 });
 
-/** Indicateur, bandeau, section « À lire » et feuille de synchronisation (ECR-011). */
-const EtatSynchronisation = ({
+type ProprietesEspace = {
+  readonly controleur: ControleurInterface;
+  readonly feuilleOuverte: boolean;
+  readonly surOuvrirFeuille: () => void;
+  readonly surFermerFeuille: () => void;
+};
+
+/** Props de la section « Synchronisation » de la feuille (ECR-011) ; absentes tant que l'espace n'existe pas. */
+const proprietesSynchronisation = (
+  controleur: ControleurInterface,
+  vue: VueInterface,
+  choix: ProprietesChoixRestauration | undefined,
+): ProprietesFeuilleSynchronisation | undefined =>
+  vue.feuille === undefined
+    ? undefined
+    : {
+        vue: vue.feuille,
+        surSynchroniser: () => void controleur.synchroniser(),
+        surActionCarte: (a) => void controleur.actionCarte(a),
+        miseAJour: vue.miseAJour,
+        ...(choix === undefined ? {} : { choixRestauration: choix }),
+      };
+
+/** Ligne d'état : l'indicateur, puis le bouton distinct qui ouvre la feuille (Q-CORR-STE-1, ST §5.1 ter). */
+const LigneEtat = ({
   controleur,
-  surVoir,
+  vue,
+  ouverte,
+  surOuvrir,
+  refBouton,
 }: {
   readonly controleur: ControleurInterface;
+  readonly vue: VueInterface;
+  readonly ouverte: boolean;
+  readonly surOuvrir: () => void;
+  readonly refBouton: RefObject<HTMLButtonElement | null>;
+}) =>
+  vue.indicateur === undefined ? null : (
+    <div className="ligne-etat">
+      <IndicateurSynchronisation
+        vue={vue.indicateur}
+        surReprendre={() => void controleur.reprendre()}
+      />
+      <BoutonFeuille ouverte={ouverte} surOuvrir={surOuvrir} refElement={refBouton} />
+    </div>
+  );
+
+type ReferencesFocus = {
+  readonly refBouton: RefObject<HTMLButtonElement | null>;
+  readonly refTitre: RefObject<HTMLHeadingElement | null>;
+};
+
+/** Bandeau puis toast, à leur hauteur naturelle sous la ligne d'état. */
+const BandeauEtToast = ({
+  controleur,
+  vue,
+}: {
+  readonly controleur: ControleurInterface;
+  readonly vue: VueInterface;
+}) => (
+  <>
+    {vue.bandeau === undefined ? null : (
+      <Bandeau
+        vue={vue.bandeau}
+        appareil={APPAREIL}
+        surAction={(a) => void controleur.actionBandeau(a)}
+        surMasquer={() => void controleur.masquerRappel()}
+        miseAJour={vue.miseAJour}
+      />
+    )}
+    {vue.toast === undefined ? null : (
+      <Toast code={vue.toast} surAction={() => void controleur.reessayer()} />
+    )}
+  </>
+);
+
+const ObjectifsDeLaPage = ({
+  controleur,
+  vue,
+  navigation,
+}: {
+  readonly controleur: ControleurInterface;
+  readonly vue: VueInterface;
+  readonly navigation: NavigationUi;
+}) => {
+  const objectifs = controleur.objectifs();
+  return objectifs === undefined ? null : (
+    <EcransObjectifs
+      objectifs={objectifs}
+      navigation={navigation}
+      consultationSeule={vue.consultationSeule}
+    />
+  );
+};
+
+/** Page de l'espace : ligne d'état, bandeau, toast, objectifs (hors défilement de la feuille). */
+const PageEspace = ({
+  controleur,
+  vue,
+  feuilleOuverte,
+  surOuvrirFeuille,
+  refBouton,
+  navigation,
+}: Omit<ProprietesEspace, 'surFermerFeuille'> &
+  Pick<ReferencesFocus, 'refBouton'> & {
+    readonly vue: VueInterface;
+    readonly navigation: NavigationUi;
+  }) => {
+  return (
+    <main className="espace-application" aria-label="Done Juan">
+      <LigneEtat
+        controleur={controleur}
+        vue={vue}
+        ouverte={feuilleOuverte}
+        surOuvrir={surOuvrirFeuille}
+        refBouton={refBouton}
+      />
+      <BandeauEtToast controleur={controleur} vue={vue} />
+      <ObjectifsDeLaPage controleur={controleur} vue={vue} navigation={navigation} />
+    </main>
+  );
+};
+
+const CompteDeLaFeuille = ({
+  controleur,
+  vue,
+}: {
+  readonly controleur: ControleurInterface;
+  readonly vue: VueInterface;
+}) =>
+  vue.compte === undefined ? null : (
+    <SectionCompte vue={vue.compte} surAction={(a) => void controleur.actionCompte(a)} />
+  );
+
+/** Feuille « Compte et synchronisation » : « À lire », « Synchronisation », « Compte » et les confirmations ouvertes. */
+const FeuilleDuCompte = ({
+  controleur,
+  vue,
+  feuilleOuverte,
+  surFermerFeuille,
+  surVoir,
+  refs,
+}: Omit<ProprietesEspace, 'surOuvrirFeuille'> & {
+  readonly refs: ReferencesFocus;
+  readonly vue: VueInterface;
   readonly surVoir: (element: RefElementMetier) => void;
 }) => {
-  const vue = useSyncExternalStore(controleur.observer, controleur.vue);
-  const choix =
-    vue.choixRestauration === undefined
-      ? undefined
-      : proprietesChoix(controleur, vue.choixRestauration);
+  const choix = vue.choixRestauration && proprietesChoix(controleur, vue.choixRestauration);
+  const synchronisation = proprietesSynchronisation(controleur, vue, choix);
   return (
     <>
-      <IndicateurEtBandeau controleur={controleur} />
-      <ALire controleur={controleur} surVoir={surVoir} />
-      {vue.feuille === undefined ? null : (
-        <FeuilleSynchronisation
-          vue={vue.feuille}
-          surSynchroniser={() => void controleur.synchroniser()}
-          surActionCarte={(a) => void controleur.actionCarte(a)}
-          miseAJour={vue.miseAJour}
-          {...(choix === undefined ? {} : { choixRestauration: choix })}
-        />
-      )}
+      <FeuilleCompteEtSynchronisation
+        ouverte={feuilleOuverte}
+        surFermee={surFermerFeuille}
+        aLire={<ALire controleur={controleur} surVoir={surVoir} />}
+        {...(synchronisation === undefined ? {} : { synchronisation })}
+        compte={<CompteDeLaFeuille controleur={controleur} vue={vue} />}
+        dialogues={feuilleOuverte ? <Dialogues controleur={controleur} /> : undefined}
+        refBoutonOuverture={refs.refBouton}
+        refTitre={refs.refTitre}
+      />
       {choix === undefined ? null : <FeuilleChoixRestauration {...choix} />}
     </>
   );
 };
 
-/** Espace de l'application : indicateur, bandeau, section « Compte », puis les objectifs. */
-const EspaceApplication = ({ controleur }: { readonly controleur: ControleurInterface }) => {
+/** Focus de fin de « À lire » : titre de la feuille si elle est ouverte, sinon son bouton d'ouverture (Q-CORR-STE-6). */
+const useFocusDeFinALire = (vue: VueInterface, feuilleOuverte: boolean): ReferencesFocus => {
+  const refBouton = useRef<HTMLButtonElement>(null);
+  const refTitre = useRef<HTMLHeadingElement>(null);
+  useFocusFinALire(vue.nonRetenues !== undefined, () =>
+    feuilleOuverte ? refTitre.current : refBouton.current,
+  );
+  return { refBouton, refTitre };
+};
+
+/**
+ * Espace de l'application : la page, puis la feuille modale qui porte « À lire », « Synchronisation » et « Compte »
+ * (ANO-005).
+ */
+const EspaceApplication = (proprietes: ProprietesEspace) => {
+  const { controleur, feuilleOuverte, surFermerFeuille } = proprietes;
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
-  const objectifs = controleur.objectifs();
   const { voir, ...navigation } = useNavigation();
+  const refs = useFocusDeFinALire(vue, feuilleOuverte);
   return (
-    <main className="espace-application" aria-label="Done Juan">
-      <EtatSynchronisation controleur={controleur} surVoir={voir} />
-      {vue.toast === undefined ? null : (
-        <Toast code={vue.toast} surAction={() => void controleur.reessayer()} />
-      )}
-      {vue.compte === undefined ? null : (
-        <SectionCompte vue={vue.compte} surAction={(a) => void controleur.actionCompte(a)} />
-      )}
-      {objectifs === undefined ? null : (
-        <EcransObjectifs
-          objectifs={objectifs}
-          navigation={navigation}
-          consultationSeule={vue.consultationSeule}
-        />
-      )}
-    </main>
+    <>
+      <PageEspace {...proprietes} vue={vue} refBouton={refs.refBouton} navigation={navigation} />
+      <FeuilleDuCompte
+        {...proprietes}
+        vue={vue}
+        refs={refs}
+        surVoir={(element) => {
+          surFermerFeuille();
+          voir(element);
+        }}
+      />
+    </>
   );
 };
 
@@ -211,8 +339,22 @@ const Dialogues = ({ controleur }: { readonly controleur: ControleurInterface })
   );
 };
 
+/** État de la feuille : elle ne survit pas à la fin de session (ST §5.2) ; l'état est ajusté pendant le rendu. */
+const useFeuilleOuverte = (enApplication: boolean) => {
+  const [ouverte, setOuverte] = useState(false);
+  if (!enApplication && ouverte) setOuverte(false);
+  const ouvrir = () => {
+    setOuverte(true);
+  };
+  const fermer = () => {
+    setOuverte(false);
+  };
+  return { ouverte: ouverte && enApplication, ouvrir, fermer };
+};
+
 const Application = ({ controleur }: { readonly controleur: ControleurInterface }) => {
   const vue = useSyncExternalStore(controleur.observer, controleur.vue);
+  const feuille = useFeuilleOuverte(vue.racine.ecran === 'APPLICATION');
   return (
     <>
       <Racine
@@ -223,9 +365,16 @@ const Application = ({ controleur }: { readonly controleur: ControleurInterface 
             surAction={() => void controleur.continuerAvecGoogle()}
           />
         }
-        application={<EspaceApplication controleur={controleur} />}
+        application={
+          <EspaceApplication
+            controleur={controleur}
+            feuilleOuverte={feuille.ouverte}
+            surOuvrirFeuille={feuille.ouvrir}
+            surFermerFeuille={feuille.fermer}
+          />
+        }
       />
-      <Dialogues controleur={controleur} />
+      {feuille.ouverte ? null : <Dialogues controleur={controleur} />}
     </>
   );
 };
