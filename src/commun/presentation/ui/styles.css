@@ -359,16 +359,13 @@ ion-modal.feuille-synchronisation .feuille-corps {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  overflow-y: auto;
 }
 
-/* Tant que le compte et la feuille de synchronisation sont dans la page (avant T5), les espaces gardent au moins
-   70 % de la hauteur de l'écran et la page défile plutôt que d'écraser la liste sous l'en-tête. */
 .espaces {
   display: flex;
-  flex: 1 0 auto;
+  flex: 1;
   flex-direction: column;
-  min-height: 70dvh;
+  min-height: 0;
 }
 
 .espaces-contenu {
@@ -458,9 +455,6 @@ ion-button::part(native):focus-visible {
 /* Réserve sous le « + » : la dernière ligne reste atteignable (WCAG 2.4.11). */
 ion-content.contenu-avec-fab {
   --padding-bottom: var(--dj-marge-fab);
-
-  /* Sans ce découpage, la réserve fait déborder le contenu d'un contenu très court sur la barre d'onglets. */
-  overflow: hidden;
 }
 
 ion-content.contenu-avec-fab::part(scroll) {

@@ -12,9 +12,12 @@ import { nomEspaceDuCompte } from '../support/compte/etapes-compte';
 import type { NomAppareil } from '../support/banc/appareil-simule';
 import {
   boutonConnexion,
+  boutonFeuille,
   dialogueConfirmation,
+  dialogueFeuille,
   ecranAffiche,
   espaceApplication,
+  feuilleCompte,
   indicateur,
   lignesObjectifs,
   lignesTaches,
@@ -57,8 +60,17 @@ const preparerFinDeSession = async (monde: MondeIhm): Promise<void> => {
   monde.marquerChargements();
 };
 
-const boutonDeLaSectionCompte = (page: Page, libelle: string) =>
-  espaceApplication(page).getByRole('button', { name: libelle, exact: true });
+/**
+ * Geste de la section « Compte », dans la feuille « Compte et synchronisation » : ouverte ici si elle est fermée.
+ * Elle se referme seule avec la fin de session que ces gestes provoquent (S16b, S16c).
+ */
+const actionDuCompte = async (page: Page, libelle: string): Promise<void> => {
+  if (!(await dialogueFeuille(page).isVisible())) {
+    await boutonFeuille(page).click();
+    await expect(dialogueFeuille(page)).toBeVisible();
+  }
+  await feuilleCompte(page).getByRole('button', { name: libelle, exact: true }).click();
+};
 
 /** Bouton d'action de la boîte de confirmation : celui qui n'est pas « Annuler ». */
 const boutonConfirmer = (page: Page) =>
@@ -89,7 +101,7 @@ const attendreEcranDeConnexion = async (page: Page): Promise<void> => {
 When("dans le premier onglet, l'utilisateur se déconnecte", async function (this: MondeIhm) {
   const page = await this.pageCourante();
   await preparerFinDeSession(this);
-  await boutonDeLaSectionCompte(page, libelleActionCompte('SE_DECONNECTER')).click();
+  await actionDuCompte(page, libelleActionCompte('SE_DECONNECTER'));
   // Rien n'est en attente : la déconnexion est menée à son terme sans confirmation CNF-DECONNEXION (si elle s'affichait,
   // la session ne prendrait pas fin et le second onglet ne se rechargerait pas).
   await attendreRechargementDuSecond(this);
@@ -102,7 +114,7 @@ When(
   async function (this: MondeIhm) {
     const page = await this.pageCourante();
     await preparerFinDeSession(this);
-    await boutonDeLaSectionCompte(page, libelleActionCompte('SUPPRIMER_DONNEES')).click();
+    await actionDuCompte(page, libelleActionCompte('SUPPRIMER_DONNEES'));
     await expect(dialogueConfirmation(page)).toBeVisible();
   },
 );

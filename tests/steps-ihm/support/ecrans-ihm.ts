@@ -4,14 +4,31 @@
  * modèle de vue (`construireLigneTache`), jamais d'un libellé recopié.
  */
 import type { Locator, Page } from '@playwright/test';
+import { LIBELLES_FEUILLE } from '@src/synchronisation/presentation/ui/libelles-feuille';
 
 export type EcranAffiche = 'CONNEXION' | 'APPLICATION';
 
 export const boutonConnexion = (page: Page): Locator =>
   page.getByRole('button', { name: /continuer avec google/i });
 
-/** Espace de l'application (indicateur, section « Compte », espaces Tâches et Objectifs). */
+/** Espace de l'application (ligne d'état, bandeau, espaces Tâches et Objectifs) ; la section « Compte » est dans la feuille. */
 export const espaceApplication = (page: Page): Locator => page.locator('main.espace-application');
+
+/** Bouton d'ouverture de la feuille « Compte et synchronisation », à droite de l'indicateur (Q-CORR-STE-1). */
+export const boutonFeuille = (page: Page): Locator =>
+  page.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir, exact: true });
+
+/** Enveloppe de la feuille (rôle `dialog` porté par Ionic dans son shadow DOM), pour attendre sa présentation. */
+export const dialogueFeuille = (page: Page): Locator =>
+  page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre });
+
+/**
+ * Contenu de la feuille « Compte et synchronisation » : l'hôte `ion-modal`. Le contenu est dans le DOM léger, projeté
+ * dans l'enveloppe `dialog` du shadow DOM : il n'en est pas un descendant, `dialogueFeuille(page).getByRole(…)` ne le
+ * trouverait pas.
+ */
+export const feuilleCompte = (page: Page): Locator =>
+  page.locator('ion-modal.feuille-synchronisation');
 
 /** Indicateur de synchronisation (`role="status"` et `data-etat="SYN-…"`) ; le premier, hors feuille et cartes. */
 export const indicateur = (page: Page): Locator =>
