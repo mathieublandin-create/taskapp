@@ -1,17 +1,13 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif, IdTache } from '../../commun/domaine/identifiants';
-import type { VueMetier } from './vue-metier';
+import { abandonnable } from './decisions/abandonner-tache';
+import { reprenable } from './decisions/reprendre-tache';
+import { reouvrable } from './decisions/rouvrir-tache';
+import type { ActionObjectif, ActionTache } from './types-actions';
+import { sousTachesDe, type VueMetier } from './vue-metier';
 
 // Glossaire d'étapes v1.4 §7 ; ST-US-001 §4.1, ST-US-023 §6.4, ST-US-002 §6.5, ST-US-024 §6.5,
 // ST-US-003 §6.3, ST-US-025 §6.3.
-export type ActionObjectif =
-  | 'RENOMMER'
-  | 'MODIFIER_DESCRIPTION'
-  | 'MODIFIER_DELAI'
-  | 'RETIRER_DELAI'
-  | 'SUPPRIMER'
-  | 'PLACER'
-  | 'CREER_SOUS_OBJECTIF';
+export type { ActionObjectif, ActionTache } from './types-actions';
 
 /** Liste fermée : aucune action ne modifie l'état d'un objectif (US-001 CA-8). */
 export const ACTIONS_OBJECTIF: ReadonlyArray<ActionObjectif> = [
@@ -24,23 +20,39 @@ export const ACTIONS_OBJECTIF: ReadonlyArray<ActionObjectif> = [
   'CREER_SOUS_OBJECTIF',
 ];
 
-export type ActionTache =
-  | 'RENOMMER'
-  | 'MODIFIER_DELAI'
-  | 'MODIFIER_ESTIMATION'
-  | 'RATTACHER'
-  | 'DETACHER'
-  | 'SUPPRIMER'
-  | 'CREER_SOUS_TACHE'
-  | 'TERMINER'
-  | 'ROUVRIR'
-  | 'ABANDONNER'
-  | 'REPRENDRE';
+/** ST-US-023 §6.4 : `RETIRER_DELAI` seulement avec un délai, `CREER_SOUS_OBJECTIF` seulement pour un principal. */
+export const actionsObjectif = (vue: VueMetier, id: IdObjectif): ReadonlyArray<ActionObjectif> => {
+  const objectif = vue.objectifs.get(id);
+  if (objectif === undefined) return [];
+  return [
+    'RENOMMER',
+    'MODIFIER_DESCRIPTION',
+    'MODIFIER_DELAI',
+    ...(objectif.delai === undefined ? [] : (['RETIRER_DELAI'] as const)),
+    'PLACER',
+    ...(objectif.parentId === undefined ? (['CREER_SOUS_OBJECTIF'] as const) : []),
+    'SUPPRIMER',
+  ];
+};
 
-/** ST-US-023 §6.4. */
-export const actionsObjectif = (_vue: VueMetier, _id: IdObjectif): ReadonlyArray<ActionObjectif> =>
-  nonImplemente('actionsObjectif');
-
-/** ST-US-002 §6.5, ST-US-024 §6.5, ST-US-003 §6.3, ST-US-025 §6.3. */
-export const actionsTache = (_vue: VueMetier, _id: IdTache): ReadonlyArray<ActionTache> =>
-  nonImplemente('actionsTache');
+/**
+ * ST-US-002 §6.5 : `MODIFIER_ESTIMATION` sauf avec sous-tâches (champ verrouillé), `RATTACHER`, `DETACHER` et `CREER_SOUS_TACHE`
+ * sauf pour une sous-tâche (objectifs verrouillés, un seul niveau, ST-US-024 §6.5). `TERMINER` et `ROUVRIR` : ST-US-003 §6.3. `ABANDONNER` et `REPRENDRE` : ST-US-025 §6.3.
+ */
+export const actionsTache = (vue: VueMetier, id: IdTache): ReadonlyArray<ActionTache> => {
+  const tache = vue.taches.get(id);
+  if (tache === undefined) return [];
+  return [
+    'RENOMMER',
+    'MODIFIER_DELAI',
+    ...(sousTachesDe(vue, id).length === 0 ? (['MODIFIER_ESTIMATION'] as const) : []),
+    ...(tache.tacheParenteId === undefined
+      ? (['RATTACHER', 'DETACHER', 'CREER_SOUS_TACHE'] as const)
+      : []),
+    ...(tache.cycleDeVie.etat === 'A_FAIRE' ? (['TERMINER'] as const) : []),
+    ...(reouvrable(vue, id) ? (['ROUVRIR'] as const) : []),
+    ...(abandonnable(vue, id) ? (['ABANDONNER'] as const) : []),
+    ...(reprenable(vue, id) ? (['REPRENDRE'] as const) : []),
+    'SUPPRIMER',
+  ];
+};

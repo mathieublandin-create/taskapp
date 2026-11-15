@@ -6,6 +6,7 @@ import {
   fichiersTermines,
   lireRangCourant,
   motifSelection,
+  motifTestsNonLivres,
   rangDuTest,
   type RangsFichier,
   type RegleRang,
@@ -94,6 +95,31 @@ describe('Sélection des tests par rang (conventions.md §11.14)', () => {
 
     expect(Object.keys(FICHIERS).sort()).toEqual(sources);
     expect(Object.values(FICHIERS).filter((r) => r.debut > r.fin)).toEqual([]);
+  });
+
+  it('UT-OUT-13 motifTestsNonLivres — reconnaît exactement les tests de rang strictement supérieur au rang courant ; jamais un test sans règle', () => {
+    [-1, 0, 1, 3].forEach((rangCourant) => {
+      const motif = motifTestsNonLivres(REGLES_EXEMPLE, rangCourant);
+      NOMS_EXEMPLE.forEach((nom) => {
+        const rang = rangDuTest(nom, REGLES_EXEMPLE);
+        expect(motif.test(nom)).toBe(rang !== undefined && rang > rangCourant);
+      });
+    });
+  });
+
+  it('UT-OUT-14 rangs-tests.json — chaque identifiant de test de navigateur (E2E-…) de tests/e2e a un rang', () => {
+    const identifiants = new Set(
+      lister(join(RACINE, 'tests', 'e2e'))
+        .filter((chemin) => chemin.endsWith('.e2e.ts'))
+        .flatMap((chemin) => [
+          ...readFileSync(chemin, 'utf8').matchAll(/'(E2E-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d+)\b/g),
+        ])
+        .map((correspondance) => correspondance[1] ?? ''),
+    );
+    const sansRang = [...identifiants].filter((id) => rangDuTest(id, REGLES) === undefined);
+
+    expect(identifiants.size).toBeGreaterThan(0);
+    expect(sansRang).toEqual([]);
   });
 
   it('UT-OUT-06 rangs-fichiers.json — un fichier terminé au rang courant n’importe plus @non-implemente', () => {

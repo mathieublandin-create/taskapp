@@ -1,5 +1,6 @@
 import type { IdAppareil } from '../../../commun/domaine/identifiants';
 import type { Resultat } from '../../../commun/domaine/resultat';
+import type { Instant } from '../../../commun/domaine/temps/instant';
 import type { ContenuFichierAppareil, ContenuManifeste } from '../../domaine/contenu-fichier';
 import type { IdFichierDrive } from '../../domaine/meta-synchronisation';
 
@@ -20,7 +21,24 @@ export type ErreurTransport =
   /** `changements` : jeton inconnu ou périmé (Drive 400 ou 404) ; jamais une erreur transitoire (DAT v0.11.4 §4.3). */
   | { readonly type: 'JetonChangementsInvalide' };
 
-export type FichierAppareilDistant = { readonly id: IdFichierDrive; readonly appareil: IdAppareil };
+/**
+ * `version` (incrément 3, ST-US-017 v0.10 §4.7) : champ `version` de Drive, qui croît à chaque modification du
+ * fichier ; absente : inconnue (le fichier propre est alors relu, §6.7 n° 5).
+ */
+export type FichierAppareilDistant = {
+  readonly id: IdFichierDrive;
+  readonly appareil: IdAppareil;
+  readonly version?: string;
+};
+/** Dépôt confirmé (incrément 3) : identifiant et `version` Drive du fichier écrit (absente : inconnue). */
+export type FichierDepose = { readonly id: IdFichierDrive; readonly version?: string };
+/** Fichier ou dossier du Drive et sa date de création (`createdTime`), pour l'ordre canonique (§6.7 n° 13). */
+export type ElementDrive = { readonly id: IdFichierDrive; readonly creeA: Instant };
+/** Métadonnées d'un dossier (incrément 3) : manifestes en ordre canonique, fichiers d'appareil avec leur version. */
+export type InventaireDossier = {
+  readonly manifestes: ReadonlyArray<ElementDrive>;
+  readonly fichiers: ReadonlyArray<FichierAppareilDistant>;
+};
 export type Changements = {
   readonly fichiers: ReadonlyArray<FichierAppareilDistant>;
   readonly jeton: string;
@@ -43,12 +61,15 @@ export interface TransportSynchro {
   lireFichierAppareil(
     id: IdFichierDrive,
   ): Promise<Resultat<ContenuFichierAppareil, ErreurTransport>>;
-  /** Crée (fichierExistant absent) ou remplace le fichier de l'appareil ; idempotent. */
+  /**
+   * Crée (fichierExistant absent) ou remplace le fichier de l'appareil ; idempotent. Incrément 3 : rend aussi la
+   * `version` Drive du fichier écrit (`fields=id,version`), sans requête supplémentaire.
+   */
   deposerFichierAppareil(p: {
     readonly dossier: IdFichierDrive;
     readonly contenu: ContenuFichierAppareil;
     readonly fichierExistant?: IdFichierDrive;
-  }): Promise<Resultat<IdFichierDrive, ErreurTransport>>;
+  }): Promise<Resultat<FichierDepose, ErreurTransport>>;
   lireManifeste(
     dossier: IdFichierDrive,
   ): Promise<Resultat<ManifesteDistant | undefined, ErreurTransport>>;
@@ -57,4 +78,18 @@ export interface TransportSynchro {
     readonly contenu: ContenuManifeste;
     readonly fichierExistant?: IdFichierDrive;
   }): Promise<Resultat<IdFichierDrive, ErreurTransport>>;
+  // ---- Incrément 3 (ST-US-017 v0.10 §4.7 ; DAT §4.2.2) ----------------------------------------------------
+  /** Dossiers « Done Juan » (appProperties) hors corbeille, en ordre canonique (createdTime, puis id). Ne crée rien. */
+  listerDossiers(): Promise<Resultat<ReadonlyArray<ElementDrive>, ErreurTransport>>;
+  /**
+   * Métadonnées du dossier, hors corbeille : manifestes (ordre canonique) et fichiers d'appareil (avec `version`) ;
+   * aucun contenu lu. Dossier supprimé : listes vides.
+   */
+  inventorierDossier(
+    dossier: IdFichierDrive,
+  ): Promise<Resultat<InventaireDossier, ErreurTransport>>;
+  /** Contenu d'un manifeste désigné ; 404 → RessourceIntrouvable ; illisible → FichierIllisible ou FormatPlusRecent. */
+  lireContenuManifeste(id: IdFichierDrive): Promise<Resultat<ContenuManifeste, ErreurTransport>>;
+  /** Met un fichier ou un dossier à la corbeille ; déjà absent (404) → succès (idempotent). */
+  supprimerFichier(id: IdFichierDrive): Promise<Resultat<undefined, ErreurTransport>>;
 }

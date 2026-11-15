@@ -3,6 +3,7 @@
 # Tests métiers — US-023 — Organiser un objectif en sous-objectifs
 # Lot : LOT-001 · Pepper, E5, 2026-10-21 · Référentiel : cahier des charges v0.11, US-023
 # E8 (Pepper, 2026-10-21) : réponses aux demandes de précision d'Anthony (explicitation-LOT-001.md, « Réponses aux Q-US ») ; glossaire d'étapes v1.2.
+# E10 du rang 9 (Pepper, 2026-10-31, Q-ST017-PEP-2 b) : S18d ajouté (placement annulé dans l'historique, déjà exigé par le glossaire d'étapes §11), sans changement de règle.
 #
 # Conventions d'écriture : voir l'en-tête de US-001-creer-et-gerer-un-objectif.feature (communes au lot).
 # Vocabulaire des étapes : GLOSSAIRE-ETAPES.md (figé ; tags @ihm et @recette définis au §10).
@@ -293,6 +294,31 @@ Fonctionnalité: Organiser un objectif en sous-objectifs
       | élément | information | valeur non retenue | valeur conservée |
       | Alpha   | parent      | sous Bêta          | placement annulé |
       | Gamma   | parent      | sous Alpha         | placement annulé |
+
+  @US-023 @RG-048 @RG-050 @LOT-001
+  Scénario: S18d — Un placement annulé par la réparation figure dans l'historique, à la journée du placement annulé, une seule fois
+    # E10 du rang 9, Q-ST017-PEP-2 b (2026-10-31) : l'annulation est une conséquence enregistrée (glossaire d'étapes §11, Q-US-001-2) ;
+    # son entrée « changement parent » porte la journée du placement annulé et suit immédiatement celle-ci, quel que soit le jour de l'échange.
+    Étant donné que l'utilisateur utilise le compte "A" sur le smartphone et sur le PC, tous deux à jour
+    Et un objectif "Alpha" sans délai
+    Et un objectif "Bêta" sans délai
+    Et que le smartphone est sans réseau
+    Quand nous sommes le 2026-10-22 à 09:00 heure de Europe/Paris
+    Et sur le PC, l'utilisateur place l'objectif "Alpha" sous l'objectif "Bêta"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur place l'objectif "Bêta" sous l'objectif "Alpha"
+    Et nous sommes le 2026-10-23 à 09:00 heure de Europe/Paris
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, "Alpha" est un objectif principal
+    Et sur chacun des deux appareils, l'historique contient, pour l'objectif "Alpha" :
+      | événement         | journée    | avant                      | après                      |
+      | création          | 2026-10-21 |                            |                            |
+      | changement parent | 2026-10-22 | aucun (objectif principal) | Bêta                       |
+      | changement parent | 2026-10-22 | Bêta                       | aucun (objectif principal) |
+    Et sur chacun des deux appareils, l'historique contient, pour l'objectif "Bêta" :
+      | événement         | journée    | avant                      | après                      |
+      | création          | 2026-10-21 |                            |                            |
+      | changement parent | 2026-10-22 | aucun (objectif principal) | Alpha                      |
 
   # DEC-030 (Q-US-001-1 a) : le placement de « Version imprimable » sous l'objectif supprimé est signalé.
   @US-023 @RG-047 @LOT-001

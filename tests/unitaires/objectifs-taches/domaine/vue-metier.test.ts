@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { construireVueMetier } from '@src/objectifs-taches/domaine/vue-metier';
+import {
+  construireVueMetier,
+  sousTachesParCreation,
+} from '@src/objectifs-taches/domaine/vue-metier';
 import { etatMetier } from '@tests/support/fabriques/etat-metier';
+import { creeAuRang } from '@tests/support/fabriques/resumes';
 import { idObjectif, idTache } from '@tests/support/valeurs';
 
 const SUPPRIME = idObjectif(1);
@@ -38,5 +42,23 @@ describe('construireVueMetier (RG-046)', () => {
     expect(vue.tachesDirectesPar.get(PRINCIPAL)).toEqual([TACHE]);
     expect(vue.tachesDirectesPar.has(SUPPRIME)).toBe(false);
     expect(vue.intitulesConnus.get(SUPPRIME)).toBe('Ancien objectif');
+  });
+
+  it('UT-COMP-US-025-01 sousTachesParCreation — création croissante, puis identifiant à création égale (ST-US-025 §6.1)', () => {
+    const [parente, tardive, premiere, jumelle] = [idTache(1), idTache(2), idTache(3), idTache(4)];
+    const vue = construireVueMetier(
+      etatMetier()
+        .avecTache({ id: parente })
+        .avecTache({ id: tardive, tacheParenteId: parente, creeLe: creeAuRang(5) })
+        .avecTache({ id: jumelle, tacheParenteId: parente, creeLe: creeAuRang(1) })
+        .avecTache({ id: premiere, tacheParenteId: parente, creeLe: creeAuRang(1) })
+        .construire(),
+    );
+
+    expect(sousTachesParCreation(vue, parente).map((t) => t.id)).toEqual([
+      premiere,
+      jumelle,
+      tardive,
+    ]);
   });
 });

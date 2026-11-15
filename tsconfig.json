@@ -4,7 +4,7 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -16,6 +16,8 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@src/*": ["src/*"],
@@ -23,5 +25,14 @@
       "@non-implemente": ["tests/support/erreur-non-implementee.ts"]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts",
+    "vitest.performance.config.ts",
+    "vite.config.ts",
+    "pwa.config.ts",
+    "playwright.config.ts",
+    "eslint.config.js"
+  ]
 }

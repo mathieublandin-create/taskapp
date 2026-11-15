@@ -1,0 +1,370 @@
+{
+  "appareil": {
+    "id": "00000000-0000-7000-8000-000000000001",
+    "plateforme": "web"
+  },
+  "appareils": [
+    "00000000-0000-7000-8000-000000000001",
+    "00000000-0000-7000-8000-000000000002",
+    "00000000-0000-7000-8000-000000000003"
+  ],
+  "empreinte": "969c319c14d2e1c19ba2d1ca512a878adeaa5d88a1e2653847b9e3bdad308518",
+  "generation": {
+    "hlc": {
+      "appareil": 2,
+      "compteur": 2,
+      "physique": "2026-10-21T08:02:00.000Z"
+    },
+    "type": "NOUVELLE"
+  },
+  "journal": [
+    {
+      "apres": {
+        "delai": "2026-12-15",
+        "parentId": "00000000-0000-7000-80a0-000000000002"
+      },
+      "avant": {},
+      "element": {
+        "id": "00000000-0000-7000-80a0-000000000001",
+        "type": "OBJECTIF"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000001:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "CREATION"
+    },
+    {
+      "apres": {
+        "delai": "2026-12-01",
+        "estimation": 60,
+        "objectifIds": ["00000000-0000-7000-80a0-000000000001"],
+        "tacheParenteId": "00000000-0000-7000-80b0-000000000001"
+      },
+      "avant": {},
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000002",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000002:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "CREATION"
+    },
+    {
+      "apres": {
+        "delai": "2026-12-15"
+      },
+      "avant": {},
+      "element": {
+        "id": "00000000-0000-7000-80a0-000000000001",
+        "type": "OBJECTIF"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000003:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "MODIFICATION_DELAI"
+    },
+    {
+      "apres": {
+        "estimation": 90
+      },
+      "avant": {
+        "estimation": 30
+      },
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000001",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000004:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "MODIFICATION_ESTIMATION"
+    },
+    {
+      "apres": {
+        "objectifId": "00000000-0000-7000-80a0-000000000001"
+      },
+      "avant": {},
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000001",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000005:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "RATTACHEMENT"
+    },
+    {
+      "apres": {},
+      "avant": {
+        "objectifId": "00000000-0000-7000-80a0-000000000001"
+      },
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000001",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000006:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "DETACHEMENT"
+    },
+    {
+      "apres": {
+        "hlcOrigine": {
+          "appareil": 2,
+          "compteur": 2,
+          "physique": "2026-10-21T08:02:00.000Z"
+        },
+        "origine": "DEPLACEMENT",
+        "parentId": "00000000-0000-7000-80a0-000000000002"
+      },
+      "avant": {
+        "hlcOrigine": {
+          "appareil": 1,
+          "compteur": 0,
+          "physique": "2026-10-21T08:00:00.000Z"
+        },
+        "origine": "CREATION"
+      },
+      "element": {
+        "id": "00000000-0000-7000-80a0-000000000001",
+        "type": "OBJECTIF"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000007:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "CHANGEMENT_PARENT"
+    },
+    {
+      "apres": {
+        "dateAbandon": "2026-10-21",
+        "etat": "ABANDONNEE"
+      },
+      "avant": {
+        "etat": "A_FAIRE"
+      },
+      "cause": "00000000-0000-7000-80c0-000000000009:0",
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000001",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000008:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "ABANDON"
+    },
+    {
+      "apres": {},
+      "avant": {},
+      "element": {
+        "id": "00000000-0000-7000-80b0-000000000002",
+        "type": "TACHE"
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80c0-000000000010:0",
+      "instant": "2026-10-21T08:01:00.000Z",
+      "jour": "2026-10-21",
+      "type": "SUPPRESSION"
+    }
+  ],
+  "lectures": [
+    {
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "registres": [
+    {
+      "champ": "intitule",
+      "contexte": {
+        "1": {
+          "appareil": 1,
+          "compteur": 0,
+          "physique": "2026-10-21T08:00:00.000Z"
+        },
+        "2": {
+          "appareil": 2,
+          "compteur": 2,
+          "physique": "2026-10-21T08:02:00.000Z"
+        }
+      },
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80a0-000000000001",
+      "type": "OBJECTIF",
+      "valeur": "Publier"
+    },
+    {
+      "champ": "description",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80a0-000000000001",
+      "type": "OBJECTIF",
+      "valeur": "Texte"
+    },
+    {
+      "champ": "delai",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80a0-000000000001",
+      "type": "OBJECTIF",
+      "valeur": "2026-12-15"
+    },
+    {
+      "champ": "parent",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80a0-000000000001",
+      "type": "OBJECTIF",
+      "valeur": {
+        "hlcOrigine": {
+          "appareil": 2,
+          "compteur": 2,
+          "physique": "2026-10-21T08:02:00.000Z"
+        },
+        "origine": "DEPLACEMENT",
+        "parentId": "00000000-0000-7000-80a0-000000000002"
+      }
+    },
+    {
+      "champ": "suppression",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80a0-000000000002",
+      "type": "OBJECTIF",
+      "valeur": true
+    },
+    {
+      "champ": "creation",
+      "hlc": {
+        "appareil": 1,
+        "compteur": 0,
+        "physique": "2026-10-21T08:00:00.000Z"
+      },
+      "id": "00000000-0000-7000-80b0-000000000002",
+      "type": "TACHE",
+      "valeur": {
+        "creeLe": "2026-10-21T08:00:00.000Z",
+        "tacheParenteId": "00000000-0000-7000-80b0-000000000001"
+      }
+    },
+    {
+      "champ": "delai",
+      "hlc": {
+        "appareil": 1,
+        "compteur": 0,
+        "physique": "2026-10-21T08:00:00.000Z"
+      },
+      "id": "00000000-0000-7000-80b0-000000000001",
+      "type": "TACHE",
+      "valeur": "2026-12-01"
+    },
+    {
+      "champ": "cycleDeVie",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80b0-000000000001",
+      "type": "TACHE",
+      "valeur": {
+        "abandonParCascade": "00000000-0000-7000-80c0-000000000009:0",
+        "dateAbandon": "2026-10-21",
+        "etat": "ABANDONNEE",
+        "evenementAbandon": "00000000-0000-7000-80c0-000000000008:0",
+        "instantAbandon": "2026-10-21T08:01:00.000Z"
+      }
+    },
+    {
+      "champ": "cycleDeVie",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80b0-000000000002",
+      "type": "TACHE",
+      "valeur": {
+        "etat": "A_FAIRE"
+      }
+    },
+    {
+      "champ": "actif",
+      "hlc": {
+        "appareil": 0,
+        "compteur": 1,
+        "physique": "2026-10-21T08:01:00.000Z"
+      },
+      "id": "00000000-0000-7000-80b0-000000000001|00000000-0000-7000-80a0-000000000001",
+      "type": "LIEN_TACHE_OBJECTIF",
+      "valeur": false
+    }
+  ],
+  "schemaVersion": 1,
+  "valeursEcartees": [],
+  "versionApplication": "0.1.0"
+}

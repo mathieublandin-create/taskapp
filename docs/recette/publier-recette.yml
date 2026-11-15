@@ -1,0 +1,99 @@
+# Publication de la version de recette (DEC-037, DAT §7.4 bis option d, conventions.md §14.3, DT-039 a, FD-LOT-001-1).
+#
+# FICHIER À COLLER dans le dépôt `donejuan-recette/donejuan-recette.github.io`, sous le chemin
+# `.github/workflows/publier-recette.yml` (guide : `docs/recette/guide-mise-en-place-recette.md`).
+# Il ne vit pas dans `taskapp` : un workflow de `taskapp` qui publierait vers un autre dépôt exigerait un jeton personnel.
+# Ici, le dépôt de recette publie sur SES propres Pages avec son propre jeton éphémère (`id-token`), et lit le code du
+# dépôt public `mathieublandin-create/taskapp` sans authentification.
+#
+# Aucun secret. L'identifiant du client OAuth Web n'est pas secret : variable du dépôt de recette `VITE_GOOGLE_WEB_CLIENT_ID`.
+# Actions épinglées par empreinte de commit (conventions.md §9.5), étiquette en commentaire.
+#
+# Déclenchement manuel uniquement. Le workflow construit la branche, l'étiquette ou le commit choisi (`ref`).
+name: publier-recette
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branche, étiquette ou commit de mathieublandin-create/taskapp à publier'
+        required: true
+        default: lot/LOT-001
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publier-recette
+  cancel-in-progress: false
+
+jobs:
+  construction:
+    name: construction
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_ENV: recette
+      VITE_BASE_PATH: /
+      VITE_APP_ORIGIN: https://donejuan-recette.github.io
+      VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+    steps:
+      # Contrôle fait avant tout le reste : sans identifiant client réel, la recette serait publiée sans connexion possible.
+      - name: Identifiant client OAuth présent et réel
+        run: |
+          if [ -z "${VITE_GOOGLE_WEB_CLIENT_ID}" ]; then
+            echo "::error title=Identifiant OAuth absent::La variable VITE_GOOGLE_WEB_CLIENT_ID n'existe pas dans ce dépôt (Settings > Secrets and variables > Actions > Variables)."
+            exit 1
+          fi
+          if [ "${VITE_GOOGLE_WEB_CLIENT_ID}" = "identifiant-fictif.apps.googleusercontent.com" ]; then
+            echo "::error title=Identifiant OAuth fictif::VITE_GOOGLE_WEB_CLIENT_ID contient l'identifiant fictif : saisir le vrai identifiant."
+            exit 1
+          fi
+          if ! printf '%s' "${VITE_GOOGLE_WEB_CLIENT_ID}" | grep -Eq '^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$'; then
+            echo "::error title=Identifiant OAuth invalide::VITE_GOOGLE_WEB_CLIENT_ID n'a pas la forme attendue (chiffres-lettres.apps.googleusercontent.com)."
+            exit 1
+          fi
+      # Le dépôt de recette ne contient pas le code : on récupère le dépôt public de l'application, sans jeton.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: mathieublandin-create/taskapp
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - name: Commit construit
+        run: |
+          echo "Commit construit : $(git rev-parse HEAD)"
+          echo "Commit construit : \`$(git rev-parse HEAD)\` (ref \`${REF}\`)" >> "${GITHUB_STEP_SUMMARY}"
+        env:
+          REF: ${{ inputs.ref }}
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Tests
+        run: pnpm test
+      - name: Construction de la PWA de recette
+        run: pnpm build
+      - name: Aucune composition de test dans dist/ (ST-US-018 §6.4 n° 6)
+        run: pnpm verifier:dist
+      - name: Artefact Pages
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  publication:
+    name: publication
+    needs: construction
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -12,7 +12,7 @@
 | Maquettes | ECR-007 (C, D, D2, F), ECR-002 (filtre « Abandonnées »), ECR-003 ; guide v0.2.8 §4.12, §6.6.4, §6.6.7 |
 | Q-US traitées | Q-US-025-1, Q-US-025-2 (DEC-030), Q-US-001-2 (E8) ; Q-US-025-3 (DEC-032, option a ; RG-027 complétée, CdC v0.12 ; CA-13 ; guide v0.2.11 §6.6.7) |
 | Prérequis | ST-US-003 (rang 7) |
-| Version | 0.2 |
+| Version | 0.3 |
 | Statut | **Prête pour E10** (Q-US-025-3 tranchée, DEC-032) ; tests du §13 en phase rouge |
 | Auteur | Anthony |
 | Branche Git | `us/US-025-abandon` |
@@ -21,6 +21,7 @@
 | Version | Date | Auteur | Modification |
 |---|---|---|---|
 | 0.1 | 2026-10-22 | Anthony | Création (E9, DEC-031) |
+| 0.3 | 2026-11-01 | Anthony | E13 de DT-015, DT-017, DT-019 (`docs/ceremonies/revue-code-LOT-001-catalogue-dt.md`, PR #27 ; guide v0.2.21 §6.6.7, Q-ANT-E13-R8-1) : `ABANDON_TACHE` porte `sousTachesTerminees` (calculé par `evaluerAbandon`, domaine) ; texte complet de `CNF-ABANDON-TACHE-CASCADE`, variables `n` et `t`, variante `sans-terminee` si t = 0 (§4.1, §4.5, §13) |
 | 0.2 | 2026-10-22 | Anthony | DEC-032 (Q-US-025-3 a) : CA-13, §6.2 étape 4 et réouverture de la tâche parente, §6.3, confirmation `REPRISE_SOUS_TACHE` → `CNF-REPRENDRE-SOUS-TACHE`, étapes du §12, rangs de S12c à S12f, UT-US-025-18 ; statut levé |
 
 ## 1. Résumé technique
@@ -72,7 +73,8 @@
 ### 4.1 Domaine
 ```ts
 // confirmation.ts (ajout)
-  | { readonly type: 'ABANDON_TACHE'; readonly tacheId: IdTache; readonly intitule: string; readonly sousTachesAbandonnees: number }
+  | { readonly type: 'ABANDON_TACHE'; readonly tacheId: IdTache; readonly intitule: string; readonly sousTachesAbandonnees: number;
+      readonly sousTachesTerminees: number }   // v0.3 : sous-tâches à l'état TERMINEE de la tâche, comptées par evaluerAbandon (même lecture que sousTachesAbandonnees)
   | { readonly type: 'REPRISE_SOUS_TACHE'; readonly tacheId: IdTache; readonly intitule: string;          // la sous-tâche reprise
       readonly tacheParenteId: IdTache; readonly intituleTacheParente: string }                         // CNF-REPRENDRE-SOUS-TACHE (DEC-032)
 // decisions
@@ -99,7 +101,12 @@ readonly dateAbandon?: { readonly date: DateCalendaire; readonly libelle: string
                          readonly mentionHeureParis?: { readonly code: 'MEN-HEURE-PARIS'; readonly libelle: string } };
 // lignes de sous-tâches d'une tâche parente abandonnée (ajout)
 readonly etiquette?: { readonly code: 'ETA-SOUS-TACHE-ABANDONNEE-AVEC' | 'ETA-SOUS-TACHE-ABANDONNEE-AVANT' | 'ETA-SOUS-TACHE-TERMINEE-AVANT'; readonly libelle: string };
-// construireConfirmation(ABANDON_TACHE) : n = 0 → CNF-ABANDON-TACHE ; n > 0 → CNF-ABANDON-TACHE-CASCADE (variables element, n)
+// construireConfirmation(ABANDON_TACHE) (v0.3, guide v0.2.21 §6.6.7) : n = sousTachesAbandonnees, t = sousTachesTerminees ;
+//   n = 0 → CNF-ABANDON-TACHE (variable element) ;
+//   n ≥ 1, t ≥ 1 → CNF-ABANDON-TACHE-CASCADE (variables element, n, t) ;
+//   n ≥ 1, t = 0 → CNF-ABANDON-TACHE-CASCADE, variante 'sans-terminee' (variables element, n, t, variante) : la phrase des terminées est absente.
+//   Texte : « {n} sous-tâche(s) à faire {sera abandonnée / seront abandonnées} aussi. [{t} sous-tâche(s) déjà terminée(s) {reste terminée / restent terminées}.]
+//   La tâche quitte vos tâches à faire. Vous la retrouverez dans « Abandonnées » et pourrez la reprendre. »
 // construireConfirmation(REPRISE_SOUS_TACHE) → CNF-REPRENDRE-SOUS-TACHE (variables element = sous-tâche, tacheParente = tâche parente ; guide v0.2.11 §6.6.7)
 ```
 | Écran | Maquette | Codes | Actions → cas d'usage |
@@ -225,6 +232,8 @@ Comme ST-US-003.
 | UT-US-025-16 | `…/presentation/liste-taches.test.ts` | `construireListeTaches` | tâche abandonnée absente du filtre « à faire », présente dans « abandonnée » | CA-2 | NI |
 | UT-US-025-17 | `…/application/reprendre-tache.test.ts` | `ReprendreTache` | historique de « Section B » terminé par `ABANDON` puis `REPRISE` ; aucune entrée `ABANDON` pour « Section A » | CA-11, S18 | NI |
 | UT-US-025-18 | `…/domaine/decisions/reprendre-tache.test.ts`, `…/presentation/confirmation.test.ts` | `evaluerReprise`, `deciderReprise`, `construireConfirmation` | sous-tâche abandonnée d'une tâche parente terminée : `CONFIRMATION_REQUISE REPRISE_SOUS_TACHE` ; décision : reprise (rang 0) et réouverture de la tâche parente (rang 1, cause 0) ; `CNF-REPRENDRE-SOUS-TACHE` avec `element` et `tacheParente` | CA-13, DEC-032 | NI |
+
+**v0.3 (E13 de DT-015, DT-017, DT-019)** : UT-US-025-01, UT-US-025-02, UT-US-025-14 et UT-COMP-US-025-02 attendent en plus `sousTachesTerminees` (ou `t` et `variante`) : renforcement, accepté. UT-COMP-US-001-12 vérifie désormais le texte exact de la variante `sans-terminee` (au lieu d'un extrait de l'ancien texte). Test ajouté par Benjamin : UT-COMP-US-025-16 (`modeles-de-vue-complements.test.ts` : accords de n et t, variante `sans-terminee`).
 
 Commandes : `pnpm test -- tests/unitaires/objectifs-taches` ; `pnpm cucumber -- --tags @US-025`.
 

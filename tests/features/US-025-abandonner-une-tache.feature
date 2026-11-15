@@ -337,6 +337,7 @@ Fonctionnalité: Abandonner une tâche
     Et l'utilisateur reprend la tâche "Refaire le logo"
     Alors l'historique contient, pour la tâche "Refaire le logo" :
       | événement | journée    | avant                                  | après                                  |
+      | création  | 2026-10-21 |                                        | délai 2026-11-30, estimation 2 h       |
       | abandon   | 2026-10-21 | à faire                                | abandonnée, date d'abandon 2026-10-21  |
       | reprise   | 2026-10-24 | abandonnée, date d'abandon 2026-10-21  | à faire                                |
 

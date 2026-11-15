@@ -1,7 +1,13 @@
-import { nonImplemente } from '@non-implemente';
 import type { Instant } from '../../commun/domaine/temps/instant';
 import type { Hlc } from './hlc';
-import type { CleInformation, CleTexte, RefElementMetier } from './information';
+import {
+  cleDeChamp,
+  cleEnTexte,
+  elementDeCle,
+  type CleInformation,
+  type CleTexte,
+  type RefElementMetier,
+} from './information';
 
 // DAT §4.1.5 bis v0.10.1, H-4 (ST-socle-ecriture.md §6.5).
 export type EntreeEnAttente = {
@@ -15,21 +21,29 @@ export type IndexEnAttente = ReadonlyMap<
 >;
 
 export const enregistrerEnAttente = (
-  _index: IndexEnAttente,
-  _cle: CleInformation,
-  _hlc: Hlc,
-  _instantCorrige: Instant,
-): IndexEnAttente => nonImplemente('enregistrerEnAttente');
+  index: IndexEnAttente,
+  cle: CleInformation,
+  hlc: Hlc,
+  instantCorrige: Instant,
+): IndexEnAttente => {
+  const texte = cleEnTexte(cle);
+  const premiereEcriture = index.get(texte)?.entree.premiereEcriture ?? instantCorrige;
+  return new Map(index).set(texte, { cle, entree: { premiereEcriture, derniereHlc: hlc } });
+};
+
+const memeElement = (a: RefElementMetier, b: RefElementMetier): boolean =>
+  a.type === b.type && a.id === b.id;
 
 /** Entrée (type, id, 'creation') présente. */
-export const aCreationNonDeposee = (_index: IndexEnAttente, _element: RefElementMetier): boolean =>
-  nonImplemente('aCreationNonDeposee');
+export const aCreationNonDeposee = (index: IndexEnAttente, element: RefElementMetier): boolean =>
+  index.has(cleEnTexte(cleDeChamp(element, 'creation')));
 
 /** Champs de l'élément et, pour une tâche, ses liens. */
 export const retirerEntreesDeElement = (
-  _index: IndexEnAttente,
-  _element: RefElementMetier,
-): IndexEnAttente => nonImplemente('retirerEntreesDeElement');
+  index: IndexEnAttente,
+  element: RefElementMetier,
+): IndexEnAttente =>
+  new Map([...index].filter(([, { cle }]) => !memeElement(elementDeCle(cle), element)));
 
 /** Paramètres de purgerPourSuppression (objet nommé : RCD-02). */
 export type PurgeSuppression = {
@@ -40,17 +54,36 @@ export type PurgeSuppression = {
 };
 
 export const purgerPourSuppression = (
-  _index: IndexEnAttente,
-  _purge: PurgeSuppression,
-): IndexEnAttente => nonImplemente('purgerPourSuppression');
-
-/** Nombre d'éléments distincts (objectif, tâche, sous-tâche) qui ont une entrée. */
-export const decompterModificationsEnAttente = (_index: IndexEnAttente): number =>
-  nonImplemente('decompterModificationsEnAttente');
-
-export const plusAncienneModificationEnAttente = (_index: IndexEnAttente): Instant | undefined =>
-  nonImplemente('plusAncienneModificationEnAttente');
+  index: IndexEnAttente,
+  { element, descendantsSupprimes, hlc, instantCorrige }: PurgeSuppression,
+): IndexEnAttente => {
+  const sansDescendants = descendantsSupprimes
+    .filter((descendant) => aCreationNonDeposee(index, descendant))
+    .reduce(retirerEntreesDeElement, index);
+  if (aCreationNonDeposee(sansDescendants, element)) {
+    return retirerEntreesDeElement(sansDescendants, element);
+  }
+  return enregistrerEnAttente(
+    sansDescendants,
+    cleDeChamp(element, 'suppression'),
+    hlc,
+    instantCorrige,
+  );
+};
 
 /** Identifiants d'objectifs et de tâches qui ont au moins une entrée. */
-export const elementsEnAttente = (_index: IndexEnAttente): ReadonlySet<string> =>
-  nonImplemente('elementsEnAttente');
+export const elementsEnAttente = (index: IndexEnAttente): ReadonlySet<string> =>
+  new Set([...index.values()].map(({ cle }) => elementDeCle(cle).id));
+
+/** Nombre d'éléments distincts (objectif, tâche, sous-tâche) qui ont une entrée. */
+export const decompterModificationsEnAttente = (index: IndexEnAttente): number =>
+  elementsEnAttente(index).size;
+
+export const plusAncienneModificationEnAttente = (index: IndexEnAttente): Instant | undefined =>
+  [...index.values()].reduce<Instant | undefined>(
+    (plusAncienne, { entree }) =>
+      plusAncienne === undefined || entree.premiereEcriture < plusAncienne
+        ? entree.premiereEcriture
+        : plusAncienne,
+    undefined,
+  );

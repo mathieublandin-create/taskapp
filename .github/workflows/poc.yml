@@ -1,6 +1,8 @@
 name: poc
 
 # Déclenchement manuel uniquement. Le workflow n'est actif qu'une fois présent sur la branche par défaut.
+# Aucun déploiement sur GitHub Pages (US-018, F1) : le site de production est publié par `deploiement.yml` ;
+# un lancement du PoC ne doit jamais le remplacer. L'artefact `site` reste téléchargeable.
 on:
   workflow_dispatch:
     inputs:
@@ -10,10 +12,6 @@ on:
       version_name:
         description: "versionName de l'APK"
         default: "0.0.1"
-      deploy_pages:
-        description: "Déployer sur GitHub Pages (dépôt public uniquement)"
-        type: boolean
-        default: false
       android:
         description: "Construire les APK (repli ADR-012 seulement, DEC-034)"
         type: boolean
@@ -160,19 +158,3 @@ jobs:
           name: site
           path: site
           retention-days: 3
-      - if: ${{ inputs.deploy_pages }}
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy-pages:
-    if: ${{ !cancelled() && inputs.deploy_pages && needs.site.result == 'success' }}
-    needs: site
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-    steps:
-      - uses: actions/deploy-pages@v4

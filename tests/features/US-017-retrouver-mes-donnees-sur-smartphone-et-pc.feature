@@ -12,6 +12,7 @@
 # Ils sont retirés, et la version précédente de ce fichier rétablie, si la condition de DEC-034 échoue (M-RED, M-PERSIST).
 # Les délais d'une heure et d'une minute (CA-2, CA-3) se vérifient en faisant avancer l'horloge contrôlée du banc à deux appareils
 # (conventions §9.11, PT-04) : aucun scénario n'attend en temps réel (E7, ANT-3).
+# E10 du rang 9 (Pepper, 2026-10-31, Q-ST017-PEP-2 a) : S10b (même valeur des deux côtés) et S10c (suppressions concurrentes) ajoutés, sans changement de règle.
 # E7 : S12b (horodatages identiques), S13 scindé en S13a/S13b (seuil de 24 h, CA-13), S17 scindé en S17a/S17b, S30b (RG-058 : aucune écriture, dépôt après mise à jour).
 
 Fonctionnalité: Retrouver mes données sur smartphone et sur PC
@@ -131,6 +132,63 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand l'horloge avance de 1 minute depuis la reconnexion
     Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
 
+  # ---------------------------------------------------------------- Cycle de synchronisation sans geste (CA-3, CA-7, ANO-001)
+  # ANO-001 (Pepper, 2026-10-30) : scénarios de non-régression. Après un cycle mené sans geste de l'utilisateur (RG-017 : 5 secondes après une modification,
+  # toutes les 2 minutes, retour au premier plan), l'indicateur et le décompte « Modifications en attente » de la feuille « Compte et synchronisation »
+  # (ECR-011) reflètent l'issue du cycle, sans attendre un geste ni un changement de session ou de réseau. Aucun geste entre le déclencheur et l'assertion.
+  # Le temps passe par l'horloge contrôlée du banc (glossaire §4) ; objectifs seulement, exécutables dès le rang 3.
+
+  @US-017 @RG-017 @RG-021 @LOT-001 @ANO-001
+  Scénario: S06c — Cycle déclenché 5 secondes après une modification : la mention « non synchronisé » et le décompte retombent sans geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Alors sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 1 modification en attente
+    Quand l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le smartphone, l'objectif "Publier le guide" ne porte plus la mention "MEN-ATTENTE"
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @LOT-001 @ANO-001
+  Scénario: S06d — Cycle périodique de 2 minutes : l'indicateur affiche le nouveau dernier échange sans geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
+    Quand l'horloge avance de 2 minutes, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @LOT-001 @ANO-001
+  Scénario: S06e — Retour au premier plan : le cycle mené sans geste est reflété par l'indicateur et le décompte
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que l'application est passée au second plan sur le smartphone
+    Et que sur le PC, l'utilisateur a créé un objectif "Publier le guide" de délai 2026-12-15, enregistré dans le Drive
+    Quand l'utilisateur ramène l'application au premier plan sur le smartphone
+    Et l'horloge avance de 1 minute, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'objectif "Publier le guide" existe avec le délai 2026-12-15
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, l'indicateur de synchronisation indique un dernier échange à l'instant
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
+  @US-017 @RG-017 @RG-035 @LOT-001 @ANO-001
+  Scénario: S06f — Accès Google expiré pendant l'utilisation : « Reprendre la synchronisation » est proposé sans geste préalable, et le décompte retombe après le geste
+    Étant donné que l'application est ouverte sur le smartphone, connecté au réseau
+    Et que l'accès Google du compte "A" va expirer sur le smartphone pendant l'utilisation
+    Quand sur le smartphone, l'utilisateur crée un objectif "Publier le guide" de délai 2026-12-15
+    Et l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
+    Alors sur le smartphone, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 1 modification en attente
+    Et sur le smartphone, les données présentes sur le smartphone s'affichent aussitôt
+    Quand sur le smartphone, l'utilisateur fait le geste de reconnexion
+    Et l'horloge avance de 1 minute depuis la reconnexion
+    Alors le Drive du compte "A" contient l'objectif "Publier le guide"
+    Et sur le smartphone, l'indicateur de synchronisation est "SYN-OK"
+    Et sur le smartphone, la feuille "Compte et synchronisation" indique 0 modification en attente
+
   # ---------------------------------------------------------------- Stockage dans le Drive (CA-4, CA-5)
 
   @US-017 @RG-020 @RG-018 @LOT-001
@@ -187,8 +245,41 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
       | élément | information | valeur non retenue | valeur conservée |
       | B       | intitulé    | A                  | B                |
 
+  @US-017 @RG-036 @RG-056 @LOT-001
+  Scénario: S10b — La même valeur saisie sur les deux appareils n'est pas une valeur écartée
+    # E10 du rang 9, Q-ST017-PEP-2 a (2026-10-31) : les deux modifications donnent la même valeur, rien n'est perdu (RG-036, glossaire « Valeur écartée »).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "A"
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "A" existe avec le délai 2026-11-30
+    Et sur les deux appareils, la liste des modifications non retenues est vide
+    Et sur les deux appareils, l'indicateur de synchronisation ne signale aucune information à lire
+
+  @US-017 @RG-036 @RG-047 @RG-056 @LOT-001
+  Scénario: S10c — Le même élément supprimé sur les deux appareils : rien n'est signalé, pas même une modification faite avant l'une des deux suppressions
+    # E10 du rang 9, Q-ST017-PEP-2 a (2026-10-31) : deux suppressions concurrentes ne se signalent pas l'une l'autre ;
+    # le renommage, fait sur le PC avant d'y supprimer la tâche, a été remplacé en connaissance de cause (RG-036) : il n'est pas écarté par la suppression du smartphone (RG-047).
+    Étant donné les tâches suivantes :
+      | intitulé | état    | délai      | estimation | objectifs | tâche parente |
+      | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
+    Et que le smartphone est sans réseau
+    Quand sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
+    Et sur le PC, l'utilisateur supprime la tâche "A" et confirme
+    Et 10 minutes plus tard, sur le smartphone, l'utilisateur supprime la tâche "Plan" et confirme
+    Et le réseau revient sur le smartphone
+    Et les deux appareils échangent leurs modifications
+    Alors sur les deux appareils, la tâche "A" n'existe plus
+    Et sur les deux appareils, la tâche "Plan" n'existe plus
+    Et sur les deux appareils, la liste des modifications non retenues est vide
+    Et sur les deux appareils, l'indicateur de synchronisation ne signale aucune information à lire
+
   @US-017 @RG-036 @LOT-001
-  Scénario: S11 — Une valeur remplacée en connaissance de cause n'est pas signalée
+  Scénario: S11 —Une valeur remplacée en connaissance de cause n'est pas signalée
     Étant donné les tâches suivantes :
       | intitulé | état    | délai      | estimation | objectifs | tâche parente |
       | Plan     | à faire | 2026-11-30 | 1 h        |           |               |
@@ -258,6 +349,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Quand 5 minutes plus tard, sur le PC, l'utilisateur renomme la tâche "Plan" en "A"
     Et 10 minutes plus tard, sur le smartphone, l'utilisateur renomme la tâche "Plan" en "B"
     Et le réseau revient sur le smartphone
+    Et sur le smartphone, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
     Alors sur les deux appareils, la tâche "A" existe avec le délai 2026-11-30
     Et sur chacun des deux appareils, la liste des modifications non retenues contient :
@@ -445,7 +537,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     # E8, Q-US-017-8 a) : une ligne par modification perdue, groupée sous l'alerte ALR-008 (code ALR-014), non comptée parmi les informations à lire.
     Et sur le PC, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue        | valeur conservée          |
-      | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+      | Publier le guide pratique | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
     Et sur le PC, l'indicateur de synchronisation ne signale aucune information à lire
 
   @US-017 @RG-044 @LOT-001
@@ -490,7 +582,7 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
     Et sur le PC, aucun choix entre restaurer et repartir de zéro n'est demandé
     Et sur le PC, la liste des modifications non retenues contient :
       | élément          | information | valeur non retenue        | valeur conservée                    |
-      | Publier le guide | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
+      | Publier le guide pratique | intitulé    | Publier le guide pratique | données effacées (repartir de zéro) |
 
   @US-017 @RG-044 @LOT-001
   Scénario: S22d — La question laissée en attente sur l'autre appareil disparaît d'elle-même après « Repartir de zéro »
@@ -509,8 +601,8 @@ Fonctionnalité: Retrouver mes données sur smartphone et sur PC
 
   @US-017 @RG-044 @LOT-001
   Scénario: S23 — Une indisponibilité momentanée du Drive n'est pas prise pour une suppression des données
-    Étant donné un objectif "Publier le guide" de délai 2026-12-15
-    Et que le Drive est momentanément indisponible
+    Étant donné que le Drive est momentanément indisponible
+    Et un objectif "Publier le guide" de délai 2026-12-15
     Quand le smartphone échange ses modifications avec le Drive
     Alors sur le smartphone, le message d'erreur "ERR-012" n'est pas affiché
     Et sur le smartphone, l'objectif "Publier le guide" porte la mention "MEN-ATTENTE"

@@ -1,0 +1,14 @@
+# Étape de déploiement isolée (conventions.md §14.3) : changer d'hébergeur ne touche que ce fichier.
+# Hébergement actuel : GitHub Pages (ADR-013). Prérequis du job appelant : `pages: write` et `id-token: write`,
+# l'artefact Pages déjà téléversé (`actions/upload-pages-artifact`). Aucun secret.
+name: Déployer sur l'hébergement
+description: Publie l'artefact Pages téléversé sur GitHub Pages.
+outputs:
+  url:
+    description: Adresse du site publié
+    value: ${{ steps.pages.outputs.page_url }}
+runs:
+  using: composite
+  steps:
+    - id: pages
+      uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,8 +1,9 @@
-import { nonImplemente } from '@non-implemente';
 import type { IdObjectif } from '../../../commun/domaine/identifiants';
 
 // ST-US-002 §4.5 (CA-2, Q-ERG-03).
 export type ModeleVueFormulaireTache = {
+  /** Jamais renseignée pour une tâche : seule la variante sous-tâche porte `'SOUS_TACHE'` (DT-021 point 2). */
+  readonly variante?: never;
   readonly delaiPreselectionne: undefined;
   readonly estimationPreselectionnee: undefined;
   readonly objectifsPreRemplis: ReadonlyArray<IdObjectif>; // objectif du détail d'où l'on vient, sinon vide
@@ -12,6 +13,14 @@ export type ModeleVueFormulaireTache = {
   }>;
 };
 
-export const construireFormulaireTache = (_donnees: {
+export const construireFormulaireTache = (donnees: {
   readonly objectifPreRempli?: IdObjectif;
-}): ModeleVueFormulaireTache => nonImplemente('construireFormulaireTache');
+}): ModeleVueFormulaireTache => ({
+  delaiPreselectionne: undefined,
+  estimationPreselectionnee: undefined,
+  objectifsPreRemplis: donnees.objectifPreRempli === undefined ? [] : [donnees.objectifPreRempli],
+  mentionsObligatoire: [
+    { champ: 'DELAI', code: 'MEN-OBLIGATOIRE' },
+    { champ: 'ESTIMATION', code: 'MEN-OBLIGATOIRE' },
+  ],
+});

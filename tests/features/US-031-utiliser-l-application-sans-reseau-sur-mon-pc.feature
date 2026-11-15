@@ -118,6 +118,7 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et que la session Google du navigateur du PC a expiré
     Quand sur le PC, l'utilisateur modifie le délai de la tâche "Chapitre 1" en 2026-12-05
     Alors sur le PC, l'opération est acceptée
+    Et l'horloge avance de 5 secondes, sans aucune action de l'utilisateur
     Et sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
     Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Et les deux appareils échangent leurs modifications
@@ -134,6 +135,8 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Alors sur le PC, la tâche "Chapitre 1 : contexte" existe avec le délai 2026-11-30
     Et sur le PC, la tâche "Chapitre 1 : contexte" porte la mention "MEN-ATTENTE"
     Quand le réseau revient sur le PC
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors le Drive du compte "A" contient la tâche "Chapitre 1 : contexte"
 
     Exemples:
@@ -182,14 +185,15 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
   @US-031 @RG-049 @LOT-001
   Scénario: S12 — Au retour du réseau sur le PC, une incohérence d'état est signalée sans correction
     Étant donné les tâches suivantes :
-      | intitulé  | état     | délai      | estimation | objectifs | tâche parente |
-      | Section A | terminée | 2026-11-20 | 1 h        |           | Chapitre 1    |
+      | intitulé   | état     | délai      | estimation | objectifs        | tâche parente |
+      | Chapitre 2 | à faire  | 2026-11-30 | 2 h        | Publier le guide |               |
+      | Section A  | terminée | 2026-11-20 | 1 h        |                  | Chapitre 2    |
     Et que le PC est sans réseau
-    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 1"
+    Quand sur le smartphone, l'utilisateur termine la tâche "Chapitre 2"
     Et sur le PC, l'utilisateur rouvre la tâche "Section A"
     Et le réseau revient sur le PC
     Et les deux appareils échangent leurs modifications
-    Alors sur les deux appareils, la tâche "Chapitre 1" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
+    Alors sur les deux appareils, la tâche "Chapitre 2" porte la mention "MEN-INCOHERENCE" pour sa sous-tâche "Section A"
 
   # ---------------------------------------------------------------- Perte de l'accès Google (CA-9)
 
@@ -236,22 +240,29 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
 
   # Q-ST031-PEP-1 (2026-10-27, précision sans changement de règle) : la session est celle de l'appareil ; quand elle prend fin dans un onglet,
   # l'autre onglet revient à l'écran de connexion (US-022 CA-1, CA-6 et CA-10 ; RG-019, RG-043, RG-055).
+  # Q-ANT-E13-R13-2 (2026-11-12, E13b, ANO-006 ; précision sans changement de règle) : l'onglet qui a fait le geste revient lui aussi à l'écran de connexion
+  # et n'affiche plus aucune donnée (US-022 CA-1 et CA-6 : retour à l'écran de connexion sur l'appareil ; RG-019, RG-043). Il l'était déjà par la règle ;
+  # le scénario ne le vérifiait pas, d'où l'anomalie ANO-006 non détectée. Le premier onglet est celui du geste.
   @US-031 @RG-019 @RG-043 @ihm @LOT-001
-  Scénario: S16b — Déconnexion dans un onglet : l'autre onglet revient à l'écran de connexion et n'affiche plus aucune donnée, qui reste sur le PC
+  Scénario: S16b — Déconnexion dans un onglet : les deux onglets reviennent à l'écran de connexion et n'affichent plus aucune donnée, qui reste sur le PC
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et qu'aucune modification n'est en attente sur le PC
     Quand dans le premier onglet, l'utilisateur se déconnecte
-    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Alors dans le premier onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le premier onglet, aucune donnée n'est affichée
+    Et dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
     Et dans le second onglet, aucune donnée n'est affichée
     Et les données du compte "A" sont toujours présentes sur le PC
 
   @US-031 @RG-019 @RG-055 @ihm @LOT-001
-  Scénario: S16c — Suppression des données de cet appareil dans un onglet : l'autre onglet revient à l'écran de connexion
+  Scénario: S16c — Suppression des données de cet appareil dans un onglet : les deux onglets reviennent à l'écran de connexion
     Étant donné que l'application est ouverte dans deux onglets du PC
     Et qu'aucune modification n'est en attente sur le PC
     Quand dans le premier onglet, l'utilisateur demande la suppression des données de cet appareil
     Et dans le premier onglet, l'utilisateur confirme
-    Alors dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Alors dans le premier onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
+    Et dans le premier onglet, aucune donnée n'est affichée
+    Et dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée
     Et dans le second onglet, aucune donnée n'est affichée
     Et les données du compte "A" ne sont plus présentes sur le PC
 
@@ -339,6 +350,9 @@ Fonctionnalité: Utiliser l'application sans réseau sur mon PC
     Et l'utilisateur ouvre l'application sur le PC depuis son adresse web
     Alors sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
     Quand le réseau revient sur le PC
+    Alors sur le PC, l'indicateur de synchronisation est "SYN-SESSION", avec l'action "Reprendre la synchronisation"
+    Et sur le PC, le bandeau "BAN-RAPPEL-24H" est affiché avec 1 modification en attente
+    Quand sur le PC, l'utilisateur fait le geste de reconnexion
     Alors sur le PC, le bandeau "BAN-RAPPEL-24H" n'est pas affiché
 
   @US-031 @RG-057 @RG-035 @LOT-001

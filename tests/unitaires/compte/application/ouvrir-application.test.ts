@@ -205,4 +205,19 @@ describe('OuvrirApplication (ST-US-022 §6.2, DAT §4.1.7)', () => {
       acces: 'A_RENOUVELER',
     });
   });
+  it('UT-US-022-62 OuvrirApplication — espace local inaccessible : issue ESPACE_INACCESSIBLE, session fermée, sans redirection, journal « erreur » (§8 n° 12, Q-BRU-3)', async () => {
+    const env = preparer({ session: { accesPerdu: false }, depart: DEPART });
+    env.espaces.ouvrir = () => Promise.resolve(echec({ type: 'EspaceInaccessible' }));
+
+    const issue = await env.cas.executer(RETOUR_ERREUR('interaction_required'));
+
+    expect(issue).toEqual({ type: 'ESPACE_INACCESSIBLE' });
+    expect(env.session.etat()).toEqual({ type: 'SANS_SESSION' });
+    expect(env.fournisseur.demandes).toEqual([]);
+    expect(env.fournisseur.retoursRecus).toEqual([]);
+    expect(env.journal.entrees).toContainEqual({
+      niveau: 'erreur',
+      evenement: 'EspaceInaccessible',
+    });
+  });
 });

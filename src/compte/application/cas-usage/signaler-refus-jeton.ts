@@ -1,5 +1,5 @@
-import { nonImplemente } from '@non-implemente';
 import type { Horloge } from '../../../commun/application/ports/horloge';
+import { qualifierRefusJeton } from '../../domaine/acces';
 import type { CoffreJetons } from '../ports/coffre-jetons';
 import type { MemoireSession } from '../ports/memoire-session';
 import type { SessionCourante } from '../session-courante';
@@ -15,7 +15,20 @@ export type DependancesSignalerRefus = {
 export class SignalerRefusJeton {
   constructor(private readonly dependances: DependancesSignalerRefus) {}
 
-  executer(): Promise<'A_RENOUVELER' | 'PERDU'> {
-    return nonImplemente('SignalerRefusJeton.executer');
+  async executer(): Promise<'A_RENOUVELER' | 'PERDU'> {
+    const { coffre, horloge, memoireSession, session } = this.dependances;
+    const qualification = qualifierRefusJeton({
+      echeance: coffre.lire()?.echeance,
+      maintenant: horloge.monotone(),
+    });
+    coffre.vider();
+    if (qualification === 'PERDU') {
+      const memorisee = await memoireSession.lire();
+      if (memorisee !== undefined && !memorisee.accesPerdu) {
+        await memoireSession.ecrire({ identite: memorisee.identite, accesPerdu: true });
+      }
+    }
+    if (session.etat().type === 'OUVERTE') session.changerAcces(qualification);
+    return qualification;
   }
 }

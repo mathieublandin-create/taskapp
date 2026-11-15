@@ -292,6 +292,7 @@ Fonctionnalité: Terminer ou rouvrir une tâche et suivre l'atteinte d'un object
     Et l'utilisateur rouvre la tâche "Chapitre 1"
     Alors l'historique contient, pour la tâche "Chapitre 1" :
       | événement   | journée    | avant      | après      |
+      | création    | 2026-10-21 |            | délai 2026-11-30, estimation 2 h |
       | fin         | 2026-10-21 | à faire    | terminée, date de fin 2026-10-21 |
       | réouverture | 2026-10-23 | terminée, date de fin 2026-10-21 | à faire |
 

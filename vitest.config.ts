@@ -7,7 +7,7 @@ import {
   motifSelection,
   type RangsFichier,
   type RegleRang,
-} from './tests/support/rangs/selection-rangs';
+} from './tests/support/rangs/selection-rangs.ts';
 
 const chemin = (relatif: string): string => fileURLToPath(new URL(relatif, import.meta.url));
 const lireJson = (relatif: string): unknown => JSON.parse(readFileSync(chemin(relatif), 'utf8'));
@@ -38,19 +38,58 @@ export default defineConfig({
     },
   },
   test: {
-    include: [
-      'tests/unitaires/**/*.test.ts',
-      'tests/integration/**/*.test.ts',
-      'tests/contrats/**/*.contrat.ts',
-    ],
     testNamePattern: motifSelection(regles, rangCourant),
-    environment: 'node',
-    setupFiles: ['tests/support/fast-check.ts'],
+    // Q-BEN-LOT001-7 : jsdom pour les seuls tests de composants (presentation/ui), dans un projet dédié ; la
+    // sélection par rang (testNamePattern) et la couverture s'appliquent aux deux projets.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          include: [
+            'tests/unitaires/**/*.test.ts',
+            'tests/integration/**/*.test.ts',
+            'tests/contrats/**/*.contrat.ts',
+          ],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'ihm',
+          include: ['tests/unitaires/**/presentation/ui/**/*.test.tsx'],
+          environment: 'jsdom',
+          // Les composants Ionic passent par @lit/react, dont l'export « node » est la version sans effets de
+          // bord (rendu serveur) : les propriétés des composants ne seraient pas appliquées dans jsdom. Vite doit
+          // résoudre ces paquets avec la condition « browser ».
+          server: { deps: { inline: [/@lit\/react/, /@stencil\/react-output-target/] } },
+        },
+        resolve: { conditions: ['browser'] },
+      },
+    ],
+    setupFiles: ['tests/support/fast-check.ts', 'tests/support/indexeddb-fake.ts'],
     sequence: { shuffle: process.env['CI'] === 'true' },
     coverage: {
       provider: 'v8',
+      // json-summary : rapport par fichier lu par la non-régression de couverture (conventions.md §12, DT-005).
+      reporter: ['text', 'html', 'clover', 'json', 'json-summary'],
       include: [...fichiersCouverts(fichiers, rangCourant)],
       exclude: ['src/composition/**', 'src/main.tsx', '**/*.d.ts'],
+      // conventions.md §12 : tous les seuils par motif de chemin, dès le rang 0 (Q-BEN-E12-2). Un motif qui ne
+      // couvre encore aucun fichier (`coverage.include` limité aux rangs livrés) est sans effet jusqu'à son rang.
+      thresholds: {
+        lines: 85,
+        branches: 75,
+        'src/*/domaine/**': { lines: 95, branches: 90 },
+        'src/synchronisation/{domaine,application}/**': { lines: 95, branches: 90 },
+        'src/*/application/**': { lines: 90, branches: 85 },
+        'src/*/presentation/modeles-de-vue/**': { lines: 90, branches: 85 },
+        'src/commun/presentation/{format,messages}/**': { lines: 90, branches: 85 },
+        'src/*/presentation/ui/**': { lines: 70, branches: 60 },
+        'src/*/infrastructure/**': { lines: 70, branches: 60 },
+        'src/infrastructure-google/**': { lines: 70, branches: 60 },
+      },
     },
   },
 });

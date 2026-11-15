@@ -1,0 +1,412 @@
+// ST-CORR-E13B-LOT-001 §5 (tranche T5b) : ANO-005, feuille « Compte et synchronisation » modale (guide v0.2.26 §4.26,
+// §6.6.15, §6.6.16 n° 5, critères b et c), sur l'application réelle : build `test-ihm` servi par le `webServer` de
+// playwright.config.ts, Google et Drive simulés par les ponts du processus de test, compte A connecté.
+// Rang 14 (rangs-tests.json).
+import { expect, test, type Page } from '@playwright/test';
+import { LIBELLE_ANNULER } from '../../src/commun/presentation/ui/boite-confirmation';
+import { libelleActionCompte } from '../../src/compte/presentation/modeles-de-vue/section-compte';
+import { LIBELLES_TACHES } from '../../src/objectifs-taches/presentation/ui/libelles-ui';
+import { LIBELLES_FEUILLE } from '../../src/synchronisation/presentation/ui/libelles-feuille';
+import { boite, centreDegage, ouvrirApplicationConnectee } from '../support/e2e/outils-navigateur';
+
+const ouvrir = (page: Page) => page.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir });
+/**
+ * Le rôle `dialog` est porté par l'enveloppe du shadow DOM d'Ionic ; le contenu y est projeté (slot) et n'est pas un
+ * descendant du `dialog` pour Playwright. `presentee` sert donc à attendre la présentation (et la fermeture), `feuille`
+ * à chercher le contenu dans l'`ion-modal` ouvert.
+ */
+const presentee = (page: Page) => page.getByRole('dialog', { name: LIBELLES_FEUILLE.titre });
+const feuille = (page: Page) => page.locator('ion-modal.feuille-synchronisation[is-open]');
+/** Contenu de la feuille (premier enfant de l'`ion-modal`). */
+const contenu = (page: Page) => page.locator('ion-modal.feuille-synchronisation .feuille-contenu');
+
+type Rectangle = {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+};
+
+/** Boîte de l'enveloppe (`.modal-wrapper`, shadow DOM de l'`ion-modal`) : poignée d'Ionic comprise (ST §5.1). */
+const enveloppe = (page: Page): Promise<Rectangle> =>
+  page.locator('ion-modal.feuille-synchronisation').evaluate((modale) => {
+    const e = modale.shadowRoot?.querySelector('.modal-wrapper');
+    if (e === null || e === undefined) throw new Error('enveloppe de la feuille absente');
+    const { x, y, width, height } = e.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+
+/** Attend la fin de l'animation : la mesure est reprise tant qu'elle change (trois lectures identiques de suite). */
+const stable = async (mesure: () => Promise<Rectangle>): Promise<Rectangle> => {
+  let precedente = await mesure();
+  let identiques = 0;
+  const echeance = Date.now() + 5_000;
+  while (identiques < 3) {
+    if (Date.now() > echeance) throw new Error('la feuille ne se stabilise pas');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const courante = await mesure();
+    identiques = JSON.stringify(courante) === JSON.stringify(precedente) ? identiques + 1 : 0;
+    precedente = courante;
+  }
+  return precedente;
+};
+
+/** Ouvre la feuille par le bouton et attend sa présentation complète. */
+const ouvrirFeuille = async (page: Page): Promise<void> => {
+  await ouvrir(page).click();
+  await expect(presentee(page)).toBeVisible();
+  await stable(() => enveloppe(page));
+};
+
+const supprimer = (page: Page) =>
+  feuille(page).locator(`button:has-text("${libelleActionCompte('SUPPRIMER_DONNEES')}")`);
+
+/** Crée `n` tâches par la saisie rapide, qui reste ouverte entre deux ajouts (guide §4.3), puis la ferme. */
+const creerTaches = async (page: Page, n: number): Promise<void> => {
+  await page.locator('ion-fab-button').click();
+  const saisie = page.locator('ion-modal.saisie-rapide');
+  for (let i = 1; i <= n; i += 1) {
+    await saisie
+      .getByLabel(LIBELLES_TACHES.champIntitule)
+      .fill(`Tâche ${String(i).padStart(2, '0')}`);
+    await saisie.getByLabel(LIBELLES_TACHES.champDelai).fill('2026-12-31');
+    await saisie.getByRole('button', { name: LIBELLES_TACHES.stepper.plus }).click();
+    await saisie.locator('ion-button', { hasText: LIBELLES_TACHES.ajouter }).click();
+    await expect(page.locator('li.ligne-tache')).toHaveCount(i);
+  }
+  await page.keyboard.press('Escape');
+  await expect(page.locator('ion-modal.saisie-rapide[is-open]')).toHaveCount(0);
+};
+
+/** Position de défilement de la liste (`ion-content` de la vue Tâches). */
+const defilement = (page: Page): Promise<number> =>
+  page
+    .locator('ion-content')
+    .first()
+    .evaluate(async (c) => (await (c as HTMLIonContentElement).getScrollElement()).scrollTop);
+
+test.describe('Feuille de synchronisation à 390 × 844 (ANO-005)', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('E2E-ANO-005-FEUILLE-01 fermée au lancement ; ouverte par le bouton, elle occupe 0,92 de la hauteur et la liste derrière ne bouge pas (critère c)', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await expect(page.locator('[data-etat="SYN-FEUILLE-BOUTON"]')).toHaveCount(0);
+    await expect(page.locator('section[aria-labelledby="compte-titre"]')).toHaveCount(0);
+    await expect(ouvrir(page)).toHaveAttribute('aria-expanded', 'false');
+    await creerTaches(page, 1);
+    const avant = await boite(page.locator('li.ligne-tache').first());
+
+    await ouvrirFeuille(page);
+    await expect(ouvrir(page)).toHaveAttribute('aria-expanded', 'true');
+    // Ionic applique le point d'arrêt 0,92 à la hauteur de son enveloppe (`.modal-wrapper`, ici 834 px : la fenêtre moins
+    // la marge haute d'Ionic) et la fait glisser depuis le bas : la partie visible va de `y` au bas de l'écran. La poignée
+    // (ST §5.1) est dans cette partie visible, le contenu commence donc à la même ordonnée. Le test rougit pour 0,5 ou 1,0.
+    const visible = await stable(() => enveloppe(page));
+    expect(visible.height).toBeGreaterThan(844 * 0.95);
+    expect(Math.abs((844 - visible.y) / visible.height - 0.92)).toBeLessThanOrEqual(0.005);
+    const interne = await boite(contenu(page));
+    expect(Math.abs(interne.y - visible.y)).toBeLessThanOrEqual(1);
+    expect(Math.abs(interne.y + interne.height - 844)).toBeLessThanOrEqual(1);
+    expect(await boite(page.locator('li.ligne-tache').first())).toEqual(avant);
+  });
+
+  test('E2E-ANO-005-FEUILLE-02 contenu : « Synchronisation » avant « Compte » ; défilement interne jusqu’à la dernière action du compte, entièrement visible et dégagée', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    const bouton = feuille(page).locator('[data-etat="SYN-FEUILLE-BOUTON"]');
+    const compte = feuille(page).locator('section[aria-labelledby="compte-titre"]');
+    await expect(bouton).toHaveCount(1);
+    await expect(compte).toHaveCount(1);
+    const synchronisationAvantCompte = await feuille(page).evaluate((f) => {
+      const b = f.querySelector('[data-etat="SYN-FEUILLE-BOUTON"]');
+      const c = f.querySelector('section[aria-labelledby="compte-titre"]');
+      return (
+        b !== null &&
+        c !== null &&
+        (b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+      );
+    });
+    expect(synchronisationAvantCompte).toBe(true);
+    await supprimer(page).scrollIntoViewIfNeeded();
+    await expect(supprimer(page)).toBeInViewport({ ratio: 1 });
+    expect(await centreDegage(supprimer(page))).toBe(true);
+  });
+
+  test('E2E-ANO-005-FEUILLE-03 Échap ferme la feuille, le focus revient au bouton, la position de défilement de la liste est inchangée (critère b)', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await creerTaches(page, 14);
+    await page.locator('li.ligne-tache').nth(8).scrollIntoViewIfNeeded();
+    const position = await defilement(page);
+    expect(position).toBeGreaterThan(0);
+
+    await ouvrir(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(presentee(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(presentee(page)).toHaveCount(0);
+    await expect(ouvrir(page)).toBeFocused();
+    expect(await defilement(page)).toBe(position);
+  });
+
+  test('E2E-ANO-005-FEUILLE-04 confirmation ouverte depuis la feuille : focus sur « Annuler », boutons dégagés et cliquables ; « Annuler » laisse la feuille ouverte, la confirmation mène à l’écran de connexion', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    await supprimer(page).click();
+    const dialogue = page.getByRole('alertdialog');
+    const annuler = dialogue.getByRole('button', { name: LIBELLE_ANNULER });
+    await expect(annuler).toBeFocused();
+    expect(await centreDegage(annuler)).toBe(true);
+    await annuler.click();
+    await expect(dialogue).toHaveCount(0);
+    await expect(presentee(page)).toBeVisible();
+
+    await supprimer(page).click();
+    const confirmer = page.getByRole('alertdialog').getByRole('button').filter({
+      hasNotText: LIBELLE_ANNULER,
+    });
+    expect(await centreDegage(confirmer)).toBe(true);
+    await confirmer.click();
+    await expect(page.getByRole('button', { name: /continuer avec google/i })).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+
+  test('E2E-ANO-005-FEUILLE-09 au toucher (ANO-007), les boutons de la confirmation ouverte dans la feuille sont atteints sans force : « Annuler » laisse la feuille ouverte, la confirmation mène à l’écran de connexion', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    await supprimer(page).tap();
+    const dialogue = page.getByRole('alertdialog');
+    await dialogue.getByRole('button', { name: LIBELLE_ANNULER }).tap();
+    await expect(dialogue).toHaveCount(0);
+    await expect(presentee(page)).toBeVisible();
+
+    await supprimer(page).tap();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button')
+      .filter({ hasNotText: LIBELLE_ANNULER })
+      .tap();
+    await expect(page.getByRole('button', { name: /continuer avec google/i })).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+});
+
+test.describe('Feuille de synchronisation à 1280 × 800 (ANO-005)', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test('E2E-ANO-005-FEUILLE-05 panneau de 400 px à droite, pleine hauteur ; la confirmation ouverte depuis le panneau est cliquable', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    const panneau = await stable(() => boite(contenu(page)));
+    expect(Math.abs(panneau.x - 880)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panneau.width - 400)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panneau.y)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panneau.height - 800)).toBeLessThanOrEqual(1);
+
+    await supprimer(page).click();
+    const annuler = page.getByRole('alertdialog').getByRole('button', { name: LIBELLE_ANNULER });
+    await expect(annuler).toBeFocused();
+    expect(await centreDegage(annuler)).toBe(true);
+    await annuler.click();
+    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    await expect(presentee(page)).toBeVisible();
+  });
+});
+
+// v0.3 (ST-CORR §5.1 bis et ter, guide v0.2.27 §6.6.17) : ligne d'état et comportements de focus et d'Échap dans la
+// feuille, en navigateur réel (la logique est aussi contrôlée dans jsdom par UT-ANO-005-FEUILLE-08 à 12).
+test.describe('Ligne d’état, focus et Échap de la feuille à 390 × 844 (guide v0.2.27 §6.6.17)', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('E2E-ANO-005-FEUILLE-07 bouton distinct « Compte et synchronisation » à droite de l’indicateur sur la ligne d’état (≥ 48 px, sans hauteur maximale) ; ouverture au clavier : focus sur le titre ; ouverture sans focus sur le bouton (Safari) puis Échap : focus rendu au bouton', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    const ligne = page.locator('main.espace-application > .ligne-etat');
+    const indicateur = ligne.locator('div[role="status"][data-etat^="SYN-"]');
+    await expect(
+      ligne.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir, exact: true }),
+    ).toHaveCount(1);
+    await expect(indicateur).toHaveCount(1);
+    await expect(indicateur.getByRole('button', { name: LIBELLES_FEUILLE.ouvrir })).toHaveCount(0);
+    const boiteLigne = await boite(ligne);
+    const boiteIndicateur = await boite(indicateur);
+    const boiteBouton = await boite(ouvrir(page));
+    expect(boiteLigne.height).toBeGreaterThanOrEqual(48);
+    expect(boiteBouton.height).toBeGreaterThanOrEqual(44);
+    expect(boiteIndicateur.x + boiteIndicateur.width).toBeLessThanOrEqual(boiteBouton.x);
+    const milieu = (b: { y: number; height: number }) => b.y + b.height / 2;
+    expect(milieu(boiteBouton)).toBeGreaterThan(boiteLigne.y);
+    expect(milieu(boiteBouton)).toBeLessThan(boiteLigne.y + boiteLigne.height);
+    expect(milieu(boiteIndicateur)).toBeGreaterThan(boiteLigne.y);
+    expect(milieu(boiteIndicateur)).toBeLessThan(boiteLigne.y + boiteLigne.height);
+    expect(await ligne.evaluate((e) => getComputedStyle(e).maxHeight)).toBe('none');
+
+    const titre = feuille(page).locator('h2', { hasText: LIBELLES_FEUILLE.titre });
+    await ouvrir(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(titre).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(presentee(page)).toHaveCount(0);
+    await expect(ouvrir(page)).toBeFocused();
+
+    // Safari : un clic ne donne pas le focus au bouton ; l'ouverture part du corps du document.
+    await ouvrir(page).evaluate((bouton) => {
+      (bouton as HTMLButtonElement).blur();
+      (bouton as HTMLButtonElement).click();
+    });
+    await expect(titre).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(presentee(page)).toHaveCount(0);
+    await expect(ouvrir(page)).toBeFocused();
+  });
+
+  test('E2E-ANO-005-FEUILLE-08 Échap avec une confirmation ouverte dans la feuille ferme la confirmation seule ; un second Échap ferme la feuille', async ({
+    context,
+  }) => {
+    const page = await ouvrirApplicationConnectee(context);
+    await ouvrirFeuille(page);
+    await supprimer(page).click();
+    const annuler = page.getByRole('alertdialog').getByRole('button', { name: LIBELLE_ANNULER });
+    await expect(annuler).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    await expect(presentee(page)).toBeVisible();
+    await expect(supprimer(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(presentee(page)).toHaveCount(0);
+  });
+});
+
+// Ajout de l'E13 des tranches T1 à T3 (revue-code-LOT-001-corr-e13b-t1t3.md, RC-CORR-3 ; ST-CORR v0.2 §5.2 bis) : les
+// trois rustines de mise en page de T2 et T3 sont retirées par T5b, parce que le compte et la feuille ne sont plus
+// dans la page (`overflow: hidden` de `ion-content.contenu-avec-fab`, `overflow-y: auto` de `.espace-application`,
+// `flex: 1 0 auto` et `min-height: 70dvh` de `.espaces`). Sur l'application réelle : la page ne défile pas, la liste
+// occupe l'espace restant, et la dernière ligne reste atteignable au défilement de la liste.
+for (const [largeur, hauteur] of [
+  [390, 844],
+  [360, 480],
+] as const) {
+  test.describe(`Mise en page de l’espace à ${String(largeur)} × ${String(hauteur)} (rustines de T2 et T3 retirées)`, () => {
+    test.use({ viewport: { width: largeur, height: hauteur }, hasTouch: true });
+
+    test(`E2E-ANO-005-FEUILLE-06 la page ne défile pas, la liste occupe plus de la moitié de l’écran, la dernière tâche est atteignable (${String(largeur)} × ${String(hauteur)})`, async ({
+      context,
+    }) => {
+      const page = await ouvrirApplicationConnectee(context);
+      const mesures = await page.evaluate(() => {
+        const espace = document.querySelector('main.espace-application');
+        const espaces = document.querySelector('.espaces');
+        const liste = document.querySelector('ion-content.contenu-avec-fab');
+        if (espace === null || espaces === null || liste === null)
+          throw new Error('mise en page absente');
+        return {
+          pageDefilable: espace.scrollHeight - espace.clientHeight,
+          overflowEspace: getComputedStyle(espace).overflowY,
+          minHauteurEspaces: getComputedStyle(espaces).minHeight,
+          flexEspaces:
+            getComputedStyle(espaces).flexGrow +
+            ' ' +
+            getComputedStyle(espaces).flexShrink +
+            ' ' +
+            getComputedStyle(espaces).flexBasis,
+          overflowListe: getComputedStyle(liste).overflow,
+          hauteurListe: liste.getBoundingClientRect().height,
+        };
+      });
+      expect(mesures.pageDefilable).toBeLessThanOrEqual(0);
+      expect(mesures.overflowEspace).toBe('visible');
+      expect(mesures.minHauteurEspaces).toBe('0px');
+      expect(mesures.flexEspaces).toBe('1 1 0%');
+      expect(mesures.overflowListe).toBe('visible');
+      expect(mesures.hauteurListe).toBeGreaterThan(hauteur / 2);
+
+      await creerTaches(page, 8);
+      const derniere = page.locator('li.ligne-tache').last();
+      await derniere.scrollIntoViewIfNeeded();
+      await expect(derniere).toBeInViewport({ ratio: 1 });
+      expect(await centreDegage(derniere.locator('button[data-etat]'))).toBe(true);
+      const fab = await boite(page.locator('ion-fab-button'));
+      const ligne = await boite(derniere);
+      expect(ligne.y + ligne.height).toBeLessThanOrEqual(fab.y + 0.5);
+    });
+  });
+}
+
+// E13 du rang 14 (revue de T4 à T6, RC-CORR-5) : de 600 à 1023 px, la feuille basse fait « 640 px au plus, centrée »
+// (guide §6.6.15 et tableau des tailles d'écran). Une largeur fixe de 640 px déborde de 20 px de chaque côté à 600 px
+// (titre et « Fermer » coupés). Bornes : 600 (plus petite largeur de la plage), 639, 640 et 1023.
+test.describe('Largeur de la feuille de 600 à 1023 px (ANO-005, guide §6.6.15)', () => {
+  for (const largeur of [600, 639, 640, 1023]) {
+    test(`E2E-ANO-005-FEUILLE-13 à ${String(largeur)} px, la feuille fait min(640 px, largeur de la fenêtre), centrée, entièrement dans la fenêtre ; titre et « Fermer » visibles en entier`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ viewport: { width: largeur, height: 900 } });
+      try {
+        const page = await ouvrirApplicationConnectee(context);
+        await ouvrirFeuille(page);
+        const visible = await stable(() => enveloppe(page));
+        const attendue = Math.min(640, largeur);
+        expect(Math.round(visible.width)).toBe(attendue);
+        expect(Math.round(visible.x)).toBe(Math.round((largeur - attendue) / 2));
+        for (const element of [
+          feuille(page).getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre }),
+          feuille(page).getByRole('button', { name: LIBELLES_FEUILLE.fermer, exact: true }),
+        ]) {
+          const b = await boite(element);
+          expect(b.x).toBeGreaterThanOrEqual(0);
+          expect(b.x + b.width).toBeLessThanOrEqual(largeur);
+        }
+      } finally {
+        await context.close();
+      }
+    });
+  }
+});
+
+// E13 du rang 14 (revue de T4 à T6, RC-CORR-6) : le corps de la feuille garde la marge latérale de 16 px du guide
+// (`space.4`, §5) ; sans elle, les textes et les boutons touchent le bord de l'écran (smartphone) ou du panneau (PC).
+for (const [largeur, hauteur] of [
+  [390, 844],
+  [1280, 800],
+] as const) {
+  test(`E2E-ANO-005-FEUILLE-14 à ${String(largeur)} × ${String(hauteur)}, les textes et boutons du corps de la feuille sont à 16 px au moins de ses bords gauche et droit`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: { width: largeur, height: hauteur } });
+    try {
+      const page = await ouvrirApplicationConnectee(context);
+      await ouvrirFeuille(page);
+      const cadre = await stable(() => enveloppe(page));
+      const elements = await feuille(page)
+        .locator('.feuille-corps')
+        .locator('p, h2, h3, button')
+        .all();
+      let controles = 0;
+      for (const element of elements) {
+        if (!(await element.isVisible())) continue;
+        const b = await boite(element);
+        expect(b.x - cadre.x).toBeGreaterThanOrEqual(16 - 0.5);
+        expect(cadre.x + cadre.width - (b.x + b.width)).toBeGreaterThanOrEqual(16 - 0.5);
+        controles += 1;
+      }
+      // Au moins « Synchroniser maintenant », « Se déconnecter », « Supprimer les données… » et leurs textes.
+      expect(controles).toBeGreaterThanOrEqual(6);
+    } finally {
+      await context.close();
+    }
+  });
+}

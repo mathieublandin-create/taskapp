@@ -49,6 +49,13 @@ Les cinq agents les plus coûteux :
 | OPT-12 | **État des lieux par script** (ajout du 2026-10-30) : `docs/etat-des-lieux-avancement.json` + `docs/outils/maj-etat-des-lieux.py` ; plus de HTML édité à la main ni de pourcentage calculé à la main ; mises à jour aux seuls changements d'étape et fusions. | 5 à 10 % | Positif : fin des erreurs d'arrondi |
 | OPT-13 | **Gestes mécaniques à Friday haiku** (ajout du 2026-10-30) : push, ouverture de PR, relevé de CI. | 5 % | Neutre |
 | OPT-14 | **Messages courts** (ajout du 2026-10-30) : 3 à 5 lignes pour le commanditaire, 5 lignes pour les comptes rendus d'agents. | 5 % | Neutre |
+| OPT-15 | **Rang découpé par couche** (ajout du 2026-10-31) : un agent neuf par tranche d'un rang (domaine et application, modèles de vue, UI, étapes Cucumber), selon le plan §15 de la ST ; les tests rouges d'Anthony cadrent chaque tranche. Constat : un seul Benjamin a coûté 664 k au rang 5 (252 appels). | élevé | Neutre à positif |
+| OPT-16 | **PR en brouillon jusqu'à l'E13 approuvée et la CI verte** (ajout du 2026-10-31) : un brouillon ne peut pas être fusionné. Évite une fusion avant verdict (cas de la PR #13, environ 400 k de reprise). | évite les reprises | Positif |
+| OPT-17 | **Une branche et un worktree par développeur** (ajout du 2026-10-31, option choisie par le commanditaire) : le hook d'arrêt relance un tour complet de la session principale (une vingtaine de fois dans la session du 2026-10-30/31) tant que la branche courante du dossier principal a du travail non poussé. Le dossier principal reste sur `lot/LOT-001`, propre ; chaque développeur a son worktree et pousse sa seule branche (push simple, jamais `--force`, jamais `lot/*` ni `main`). Le hook n'est pas modifié. | moyen à élevé | Neutre |
+| OPT-18 | **E13 « bis » sur sonnet quand les remarques sont mécaniques** (ajout du 2026-10-31) ; opus si une remarque majeure touche la conception ou la synchronisation. | environ 40 % des 2es tours | Neutre si la règle est respectée |
+| OPT-19 | **Auto-contrôle de Benjamin avant l'E13** (ajout du 2026-10-31) : relecture de `checklist-revue-code.md` sur son diff ; règles de lint pour les défauts récurrents (promesses jetées avec `void`, transtypages hors constructeur). | moins de tours de correction | Positif |
+| OPT-20 | **Numéros de dette et de décision attribués à la fusion, pas en parallèle** (ajout du 2026-10-31), et pas de travaux parallèles sur les mêmes fichiers d'étapes Cucumber (cas des 5 scénarios ambigus d'ANO-001 et du rang 5). | petit | Positif |
+| OPT-21 | **`pnpm cucumber` à blanc en fin d'E10** (ajout du 2026-10-31) : Anthony vérifie que les scénarios rattachés au rang sont cohérents avec la ST et les décisions avant l'E12 (cas d'US-018 S09 et d'US-031 S07, incohérents avec DEC-034). | évite les reprises | Positif |
 
 **Gain global estimé : 40 à 55 %** de tokens pour le même travail. OPT-1 et OPT-2 représentent l'essentiel du gain.
 
@@ -90,3 +97,14 @@ Questions telles qu'elles ont été posées :
 - **Q-TOK-1** : adopter les optimisations OPT-1 à OPT-8 ? *Reco : oui.* OPT-2 suppose que vous lanciez désormais la session avec `claude --agent jarvis`.
 - **Q-TOK-2** : créer le profil « développeur cœur de données et synchronisation » (opus) et le profil « outillage et CI » (haiku), en gardant Benjamin (sonnet) sur le fonctionnel et l'interface ? *Reco : oui.* Choisissez les deux noms, ou laissez Jarvis en proposer.
 - **Q-TOK-3** : appliquer ce découpage dès le rang 0 en cours ? *Reco : non.* Benjamin termine le rang 0, qui est déjà bien avancé. Le nouveau profil prend le rang 1, et l'outillage restant est confié au profil outillage.
+
+
+## Piste Mistral AI (ajout du 2026-11-02)
+
+Question du commanditaire : confier du travail à un modèle Mistral AI (forfait existant) pour économiser des tokens Claude.
+
+- **Prérequis à confirmer par le commanditaire** : ce que le forfait couvre réellement (abonnement de chat, ou accès API / outil en ligne de commande pour le code). Un abonnement de chat ne donne pas forcément de crédits d'API, et l'organisation actuelle ne délègue qu'à des agents Claude.
+- **Faisabilité technique** : un développeur Claude devrait appeler un outil externe (script d'API ou CLI de Mistral) via le terminal. Cela déplace le coût plutôt qu'il ne le supprime : le développeur Claude relit toujours le résultat et l'intègre.
+- **Tâches candidates** (faible risque, bornées, vérifiables par des tests rouges existants) : tranches d'interface et d'étapes Cucumber des rangs (profil « D » de Benjamin), rédaction de tests complémentaires de couverture, mises à jour de documents mécaniques. À éviter : noyau de fusion, spécifications, revues E13, conception.
+- **Risque pour la qualité** : les rangs 5 à 9 montrent que les reprises coûtent cher (corrections E13 de 40 à 140 k tokens chacune). Un modèle moins fiable sur les conventions du projet peut perdre plus qu'il n'économise.
+- **Protocole de pilote proposé** : une tranche d'interface d'un rang du lot 2, mêmes tests rouges et mêmes consignes ; mesurer tokens Claude économisés contre tokens des tours de revue et reprises ; décision à l'issue du bilan de `docs/bilan-tokens-lot1.md`.

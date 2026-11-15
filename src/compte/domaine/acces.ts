@@ -1,4 +1,3 @@
-import { nonImplemente } from '@non-implemente';
 import { EcartTemps } from '../../commun/domaine/temps/ecart-temps';
 
 // DAT §4.1.5, §4.1.6 bis ; ADR-013 (ST-US-022 §6.3).
@@ -19,14 +18,37 @@ export type IssueRetourGoogle =
 
 export type OrigineDemande = 'OUVERTURE' | 'GESTE';
 
-export const accesApresRetour = (_p: {
+/** Une erreur sans preuve ne change jamais un accès perdu en accès à renouveler, ni l'inverse. */
+const sansPreuve = (avant: EtatAcces): EtatAcces => (avant === 'PERDU' ? 'PERDU' : 'A_RENOUVELER');
+
+export const accesApresRetour = (p: {
   readonly avant: EtatAcces;
   readonly issue: IssueRetourGoogle;
   readonly origine: OrigineDemande;
-}): EtatAcces => nonImplemente('accesApresRetour');
+}): EtatAcces => {
+  switch (p.issue) {
+    case 'JETON':
+      return 'VALIDE';
+    case 'PORTEES_PARTIELLES':
+      return 'PERDU';
+    case 'REFUS':
+      // EC-7 : sans geste, access_denied ne prouve pas un retrait.
+      return p.origine === 'GESTE' ? 'PERDU' : sansPreuve(p.avant);
+    case 'ANNULATION':
+      return p.avant;
+    case 'ERREUR_INTERACTION':
+    case 'ERREUR_CONFIGURATION':
+    case 'RETOUR_REJETE':
+    case 'ERREUR_TECHNIQUE':
+      return sansPreuve(p.avant);
+  }
+};
 
 /** Échéances sur l'horloge monotone. */
-export const qualifierRefusJeton = (_p: {
+export const qualifierRefusJeton = (p: {
   readonly echeance: EcartTemps | undefined;
   readonly maintenant: EcartTemps;
-}): 'A_RENOUVELER' | 'PERDU' => nonImplemente('qualifierRefusJeton');
+}): 'A_RENOUVELER' | 'PERDU' => {
+  if (p.echeance === undefined) return 'A_RENOUVELER';
+  return p.maintenant >= p.echeance - MARGE_ECHEANCE_JETON ? 'A_RENOUVELER' : 'PERDU';
+};
