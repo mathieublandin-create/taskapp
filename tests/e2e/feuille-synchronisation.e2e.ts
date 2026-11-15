@@ -345,3 +345,68 @@ for (const [largeur, hauteur] of [
     });
   });
 }
+
+// E13 du rang 14 (revue de T4 à T6, RC-CORR-5) : de 600 à 1023 px, la feuille basse fait « 640 px au plus, centrée »
+// (guide §6.6.15 et tableau des tailles d'écran). Une largeur fixe de 640 px déborde de 20 px de chaque côté à 600 px
+// (titre et « Fermer » coupés). Bornes : 600 (plus petite largeur de la plage), 639, 640 et 1023.
+test.describe('Largeur de la feuille de 600 à 1023 px (ANO-005, guide §6.6.15)', () => {
+  for (const largeur of [600, 639, 640, 1023]) {
+    test(`E2E-ANO-005-FEUILLE-13 à ${String(largeur)} px, la feuille fait min(640 px, largeur de la fenêtre), centrée, entièrement dans la fenêtre ; titre et « Fermer » visibles en entier`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ viewport: { width: largeur, height: 900 } });
+      try {
+        const page = await ouvrirApplicationConnectee(context);
+        await ouvrirFeuille(page);
+        const visible = await stable(() => enveloppe(page));
+        const attendue = Math.min(640, largeur);
+        expect(Math.round(visible.width)).toBe(attendue);
+        expect(Math.round(visible.x)).toBe(Math.round((largeur - attendue) / 2));
+        for (const element of [
+          feuille(page).getByRole('heading', { level: 2, name: LIBELLES_FEUILLE.titre }),
+          feuille(page).getByRole('button', { name: LIBELLES_FEUILLE.fermer, exact: true }),
+        ]) {
+          const b = await boite(element);
+          expect(b.x).toBeGreaterThanOrEqual(0);
+          expect(b.x + b.width).toBeLessThanOrEqual(largeur);
+        }
+      } finally {
+        await context.close();
+      }
+    });
+  }
+});
+
+// E13 du rang 14 (revue de T4 à T6, RC-CORR-6) : le corps de la feuille garde la marge latérale de 16 px du guide
+// (`space.4`, §5) ; sans elle, les textes et les boutons touchent le bord de l'écran (smartphone) ou du panneau (PC).
+for (const [largeur, hauteur] of [
+  [390, 844],
+  [1280, 800],
+] as const) {
+  test(`E2E-ANO-005-FEUILLE-14 à ${String(largeur)} × ${String(hauteur)}, les textes et boutons du corps de la feuille sont à 16 px au moins de ses bords gauche et droit`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: { width: largeur, height: hauteur } });
+    try {
+      const page = await ouvrirApplicationConnectee(context);
+      await ouvrirFeuille(page);
+      const cadre = await stable(() => enveloppe(page));
+      const elements = await feuille(page)
+        .locator('.feuille-corps')
+        .locator('p, h2, h3, button')
+        .all();
+      let controles = 0;
+      for (const element of elements) {
+        if (!(await element.isVisible())) continue;
+        const b = await boite(element);
+        expect(b.x - cadre.x).toBeGreaterThanOrEqual(16 - 0.5);
+        expect(cadre.x + cadre.width - (b.x + b.width)).toBeGreaterThanOrEqual(16 - 0.5);
+        controles += 1;
+      }
+      // Au moins « Synchroniser maintenant », « Se déconnecter », « Supprimer les données… » et leurs textes.
+      expect(controles).toBeGreaterThanOrEqual(6);
+    } finally {
+      await context.close();
+    }
+  });
+}

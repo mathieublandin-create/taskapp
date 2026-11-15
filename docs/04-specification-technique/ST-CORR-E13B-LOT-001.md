@@ -11,7 +11,7 @@
 | Rédacteur | Anthony (E10 des corrections) |
 | Réalisation | Benjamin (sonnet), **sept tranches d'au plus 1 j, une à la fois** (OPT-15), §15 |
 | Effort | **3,6 j** de développement (hors revues) ; v0.3 : T5a passe de 0,5 à 0,6 j (§15) ; **reste 1,8 j** (T5a 0,6, T5b 0,85, T6 0,35) |
-| Statut | v0.4 : T5b arbitrée (tests E2E corrigés, §13.2 bis) ; v0.3 : T1 à T4 réalisées et approuvées ; conception de T5a complétée (§5.1 bis, §5.1 ter), tests rouges de T5a et T5b livrés (§13) ; aucune question bloquante |
+| Statut | v0.5 : E13 de T4 à T6 (`revue-code-LOT-001-corr-e13b-t4t6.md`) : deux corrections de CSS demandées à Benjamin (§5.1, RC-CORR-5 et 6, tests E2E-ANO-005-FEUILLE-13 et 14 rouges) ; v0.4 : T5b arbitrée (tests E2E corrigés, §13.2 bis) ; v0.3 : T1 à T4 réalisées et approuvées ; conception de T5a complétée (§5.1 bis, §5.1 ter), tests rouges de T5a et T5b livrés (§13) ; aucune question bloquante |
 
 Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030, DT-031 ont été spécifiés dans la ST de leur US) ; ici, les corrections touchent cinq US et l'outillage : un document unique est plus lisible. Les ST d'US ne sont pas modifiées ; celles qui sont concernées sont citées au §1.1.
 
@@ -22,6 +22,7 @@ Le nom du document suit le précédent des corrections hors US (ANO-007, DT-030,
 | 0.1 | 2026-11-13 | Anthony | E10 des corrections de l'E13b : conception, 7 tranches, rang 14, 29 tests unitaires (26 rouges, 3 garde-fous verts), 24 tests de navigateur (23 rouges, 1 garde-fou vert), règles de rang, questions non bloquantes Q-CORR-STE-1 à 6. |
 | 0.3 | 2026-11-15 | Anthony | Arbitrages de T4 (§6.5 : E2E-ANO-005-FAB-03 borné à la zone visible de la liste, FAB-05 à 650, 600 et 599 px, UT-COMP-US-002-190 validé) ; conception complétée de la feuille modale d'après le guide v0.2.27 §6.6.17 (§5.1 bis : focus sur le titre, focus rendu au bouton, Échap qui ferme la confirmation seule ; §5.1 ter : ligne d'état sans hauteur maximale, passée de T5b à T5a) ; §5.2 : focus de fin de « À lire » (hook à cible calculée) ; §5.4 : intégration de T5a et T5b sans CI rouge, tranches gardées séparées ; tests UT-ANO-005-FEUILLE-08 à 12, E2E-ANO-005-FEUILLE-07 et 08, règle de rang `UT-COMP-CORR` ; UT-ANO-005-FEUILLE-03 corrigé (rôle `dialog` dans le shadow DOM, défaut de l'E10) ; §15 efforts. |
 | 0.2 | 2026-11-13 | Anthony | E13 des tranches T1 à T3 (`revue-code-LOT-001-corr-e13b-t1t3.md`) : §2 et §4.5, deux rustines de mise en page déclarées transitoires (retrait à T5b) ; §5.2 bis, retrait des rustines et test E2E-ANO-005-FEUILLE-06 ; §4.2, action de bandeau toujours principale (accord) ; §3.1, place des codes `TXT-…-SOUS-TACHE` ; §9.1 et §12.1, S16b et S16c verts dès T1, revenus au rang 13 ; §13.1, tests UT-DT-014-07 à 10 (variantes non couvertes par UT-DT-014-01 à 06). |
+| 0.5 | 2026-11-15 | Anthony | E13 de T4 à T6 (`revue-code-LOT-001-corr-e13b-t4t6.md`) : §5.1, CSS de la feuille corrigée (défauts de ma v0.1) : largeur `min(640px, 100%)` de 600 à 1023 px (guide « 640 px au plus » ; 640 px fixes débordaient de 20 px de chaque côté à 600 px) et marge latérale de 16 px du corps (`space.4`) ; §5.2, « Voir » : focus après navigation ajouté à Q-CORR-STE-7 ; §7.3, test du rejet de l'ouverture (UT-ANO-004-08) ; §13.1 et §13.2, tests ajoutés (UT-ANO-004-08, E2E-ANO-005-FEUILLE-13 et 14) et UT-DT-014-07 et 08 corrigés (attente de `ionModalDidPresent`) ; §16.1, numéros de dette proposés. |
 | 0.4 | 2026-11-15 | Anthony | Arbitrage de T5b : six tests E2E corrigés sans être affaiblis (§13.2 bis) ; E2E-ANO-005-FEUILLE-09 (ANO-007 au toucher dans la feuille) ; « Voir » depuis « À lire » ferme la feuille avant de naviguer (§5.2, décision de Benjamin intégrée) ; étapes `@ihm` : écart accepté (§12.2). |
 
 ## 1. Résumé technique
@@ -251,10 +252,12 @@ CSS (`styles.css`) :
 ```css
 ion-modal.feuille-synchronisation .feuille-contenu { display: flex; flex-direction: column; height: 100%; }
 ion-modal.feuille-synchronisation .feuille-entete { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 8px 0 16px; flex: none; }
-ion-modal.feuille-synchronisation .feuille-corps { flex: 1; }
-@media (width >= 600px) and (width < 1024px) { ion-modal.feuille-synchronisation { --width: 640px; } }
+ion-modal.feuille-synchronisation .feuille-corps { --padding-start: 16px; --padding-end: 16px; flex: 1; }   /* v0.5 : marge latérale space.4 */
+@media (width >= 600px) and (width < 1024px) { ion-modal.feuille-synchronisation { --width: min(640px, 100%); } }   /* v0.5 : 640 px au plus */
 @media (width >= 1024px) { ion-modal.feuille-synchronisation { --width: 400px; --height: 100%; --border-radius: 0; justify-content: flex-end; } }
 ```
+
+**v0.5 (E13 de T4 à T6, défauts de ma v0.1, RC-CORR-5 et 6)** : (1) `--width: 640px` fixe dépassait la fenêtre de 600 à 639 px (feuille de 640 px à `x = −20` à 600 px : titre et « Fermer » coupés) ; le guide (§6.6.15, tableau des tailles d'écran) dit « 640 px au plus, centrée » : `min(640px, 100%)`. (2) Le corps (`IonContent`) n'avait aucune marge latérale : textes et boutons au bord de l'écran ou du panneau ; marge `space.4` (16 px) par `--padding-start` et `--padding-end`. Tests : E2E-ANO-005-FEUILLE-13 (600, 639, 640, 1023 px) et 14 (390 × 844, 1280 × 800), rouges jusqu'à la correction ; vérifiés verts avec ces deux déclarations (réalisation locale annulée). Aucune autre règle.
 
 ### 5.1 bis Focus et Échap dans l'`IonModal` (T5a, v0.3, guide v0.2.27 §6.6.17)
 
@@ -289,7 +292,7 @@ Hors de ces trois points, rien n'est ajouté : pas de piège de focus maison (ce
   - `focus-fin-a-lire.ts` : signature étendue, compatible : `useFocusFinALire<T extends HTMLElement>(sectionPresente: boolean, cible?: () => HTMLElement | null): RefObject<T | null>` ; si `cible` est fournie, l'effet focalise `cible()` au lieu de la référence rendue (même condition : section disparue et focus sur `body`). UT-COMP-US-017-3-15 et 16 inchangés.
   - `EspaceApplication` : `const refBouton = useRef<HTMLButtonElement>(null); const refTitre = useRef<HTMLHeadingElement>(null);` ; `useFocusFinALire(vue.nonRetenues !== undefined, () => (feuilleOuverte ? refTitre.current : refBouton.current))` ; `BoutonFeuille refElement={refBouton}` ; `FeuilleCompteEtSynchronisation refBoutonOuverture={refBouton} refTitre={refTitre}`.
   - Test à écrire par Benjamin dans T5b : **UT-COMP-CORR-01** (jsdom, `tests/unitaires/synchronisation/presentation/ui/focus-fin-a-lire-feuille.test.tsx`, rang 14 par la règle `UT-COMP-CORR-\d+` déjà posée) : feuille ouverte, `aLire` avec un bouton « Compris » qui retire la section, hook appelé avec la cible calculée : après le clic, `document.activeElement` est le `h2` de la feuille ; feuille fermée : le bouton d'ouverture. Il doit rougir si `refTitre` est ignorée par la feuille ou si `cible` est ignorée par le hook.
-- **« Voir » depuis « À lire » (v0.4, décision de Benjamin intégrée)** : `surVoir` ferme la feuille (`surFermerFeuille()`) puis navigue (`voir(element)`). Raison : la feuille est modale et couvre la liste, l'élément visé resterait masqué et inatteignable derrière le fond. Ce comportement n'est pas écrit au guide (§6.6.15) : question de confirmation à Steeve (Q-CORR-STE-7, non bloquante). `main.tsx` est exclu de la couverture : pas de test unitaire ; couverture par revue de code uniquement (dette de test ouverte, reliquat noté pour Benjamin : un scénario `@ihm` « Voir » serait à ajouter à LOT-002 si une entrée « À lire » est simulable).
+- **« Voir » depuis « À lire » (v0.4, décision de Benjamin intégrée)** : `surVoir` ferme la feuille (`surFermerFeuille()`) puis navigue (`voir(element)`). Raison : la feuille est modale et couvre la liste, l'élément visé resterait masqué et inatteignable derrière le fond. Ce comportement n'est pas écrit au guide (§6.6.15) : question de confirmation à Steeve (Q-CORR-STE-7, non bloquante). v0.5 : à la fin de la fermeture, `surFinDeFermeture` rend le focus au bouton d'ouverture (§5.1 bis n° 2), pas au détail ouvert par « Voir » ; la destination du focus après « Voir » est ajoutée à Q-CORR-STE-7. `main.tsx` est exclu de la couverture : pas de test unitaire ; couverture par revue de code uniquement (dette de test ouverte, reliquat noté pour Benjamin : un scénario `@ihm` « Voir » serait à ajouter à LOT-002 si une entrée « À lire » est simulable).
 - Ligne d'état : CSS posée par T5a (§5.1 ter), **sans hauteur maximale** (Q-CORR-STE-4 corrigée par Steeve). Le bandeau garde sa hauteur naturelle sous la ligne.
 
 ### 5.2 bis Retrait des rustines de T2 et T3 (T5b, v0.2)
@@ -380,7 +383,7 @@ export const construireRacine = (etat: EtatSession, ouverture: EtatOuverture = '
 
 ### 7.3 Composition (`src/composition/web.ts`)
 
-`void ouverture.then((issue) => apresOuvertureWeb(…), () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }))` : un rejet de l'ouverture (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment. Le message de « plus de 10 s » du guide §6.2 n'est pas réalisé (la lecture est locale ; l'issue arrive toujours) : noté en §16.1.
+`void ouverture.then((issue) => apresOuvertureWeb(…), () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }))` : un rejet de l'ouverture (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment. Test (v0.5, ajouté par l'E13 de T6) : **UT-ANO-004-08** (`tests/unitaires/composition/ouverture-rejet-comp.test.ts`) : `OuvrirApplication.executer` rejette, la vue passe d'`OUVERTURE` à `CONNEXION` sans toast (rougit si le second argument de `then` est retiré ou mène à `ESPACE_INACCESSIBLE`). Le message de « plus de 10 s » du guide §6.2 n'est pas réalisé (la lecture est locale ; l'issue arrive toujours) : noté en §16.1.
 
 ### 7.4 Rendu (`src/compte/presentation/ui/Racine.tsx`)
 
@@ -487,6 +490,10 @@ Réalisation locale de contrôle (annulée, non livrée) : avec le rendu du §5.
 
 Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (rang 13) : **1 621 verts, 29 ignorés** (les tests du rang 14), 0 rouge ; `RANG_COURANT=14` sur les familles du rang : **26 rouges, 3 verts**, chacun rouge pour la raison attendue (assertion ou `ErreurNonImplementee`, aucune erreur de compilation ni de harnais).
 
+**Ajouts et corrections de l'E13 de T4 à T6 (v0.5)** :
+- `boutons-natifs-complements.test.tsx`, **UT-DT-014-07 et 08 corrigés** : ils démontaient la feuille de choix (modale Ionic) pendant sa présentation ; `TypeError` « insertBefore » non gérée, `pnpm test` en code 1 au rang 14. Chaque test attend désormais `ionModalDidPresent` (`surPresentationModale()`, écouteur posé avant le rendu), sans délai fixe. Assertions inchangées.
+- `tests/unitaires/composition/ouverture-rejet-comp.test.ts`, **UT-ANO-004-08** (node, rang 14 par la règle `ANO-004`) : rejet de l'ouverture (§7.3). Mutations rouges : gestionnaire de rejet retiré ; rejet mené à `ESPACE_INACCESSIBLE`.
+
 ### 13.2 Tests de navigateur (Playwright) — 24 tests, 23 rouges au rang 14
 
 | Fichier | Identifiants | Tranche | Cible |
@@ -504,6 +511,8 @@ Mesures (`fix/e13b-lot001`, après la fusion de `lot/LOT-001`) : `pnpm test` (ra
 E2E-DT-034-05 (aucun anneau au clic) est **vert** dès l'E10 : garde-fou contre une règle `:focus` au lieu de `:focus-visible`. Retiré : le test sans identifiant « les « + » des deux onglets se distinguent par leur libellé visible » (§6.4).
 
 Mesures (Chromium local, `PLAYWRIGHT_CHROMIUM_EXECUTABLE`) : `pnpm e2e` au rang 13 : **19 verts** sur 19 (20 avant le retrait), dont `onglets.e2e.ts` sur le serveur `test-ihm` partagé ; `RANG_COURANT=14` : 43 tests, les 24 nouveaux donnent **23 rouges et 1 vert**, chaque rouge pour la raison attendue (contour par défaut du navigateur, style par défaut des boutons, étiquette présente, colonne pleine largeur, bouton d'ouverture de la feuille absent, écran de connexion vu à l'ouverture), aucun pour une erreur de harnais. Remarque : le build `test-ihm` exige `VITE_BASE_PATH`, `VITE_APP_ORIGIN` et `VITE_GOOGLE_WEB_CLIENT_ID` ; le `webServer` les pose (valeurs fictives du job `ihm`).
+
+**v0.5 (E13 de T4 à T6)** : **E2E-ANO-005-FEUILLE-13** (quatre exécutions : 600, 639, 640, 1023 px ; largeur `min(640, fenêtre)`, centrée, titre et « Fermer » dans la fenêtre) et **E2E-ANO-005-FEUILLE-14** (deux exécutions : 390 × 844, 1280 × 800 ; textes et boutons du corps à 16 px au moins des bords de la feuille, au moins 6 éléments contrôlés). Rouges sur `dd83cf4` (600 et 639 px : 640 px de large ; marge mesurée 0 px) ; verts avec les deux déclarations du §5.1 v0.5. `pnpm e2e` attendu après correction : **54 sur 54**.
 
 ### 13.2 bis Arbitrage de T5b (v0.4, tests E2E corrigés par Anthony)
 
@@ -538,10 +547,11 @@ Toutes par Benjamin (sonnet), **une à la fois**, chacune sur une branche courte
 | 5 | **T5a — Composant de la feuille** | §5.1, §5.1 bis (focus, Échap, `boite-confirmation.tsx`), §5.1 ter (CSS de `.ligne-etat`) | T3 | UT-ANO-005-FEUILLE-01 à 12 | 0,6 j (v0.3 : +0,1 j) |
 | 6 | **T5b — Branchement de la feuille** | §5.2 ; §5.2 ter (intégration) ; §12.2 (étapes `@ihm`) | T5a, T1 | E2E-ANO-005-FEUILLE-01 à 05, **07, 08** ; UT-COMP-CORR-01 ; **E2E-ANO-005-FEUILLE-06 et retrait des trois rustines de T2 et T3 (§5.2 bis)** ; les 13 scénarios `@ihm` | 0,75 j (+ 0,1 j pour le retrait, dans la tranche) |
 | 7 | **T6 — Ouverture et livraison du rang** | §7 ; `rangCourant = 14` (dernier commit) | T5b | UT-ANO-004-01 à 07 ; E2E-ANO-004-01, 02 ; **toutes** les familles du rang 14 et toute la CI au rang 14 | 0,35 j |
+| 8 | **T6 bis — Corrections de l'E13 de T4 à T6 (v0.5)** | §5.1 v0.5 : deux déclarations dans `styles.css` (RC-CORR-5 et 6) | T6 | E2E-ANO-005-FEUILLE-13, 14 ; tout le reste inchangé (`pnpm e2e` 54 sur 54) | 0,1 j |
 
 **Total : 3,6 j** (v0.3 ; **reste 1,8 j** après T4 : T5a 0,6, T5b 0,85, T6 0,35) (Steeve estimait ≈ 2,25 j hors tests et étapes ; l'écart vient des étapes `@ihm`, du branchement de `main.tsx` et des tests de navigateur). Chaque tranche reste sous 1 j. T1 et T2 sont indépendantes (l'ordre peut être inversé) ; T6 ne dépend fonctionnellement de rien mais porte la livraison du rang, donc passe en dernier.
 
-PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` 47 sur 47 (43 + les deux exécutions de E2E-ANO-005-FEUILLE-06, v0.2, + E2E-ANO-005-FEUILLE-07 et 08, v0.3) ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
+PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles), `pnpm cucumber:ihm` 13 sur 13, `pnpm e2e` **54 sur 54** (v0.5 : 48 mesurés sur `dd83cf4` après les arbitrages de T5b, + les quatre exécutions de E2E-ANO-005-FEUILLE-13 et les deux de 14) ; puis nouvelle E13b limitée (FD-LOT-001-2, 4, 5, 7).
 
 ## 16. Dette, hypothèses et points ouverts
 
@@ -554,9 +564,10 @@ PR finale `fix/e13b-lot001` → `lot/LOT-001` après T6 : CI verte (7 contrôles
 | E13b-a (candidate) | **Planifiée** (T1) ; close à la fusion (plus de `TODO(` dans `src/`) ; numéro attribué à la fusion de l'E13b (OPT-20) |
 | **CORR-a** (candidate, P3 ; v0.3 : condition remplie, Q-CORR-STE-3 = défaut confirmé par Steeve, guide §6.6.17 n° 3) | Boutons natifs d'`objectifs-taches` sans le style commun (§4.4). Plan : même règle que §4, ≈ 0,5 j, LOT-002 ou E17 |
 | **CORR-b** (candidate, P3) | Message de « plus de 10 s » du cadre neutre (guide §6.2) non réalisé (§7.3) ; sans effet observable (lecture locale). Plan : si une lecture distante est un jour ajoutée à l'ouverture |
+| **CORR-c** (candidate, P3, v0.5) | « Voir » depuis « À lire » (fermeture de la feuille puis navigation, `main.tsx`) sans test automatisé : `main.tsx` est exclu de la couverture et `test-ihm` ne sait pas produire une entrée « À lire ». Plan : scénario `@ihm` ou test de navigateur dès qu'une entrée « À lire » est simulable par le banc (LOT-002) |
 | DT-035 (harnais qui recopie `main.tsx`) | Inchangée ; les tests de la feuille utilisent l'application réelle (`test-ihm`), pas le harnais |
 
-Numéros des dettes candidates : à la fusion (OPT-20).
+Numéros des dettes candidates : à la fusion (OPT-20). **Proposition de l'E13 de T4 à T6** (dans l'ordre d'inscription, dernier numéro attribué : DT-042) : E13b-a → DT-043 (« Remboursée » à la même fusion), E13b-b → DT-044, CORR-a → DT-045, CORR-b → DT-046, CORR-c → DT-047. DT-014 : « Remboursée » à la fusion (périmètre §4 ; le reste est CORR-a). DT-034 : points 1 et 3 remboursés à la fusion, **reste ouverte** pour le point 2 (icônes, LOT-002).
 
 ### 16.2 Questions (aucune bloquante ; le choix par défaut est réalisé si la réponse n'est pas arrivée au début de la tranche concernée)
 
@@ -568,7 +579,7 @@ Numéros des dettes candidates : à la fusion (OPT-20).
 | Q-CORR-STE-4 | Steeve | Ligne d'état de 48 px : (a) indicateur et bouton de feuille, le bandeau dessous à sa hauteur naturelle ; (b) autre forme (laquelle) ? | (a) | T5b |
 | Q-CORR-STE-5 | Steeve | Nom du « + » des objectifs : (a) « Créer un objectif » (inchangé, comme l'état vide) ; (b) « Nouvel objectif » (exemple du §2.2 ; S23 de Pepper) ? | (a) | T4 |
 | Q-CORR-STE-6 | Steeve | Focus après « Compris » sur la dernière entrée de « À lire », feuille ouverte : (a) titre de la feuille ; (b) « Fermer » ; (c) bouton « Synchroniser maintenant » ? | (a) | T5b |
-| Q-CORR-STE-7 | Steeve | « Voir » depuis « À lire » : fermer la feuille avant de naviguer vers l'élément (v0.4, réalisé par Benjamin), ou autre comportement ? | Fermer | T5b (réalisé) |
+| Q-CORR-STE-7 | Steeve | « Voir » depuis « À lire » : fermer la feuille avant de naviguer vers l'élément (v0.4, réalisé par Benjamin), ou autre comportement ? v0.5 : après « Voir », le focus va (a) au bouton « Compte et synchronisation » (réalisé, comme toute fermeture) ou (b) au titre du détail ouvert ? | Fermer ; (a) | T5b (réalisé) |
 
 Pas de question à Starck : ni port, ni flux, ni ADR touché ; le `webServer` partagé et la sélection par rang des tests de navigateur relèvent de l'outillage de test (`conventions.md` §11.14). Pour information de Pepper : S16b et S16c passent au rang 14, les `@recette` au rang 15 (§9.1) ; les scénarios de non-régression d'ANO-004 et d'ANO-005 qu'elle propose (glossaire v1.15) peuvent s'ajouter à l'E17 sans changer cette conception (les repères `boutonFeuille`, `feuilleCompte` et `centreDegage` existent).
 

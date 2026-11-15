@@ -19,8 +19,13 @@ import {
 } from '@src/synchronisation/presentation/ui/ChoixRestauration';
 import { ModificationsNonRetenues } from '@src/synchronisation/presentation/ui/ModificationsNonRetenues';
 import { date, idTache } from '@tests/support/valeurs';
-import { nettoyerDocument } from '@tests/support/ui-objectifs';
+import { nettoyerDocument, surPresentationModale } from '@tests/support/ui-objectifs';
 
+/**
+ * La feuille de choix est une modale Ionic : la démonter (`cleanup`) avant la fin de sa présentation fait échouer
+ * l'animation d'Ionic (`TypeError` « insertBefore » non gérée, `pnpm test` en code 1). Chaque test qui la rend attend
+ * donc `ionModalDidPresent` (écouteur posé avant le rendu) avant de se terminer, sans délai fixe.
+ */
 afterEach(async () => {
   cleanup();
   await nettoyerDocument();
@@ -104,7 +109,9 @@ const VUE_NON_RETENUES: ModeleVueModificationsNonRetenues = {
 
 describe('DT-014 : attribution des variantes, compléments de l’E13 (ST-CORR §4.2)', () => {
   it('UT-DT-014-07 choix de restauration : « Restaurer » principal, « Repartir de zéro » danger, « Décider plus tard » et « Fermer » tertiaires', async () => {
+    const presentee = surPresentationModale();
     render(<FeuilleChoixRestauration {...proprietesChoix(VUE_CHOIX)} />);
+    await presentee;
     const bouton = (nom: string) => screen.findByRole('button', { name: nom });
     expect(style(await bouton('Restaurer d’essai'))).toEqual({
       natif: true,
@@ -119,11 +126,13 @@ describe('DT-014 : attribution des variantes, compléments de l’E13 (ST-CORR �
   });
 
   it('UT-DT-014-08 choix de restauration, demande en attente : « Annuler la demande » est secondaire (sans attribut)', async () => {
+    const presentee = surPresentationModale();
     render(
       <FeuilleChoixRestauration
         {...proprietesChoix({ ...VUE_CHOIX, restaurationEnAttente: true as const })}
       />,
     );
+    await presentee;
     expect(
       style(await screen.findByRole('button', { name: 'Annuler la demande d’essai' })),
     ).toEqual({ natif: true, variante: undefined });
