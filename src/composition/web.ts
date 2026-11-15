@@ -236,6 +236,19 @@ const apresOuvertureWeb = async (
   );
 };
 
+/** Lance l'ouverture ; un rejet (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment (ANO-004). */
+const lancerOuverture = (
+  application: Application,
+  controleur: ControleurInterface,
+  navigateur: Navigateur,
+  retour: RetourGoogle,
+): void => {
+  void application.ouvrirApplication.executer(retour).then(
+    (issue) => apresOuvertureWeb(application, controleur, navigateur, issue),
+    () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }),
+  );
+};
+
 /** Ce que `main.tsx` reçoit de l'ouverture : le contrôleur de l'interface et le journal (enregistrement du service worker). */
 export type DemarrageWeb = {
   readonly controleur: ControleurInterface;
@@ -279,11 +292,6 @@ export const demarrerWeb = (
   );
   ecouterFinDeSession(avis, quitter);
   ecouterDeclencheurs(application, controleur);
-  const ouverture = application.ouvrirApplication.executer(retour);
-  // Un rejet de l'ouverture (jamais attendu) ne laisse pas le cadre neutre affiché indéfiniment.
-  void ouverture.then(
-    (issue) => apresOuvertureWeb(application, controleur, navigateur, issue),
-    () => controleur.apresOuverture({ type: 'ECRAN_CONNEXION' }),
-  );
+  lancerOuverture(application, controleur, navigateur, retour);
   return { controleur, journal: application.journal };
 };
