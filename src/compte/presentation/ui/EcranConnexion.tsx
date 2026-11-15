@@ -33,6 +33,18 @@ export type ProprietesEcranConnexion = {
   readonly surAction: () => void;
 };
 
+const PorteesAnnoncees = ({
+  portees,
+}: {
+  readonly portees: ModeleVueConnexion['porteesAnnoncees'];
+}) => (
+  <ul aria-label="Autorisations demandées">
+    {portees.map((portee) => (
+      <li key={portee}>{PORTEES[portee]}</li>
+    ))}
+  </ul>
+);
+
 export const EcranConnexion = ({ vue, surAction }: ProprietesEcranConnexion) => {
   const bouton = useRef<HTMLButtonElement>(null);
   const code = vue.message?.code;
@@ -45,15 +57,13 @@ export const EcranConnexion = ({ vue, surAction }: ProprietesEcranConnexion) => 
       <IonText>
         <p>Connectez-vous avec votre compte Google pour retrouver vos objectifs et vos tâches.</p>
       </IonText>
-      <ul aria-label="Autorisations demandées">
-        {vue.porteesAnnoncees.map((portee) => (
-          <li key={portee}>{PORTEES[portee]}</li>
-        ))}
-      </ul>
+      <PorteesAnnoncees portees={vue.porteesAnnoncees} />
       {vue.message === undefined ? null : <MessageEchec message={vue.message} />}
       <button
         ref={bouton}
         type="button"
+        className="bouton-natif"
+        data-variante="principal"
         data-action={vue.action}
         disabled={!vue.actionActive}
         onClick={surAction}

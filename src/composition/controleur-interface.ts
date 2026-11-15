@@ -149,6 +149,8 @@ type Etat = {
   miseAJour?: IssueMiseAJour;
   /** Un service worker plus récent attend (`ALR-016`) ; jamais mémorisé : remis à faux par le rechargement. */
   nouvelleVersion: boolean;
+  /** ANO-004 : l'ouverture a décidé (issue, geste de connexion ou session vue) ; sinon la vue reste `OUVERTURE`. */
+  ouvertureEtablie: boolean;
   /** « Décider plus tard » choisi pendant cette ouverture d'`ERR-012` (remis à faux quand `ERR-012` disparaît). */
   decisionReportee: boolean;
   /** Présent tant qu'`ERR-012` est affiché : restauration connue faite ici avant le choix (base du toast `TST-RESTAUREE`). */
@@ -159,7 +161,12 @@ type Etat = {
 
 export class ControleurInterface {
   #vue: VueInterface;
-  readonly #etat: Etat = { enCours: false, decisionReportee: false, nouvelleVersion: false };
+  readonly #etat: Etat = {
+    enCours: false,
+    decisionReportee: false,
+    nouvelleVersion: false,
+    ouvertureEtablie: false,
+  };
   readonly #observateurs = new Set<() => void>();
   readonly #rafraichissements = new Set<Promise<void>>();
   /** Numéro du dernier calcul de vue lancé : seul celui-là publie (ANO-006, ST-US-031 §6.7). */
@@ -172,7 +179,7 @@ export class ControleurInterface {
     readonly objectifs: () => ObjectifsTaches | undefined = () => undefined,
   ) {
     this.#vue = {
-      racine: { ecran: 'CONNEXION' },
+      racine: { ecran: 'OUVERTURE' },
       connexion: this.#connexion(),
       consultationSeule: false,
     };
@@ -210,6 +217,8 @@ export class ControleurInterface {
   async #calculerVue(): Promise<void> {
     const numero = ++this.#dernierCalcul;
     const session = this.application.session.etat();
+    // Une session vue établit l'ouverture : sa fermeture mène à la connexion, jamais au cadre neutre.
+    if (session.type !== 'SANS_SESSION') this.#etat.ouvertureEtablie = true;
     const etatSynchro = await this.application.consulterEtat();
     if (etatSynchro === undefined) this.#oublierChoixRestauration();
     const synchronisation =
@@ -217,7 +226,7 @@ export class ControleurInterface {
     if (numero !== this.#dernierCalcul) return;
     const { confirmation, suppressionBloquee, toast } = this.#etat;
     this.#vue = {
-      racine: construireRacine(session),
+      racine: construireRacine(session, this.#etat.ouvertureEtablie ? 'ETABLIE' : 'EN_COURS'),
       connexion: this.#connexion(),
       consultationSeule: etatSynchro?.actionRequise === 'FORMAT_PLUS_RECENT',
       ...this.#sectionCompte(session),
@@ -262,6 +271,7 @@ export class ControleurInterface {
     issue: IssueOuverture,
     rouvrir?: () => Promise<IssueOuverture>,
   ): Promise<void> => {
+    this.#etat.ouvertureEtablie = true;
     if (issue.type === 'ESPACE_INACCESSIBLE') {
       this.#etat.toast = 'TST-ERREUR-ENREGISTREMENT';
       if (rouvrir !== undefined) {
@@ -282,6 +292,7 @@ export class ControleurInterface {
   };
 
   readonly continuerAvecGoogle = async (): Promise<void> => {
+    this.#etat.ouvertureEtablie = true;
     this.#etat.enCours = true;
     this.#effacerToast();
     await this.rafraichir();

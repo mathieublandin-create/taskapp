@@ -352,6 +352,15 @@ export const CATALOGUE = {
     texte:
       'Vos {n} modifications sont conservées sur cet appareil. L’application réessaie toute seule ; vous pouvez aussi réessayer maintenant.',
     action: 'Réessayer maintenant',
+    variantes: {
+      une: {
+        texte:
+          'Votre modification est conservée sur cet appareil. L’application réessaie toute seule ; vous pouvez aussi réessayer maintenant.',
+      },
+      aucune: {
+        texte: 'L’application réessaie toute seule ; vous pouvez aussi réessayer maintenant.',
+      },
+    },
   },
   'ERR-017': {
     libelle: 'La suppression n’est pas terminée',
@@ -626,6 +635,14 @@ export const CATALOGUE = {
   'TXT-INF-INTITULE': { libelle: 'Intitulé', texte: 'son intitulé' },
   'TXT-INF-OBJECTIFS': { libelle: 'Rattachement', texte: 'son rattachement' },
   'TXT-INF-PARENT': { libelle: 'Placement', texte: 'son placement' },
+  'TXT-ABANDONNER-SOUS-TACHE': {
+    libelle: 'Abandonner la sous-tâche',
+    nomAccessible: 'Abandonner la sous-tâche : « {element} »',
+  },
+  'TXT-TERMINER-SOUS-TACHE': {
+    libelle: 'Terminer la sous-tâche',
+    nomAccessible: 'Terminer la sous-tâche : « {element} »',
+  },
   'TXT-VAL-AUCUNE': {
     libelle: 'aucune description',
     variantes: { delai: { libelle: 'sans délai' } },

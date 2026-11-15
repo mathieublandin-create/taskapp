@@ -1,11 +1,11 @@
 import { useId, useRef, useState, type RefObject } from 'react';
 import type { IdTache } from '../../../../commun/domaine/identifiants';
+import { libelle } from '../../../../commun/presentation/messages/libelle';
 import { useConsultationSeule } from '../../../../commun/presentation/ui/consultation-seule';
 import type { ModeleVueDetailTache } from '../../modeles-de-vue/detail-tache';
 import type { MessageRefus } from '../../modeles-de-vue/messages-de-refus';
 import { messagesDeIssue } from '../etat/issues';
 import type { IssueSaisie } from '../etat/magasin-taches';
-import { LIBELLES_TACHES } from '../libelles-ui';
 import { ConfirmationCommande, useCommandeConfirmee } from './commande-confirmee';
 import { MessagesRefus } from './messages-refus';
 
@@ -25,12 +25,6 @@ export type ProprietesCarteIncoherence = {
   readonly surAbandonnerSousTache?: ((id: IdTache) => Promise<IssueSaisie>) | undefined;
 };
 
-const ESPACE_INSECABLE = '\u00a0';
-
-/** Nom accessible d'un bouton tertiaire : son libellé suivi de la sous-tâche visée (guide §4.24, 2.4.6). */
-const nomAccessible = (libelleBouton: string, intitule: string): string =>
-  `${libelleBouton}${ESPACE_INSECABLE}: «${ESPACE_INSECABLE}${intitule}${ESPACE_INSECABLE}»`;
-
 /** Issue d'une commande de la carte : refus affichés sous les boutons, confirmation habituelle sinon. */
 const useCommandeCarte = (retourFocus: RefObject<HTMLButtonElement | null>) => {
   const [refus, setRefus] = useState<ReadonlyArray<MessageRefus>>([]);
@@ -46,12 +40,12 @@ const useCommandeCarte = (retourFocus: RefObject<HTMLButtonElement | null>) => {
 
 const BoutonTertiaire = ({
   action,
-  libelleBouton,
+  code,
   intitule,
   surClic,
 }: {
   readonly action: 'TERMINER_SOUS_TACHE' | 'ABANDONNER_SOUS_TACHE';
-  readonly libelleBouton: string;
+  readonly code: 'TXT-TERMINER-SOUS-TACHE' | 'TXT-ABANDONNER-SOUS-TACHE';
   readonly intitule: string;
   readonly surClic: () => void;
 }) => {
@@ -60,11 +54,11 @@ const BoutonTertiaire = ({
     <button
       type="button"
       data-action={action}
-      aria-label={nomAccessible(libelleBouton, intitule)}
+      aria-label={libelle(code, { element: intitule }, 'nomAccessible')}
       {...attributsAction}
       onClick={garder(surClic)}
     >
-      {libelleBouton}
+      {libelle(code)}
     </button>
   );
 };
@@ -82,7 +76,7 @@ const BoutonsTertiaires = ({
     {surTerminer === undefined ? null : (
       <BoutonTertiaire
         action="TERMINER_SOUS_TACHE"
-        libelleBouton={LIBELLES_TACHES.terminerSousTache}
+        code="TXT-TERMINER-SOUS-TACHE"
         intitule={sousTache.intitule}
         surClic={() => {
           surTerminer(sousTache.id);
@@ -92,7 +86,7 @@ const BoutonsTertiaires = ({
     {surAbandonner === undefined ? null : (
       <BoutonTertiaire
         action="ABANDONNER_SOUS_TACHE"
-        libelleBouton={LIBELLES_TACHES.abandonnerSousTache}
+        code="TXT-ABANDONNER-SOUS-TACHE"
         intitule={sousTache.intitule}
         surClic={surAbandonner}
       />

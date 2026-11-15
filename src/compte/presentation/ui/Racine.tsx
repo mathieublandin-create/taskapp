@@ -11,6 +11,9 @@ export type ProprietesRacine = {
 
 export const Racine = ({ vue, connexion, application }: ProprietesRacine) => {
   switch (vue.ecran) {
+    case 'OUVERTURE':
+      // ANO-004 : cadre neutre, ni texte, ni animation, ni data-* (ce n'est pas un écran d'attente, US-018).
+      return <main className="cadre-ouverture" aria-busy="true" />;
     case 'CONNEXION':
       return connexion;
     case 'ATTENTE_GOOGLE':

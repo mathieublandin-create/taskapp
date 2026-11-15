@@ -87,6 +87,8 @@ const BoutonVoir = ({
 }) => (
   <button
     type="button"
+    className="bouton-natif"
+    data-variante="tertiaire"
     aria-label={nomAccessibleVoir(ligne)}
     onClick={() => {
       surVoir(voir);
@@ -111,6 +113,8 @@ const ActionsLigne = ({
     )}
     <button
       type="button"
+      className="bouton-natif"
+      data-variante="tertiaire"
       ref={compris.ref(ligne.id)}
       aria-label={nomAccessibleCompris(ligne.titre)}
       onClick={() => {
@@ -180,6 +184,8 @@ const LignesEffacees = ({
     <>
       <button
         type="button"
+        className="bouton-natif"
+        data-variante="tertiaire"
         aria-expanded={deplie}
         data-code="SEC-MODIFS-EFFACEES"
         onClick={() => {
@@ -213,6 +219,8 @@ const CarteDonneesEffacees = ({
       <LignesEffacees lignes={donnees.lignes} contexte={contexte} />
       <button
         type="button"
+        className="bouton-natif"
+        data-variante="tertiaire"
         ref={compris.ref(CLE_CARTE)}
         aria-label={donnees.nomAccessibleCompris}
         onClick={() => {

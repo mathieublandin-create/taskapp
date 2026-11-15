@@ -10,6 +10,15 @@ export type ProprietesSuppressionBloquee = {
   readonly surAllerALaConnexion: () => void;
 };
 
+const ExplicationBlocage = () => (
+  <>
+    <h2>{libelle('ERR-017')}</h2>
+    <IonText>
+      <p>{libelle('ERR-017', {}, 'texte')}</p>
+    </IonText>
+  </>
+);
+
 export const SuppressionBloquee = ({
   enCours,
   surReessayer,
@@ -21,14 +30,18 @@ export const SuppressionBloquee = ({
   }, []);
   return (
     <div role="alert" data-message="ERR-017">
-      <h2>{libelle('ERR-017')}</h2>
-      <IonText>
-        <p>{libelle('ERR-017', {}, 'texte')}</p>
-      </IonText>
-      <button ref={reessayer} type="button" disabled={enCours} onClick={surReessayer}>
+      <ExplicationBlocage />
+      <button
+        ref={reessayer}
+        type="button"
+        className="bouton-natif"
+        data-variante="principal"
+        disabled={enCours}
+        onClick={surReessayer}
+      >
         {libelle('ERR-017', enCours ? { variante: 'en-cours' } : {}, 'action')}
       </button>
-      <button type="button" onClick={surAllerALaConnexion}>
+      <button type="button" className="bouton-natif" onClick={surAllerALaConnexion}>
         {libelle('ERR-017', {}, 'actionSecondaire')}
       </button>
     </div>

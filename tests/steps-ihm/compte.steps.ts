@@ -12,9 +12,12 @@ import { nomEspaceDuCompte } from '../support/compte/etapes-compte';
 import type { NomAppareil } from '../support/banc/appareil-simule';
 import {
   boutonConnexion,
+  boutonFeuille,
   dialogueConfirmation,
+  dialogueFeuille,
   ecranAffiche,
   espaceApplication,
+  feuilleCompte,
   indicateur,
   lignesObjectifs,
   lignesTaches,
@@ -57,8 +60,17 @@ const preparerFinDeSession = async (monde: MondeIhm): Promise<void> => {
   monde.marquerChargements();
 };
 
-const boutonDeLaSectionCompte = (page: Page, libelle: string) =>
-  espaceApplication(page).getByRole('button', { name: libelle, exact: true });
+/**
+ * Geste de la section « Compte », dans la feuille « Compte et synchronisation » : ouverte ici si elle est fermée.
+ * Elle se referme seule avec la fin de session que ces gestes provoquent (S16b, S16c).
+ */
+const actionDuCompte = async (page: Page, libelle: string): Promise<void> => {
+  if (!(await dialogueFeuille(page).isVisible())) {
+    await boutonFeuille(page).click();
+    await expect(dialogueFeuille(page)).toBeVisible();
+  }
+  await feuilleCompte(page).getByRole('button', { name: libelle, exact: true }).click();
+};
 
 /** Bouton d'action de la boîte de confirmation : celui qui n'est pas « Annuler ». */
 const boutonConfirmer = (page: Page) =>
@@ -89,7 +101,7 @@ const attendreEcranDeConnexion = async (page: Page): Promise<void> => {
 When("dans le premier onglet, l'utilisateur se déconnecte", async function (this: MondeIhm) {
   const page = await this.pageCourante();
   await preparerFinDeSession(this);
-  await boutonDeLaSectionCompte(page, libelleActionCompte('SE_DECONNECTER')).click();
+  await actionDuCompte(page, libelleActionCompte('SE_DECONNECTER'));
   // Rien n'est en attente : la déconnexion est menée à son terme sans confirmation CNF-DECONNEXION (si elle s'affichait,
   // la session ne prendrait pas fin et le second onglet ne se rechargerait pas).
   await attendreRechargementDuSecond(this);
@@ -102,7 +114,7 @@ When(
   async function (this: MondeIhm) {
     const page = await this.pageCourante();
     await preparerFinDeSession(this);
-    await boutonDeLaSectionCompte(page, libelleActionCompte('SUPPRIMER_DONNEES')).click();
+    await actionDuCompte(page, libelleActionCompte('SUPPRIMER_DONNEES'));
     await expect(dialogueConfirmation(page)).toBeVisible();
   },
 );
@@ -113,30 +125,46 @@ When("dans le premier onglet, l'utilisateur confirme", async function (this: Mon
   await attendreEcranDeConnexion(page);
 });
 
+type Onglet = 'premier' | 'second';
+
 /**
- * ANO-004 : l'écran de connexion s'affiche aussi brièvement pendant toute ouverture ; la conclusion n'est tirée qu'après
- * le rechargement du second onglet (un chargement de plus depuis le geste) et la fin de ses échanges.
+ * ANO-004 (corrigée en T6 : cadre neutre pendant l'ouverture) : la conclusion n'est tirée qu'après
+ * le rechargement du second onglet (un chargement de plus depuis le geste) et la fin de ses échanges. Le premier onglet,
+ * lui, ne se recharge pas : il revient seul à l'écran de connexion (ANO-006), attendu par sondage.
  */
+const ecranDeConnexionDe = async (monde: MondeIhm, onglet: Onglet): Promise<Page> => {
+  if (onglet === 'premier') {
+    const page = await monde.pageCourante();
+    await attendreEcranDeConnexion(page);
+    return page;
+  }
+  const page = await attendreRechargementDuSecond(monde);
+  await page.waitForLoadState('networkidle');
+  return page;
+};
+
 Then(
-  "dans le second onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée",
-  async function (this: MondeIhm) {
-    const page = await attendreRechargementDuSecond(this);
-    await page.waitForLoadState('networkidle');
+  /^dans le (premier|second) onglet, seule l'invitation à se connecter à Done Juan avec un compte Google est proposée$/,
+  async function (this: MondeIhm, onglet: Onglet) {
+    const page = await ecranDeConnexionDe(this, onglet);
     expect(await ecranAffiche(page)).toBe('CONNEXION');
     await expect(page.getByRole('button')).toHaveCount(1);
     await expect(boutonConnexion(page)).toBeVisible();
   },
 );
 
-Then("dans le second onglet, aucune donnée n'est affichée", async function (this: MondeIhm) {
-  const page = this.ongletSecond();
-  await expect(espaceApplication(page)).toHaveCount(0);
-  await expect(lignesTaches(page)).toHaveCount(0);
-  await expect(lignesObjectifs(page)).toHaveCount(0);
-  for (const intitule of INTITULES_DU_CONTEXTE) {
-    await expect(page.getByText(intitule)).toHaveCount(0);
-  }
-});
+Then(
+  /^dans le (premier|second) onglet, aucune donnée n'est affichée$/,
+  async function (this: MondeIhm, onglet: Onglet) {
+    const page = onglet === 'premier' ? await this.pageCourante() : this.ongletSecond();
+    await expect(espaceApplication(page)).toHaveCount(0);
+    await expect(lignesTaches(page)).toHaveCount(0);
+    await expect(lignesObjectifs(page)).toHaveCount(0);
+    for (const intitule of INTITULES_DU_CONTEXTE) {
+      await expect(page.getByText(intitule)).toHaveCount(0);
+    }
+  },
+);
 
 const basesDuNavigateur = async (page: Page): Promise<ReadonlyArray<string | undefined>> =>
   (await page.evaluate(() => indexedDB.databases())).map((base) => base.name);

@@ -124,7 +124,7 @@ export const ListeTaches = ({ modele, surCreer, refus = [], ...autres }: Proprie
   return (
     <>
       <EnTeteListe />
-      <IonContent>
+      <IonContent className="contenu-avec-fab">
         <Filtres modele={modele} {...autres} />
         <MessagesRefus messages={refus} />
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}

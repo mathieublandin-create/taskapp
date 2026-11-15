@@ -28,7 +28,12 @@ export const IndicateurSynchronisation = ({
     {vue.action === undefined ? (
       libelleIndicateur(vue)
     ) : (
-      <button type="button" data-action={vue.action} onClick={surReprendre}>
+      <button
+        type="button"
+        className="bouton-natif"
+        data-action={vue.action}
+        onClick={surReprendre}
+      >
         {libelleIndicateur(vue)}
       </button>
     )}

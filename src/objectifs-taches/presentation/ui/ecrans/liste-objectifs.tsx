@@ -106,7 +106,7 @@ export const ListeObjectifs = ({ modele, surCreer, surOuvrir }: ProprietesListeO
   return (
     <>
       <EnTeteListe />
-      <IonContent>
+      <IonContent className="contenu-avec-fab">
         {mentionHeureParis === undefined ? null : <NoteHeureParis mention={mentionHeureParis} />}
         {etatVide === undefined ? null : (
           <EtatVide
