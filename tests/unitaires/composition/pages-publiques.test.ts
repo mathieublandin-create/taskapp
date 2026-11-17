@@ -55,3 +55,35 @@ describe('Pages publiques (UT-COMP-US-018-40)', () => {
     }
   });
 });
+
+describe('Pages publiques, exactitude des affirmations (UT-COMP-US-018-41 et suivants)', () => {
+  const condense = (page: string): string =>
+    lire(page)
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ');
+
+  it('UT-COMP-US-018-41 confidentialite.html — Google affiche une adresse github.io, non « Done Juan »', () => {
+    const texte = condense('confidentialite.html');
+
+    expect(texte).toContain('mathieublandin-create.github.io');
+    expect(texte).not.toMatch(/« Done Juan », « Supprimer l'accès »/);
+  });
+
+  it('UT-COMP-US-018-42 confidentialite.html — corbeille du Drive et suppression des données de l’appareil', () => {
+    const texte = condense('confidentialite.html');
+
+    expect(texte).toContain('corbeille de votre Drive');
+    expect(texte).toContain('Supprimer les données de cet appareil');
+  });
+
+  it('UT-COMP-US-018-43 confidentialite.html — données conservées non chiffrées après la déconnexion (DT-001)', () => {
+    const texte = condense('confidentialite.html');
+
+    expect(texte).toContain("restent sur l'appareil après la déconnexion");
+    expect(texte).toContain('ne les chiffre pas');
+  });
+
+  it('UT-COMP-US-018-44 confidentialite.html — date de mise à jour exacte', () => {
+    expect(condense('confidentialite.html')).toContain('Dernière mise à jour : 17 novembre 2026.');
+  });
+});
